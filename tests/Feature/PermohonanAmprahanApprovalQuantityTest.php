@@ -65,12 +65,32 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             $table->string('satuan')->nullable();
             $table->decimal('harga_satuan', 18, 2);
             $table->decimal('jumlah', 18, 2);
+            $table->boolean('masuk_asset')->default(false);
+            $table->timestamps();
+        });
+
+        Schema::create('assets', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_table')->nullable();
+            $table->unsignedBigInteger('source_id')->nullable();
+            $table->unique(['source_table', 'source_id']);
+            $table->string('kode_asset')->unique();
+            $table->string('nama_asset');
+            $table->string('kategori');
+            $table->decimal('kuantitas', 12, 2)->nullable();
+            $table->string('satuan')->nullable();
+            $table->string('vendor')->nullable();
+            $table->string('nomor_faktur')->nullable();
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->softDeletes();
             $table->timestamps();
         });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('assets');
         Schema::dropIfExists('purchase_order_items');
         Schema::dropIfExists('purchase_orders');
         Schema::dropIfExists('permohonan_amprahan_items');
@@ -230,7 +250,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         ]);
         $view = (new PurchaseOrderController)->create($createRequest);
         $this->assertSame([
-            ['deskripsi' => 'Oli', 'kuantitas' => '3.5', 'satuan' => 'liter', 'harga_satuan' => 0],
+            ['deskripsi' => 'Oli', 'kuantitas' => '3.5', 'satuan' => 'liter', 'harga_satuan' => 0, 'masuk_asset' => false],
         ], $view->getData()['prefillItems']);
 
         $html = view('purchase-orders._form', [
@@ -244,6 +264,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $this->assertStringNotContainsString('value="Filter"', $html);
         $this->assertStringContainsString('readonly', $html);
         $this->assertStringNotContainsString('id="add-po-item"', $html);
+        $this->assertStringContainsString('name="items[0][masuk_asset]"', $html);
 
         $wrongPoRequest = Request::create('/purchase-orders', 'POST', [
             'permohonan_amprahan_id' => $permohonan->id,
@@ -255,6 +276,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
                 'kuantitas' => '2',
                 'satuan' => 'liter',
                 'harga_satuan' => '10000',
+                'masuk_asset' => '1',
             ]],
         ]);
         $this->app->instance('request', $wrongPoRequest);
@@ -277,6 +299,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
                 'kuantitas' => '3.5',
                 'satuan' => 'liter',
                 'harga_satuan' => '10000',
+                'masuk_asset' => '1',
             ]],
         ]);
         $this->app->instance('request', $poRequest);
@@ -289,6 +312,14 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             'permohonan_amprahan_id' => $permohonan->id,
             'vendor' => 'PT Contoh',
         ]);
+        $poItem = PurchaseOrder::firstOrFail()->items()->firstOrFail();
+        $this->assertDatabaseHas('assets', [
+            'source_table' => 'purchase_order_items',
+            'source_id' => $poItem->id,
+            'nama_asset' => 'Oli',
+            'kuantitas' => 3.5,
+            'deleted_at' => null,
+        ]);
 
         try {
             PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($poRequest));
@@ -299,9 +330,69 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $this->assertDatabaseCount('purchase_orders', 1);
 
         PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->destroy(PurchaseOrder::firstOrFail()));
+        $this->assertSoftDeleted('assets', [
+            'source_table' => 'purchase_order_items',
+            'source_id' => $poItem->id,
+        ]);
         $this->assertSame('pending', $permohonan->fresh()->status);
         $this->assertSame('pending', $approvedItem->fresh()->status);
         $this->assertSame('pending', $rejectedItem->fresh()->status);
+    }
+
+    public function test_asset_checkbox_can_be_changed_without_replacing_purchase_order_item(): void
+    {
+        $permohonan = PermohonanAmprahan::create(['status' => 'pending']);
+        $approvedItem = PermohonanAmprahanItem::create([
+            'permohonan_id' => $permohonan->id,
+            'nama_barang' => 'Kasur',
+            'jumlah' => 1,
+            'satuan' => 'pcs',
+        ]);
+        $this->process($permohonan->id, [$approvedItem->id => '1']);
+
+        $poData = [
+            'tanggal_po' => '2026-10-28',
+            'vendor' => 'PT Contoh',
+            'status' => 'draft',
+            'items' => [[
+                'deskripsi' => 'Kasur',
+                'kuantitas' => '1',
+                'satuan' => 'pcs',
+                'harga_satuan' => '100000',
+            ]],
+        ];
+        $createRequest = Request::create('/purchase-orders', 'POST', $poData + [
+            'permohonan_amprahan_id' => $permohonan->id,
+        ]);
+        $this->app->instance('request', $createRequest);
+        PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($createRequest));
+
+        $order = PurchaseOrder::firstOrFail();
+        $orderItem = $order->items()->firstOrFail();
+        $this->assertFalse($orderItem->masuk_asset);
+        $this->assertDatabaseCount('assets', 0);
+
+        $poData['items'][0]['masuk_asset'] = '1';
+        $updateRequest = Request::create('/purchase-orders/'.$order->id, 'PUT', $poData);
+        $this->app->instance('request', $updateRequest);
+        PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->update($updateRequest, $order));
+        $this->assertSame($orderItem->id, $order->items()->firstOrFail()->id);
+        $this->assertTrue($orderItem->fresh()->masuk_asset);
+        $this->assertDatabaseHas('assets', [
+            'source_table' => 'purchase_order_items',
+            'source_id' => $orderItem->id,
+            'deleted_at' => null,
+        ]);
+
+        $poData['items'][0]['masuk_asset'] = '0';
+        $updateRequest = Request::create('/purchase-orders/'.$order->id, 'PUT', $poData);
+        $this->app->instance('request', $updateRequest);
+        PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->update($updateRequest, $order));
+        $this->assertFalse($orderItem->fresh()->masuk_asset);
+        $this->assertSoftDeleted('assets', [
+            'source_table' => 'purchase_order_items',
+            'source_id' => $orderItem->id,
+        ]);
     }
 
     private function process(int $permohonanId, array $items): void

@@ -8,7 +8,7 @@
     <div class="mb-6">
         <h1 class="text-2xl font-bold text-slate-900">Tambah Purchase Order</h1>
         @if($permohonanAmprahan)
-            <p class="mt-1 text-sm text-slate-500">Barang dari permohonan amprahan #{{ $permohonanAmprahan->id }} sudah terisi. Lengkapi vendor dan harga; persetujuan baru selesai setelah PO disimpan.</p>
+            <p class="mt-1 text-sm text-slate-500">Barang dari permohonan amprahan #{{ $permohonanAmprahan->id }} sudah terisi. Centang Masuk Aset untuk barang yang ingin dicatat sebagai aset, lalu lengkapi vendor dan harga. Persetujuan selesai setelah PO disimpan.</p>
         @else
             <p class="mt-1 text-sm text-slate-500">Isi vendor dan rincian barang atau jasa yang akan dipesan.</p>
         @endif

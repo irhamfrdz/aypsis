@@ -6,6 +6,7 @@
         'kuantitas' => $item->kuantitas,
         'satuan' => $item->satuan,
         'harga_satuan' => $item->harga_satuan,
+        'masuk_asset' => $item->masuk_asset,
     ])->all() ?? $prefillItems ?? [['deskripsi' => '', 'kuantitas' => 1, 'satuan' => '', 'harga_satuan' => 0]]);
     if (empty($items)) {
         $items = [['deskripsi' => '', 'kuantitas' => 1, 'satuan' => '', 'harga_satuan' => 0]];
@@ -78,6 +79,7 @@
                         <th class="w-28 px-3 py-3">Satuan</th>
                         <th class="w-36 px-3 py-3">Harga Satuan</th>
                         <th class="w-36 px-3 py-3 text-right">Jumlah</th>
+                        @if($sourceLocked)<th class="w-28 px-3 py-3 text-center">Masuk Aset</th>@endif
                         <th class="w-16 px-3 py-3"></th>
                     </tr>
                 </thead>
@@ -102,6 +104,12 @@
                                 @error("items.$index.harga_satuan")<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </td>
                             <td class="po-line-total whitespace-nowrap px-3 py-4 text-right align-top font-semibold text-slate-800">Rp 0</td>
+                            @if($sourceLocked)
+                                <td class="px-3 py-3 text-center align-top">
+                                    <input type="hidden" name="items[{{ $index }}][masuk_asset]" value="0">
+                                    <input type="checkbox" name="items[{{ $index }}][masuk_asset]" value="1" @checked((bool) ($item['masuk_asset'] ?? false)) aria-label="Masukkan {{ $item['deskripsi'] ?? 'barang' }} ke aset" class="mt-2 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                </td>
+                            @endif
                             <td class="px-3 py-3 text-right align-top">
                                 @unless($sourceLocked)
                                     <button type="button" class="remove-po-item rounded-lg p-2 text-rose-600 hover:bg-rose-50" aria-label="Hapus baris"><i class="fas fa-trash"></i></button>

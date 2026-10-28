@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PermohonanAmprahan;
 use App\Models\PurchaseOrder;
+use App\Services\PurchaseOrderAssetService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +50,7 @@ class PurchaseOrderController extends Controller
                     'kuantitas' => rtrim(rtrim(number_format((float) $item->jumlah_disetujui, 3, '.', ''), '0'), '.'),
                     'satuan' => $item->satuan,
                     'harga_satuan' => 0,
+                    'masuk_asset' => false,
                 ])->values()->all();
             abort_if(empty($prefillItems), 404);
         }
@@ -59,6 +61,7 @@ class PurchaseOrderController extends Controller
     public function store(Request $request): RedirectResponse
     {
         [$data, $items] = $this->validatedData($request);
+        $this->validateAssetSelection($items, (bool) ($data['permohonan_amprahan_id'] ?? false));
 
         $order = DB::transaction(function () use ($data, $items) {
             $permohonanAmprahan = null;
@@ -85,6 +88,10 @@ class PurchaseOrderController extends Controller
                 $order->update(['nomor_po' => sprintf('PO-%s-%06d', $order->tanggal_po->format('Ym'), $order->id)]);
             }
             $order->items()->createMany($items);
+            $assetService = new PurchaseOrderAssetService;
+            foreach ($order->items as $item) {
+                $assetService->sync($item, $order);
+            }
 
             if ($permohonanAmprahan && $permohonanAmprahan->status === 'pending') {
                 $fullyApproved = true;
@@ -131,7 +138,8 @@ class PurchaseOrderController extends Controller
     public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
     {
         [$data, $items] = $this->validatedData($request, $purchaseOrder);
-        $data['nomor_po'] = $data['nomor_po'] ?: $purchaseOrder->nomor_po;
+        $this->validateAssetSelection($items, (bool) $purchaseOrder->permohonan_amprahan_id);
+        $data['nomor_po'] = ($data['nomor_po'] ?? null) ?: $purchaseOrder->nomor_po;
 
         DB::transaction(function () use ($purchaseOrder, $data, $items) {
             if ($purchaseOrder->permohonan_amprahan_id) {
@@ -141,8 +149,26 @@ class PurchaseOrderController extends Controller
                 );
             }
             $purchaseOrder->update($data + ['updated_by' => auth()->id()]);
-            $purchaseOrder->items()->delete();
-            $purchaseOrder->items()->createMany($items);
+            if ($purchaseOrder->permohonan_amprahan_id) {
+                $existingItems = $purchaseOrder->items()->get()->keyBy('urutan');
+                $assetService = new PurchaseOrderAssetService;
+                foreach ($items as $itemData) {
+                    $item = $existingItems->pull($itemData['urutan']);
+                    if ($item) {
+                        $item->update($itemData);
+                    } else {
+                        $item = $purchaseOrder->items()->create($itemData);
+                    }
+                    $assetService->sync($item, $purchaseOrder);
+                }
+                foreach ($existingItems as $item) {
+                    $assetService->remove($item);
+                    $item->delete();
+                }
+            } else {
+                $purchaseOrder->items()->delete();
+                $purchaseOrder->items()->createMany($items);
+            }
         });
 
         return redirect()->route('purchase-orders.show', $purchaseOrder)
@@ -153,6 +179,10 @@ class PurchaseOrderController extends Controller
     {
         DB::transaction(function () use ($purchaseOrder) {
             $permohonanAmprahan = $purchaseOrder->permohonanAmprahan()->lockForUpdate()->first();
+            $assetService = new PurchaseOrderAssetService;
+            foreach ($purchaseOrder->items as $item) {
+                $assetService->remove($item);
+            }
             $purchaseOrder->delete();
 
             if ($permohonanAmprahan) {
@@ -187,6 +217,7 @@ class PurchaseOrderController extends Controller
             'items.*.kuantitas' => ['required', 'numeric', 'min:0.001', 'max:999999999', 'decimal:0,3'],
             'items.*.satuan' => ['nullable', 'string', 'max:30'],
             'items.*.harga_satuan' => ['required', 'numeric', 'min:0', 'decimal:0,2'],
+            'items.*.masuk_asset' => ['sometimes', 'boolean'],
         ]);
 
         $items = [];
@@ -201,6 +232,7 @@ class PurchaseOrderController extends Controller
                 'satuan' => $item['satuan'] ?? null,
                 'harga_satuan' => $item['harga_satuan'],
                 'jumlah' => $lineCents / 100,
+                'masuk_asset' => (bool) ($item['masuk_asset'] ?? false),
             ];
         }
         unset($data['items']);
@@ -240,6 +272,15 @@ class PurchaseOrderController extends Controller
                     'items' => 'Barang PO harus sama dengan barang yang disetujui.',
                 ]);
             }
+        }
+    }
+
+    private function validateAssetSelection(array $items, bool $fromAmprahan): void
+    {
+        if (! $fromAmprahan && collect($items)->contains(fn ($item) => $item['masuk_asset'])) {
+            throw ValidationException::withMessages([
+                'items' => 'Pilihan masuk aset hanya tersedia untuk PO dari permohonan amprahan.',
+            ]);
         }
     }
 }

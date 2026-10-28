@@ -58,7 +58,7 @@
         <div class="mt-8 overflow-x-auto">
             <table class="min-w-[650px] w-full divide-y divide-slate-200 text-sm">
                 <thead class="bg-slate-50 text-left text-xs font-bold uppercase tracking-wide text-slate-500">
-                    <tr><th class="px-3 py-3">No.</th><th class="px-3 py-3">Deskripsi</th><th class="px-3 py-3 text-right">Kuantitas</th><th class="px-3 py-3">Satuan</th><th class="px-3 py-3 text-right">Harga Satuan</th><th class="px-3 py-3 text-right">Jumlah</th></tr>
+                    <tr><th class="px-3 py-3">No.</th><th class="px-3 py-3">Deskripsi</th><th class="px-3 py-3 text-right">Kuantitas</th><th class="px-3 py-3">Satuan</th><th class="px-3 py-3 text-right">Harga Satuan</th><th class="px-3 py-3 text-right">Jumlah</th>@if($purchaseOrder->permohonan_amprahan_id)<th class="px-3 py-3 text-center">Aset</th>@endif</tr>
                 </thead>
                 <tbody class="divide-y divide-slate-100">
                     @foreach($purchaseOrder->items as $item)
@@ -69,6 +69,7 @@
                             <td class="px-3 py-3 text-slate-700">{{ $item->satuan ?: '-' }}</td>
                             <td class="px-3 py-3 text-right text-slate-700">Rp {{ number_format((float) $item->harga_satuan, 2, ',', '.') }}</td>
                             <td class="px-3 py-3 text-right font-semibold text-slate-900">Rp {{ number_format((float) $item->jumlah, 2, ',', '.') }}</td>
+                            @if($purchaseOrder->permohonan_amprahan_id)<td class="px-3 py-3 text-center text-slate-700">{{ $item->masuk_asset ? 'Ya' : 'Tidak' }}</td>@endif
                         </tr>
                     @endforeach
                 </tbody>
