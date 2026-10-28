@@ -29,6 +29,20 @@
             const namaBarang = namaCell.querySelector('input, textarea')?.value ?? namaCell.textContent;
             ukuranCell.hidden = !namaBarang.toLowerCase().includes('keramik');
         }
+        function copyManifestToPerincian(manifestRow, perincianRow, changedField = null) {
+            const selector = changedField
+                ? `td[data-field="${changedField}"] input, td[data-field="${changedField}"] textarea`
+                : 'td[data-field] input, td[data-field] textarea';
+            manifestRow.querySelectorAll(selector).forEach(sourceInput => {
+                const field = sourceInput.name.match(/\[([^\]]+)\]$/)?.[1];
+                const targetInput = perincianRow.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
+                if (targetInput && targetInput.dataset.manuallyEdited !== 'true') {
+                    targetInput.value = sourceInput.value;
+                }
+            });
+            toggleUkuranField(perincianRow);
+        }
+        const addRowFor = {};
         button.addEventListener('click', () => dialog.showModal());
         dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
             closeButton.addEventListener('click', () => dialog.close());
@@ -42,8 +56,21 @@
                 labelRow(row, section);
                 toggleUkuranField(row);
             });
+            if (fieldPrefix === 'goods' && section.dataset.savedOverride === 'true') {
+                const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows').children;
+                Array.from(rows.children).forEach((row, index) => {
+                    const manifestRow = manifestRows[index];
+                    const manifestName = manifestRow?.querySelector('[data-field="nama_barang"] textarea')?.value.trim();
+                    if (!manifestName) return;
+                    row.querySelectorAll('td[data-field] input, td[data-field] textarea').forEach(input => {
+                        const field = input.name.match(/\[([^\]]+)\]$/)?.[1];
+                        const sourceInput = manifestRow.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
+                        if (sourceInput && input.value !== sourceInput.value) input.dataset.manuallyEdited = 'true';
+                    });
+                });
+            }
 
-            section.querySelector('.approval-goods-add')?.addEventListener('click', () => {
+            const addRow = (focus = true) => {
                 const index = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2);
                 const row = document.createElement('tr');
                 const fields = ['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik'];
@@ -89,13 +116,31 @@
                 toggleUkuranField(row);
                 rows.append(row);
                 section.querySelector('.approval-goods-empty')?.remove();
-                row.querySelector('input, textarea').focus();
-            });
+                if (fieldPrefix === 'goods') {
+                    const rowIndex = Array.from(rows.children).indexOf(row);
+                    const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows');
+                    if (manifestRows?.children[rowIndex]) copyManifestToPerincian(manifestRows.children[rowIndex], row);
+                }
+                if (focus) row.querySelector('input, textarea').focus();
+                return row;
+            };
+            addRowFor[fieldPrefix] = addRow;
+            section.querySelector('.approval-goods-add')?.addEventListener('click', () => addRow());
             rows.addEventListener('click', event => {
                 if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
             });
             rows.addEventListener('input', event => {
                 if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
+                if (fieldPrefix === 'goods') {
+                    event.target.dataset.manuallyEdited = 'true';
+                } else if (fieldPrefix === 'manifest_goods') {
+                    const manifestRow = event.target.closest('tr');
+                    const rowIndex = Array.from(rows.children).indexOf(manifestRow);
+                    const perincianRows = dialog.querySelector('[data-field-prefix="goods"] .approval-goods-rows');
+                    while (perincianRows.children.length <= rowIndex) addRowFor.goods(false);
+                    const changedField = event.target.name.match(/\[([^\]]+)\]$/)?.[1];
+                    copyManifestToPerincian(manifestRow, perincianRows.children[rowIndex], changedField);
+                }
             });
             if (section.dataset.required === 'true') form?.addEventListener('submit', event => {
                 if (!rows.querySelector('tr')) {

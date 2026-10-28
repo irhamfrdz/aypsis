@@ -249,8 +249,9 @@
                                     @endcan
                                     <div class="overflow-x-auto p-5">
                                         @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect($goodsOverride?->manifest_goods ?? [])])
-                                        <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true">
+                                        <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true" data-saved-override="{{ $goodsOverride ? 'true' : 'false' }}">
                                         <h3 class="mb-4 text-base font-semibold text-gray-900">Detail Barang Perincian</h3>
+                                        <p class="mb-4 text-xs text-gray-500">Nilai awal mengikuti Manifest. Anda dapat mengubah Perincian secara terpisah.</p>
                                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                                                 <tr>
