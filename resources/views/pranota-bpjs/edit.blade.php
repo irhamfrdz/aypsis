@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
+@endpush
+
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
@@ -124,7 +128,7 @@
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
-<th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan JKN 4%</th>
+<th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKN 4%</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>

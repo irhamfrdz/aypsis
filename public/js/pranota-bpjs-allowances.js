@@ -43,14 +43,29 @@
                         input = document.createElement('input');
                         input.type = 'text';
                         input.inputMode = 'decimal';
-                        input.className = 'w-full min-w-32 rounded-lg border border-orange-200 bg-white px-2 py-2 text-right text-xs font-mono focus:border-indigo-500 focus:ring-indigo-500';
+                        input.className = 'bpjs-allowance-input';
                         input.setAttribute('aria-label', { ppu: 'Tunjangan PPU', bpu: 'Tunjangan BPU', jkn: 'Tunjangan JKN' }[key]);
                         const reset = document.createElement('button');
                         reset.type = 'button';
-                        reset.className = 'mt-1 text-xs text-indigo-700 hover:underline';
-                        reset.textContent = 'Auto';
+                        reset.className = 'bpjs-allowance-reset';
+                        reset.textContent = '↺ Auto';
                         reset.title = 'Kembalikan nominal sesuai rumus';
-                        cell.replaceChildren(input, reset);
+                        const editor = document.createElement('div');
+                        editor.className = 'bpjs-allowance-editor';
+                        const money = document.createElement('div');
+                        money.className = 'bpjs-allowance-money';
+                        const currency = document.createElement('span');
+                        currency.className = 'bpjs-allowance-currency';
+                        currency.textContent = 'Rp';
+                        currency.setAttribute('aria-hidden', 'true');
+                        money.append(currency, input);
+                        const meta = document.createElement('div');
+                        meta.className = 'bpjs-allowance-meta';
+                        const status = document.createElement('span');
+                        status.className = 'bpjs-allowance-status';
+                        meta.append(status, reset);
+                        editor.append(money, meta);
+                        cell.replaceChildren(editor);
                         input.addEventListener('input', () => {
                             const value = input.value.trim();
                             if (value === '') delete row.allowanceOverrides[key];
@@ -74,6 +89,10 @@
                     else input.removeAttribute('name');
                     if (document.activeElement !== input) input.value = formatNumber(amount);
                     input.title = Object.hasOwn(row.allowanceOverrides, key) ? 'Nominal manual' : 'Nominal otomatis sesuai rumus';
+                    const manual = Object.hasOwn(row.allowanceOverrides, key);
+                    cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);
+                    cell.querySelector('.bpjs-allowance-status').textContent = manual ? 'Diubah manual' : 'Sesuai rumus';
+                    cell.querySelector('.bpjs-allowance-reset').disabled = !manual;
                 }
                 if (!row.classList.contains('hidden')) totals[key] += amount;
             });
