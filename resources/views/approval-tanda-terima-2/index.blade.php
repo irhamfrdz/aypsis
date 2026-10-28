@@ -241,7 +241,7 @@
                                                 @foreach($goods as $good)
                                                     <tr>
                                                         @can('approval-tanda-terima-2-approve')
-                                                            @foreach(['nama_barang' => 'text', 'hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number', 'tonase' => 'number'] as $field => $inputType)
+                                                            @foreach(['nama_barang' => 'text', 'hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number', 'tonase' => 'text'] as $field => $inputType)
                                                                 <td class="px-2 py-2">
                                                                     @if($field === 'nama_barang')
                                                                         <textarea name="goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ is_scalar($good) ? $good : data_get($good, $field) }}</textarea>
@@ -249,6 +249,7 @@
                                                                         <input type="{{ $inputType }}" name="goods[{{ $loop->parent->index }}][{{ $field }}]"
                                                                             value="{{ data_get($good, $field) }}"
                                                                             @if($inputType === 'number') min="0" step="{{ $field === 'jumlah' ? '1' : 'any' }}" @endif
+                                                                            @if($field === 'tonase') inputmode="decimal" placeholder="Contoh: 17.665,78" @endif
                                                                             class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                                                     @endif
                                                                 </td>

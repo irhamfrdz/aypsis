@@ -213,7 +213,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'goods.*.lebar' => 'nullable|numeric|min:0',
             'goods.*.tinggi' => 'nullable|numeric|min:0',
             'goods.*.meter_kubik' => 'nullable|numeric|min:0',
-            'goods.*.tonase' => 'nullable|numeric|min:0',
+            'goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'goods.*.keterangan_barang' => 'nullable|string|max:2000',
             'keterangan_barang' => 'nullable|string|max:2000',
         ]);

@@ -10,7 +10,7 @@
             ukuran: 'Ukuran', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m?)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
-            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 20 ft', keterangan_barang: 'Catatan tambahan (opsional)' };
+            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 20 ft', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
         function labelRow(row) {
             const headings = Array.from(dialog.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
@@ -41,7 +41,8 @@
                 cell.className = 'px-2 py-2';
                 const input = document.createElement(field === 'nama_barang' ? 'textarea' : 'input');
                 if (field === 'nama_barang') input.rows = 2;
-                else input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'].includes(field) ? 'number' : 'text';
+                else input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik'].includes(field) ? 'number' : 'text';
+                if (field === 'tonase') input.inputMode = 'decimal';
                 input.name = `goods[${index}][${field}]`;
                 input.className = 'w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500';
                 if (field === 'nama_barang') {
