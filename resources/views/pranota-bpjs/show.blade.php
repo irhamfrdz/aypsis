@@ -80,6 +80,7 @@
             $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
             $amount = function ($detail, $field) {
+                if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if ($field === 'allowance_jkn') return (float) $detail->kis_tunjangan;
                 if (in_array($field, ['allowance_ppu', 'allowance_bpu'])) {
                     $fields = $field === 'allowance_ppu' ? ['jkk_tunjangan', 'jkm_tunjangan']

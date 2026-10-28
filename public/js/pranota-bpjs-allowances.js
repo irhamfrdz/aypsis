@@ -1,7 +1,8 @@
 (function (root) {
     function calculate(values) {
+        const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
         return {
-            ppu: (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0),
+            ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
             bpu: (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
                 + (Number(values.noncrew_jkk_tunjangan) || 0) + (Number(values.noncrew_jkm_tunjangan) || 0),
             jkn: Number(values.kis_tunjangan) || 0,
@@ -26,7 +27,7 @@
             }
             const split = root.BpjsJknColumns.split(read('.input-kes'),
                 row.querySelector('.tipe-karyawan-hidden-input')?.value, row.dataset.isSpecialCase);
-            const amounts = calculate({ ...values, kis_tunjangan: split.tunjangan });
+            const amounts = calculate({ ...values, group_bp_jamsostek: row.dataset.groupJamsostek, kis_tunjangan: split.tunjangan });
             Object.entries(amounts).forEach(([key, amount]) => {
                 const cell = row.querySelector(`[data-allowance="${key}"]`);
                 if (cell) cell.textContent = 'Rp ' + formatNumber(amount);

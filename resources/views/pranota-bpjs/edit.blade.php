@@ -363,6 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
             snapshot.value = JSON.stringify(detail.rincian_bpjs);
             tr.querySelector('td').appendChild(snapshot);
         }
+        tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
         BpjsJknColumns.syncEmploymentStatus(tr, k);
         container.appendChild(tr);
         BpjsJknColumns.syncRow(tr);
@@ -562,7 +563,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const handleKaryawanChange = function(kId) {
             const k = findKaryawan(kId);
             tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
-            BpjsJknColumns.syncEmploymentStatus(tr, k);
+            tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
+        BpjsJknColumns.syncEmploymentStatus(tr, k);
             const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
             const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
             if (k) {

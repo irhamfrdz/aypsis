@@ -40,6 +40,16 @@ class PranotaBpjsDetail extends Model
         return (float) $this->bpjs_kesehatan - $this->kis_biaya;
     }
 
+    public function getTunjanganPpuAttribute(): float
+    {
+        if (! str_contains(strtoupper((string) $this->karyawan?->group_bp_jamsostek), 'PPU')) {
+            return 0;
+        }
+
+        return (float) ($this->rincian_bpjs['jkk_tunjangan'] ?? $this->jkk_tunjangan)
+            + (float) ($this->rincian_bpjs['jkm_tunjangan'] ?? $this->jkm_tunjangan);
+    }
+
     public function karyawan()
     {
         return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');
