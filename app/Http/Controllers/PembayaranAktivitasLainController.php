@@ -428,6 +428,7 @@ class PembayaranAktivitasLainController extends Controller
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'distinct', 'different:akun_bank_id'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
+            'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
@@ -706,12 +707,13 @@ class PembayaranAktivitasLainController extends Controller
             $akun = Coa::findOrFail($detail['akun_coa_id']);
             $nominal = (int) $detail['nominal'];
             $saldo = $akun->saldo + ($isDebit ? $nominal : -$nominal);
+            $memo = trim((string) ($detail['memo'] ?? ''));
             $this->createCoaTransaction([
                 'coa_id' => $akun->id,
                 'tanggal_transaksi' => $tanggal,
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksi,
-                'keterangan' => $keterangan,
+                'keterangan' => $memo === '' ? $keterangan : $keterangan.' - '.$memo,
                 'debit' => $isDebit ? $nominal : 0,
                 'kredit' => $isDebit ? 0 : $nominal,
                 'saldo' => $saldo,
@@ -899,6 +901,7 @@ class PembayaranAktivitasLainController extends Controller
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'distinct', 'different:akun_bank_id'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
+            'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);

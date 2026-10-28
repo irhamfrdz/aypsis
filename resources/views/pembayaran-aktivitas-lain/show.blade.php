@@ -224,7 +224,10 @@
                             <div class="mt-1 space-y-1">
                                 @foreach($pembayaranAktivitasLain->akun_details as $detail)
                                     @php $detailAccount = $detailAccounts[$detail['akun_coa_id']] ?? null; @endphp
-                                    <div class="flex justify-between gap-3 text-sm"><span>{{ $detailAccount->nomor_akun ?? '-' }}@if($detailAccount?->kode_nomor && $detailAccount->kode_nomor !== $detailAccount->nomor_akun) ({{ $detailAccount->kode_nomor }})@endif - {{ $detailAccount->nama_akun ?? 'Akun dihapus' }}</span><strong>Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</strong></div>
+                                    <div class="text-sm">
+                                        <div class="flex justify-between gap-3"><span>{{ $detailAccount->nomor_akun ?? '-' }}@if($detailAccount?->kode_nomor && $detailAccount->kode_nomor !== $detailAccount->nomor_akun) ({{ $detailAccount->kode_nomor }})@endif - {{ $detailAccount->nama_akun ?? 'Akun dihapus' }}</span><strong>Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</strong></div>
+                                        @if(!empty($detail['memo']))<p class="mt-1 text-gray-500">Memo: {{ $detail['memo'] }}</p>@endif
+                                    </div>
                                 @endforeach
                             </div>
                         @else

@@ -174,8 +174,8 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'debit_kredit' => 'kredit',
             'akun_bank_id' => $bank,
             'akun_details' => [
-                ['akun_coa_id' => $first, 'nominal' => 100],
-                ['akun_coa_id' => $second, 'nominal' => 250],
+                ['akun_coa_id' => $first, 'nominal' => 100, 'memo' => 'Biaya administrasi'],
+                ['akun_coa_id' => $second, 'nominal' => 250, 'memo' => 'Biaya pengiriman'],
             ],
         ];
 
@@ -185,17 +185,21 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $payment = PembayaranAktivitasLain::firstOrFail();
         $this->assertSame(350, $payment->jumlah);
         $this->assertCount(2, $payment->akun_details);
+        $this->assertSame('Biaya administrasi', $payment->akun_details[0]['memo']);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'debit' => 100]);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'debit' => 250]);
+        $this->assertStringContainsString('Biaya pengiriman', DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $second)->value('keterangan'));
         $this->assertEquals(650, DB::table('akun_coa')->find($bank)->saldo);
 
-        $payload['akun_details'] = [['akun_coa_id' => $second, 'nominal' => 400]];
+        $payload['akun_details'] = [['akun_coa_id' => $second, 'nominal' => 400, 'memo' => 'Memo diperbarui']];
         $response = app(PembayaranAktivitasLainController::class)->update(
             Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
             $payment
         );
         $this->assertSame(route('pembayaran-aktivitas-lain.show', $payment), $response->getTargetUrl());
         $this->assertSame(400, $payment->fresh()->jumlah);
+        $this->assertSame('Memo diperbarui', $payment->fresh()->akun_details[0]['memo']);
+        $this->assertStringContainsString('Memo diperbarui', DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $second)->value('keterangan'));
         $this->assertEquals(0, DB::table('akun_coa')->find($first)->saldo);
         $this->assertEquals(400, DB::table('akun_coa')->find($second)->saldo);
         $this->assertEquals(600, DB::table('akun_coa')->find($bank)->saldo);

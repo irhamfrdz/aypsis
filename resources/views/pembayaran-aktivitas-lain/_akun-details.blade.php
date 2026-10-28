@@ -20,6 +20,7 @@
                 </div>
                 <input type="number" name="akun_details[{{ $index }}][nominal]" value="{{ $detail['nominal'] ?? '' }}" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah untuk akun {{ $index + 1 }}" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
                 <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
+                <input type="text" name="akun_details[{{ $index }}][memo]" value="{{ $detail['memo'] ?? '' }}" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo untuk akun {{ $index + 1 }}" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
             </div>
         @endforeach
     </div>
@@ -29,6 +30,7 @@
     @error('akun_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     @error('akun_details.*.akun_coa_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     @error('akun_details.*.nominal')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+    @error('akun_details.*.memo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
 </div>
 
 <template id="akun_detail_template">
@@ -43,6 +45,7 @@
         </div>
         <input type="number" name="akun_details[__INDEX__][nominal]" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah per akun" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" required>
         <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
+        <input type="text" name="akun_details[__INDEX__][memo]" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo per akun" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
     </div>
 </template>
 
@@ -67,7 +70,7 @@ document.addEventListener('DOMContentLoaded', () => {
         field.classList.toggle('hidden', !active);
         rows.querySelectorAll('select, input').forEach(input => {
             input.disabled = !active;
-            input.required = active;
+            input.required = active && !input.classList.contains('akun-detail-memo');
         });
         single.disabled = active || (activity.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam');
         single.required = !single.disabled;
