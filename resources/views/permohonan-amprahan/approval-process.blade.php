@@ -135,8 +135,9 @@
                                         <td class="px-6 py-4 text-center">
                                             @php
                                                 $jumlahAwal = $item->jumlah_disetujui ?? ($item->status == 'rejected' ? 0 : $item->jumlah);
+                                                $jumlahAwalTampil = rtrim(rtrim(number_format((float) $jumlahAwal, 2, '.', ''), '0'), '.');
                                             @endphp
-                                            <input type="number" name="items[{{ $item->id }}]" value="{{ old('items.'.$item->id, $jumlahAwal) }}"
+                                            <input type="number" name="items[{{ $item->id }}]" value="{{ old('items.'.$item->id, $jumlahAwalTampil) }}"
                                                 min="0" max="{{ $item->jumlah }}" step="0.01" required
                                                 aria-label="Jumlah disetujui untuk {{ $item->nama_barang }}"
                                                 class="w-28 rounded-lg border-gray-300 text-right shadow-sm focus:border-blue-500 focus:ring-blue-500">
