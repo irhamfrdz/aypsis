@@ -13,6 +13,8 @@
         if(penerimaWrapper) penerimaWrapper.classList.remove('hidden');
         if(namaVendorWrapper) namaVendorWrapper.classList.remove('hidden');
         if(nomorRekeningWrapper) nomorRekeningWrapper.classList.remove('hidden');
+        document.getElementById('keterangan_wrapper')?.classList.remove('hidden');
+        document.getElementById('bukti_wrapper')?.classList.remove('hidden');
         if(bankIdWrapper) {
             bankIdWrapper.classList.add('hidden');
             if(bankIdSelect) bankIdSelect.value = '';
@@ -147,19 +149,15 @@
             if (airWrapper) airWrapper.classList.add('hidden');
             clearAllAirSections();
             
-            // OPP/OPT stores payment details per vessel, so hide the generic fields.
-            nominalWrapper.classList.add('hidden');
-            if (nominalInput) nominalInput.removeAttribute('required');
-            dpWrapper.classList.add('hidden');
-            sisaPembayaranWrapper.classList.add('hidden');
-            if (penerimaWrapper) penerimaWrapper.classList.add('hidden');
-            if (penerimaInput) penerimaInput.removeAttribute('required');
-            if (namaVendorWrapper) namaVendorWrapper.classList.add('hidden');
-            if (nomorRekeningWrapper) nomorRekeningWrapper.classList.add('hidden');
-            const keteranganWrapper = document.getElementById('keterangan_wrapper');
-            const buktiWrapper = document.getElementById('bukti_wrapper');
-            if (keteranganWrapper) keteranganWrapper.classList.add('hidden');
-            if (buktiWrapper) buktiWrapper.classList.add('hidden');
+            // Show the payment and supporting fields below the OPP/OPT details.
+            nominalWrapper.classList.remove('hidden');
+            nominalWrapper.querySelector('label').innerHTML = 'Total Nominal OPP/OPT';
+            nominalInput.setAttribute('readonly', 'readonly');
+            nominalInput.classList.add('bg-gray-100');
+            nominalInput.removeAttribute('required');
+            dpWrapper.classList.remove('hidden');
+            sisaPembayaranWrapper.classList.remove('hidden');
+            calculateSisaPembayaran();
             
             // Hide TKBM wrapper for Biaya OPP/OPT
             if (document.getElementById('tkbm_wrapper')) {
