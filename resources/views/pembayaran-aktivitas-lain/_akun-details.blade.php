@@ -14,7 +14,7 @@
                     <select name="akun_details[{{ $index }}][akun_coa_id]" class="akun-detail-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
                         <option value="">Pilih Akun COA</option>
                         @foreach($akunBiaya as $akun)
-                            <option value="{{ $akun->id }}" @selected(($detail['akun_coa_id'] ?? '') == $akun->id)>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
+                            <option value="{{ $akun->id }}" @selected(($detail['akun_coa_id'] ?? '') == $akun->id)>{{ $akun->nomor_akun }}@if($akun->kode_nomor && $akun->kode_nomor !== $akun->nomor_akun) ({{ $akun->kode_nomor }})@endif - {{ $akun->nama_akun }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -37,7 +37,7 @@
             <select name="akun_details[__INDEX__][akun_coa_id]" class="akun-detail-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm" required>
                 <option value="">Pilih Akun COA</option>
                 @foreach($akunBiaya as $akun)
-                    <option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
+                    <option value="{{ $akun->id }}">{{ $akun->nomor_akun }}@if($akun->kode_nomor && $akun->kode_nomor !== $akun->nomor_akun) ({{ $akun->kode_nomor }})@endif - {{ $akun->nama_akun }}</option>
                 @endforeach
             </select>
         </div>

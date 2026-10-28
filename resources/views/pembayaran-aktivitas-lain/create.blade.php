@@ -384,7 +384,7 @@
                         <option value="">Pilih Akun COA</option>
                         @foreach($akunBiaya as $akun)
                             <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
-                                {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
+                                {{ $akun->nomor_akun }}@if($akun->kode_nomor && $akun->kode_nomor !== $akun->nomor_akun) ({{ $akun->kode_nomor }})@endif - {{ $akun->nama_akun }}
                             </option>
                         @endforeach
                     </select>
@@ -403,7 +403,7 @@
                         <option value="">Pilih Bank/Kas</option>
                         @foreach($akunBank as $akun)
                             <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_bank_id') == $akun->id ? 'selected' : '' }}>
-                                {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
+                                {{ $akun->nomor_akun }}@if($akun->kode_nomor && $akun->kode_nomor !== $akun->nomor_akun) ({{ $akun->kode_nomor }})@endif - {{ $akun->nama_akun }}
                             </option>
                         @endforeach
                     </select>

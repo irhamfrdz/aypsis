@@ -223,13 +223,14 @@
                             @php $detailAccounts = DB::table('akun_coa')->whereIn('id', array_column($pembayaranAktivitasLain->akun_details, 'akun_coa_id'))->get()->keyBy('id'); @endphp
                             <div class="mt-1 space-y-1">
                                 @foreach($pembayaranAktivitasLain->akun_details as $detail)
-                                    <div class="flex justify-between gap-3 text-sm"><span>{{ $detailAccounts[$detail['akun_coa_id']]->kode_nomor ?? '-' }} - {{ $detailAccounts[$detail['akun_coa_id']]->nama_akun ?? 'Akun dihapus' }}</span><strong>Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</strong></div>
+                                    @php $detailAccount = $detailAccounts[$detail['akun_coa_id']] ?? null; @endphp
+                                    <div class="flex justify-between gap-3 text-sm"><span>{{ $detailAccount->nomor_akun ?? '-' }}@if($detailAccount?->kode_nomor && $detailAccount->kode_nomor !== $detailAccount->nomor_akun) ({{ $detailAccount->kode_nomor }})@endif - {{ $detailAccount->nama_akun ?? 'Akun dihapus' }}</span><strong>Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</strong></div>
                                 @endforeach
                             </div>
                         @else
                         <p class="mt-1 text-base text-gray-900">
                             @if($akunCoa)
-                                {{ $akunCoa->kode_nomor }} - {{ $akunCoa->nama_akun }}
+                                {{ $akunCoa->nomor_akun }}@if($akunCoa->kode_nomor && $akunCoa->kode_nomor !== $akunCoa->nomor_akun) ({{ $akunCoa->kode_nomor }})@endif - {{ $akunCoa->nama_akun }}
                             @else
                                 -
                             @endif
