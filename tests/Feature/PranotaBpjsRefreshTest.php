@@ -66,6 +66,9 @@ class PranotaBpjsRefreshTest extends TestCase
         $eligible = array_column($controller->create($request)->getData(true)['karyawans'], 'unique_id');
         $this->assertContains('Karyawan_2', $eligible);
         $this->assertContains('KaryawanTidakTetap_1', $eligible);
+        $participants = collect($controller->create($request)->getData(true)['karyawans'])->keyBy('unique_id');
+        $this->assertSame('2026-01-01', \Carbon\Carbon::parse($participants['Karyawan_2']['tanggal_berhenti'])->timezone('Asia/Jakarta')->format('Y-m-d'));
+        $this->assertSame('2026-01-01', \Carbon\Carbon::parse($participants['KaryawanTidakTetap_1']['tanggal_berhenti'])->timezone('Asia/Jakarta')->format('Y-m-d'));
         DB::table('karyawans')->where('id', 2)->update(['is_special_case' => false]);
         DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => false]);
         $eligible = array_column($controller->create($request)->getData(true)['karyawans'], 'unique_id');

@@ -3,6 +3,22 @@ const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 const { split, syncRow } = globalThis.BpjsJknColumns;
 
+test('termination label follows refreshed employee data and clears for active or empty rows', () => {
+    const badge = { classList: { toggle(name, enabled) { this.hidden = enabled; } } };
+    const row = { querySelector: () => badge };
+    const sync = globalThis.BpjsJknColumns.syncEmploymentStatus;
+    sync(row, { tanggal_berhenti: '2026-10-01', is_special_case: true });
+    assert.equal(badge.textContent, 'Sudah Berhenti');
+    assert.equal(badge.classList.hidden, false);
+    assert.match(badge.title, /Special Case/);
+    for (const employee of [{ tanggal_berhenti: null }, null]) {
+        sync(row, employee);
+        assert.equal(badge.classList.hidden, true);
+        assert.equal(badge.textContent, '');
+        assert.equal(badge.title, '');
+    }
+});
+
 test('JKN-KIS NON KARY uses its own percentage with no debt from another type', () => {
     const { findFormula, calculate } = globalThis.BpjsJknColumns;
     const records = [

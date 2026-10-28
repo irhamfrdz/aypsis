@@ -85,6 +85,9 @@
                             <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
                             <td class="border border-gray-300 px-3 py-2">
                                 {{ $detail->karyawan->nama_lengkap ?? '-' }}
+                                @if($detail->karyawan?->tanggal_berhenti)
+                                    <span class="inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800 ml-1">Sudah Berhenti</span>
+                                @endif
                                 @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>
                                 @endif

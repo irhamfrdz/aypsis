@@ -1449,7 +1449,7 @@ class KaryawanController extends Controller
             'grup.*' => 'nullable|string|max:255',
             'grup_bpjs' => 'nullable|array',
             'grup_bpjs.*' => 'nullable|string|max:255',
-            'tanggal_masuk' => 'required|date',
+            'tanggal_masuk' => ($karyawan->tanggal_masuk ? 'required' : 'nullable').'|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',

@@ -115,7 +115,7 @@
         </div>
 
         {{-- ── Summary Cards ────────────────────────────────────────────────── --}}
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 mt-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mt-6">
             <div class="bg-white rounded-xl p-4 border border-gray-200/80 shadow-2xs flex items-center gap-3.5">
                 <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center flex-shrink-0">
                     <i class="fas fa-users text-sm"></i>
@@ -139,8 +139,17 @@
                     <i class="fas fa-shield-alt text-sm"></i>
                 </div>
                 <div class="min-w-0">
-                    <p class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">Total Jamsostek</p>
-                    <p class="text-base sm:text-lg font-bold text-emerald-700 font-mono mt-0.5" id="card_total_jamsostek">Rp 0</p>
+                    <p class="text-[11px] font-semibold text-emerald-700 uppercase tracking-wide">Total PPU</p>
+                    <p class="text-base sm:text-lg font-bold text-emerald-700 font-mono mt-0.5" id="card_total_ppu">Rp 0</p>
+                </div>
+            </div>
+            <div class="bg-white rounded-xl p-4 border border-sky-100 shadow-2xs flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-sky-50 text-sky-600 flex items-center justify-center flex-shrink-0">
+                    <i class="fas fa-shield-alt text-sm"></i>
+                </div>
+                <div class="min-w-0">
+                    <p class="text-[11px] font-semibold text-sky-700 uppercase tracking-wide">Total BPU</p>
+                    <p class="text-base sm:text-lg font-bold text-sky-700 font-mono mt-0.5" id="card_total_bpu">Rp 0</p>
                 </div>
             </div>
             <div class="bg-teal-50/70 rounded-xl p-4 border border-teal-200 shadow-2xs flex items-center gap-3.5">
@@ -742,12 +751,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Global Grand Totals for summary cards
         const globalTotalJkn = globalKes + globalKet;
-        const globalTotalJamsostek = globalJhtB + globalJhtH + globalJkk + globalJkm + globalBpuJht + globalBpuJkk + globalBpuJkm + globalNcJhtB + globalNcJhtH + globalNcJkk + globalNcJkm + globalJpB + globalJpH;
-        const globalGrandTotal = globalTotalJkn + globalTotalJamsostek;
+        const globalTotalPpu = globalJhtB + globalJhtH + globalJkk + globalJkm + globalJpB + globalJpH;
+        const globalTotalBpu = globalBpuJht + globalBpuJkk + globalBpuJkm + globalNcJhtB + globalNcJhtH + globalNcJkk + globalNcJkm;
+        const globalGrandTotal = globalTotalJkn + globalTotalPpu + globalTotalBpu;
 
         document.getElementById('card_total_karyawan').innerText = allRows.length + ' Orang';
         document.getElementById('card_total_jkn').innerText = 'Rp ' + formatNumber(globalTotalJkn);
-        document.getElementById('card_total_jamsostek').innerText = 'Rp ' + formatNumber(globalTotalJamsostek);
+        document.getElementById('card_total_ppu').innerText = 'Rp ' + formatNumber(globalTotalPpu);
+        document.getElementById('card_total_bpu').innerText = 'Rp ' + formatNumber(globalTotalBpu);
         document.getElementById('card_grand_total').innerText = 'Rp ' + formatNumber(globalGrandTotal);
     }
 
@@ -816,6 +827,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-3 py-2.5 text-center align-middle row-number text-gray-400 font-mono font-medium col-info-no">${rowCount}</td>
             <td class="px-3 py-2.5 align-middle col-info-nama">
                 ${karyawanInputHTML}
+                <span class="employee-termination-badge hidden mt-1 inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800"></span>
                 <div class="info-jkn mt-1 hidden"></div>
             </td>
             <td class="px-3 py-2.5 align-middle text-center text-[11px] group-text whitespace-nowrap col-info-group">-</td>
@@ -895,6 +907,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
 
+        BpjsJknColumns.syncEmploymentStatus(tr, karyawans.find(item => item.unique_id == karyawanId || item.id == karyawanId));
         container.appendChild(tr);
         BpjsJknColumns.syncRow(tr);
 
@@ -1202,6 +1215,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const handleKaryawanChange = function(kId) {
             const k = karyawans.find(item => item.unique_id == kId || item.id == kId);
+            BpjsJknColumns.syncEmploymentStatus(tr, k);
             const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
             const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
 

@@ -47,5 +47,15 @@
         input.setAttribute('aria-label', useBiaya ? 'KIS 4% (BIAY)' : 'KIS 4% (TUNJ)');
     }
 
-    root.BpjsJknColumns = { split, syncRow, findFormula, calculate };
+    function syncEmploymentStatus(row, employee) {
+        const badge = row.querySelector('.employee-termination-badge');
+        if (!badge) return;
+        const terminated = Boolean(employee?.tanggal_berhenti);
+        badge.textContent = terminated ? 'Sudah Berhenti' : '';
+        badge.classList.toggle('hidden', !terminated);
+        badge.title = terminated && employee.is_special_case
+            ? 'Tetap ikut BPJS karena Special Case aktif' : '';
+    }
+
+    root.BpjsJknColumns = { split, syncRow, findFormula, calculate, syncEmploymentStatus };
 })(globalThis);

@@ -300,6 +300,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-4 py-3 text-center align-middle row-number text-gray-500 font-medium">${rowCount}</td>
             <td class="px-4 py-3 align-middle">
                 ${karyawanInputHTML}
+                <span class="employee-termination-badge hidden mt-1 inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800"></span>
                 <div class="info-jkn mt-1 hidden"></div>
             </td>
             <td class="px-4 py-3 align-middle text-center text-xs group-text font-semibold text-gray-600 whitespace-nowrap">-</td>
@@ -346,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
 
+        BpjsJknColumns.syncEmploymentStatus(tr, k);
         container.appendChild(tr);
         BpjsJknColumns.syncRow(tr);
 
@@ -544,6 +546,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const handleKaryawanChange = function(kId) {
             const k = findKaryawan(kId);
             tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
+            BpjsJknColumns.syncEmploymentStatus(tr, k);
             const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
             const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');
             if (k) {

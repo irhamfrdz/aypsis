@@ -50,7 +50,7 @@ class PranotaBpjsController extends Controller
             ->get([
                 'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
-                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup', 'is_special_case',
+                'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup', 'is_special_case', 'tanggal_berhenti',
             ])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_'.$k->id;
@@ -69,7 +69,7 @@ class PranotaBpjsController extends Controller
             ->get([
                 'id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
-                'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group', 'is_special_case',
+                'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group', 'is_special_case', 'tanggal_berhenti',
             ])
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
