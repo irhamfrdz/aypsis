@@ -997,7 +997,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (karyawan.group_jkn) {
                 badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800" title="Group JKN">${karyawan.group_jkn}</span>`);
-                selectTipe.options[0].text = `TOTAL JKN`;
+                selectTipe.options[0].text = BpjsJknColumns.isReimbursement(karyawan) ? 'DPP JKN (REUMBERSMENT)' : 'TOTAL JKN';
             }
 
             if (karyawan.group_bp_jamsostek) {
@@ -1038,8 +1038,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
                 const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
 
-                if (rumus && tipeJkn === 'tunjangan_hutang') {
-                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn));
+                if ((rumus || BpjsJknColumns.isReimbursement(karyawan)) && tipeJkn === 'tunjangan_hutang') {
+                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn), karyawan);
                     nominalKes = amounts.contribution;
                     nominalKet = amounts.debt;
                 }

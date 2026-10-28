@@ -3,6 +3,17 @@ const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 const { split, syncRow } = globalThis.BpjsJknColumns;
 
+test('JKN-KIS REUMBERSMENT uses full DPP with zero debt even without a percentage formula', () => {
+    const { calculate, isReimbursement } = globalThis.BpjsJknColumns;
+    const employee = { group_jkn: ' jkn-kis ', tipe_jkn: ' reumbersment ' };
+    assert.equal(isReimbursement(employee), true);
+    assert.deepEqual(calculate(null, 5729880.25, employee), { contribution: 5729880.25, debt: 0 });
+    assert.deepEqual(calculate({ group_name: 'JKN-KIS', tipe: 'REUMBERSMENT', tunjangan_persen: 4, hutang_persen: 1 }, 5729880.25),
+        { contribution: 5729880.25, debt: 0 });
+    assert.equal(isReimbursement({ ...employee, group_jkn: 'OTHER' }), false);
+    assert.equal(isReimbursement({ ...employee, tipe_jkn: 'KANTOR' }), false);
+});
+
 test('termination label follows refreshed employee data and clears for active or empty rows', () => {
     const badge = { classList: { toggle(name, enabled) { this.hidden = enabled; } } };
     const row = { querySelector: () => badge };

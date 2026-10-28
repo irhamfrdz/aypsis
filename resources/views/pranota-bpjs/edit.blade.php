@@ -419,7 +419,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
                     const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
                     groupHtml += `<div class="text-indigo-600 mb-1" title="Group JKN">${karyawan.group_jkn}</div>`;
-                    selectTipe.options[0].text = `TOTAL JKN`;
+                    selectTipe.options[0].text = BpjsJknColumns.isReimbursement(karyawan) ? 'DPP JKN (REUMBERSMENT)' : 'TOTAL JKN';
                 } else {
                     groupHtml += `<div class="text-orange-500 mb-1" title="Rumus tidak ditemukan">${karyawan.group_jkn} &#9888;</div>`;
                 }
@@ -453,8 +453,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (karyawan.group_jkn && tipeJkn !== 'manual') {
                 const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
 
-                if (rumus && tipeJkn === 'tunjangan_hutang') {
-                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn));
+                if ((rumus || BpjsJknColumns.isReimbursement(karyawan)) && tipeJkn === 'tunjangan_hutang') {
+                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn), karyawan);
                     nominalKes = amounts.contribution;
                     nominalKet = amounts.debt;
                 }

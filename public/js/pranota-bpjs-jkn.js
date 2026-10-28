@@ -13,7 +13,15 @@
         return candidates.length === 1 ? candidates[0] : null;
     }
 
-    function calculate(record, dpp) {
+    function isReimbursement(employee) {
+        return compact(employee?.group_jkn) === 'JKNKIS'
+            && ['REUMBERSMENT', 'REIMBURSEMENT'].includes(compact(employee?.tipe_jkn));
+    }
+
+    function calculate(record, dpp, employee = null) {
+        if (isReimbursement(employee || { group_jkn: record?.group_name, tipe_jkn: record?.tipe })) {
+            return { contribution: dpp, debt: 0 };
+        }
         if (!record) return { contribution: 0, debt: 0 };
         const tunjangan = parseFloat(record.tunjangan_persen) || 0;
         const biaya = parseFloat(record.biaya_persen) || 0;
@@ -57,5 +65,5 @@
             ? 'Tetap ikut BPJS karena Special Case aktif' : '';
     }
 
-    root.BpjsJknColumns = { split, syncRow, findFormula, calculate, syncEmploymentStatus };
+    root.BpjsJknColumns = { split, syncRow, findFormula, calculate, syncEmploymentStatus, isReimbursement };
 })(globalThis);
