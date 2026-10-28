@@ -1,6 +1,11 @@
 <section class="approval-goods-section" data-field-prefix="manifest_goods">
+    @php
+        $displayManifestGoods = $manifestGoods->isEmpty() && auth()->user()?->can('approval-tanda-terima-2-approve')
+            ? collect([[]])
+            : $manifestGoods;
+    @endphp
     <h3 class="mb-2 text-base font-semibold text-gray-900">Detail Barang Manifest</h3>
-    <p class="mb-4 text-xs text-gray-500">Rincian barang untuk manifest approval.</p>
+    <p class="mb-4 text-xs text-gray-500">Isi rincian untuk manifest approval. Kartu yang dibiarkan kosong tidak akan disimpan.</p>
     <table class="min-w-full divide-y divide-gray-200 text-sm">
         <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>
@@ -12,13 +17,13 @@
             </tr>
         </thead>
         <tbody class="approval-goods-rows divide-y divide-gray-100">
-            @foreach($manifestGoods as $good)
+            @foreach($displayManifestGoods as $good)
                 <tr>
                     @can('approval-tanda-terima-2-approve')
                         @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number'] as $field => $inputType)
                             <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                 @if($field === 'nama_barang')
-                                    <textarea name="manifest_goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($good, $field) }}</textarea>
+                                    <textarea name="manifest_goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" @if($manifestGoods->isNotEmpty()) required @endif class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($good, $field) }}</textarea>
                                 @else
                                     <input type="{{ $inputType }}" name="manifest_goods[{{ $loop->parent->index }}][{{ $field }}]"
                                         value="{{ data_get($good, $field) }}"
@@ -42,7 +47,7 @@
             @endforeach
         </tbody>
     </table>
-    @if($manifestGoods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang manifest belum tersedia.</p>@endif
+    @if($displayManifestGoods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang manifest belum tersedia.</p>@endif
     @can('approval-tanda-terima-2-approve')
         <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang Manifest</button>
     @endcan

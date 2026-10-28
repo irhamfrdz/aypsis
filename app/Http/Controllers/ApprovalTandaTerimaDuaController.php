@@ -229,6 +229,12 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         self::SOURCES[$sourceType]::findOrFail($id);
+        $manifestInput = $request->input('manifest_goods');
+        if (is_array($manifestInput)) {
+            $request->merge(['manifest_goods' => collect($manifestInput)
+                ->reject(fn ($good) => is_array($good) && collect($good)->every(fn ($value) => blank($value)))
+                ->all()]);
+        }
         $validated = $request->validate([
             'goods' => 'required|array|min:1|max:50',
             'goods.*.nama_barang' => 'required|string|max:255',

@@ -175,6 +175,9 @@
                                     'keterangan_barang' => $item->keterangan_barang,
                                 ]]);
                             }
+                            $perincianGoods = $goods->isEmpty() && auth()->user()?->can('approval-tanda-terima-2-approve')
+                                ? collect([[]])
+                                : $goods;
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
                         <tr class="{{ $isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70' }}">
@@ -259,7 +262,7 @@
                                                 </tr>
                                             </thead>
                                             <tbody class="approval-goods-rows divide-y divide-gray-100">
-                                                @foreach($goods as $good)
+                                                @foreach($perincianGoods as $good)
                                                     <tr>
                                                         @can('approval-tanda-terima-2-approve')
                                                             @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number'] as $field => $inputType)
@@ -299,7 +302,7 @@
                                                 @endcan
                                             </div>
                                         @endif
-                                        @if($goods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang belum tersedia.</p>@endif
+                                        @if($perincianGoods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang belum tersedia.</p>@endif
                                         @can('approval-tanda-terima-2-approve')
                                             <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang Perincian</button>
                                         @endcan

@@ -181,6 +181,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
 
         $controller->updateGoods(Request::create('/', 'PUT', [
             'goods' => [['nama_barang' => 'Barang Perincian', 'jumlah' => 3]],
+            'manifest_goods' => [['nama_barang' => '', 'hs_code' => '', 'jumlah' => '', 'satuan' => '']],
         ]), 'fcl', $id);
 
         $this->assertSame('Barang Perincian', $override->fresh()->goods[0]['nama_barang']);
