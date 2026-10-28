@@ -313,13 +313,8 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             'vendor' => 'PT Contoh',
         ]);
         $poItem = PurchaseOrder::firstOrFail()->items()->firstOrFail();
-        $this->assertDatabaseHas('assets', [
-            'source_table' => 'purchase_order_items',
-            'source_id' => $poItem->id,
-            'nama_asset' => 'Oli',
-            'kuantitas' => 3.5,
-            'deleted_at' => null,
-        ]);
+        $this->assertTrue($poItem->masuk_asset);
+        $this->assertDatabaseCount('assets', 0);
 
         try {
             PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($poRequest));
@@ -330,10 +325,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $this->assertDatabaseCount('purchase_orders', 1);
 
         PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->destroy(PurchaseOrder::firstOrFail()));
-        $this->assertSoftDeleted('assets', [
-            'source_table' => 'purchase_order_items',
-            'source_id' => $poItem->id,
-        ]);
+        $this->assertDatabaseCount('assets', 0);
         $this->assertSame('pending', $permohonan->fresh()->status);
         $this->assertSame('pending', $approvedItem->fresh()->status);
         $this->assertSame('pending', $rejectedItem->fresh()->status);
@@ -378,21 +370,14 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->update($updateRequest, $order));
         $this->assertSame($orderItem->id, $order->items()->firstOrFail()->id);
         $this->assertTrue($orderItem->fresh()->masuk_asset);
-        $this->assertDatabaseHas('assets', [
-            'source_table' => 'purchase_order_items',
-            'source_id' => $orderItem->id,
-            'deleted_at' => null,
-        ]);
+        $this->assertDatabaseCount('assets', 0);
 
         $poData['items'][0]['masuk_asset'] = '0';
         $updateRequest = Request::create('/purchase-orders/'.$order->id, 'PUT', $poData);
         $this->app->instance('request', $updateRequest);
         PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->update($updateRequest, $order));
         $this->assertFalse($orderItem->fresh()->masuk_asset);
-        $this->assertSoftDeleted('assets', [
-            'source_table' => 'purchase_order_items',
-            'source_id' => $orderItem->id,
-        ]);
+        $this->assertDatabaseCount('assets', 0);
     }
 
     private function process(int $permohonanId, array $items): void

@@ -62,6 +62,9 @@
         <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
             <div>
                 <h2 class="text-base font-bold text-slate-900">Rincian Barang / Jasa</h2>
+                @if($sourceLocked)
+                    <p class="mt-1 text-xs text-slate-500">Centang Masuk Aset untuk menandai barang pada PO. Pembuatan data aset dilakukan terpisah setelah detail aset tersedia.</p>
+                @endif
                 <p class="mt-1 text-xs text-slate-500">Jumlah setiap baris dihitung dari kuantitas × harga satuan.</p>
             </div>
             @unless($sourceLocked)
@@ -107,7 +110,7 @@
                             @if($sourceLocked)
                                 <td class="px-3 py-3 text-center align-top">
                                     <input type="hidden" name="items[{{ $index }}][masuk_asset]" value="0">
-                                    <input type="checkbox" name="items[{{ $index }}][masuk_asset]" value="1" @checked((bool) ($item['masuk_asset'] ?? false)) aria-label="Masukkan {{ $item['deskripsi'] ?? 'barang' }} ke aset" class="mt-2 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                                    <input type="checkbox" name="items[{{ $index }}][masuk_asset]" value="1" @checked((bool) ($item['masuk_asset'] ?? false)) aria-label="Tandai {{ $item['deskripsi'] ?? 'barang' }} untuk masuk aset" class="mt-2 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
                                 </td>
                             @endif
                             <td class="px-3 py-3 text-right align-top">

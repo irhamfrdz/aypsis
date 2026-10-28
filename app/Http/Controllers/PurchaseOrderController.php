@@ -88,10 +88,6 @@ class PurchaseOrderController extends Controller
                 $order->update(['nomor_po' => sprintf('PO-%s-%06d', $order->tanggal_po->format('Ym'), $order->id)]);
             }
             $order->items()->createMany($items);
-            $assetService = new PurchaseOrderAssetService;
-            foreach ($order->items as $item) {
-                $assetService->sync($item, $order);
-            }
 
             if ($permohonanAmprahan && $permohonanAmprahan->status === 'pending') {
                 $fullyApproved = true;
@@ -159,7 +155,9 @@ class PurchaseOrderController extends Controller
                     } else {
                         $item = $purchaseOrder->items()->create($itemData);
                     }
-                    $assetService->sync($item, $purchaseOrder);
+                    if (! $item->masuk_asset) {
+                        $assetService->remove($item);
+                    }
                 }
                 foreach ($existingItems as $item) {
                     $assetService->remove($item);
