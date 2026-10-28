@@ -170,7 +170,10 @@
                                     @if(!empty($trx->rincian_akun_pembayaran))
                                         <div class="space-y-1">
                                             @foreach($trx->rincian_akun_pembayaran as $rincian)
-                                                <div>{{ $rincian['nama_akun'] }} — Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}</div>
+                                                <div>
+                                                    @if(!empty($rincian['nomor_akun'])){{ $rincian['nomor_akun'] }} - @endif{{ $rincian['nama_akun'] }} — Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}
+                                                    @if(!empty($rincian['memo']))<div class="text-xs text-gray-500">Memo: {{ $rincian['memo'] }}</div>@endif
+                                                </div>
                                             @endforeach
                                         </div>
                                     @else

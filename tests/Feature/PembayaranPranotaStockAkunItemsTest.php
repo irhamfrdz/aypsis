@@ -28,6 +28,7 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
 
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
+            $table->string('nomor_akun')->nullable();
             $table->string('nama_akun');
             $table->decimal('saldo', 15, 2)->default(0);
             $table->timestamps();
@@ -44,6 +45,22 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
             $table->decimal('saldo', 15, 2)->default(0);
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
+        });
+        Schema::create('pembatalan_surat_jalans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_pembayaran')->nullable();
+            $table->string('metode_pembatalan')->nullable();
+        });
+        Schema::create('pembayaran_aktivitas_lains', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor');
+            $table->string('nomor_accurate')->nullable();
+            $table->unsignedBigInteger('akun_coa_id')->nullable();
+            $table->unsignedBigInteger('akun_bank_id')->nullable();
+            $table->json('akun_details')->nullable();
+            $table->decimal('pph_nominal', 15, 2)->default(0);
+            $table->decimal('grand_total', 15, 2)->default(0);
+            $table->softDeletes();
         });
         Schema::create('nomor_terakhir', function (Blueprint $table) {
             $table->id();
@@ -93,9 +110,9 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
         (require database_path('migrations/2026_10_20_160000_create_pembayaran_pranota_stock_akun_items_table.php'))->up();
 
         DB::table('akun_coa')->insert([
-            ['id' => 1, 'nama_akun' => 'BANK TEST', 'saldo' => 0],
-            ['id' => 2, 'nama_akun' => 'Biaya A', 'saldo' => 0],
-            ['id' => 3, 'nama_akun' => 'Biaya B', 'saldo' => 0],
+            ['id' => 1, 'nomor_akun' => '1001', 'nama_akun' => 'BANK TEST', 'saldo' => 0],
+            ['id' => 2, 'nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'saldo' => 0],
+            ['id' => 3, 'nomor_akun' => '5002', 'nama_akun' => 'Biaya B', 'saldo' => 0],
         ]);
         DB::table('pranota_stocks')->insert([
             'id' => 1,
@@ -235,6 +252,48 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
         ], array_map(fn ($line) => [
             'nama_akun' => $line['nama_akun'],
             'nominal' => (int) $line['nominal'],
+        ], $transaction->rincian_akun_pembayaran));
+    }
+
+    public function test_kas_truck_report_exposes_every_account_line_for_an_activity_payment(): void
+    {
+        DB::table('akun_coa')->where('id', 1)->update(['nama_akun' => 'Bank BCA Trucking  - 168 2889 955']);
+        DB::table('pembayaran_aktivitas_lains')->insert([
+            'nomor' => 'PAL-TEST',
+            'nomor_accurate' => 'BTJ26 1000169',
+            'akun_coa_id' => 2,
+            'akun_bank_id' => 1,
+            'akun_details' => json_encode([
+                ['akun_coa_id' => 2, 'nominal' => 60, 'memo' => 'Bahan bakar'],
+                ['akun_coa_id' => 3, 'nominal' => 30, 'memo' => 'Tol'],
+                ['akun_coa_id' => 2, 'nominal' => 10, 'memo' => 'Tambahan'],
+            ]),
+        ]);
+        DB::table('coa_transactions')->insert([
+            'coa_id' => 1,
+            'tanggal_transaksi' => '2026-10-14',
+            'nomor_referensi' => 'PAL-TEST',
+            'jenis_transaksi' => 'Pembayaran Aktivitas Lain',
+            'keterangan' => 'Pembayaran Aktivitas Lain',
+            'debit' => 0,
+            'kredit' => 100,
+        ]);
+
+        $view = (new KasTruckController)->view(Request::create('/report/kas-truck/view', 'GET'));
+        $transactions = $view->getData()['transactions'];
+        $this->assertCount(1, $transactions);
+        $transaction = $transactions->first();
+        $this->assertEquals(100, $transaction->kredit);
+        $this->assertSame('BTJ26 1000169', $transaction->nomor_accurate);
+        $this->assertSame([
+            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 60, 'memo' => 'Bahan bakar'],
+            ['nomor_akun' => '5002', 'nama_akun' => 'Biaya B', 'nominal' => 30, 'memo' => 'Tol'],
+            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 10, 'memo' => 'Tambahan'],
+        ], array_map(fn ($line) => [
+            'nomor_akun' => $line['nomor_akun'],
+            'nama_akun' => $line['nama_akun'],
+            'nominal' => (int) $line['nominal'],
+            'memo' => $line['memo'],
         ], $transaction->rincian_akun_pembayaran));
     }
 }

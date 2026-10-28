@@ -100,6 +100,7 @@ class KasTruckController extends Controller
             $akunPembayaranMap = [];
             $akunPembayaranIds = [];
             $rincianAkunStockMap = [];
+            $rincianAkunPalMap = [];
 
             if (! empty($referensiList)) {
                 // Tabel yang menggunakan kolom 'nomor' sebagai primary key referensi
@@ -115,9 +116,23 @@ class KasTruckController extends Controller
                                 $columns[] = $column;
                             }
                         }
+                        if ($tbl === 'pembayaran_aktivitas_lains' && Schema::hasColumn($tbl, 'akun_details')) {
+                            $columns[] = 'akun_details';
+                        }
                         $rows = DB::table($tbl)->whereIn('nomor', $referensiList)->get($columns);
                         foreach ($rows as $row) {
                             $key = $row->nomor;
+                            if ($tbl === 'pembayaran_aktivitas_lains' && ! empty($row->akun_details)) {
+                                $details = json_decode($row->akun_details, true);
+                                if (is_array($details)) {
+                                    foreach ($details as $detail) {
+                                        if (is_array($detail) && ! empty($detail['akun_coa_id']) && isset($detail['nominal'])) {
+                                            $rincianAkunPalMap[$key][] = $detail;
+                                            $akunPembayaranIds[] = $detail['akun_coa_id'];
+                                        }
+                                    }
+                                }
+                            }
                             if (! empty($row->nomor_accurate) && ! isset($nomorAccurateMap[$key])) {
                                 $nomorAccurateMap[$key] = $row->nomor_accurate;
                             }
@@ -234,16 +249,29 @@ class KasTruckController extends Controller
             // -------------------------------------------------------
             // Attach nomor_accurate dan Sortir
             // -------------------------------------------------------
-            $namaAkunMap = Coa::whereIn('id', array_unique($akunPembayaranIds))
-                ->pluck('nama_akun', 'id');
+            $akunModels = Coa::whereIn('id', array_unique($akunPembayaranIds))->get()->keyBy('id');
+            $namaAkunMap = $akunModels->pluck('nama_akun', 'id');
 
             foreach ($transactions as $t) {
                 $t->nomor_accurate = $nomorAccurateMap[$t->nomor_referensi] ?? null;
                 $akun = $akunPembayaranMap[$t->nomor_referensi] ?? null;
                 $t->akun_pembayaran = $namaAkunMap[$akun] ?? $akun;
-                $t->rincian_akun_pembayaran = $t->jenis_transaksi === 'Pembayaran Pranota Stock'
-                    ? ($rincianAkunStockMap[$t->nomor_referensi] ?? [])
-                    : [];
+                if ($t->jenis_transaksi === 'Pembayaran Aktivitas Lain' && ! empty($rincianAkunPalMap[$t->nomor_referensi])) {
+                    $t->rincian_akun_pembayaran = array_map(function ($detail) use ($akunModels) {
+                        $akunDetail = $akunModels->get($detail['akun_coa_id']);
+
+                        return [
+                            'nama_akun' => $akunDetail?->nama_akun ?? 'Akun dihapus',
+                            'nomor_akun' => $akunDetail?->nomor_akun,
+                            'nominal' => $detail['nominal'],
+                            'memo' => $detail['memo'] ?? null,
+                        ];
+                    }, $rincianAkunPalMap[$t->nomor_referensi]);
+                } else {
+                    $t->rincian_akun_pembayaran = $t->jenis_transaksi === 'Pembayaran Pranota Stock'
+                        ? ($rincianAkunStockMap[$t->nomor_referensi] ?? [])
+                        : [];
+                }
             }
 
             // Urutkan: TOP UP SALDO AWAL paling atas, sisanya by nomor_accurate
