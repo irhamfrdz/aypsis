@@ -429,6 +429,7 @@
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
@@ -454,10 +455,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let karyawans = @json($karyawans);
     let rumusBpjs = @json($rumusBpjs);
     let rowCount = 0;
+    let isGenerating = false;
+    let rowTarget = container;
+    const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     let isRefreshing = false;
 
     function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
+        return amountFormatter.format(num || 0);
     }
 
     /**
@@ -548,7 +552,7 @@ document.addEventListener('DOMContentLoaded', function() {
      * Apply filter and search on table rows and columns
      */
     function applyFilter() {
-        if (isRefreshing) return;
+        if (isRefreshing || isGenerating) return;
         const selectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
         const selectedCabang = filterCabangSelect ? filterCabangSelect.value : 'all';
         const query = searchKaryawanInput ? (searchKaryawanInput.value || '').trim().toLowerCase() : '';
@@ -923,7 +927,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
 
         BpjsJknColumns.syncEmploymentStatus(tr, karyawans.find(item => item.unique_id == karyawanId || item.id == karyawanId));
-        container.appendChild(tr);
+        rowTarget.appendChild(tr);
         BpjsJknColumns.syncRow(tr);
 
         const inputKes     = tr.querySelector('.input-kes');
@@ -1358,34 +1362,55 @@ document.addEventListener('DOMContentLoaded', function() {
         btnResetFilterEmpty.addEventListener('click', resetAllFilters);
     }
 
+    async function generateRows(items, createRow) {
+        if (isGenerating || isRefreshing) return;
+        const button = document.getElementById('btn-generate-all');
+        const originalLabel = button?.innerHTML;
+        const controls = Array.from(document.getElementById('pranota-form').querySelectorAll('button'));
+        const previousDisabled = controls.map(control => control.disabled);
+        const fragment = document.createDocumentFragment();
+        const previousCount = rowCount;
+        isGenerating = true;
+        container.inert = true;
+        controls.forEach(control => { control.disabled = true; });
+        button?.setAttribute('aria-busy', 'true');
+        rowTarget = fragment;
+        rowCount = 0;
+        try {
+            await processBpjsBatch(items, createRow, (done, total) => {
+                if (button) button.textContent = `Menghitung ${done}/${total} karyawan...`;
+            });
+            if (rowCount === 0) addRow(null);
+            container.replaceChildren(fragment);
+        } catch (error) {
+            rowCount = previousCount;
+            console.error(error);
+            alert('Perhitungan gagal. Data sebelumnya tetap tersedia. Silakan coba kembali.');
+        } finally {
+            rowTarget = container;
+            isGenerating = false;
+            container.inert = false;
+            controls.forEach((control, index) => { control.disabled = previousDisabled[index]; });
+            if (button) { button.innerHTML = originalLabel; button.removeAttribute('aria-busy'); }
+            applyFilter();
+        }
+    }
+
     btnAdd.addEventListener('click', () => addRow(null));
 
     // Bersihkan format angka Indonesia sebelum submit
-    document.getElementById('pranota-form').addEventListener('submit', function() {
+    document.getElementById('pranota-form').addEventListener('submit', function(event) {
+        if (isGenerating) { event.preventDefault(); return; }
         prepareBpjsSubmission(this, parseIdNumber);
     });
     
-    document.getElementById('btn-generate-all').addEventListener('click', () => {
-        container.innerHTML = '';
-        rowCount = 0;
-
-        let count = 0;
-        karyawans.forEach(k => {
-            if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
-                addRow(k.unique_id, true);
-                count++;
-            }
-        });
-        
-        if (count === 0) {
-            addRow(null);
-        }
-        
-        applyFilter();
+    document.getElementById('btn-generate-all').addEventListener('click', async () => {
+        const eligible = karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
+        await generateRows(eligible, k => addRow(k.unique_id, true));
     });
 
     document.getElementById('btn-refresh-bpjs').addEventListener('click', async function () {
-        if (isRefreshing) return;
+        if (isRefreshing || isGenerating) return;
         const button = this;
         const label = button.querySelector('span');
         const status = document.getElementById('bpjs-refresh-status');

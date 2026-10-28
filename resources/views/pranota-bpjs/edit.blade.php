@@ -175,10 +175,11 @@
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const container = document.getElementById('detail-container');
     const btnAdd = document.getElementById('btn-add-karyawan');
     
@@ -186,9 +187,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const existingDetails = @json($pranota_bpj->details);
     const rumusBpjs = @json($rumusBpjs);
     let rowCount = 0;
+    let isGenerating = false;
+    let rowTarget = container;
+    const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     function formatNumber(num) {
-        return new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(num || 0);
+        return amountFormatter.format(num || 0);
     }
 
     /**
@@ -201,6 +205,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function calculateTotals() {
+        if (isGenerating) return;
         let sumKes = 0, sumKesBiaya = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
@@ -365,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
         BpjsJknColumns.syncEmploymentStatus(tr, k);
-        container.appendChild(tr);
+        rowTarget.appendChild(tr);
         BpjsJknColumns.syncRow(tr);
 
         const inputKes     = tr.querySelector('.input-kes');
@@ -586,7 +591,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         if (isExistingRow) {
-            setTimeout(() => {
                 selectTipe.value = 'manual';
                 updateInfoBadgeJkn(k ? k.unique_id : karyawanId);
                 
@@ -594,17 +598,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 inputKet.value = formatNumber(valKet);
                 
                 updateSubtotal();
-            }, 100);
         } else if (isGenerated && karyawanId) {
-            setTimeout(() => {
                 selectTipe.value = 'tunjangan_hutang';
                 updateInfoBadgeJkn(k ? k.unique_id : karyawanId);
                 calculateBpjsForKaryawan(k ? k.unique_id : karyawanId, 'tunjangan_hutang');
-            }, 100);
         }
     }
 
-    document.getElementById('pranota-form').addEventListener('submit', function() {
+    document.getElementById('pranota-form').addEventListener('submit', function(event) {
+        if (isGenerating) { event.preventDefault(); return; }
         prepareBpjsSubmission(this, parseIdNumber);
     });
 
@@ -614,54 +616,56 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    async function generateRows(items, createRow) {
+        if (isGenerating) return;
+        const button = document.getElementById('btn-generate-all');
+        const originalLabel = button?.innerHTML;
+        const controls = Array.from(document.getElementById('pranota-form').querySelectorAll('button'));
+        const previousDisabled = controls.map(control => control.disabled);
+        const fragment = document.createDocumentFragment();
+        const previousCount = rowCount;
+        isGenerating = true;
+        container.inert = true;
+        controls.forEach(control => { control.disabled = true; });
+        button?.setAttribute('aria-busy', 'true');
+        rowTarget = fragment;
+        rowCount = 0;
+        try {
+            await processBpjsBatch(items, createRow, (done, total) => {
+                if (button) button.textContent = `Menghitung ${done}/${total} karyawan...`;
+            });
+            if (rowCount === 0) addRow(null);
+            container.replaceChildren(fragment);
+        } catch (error) {
+            rowCount = previousCount;
+            console.error(error);
+            alert('Perhitungan gagal. Data sebelumnya tetap tersedia. Silakan coba kembali.');
+        } finally {
+            rowTarget = container;
+            isGenerating = false;
+            container.inert = false;
+            controls.forEach((control, index) => { control.disabled = previousDisabled[index]; });
+            if (button) { button.innerHTML = originalLabel; button.removeAttribute('aria-busy'); }
+            updateRowNumbers();
+            calculateTotals();
+        }
+    }
+
     btnAdd.addEventListener('click', () => addRow(null));
     
     const btnGenerateAll = document.getElementById('btn-generate-all');
-    if (btnGenerateAll) {
-        btnGenerateAll.addEventListener('click', () => {
-            container.innerHTML = '';
-            rowCount = 0;
-            let count = 0;
-            karyawans.forEach(k => {
-                if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
-                    addRow({karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id}, true);
-                    count++;
-                }
-            });
-            if (count === 0) { addRow(null); }
-            updateRowNumbers();
-        });
-    }
-    
-    // Kosongkan tabel dulu
-    container.innerHTML = '';
-    rowCount = 0;
-    
-    let processedIds = [];
+    btnGenerateAll?.addEventListener('click', async () => {
+        const eligible = karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
+        await generateRows(eligible, k => addRow({ karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id }, true));
+    });
 
-    // 1. Tampilkan semua existingDetails (data yang sudah tersimpan)
     if (existingDetails && existingDetails.length > 0) {
-        existingDetails.forEach(detail => {
-            addRow(detail);
-            if (detail.karyawan_id) processedIds.push(parseInt(detail.karyawan_id));
-        });
+        await generateRows(existingDetails, detail => addRow(detail));
     } else {
-        // 2. Jika draft kosong sama sekali, generate otomatis untuk semua yang punya group
-        karyawans.forEach(k => {
-            if (k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs) {
-                addRow({karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id}, true);
-            }
-        });
+        const eligible = karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
+        await generateRows(eligible, k => addRow({ karyawan_id: k.id, tipe_karyawan: k.tipe_karyawan, unique_id: k.unique_id }, true));
     }
-    
-    // Jika masih kosong (tidak ada existing dan tidak ada yg punya group)
-    if (rowCount === 0) {
-        addRow();
-    }
-    
-    updateRowNumbers();
-    
-    calculateTotals();
+
 });
 </script>
 @endsection

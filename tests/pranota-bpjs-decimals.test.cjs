@@ -12,7 +12,7 @@ test('actual create and edit calculations preserve fractional JKN contributions 
     const formula = { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'KANTOR', tunjangan_persen: 4, hutang_persen: 1 };
     for (const page of ['create', 'edit']) {
         const source = fs.readFileSync(`resources/views/pranota-bpjs/${page}.blade.php`, 'utf8');
-        const format = new Function(source.match(/function formatNumber\(num\) \{[\s\S]*?\n    \}/)[0] + '; return formatNumber;')();
+        const format = new Function('amountFormatter', source.match(/function formatNumber\(num\) \{[\s\S]*?\n    \}/)[0] + '; return formatNumber;')(new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 }));
         assert.equal(format(229195.2), '229.195,20');
         assert.equal(format(57298.8), '57.298,80');
         const start = source.indexOf('        function calculateBpjsForKaryawan(');
