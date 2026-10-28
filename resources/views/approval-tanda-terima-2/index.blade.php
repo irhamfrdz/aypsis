@@ -105,10 +105,10 @@
                 <div>
                     <label for="destination" class="mb-2 block text-sm font-semibold text-gray-700">Tujuan pengiriman</label>
                     <select id="destination" name="destination" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                        <option value="">Semua tujuan</option>
-                        <option value="jakarta" @selected(request('destination') === 'jakarta')>Jakarta</option>
-                        <option value="batam" @selected(request('destination') === 'batam')>Batam</option>
-                        <option value="tanjung-pinang" @selected(request('destination') === 'tanjung-pinang')>Tanjung Pinang</option>
+                        <option value="" @selected($destination === '')>Semua tujuan</option>
+                        <option value="jakarta" @selected($destination === 'jakarta')>Jakarta</option>
+                        <option value="batam" @selected($destination === 'batam')>Batam</option>
+                        <option value="tanjung-pinang" @selected($destination === 'tanjung-pinang')>Tanjung Pinang</option>
                     </select>
                 </div>
                 <div>

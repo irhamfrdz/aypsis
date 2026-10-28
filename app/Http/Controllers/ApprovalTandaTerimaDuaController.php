@@ -62,6 +62,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
         ]);
         $type = $filters['type'] ?? 'fcl';
+        $destination = $filters['destination'] ?? 'batam';
         $query = self::SOURCES[$type]::query()->with('shipperJb');
         if ($type === 'lcl') {
             $query->with(['kontainerPivot', 'items']);
@@ -121,8 +122,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             $query->whereNotNull('shipper_jb_id');
         }
 
-        if (! empty($filters['destination'])) {
-            $destination = $filters['destination'];
+        if ($destination !== '') {
             $destinationFilter = function ($query) use ($destination, $type) {
                 $column = $type === 'lcl' ? 'nama_tujuan' : 'tujuan_pengiriman';
                 if ($destination === 'tanjung-pinang') {
@@ -151,6 +151,7 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         return view('approval-tanda-terima-2.index', [
             'type' => $type,
+            'destination' => $destination,
             'items' => $items,
             'goodsOverrides' => $goodsOverrides,
         ]);
