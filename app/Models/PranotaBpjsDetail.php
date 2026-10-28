@@ -12,6 +12,7 @@ class PranotaBpjsDetail extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
+        'rincian_bpjs' => 'array',
         'bpjs_kesehatan' => 'decimal:2',
         'bpjs_ketenagakerjaan' => 'decimal:2',
         'jht_biaya' => 'decimal:2',

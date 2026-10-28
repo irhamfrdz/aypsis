@@ -182,6 +182,7 @@ class PranotaBpjsController extends Controller
                             'jp_biaya' => $jpBiaya,
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
+                            'rincian_bpjs' => $this->componentBreakdown($detail),
                         ]);
 
                         $totalKes += $jknTotal;
@@ -344,6 +345,7 @@ class PranotaBpjsController extends Controller
                             'jp_biaya' => $jpBiaya,
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
+                            'rincian_bpjs' => $this->componentBreakdown($detail),
                         ]);
 
                         $totalKes += $jknTotal;
@@ -401,6 +403,38 @@ class PranotaBpjsController extends Controller
      *         "5.200.000,50" → 5200000.5
      *         5200000        → 5200000.0  (sudah number)
      */
+    private function componentBreakdown(array $detail): ?array
+    {
+        // The edit form contains legacy aggregate columns. Reuse the saved breakdown
+        // only while those totals still match, rather than assigning BPU amounts to PPU.
+        if (($detail['tipe_jkn'] ?? null) === 'manual') {
+            $snapshot = json_decode($detail['rincian_bpjs'] ?? 'null', true);
+            if (! is_array($snapshot)) return null;
+            $groups = [
+                'jht_biaya' => ['jht_biaya', 'noncrew_jht_biaya'],
+                'jht_hutang' => ['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang'],
+                'jkk_tunjangan' => ['jkk_tunjangan', 'bpu_jkk_tunjangan', 'noncrew_jkk_tunjangan'],
+                'jkm_tunjangan' => ['jkm_tunjangan', 'bpu_jkm', 'noncrew_jkm_tunjangan'],
+                'jp_biaya' => ['jp_biaya'], 'jp_hutang' => ['jp_hutang'],
+            ];
+            foreach ($groups as $aggregate => $fields) {
+                $sum = collect($fields)->sum(fn ($field) => $this->parseIndonesianNumber($snapshot[$field] ?? 0));
+                if (abs($sum - $this->parseIndonesianNumber($detail[$aggregate] ?? 0)) > 0.005) return null;
+            }
+
+            return $snapshot;
+        }
+        $components = [];
+        foreach (['jht_biaya', 'jht_hutang', 'jkk_tunjangan', 'jkm_tunjangan',
+            'jkk_hutang', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jht_biaya',
+            'noncrew_jht_hutang', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan',
+            'jp_biaya', 'jp_hutang'] as $field) {
+            $components[$field] = $this->parseIndonesianNumber($detail[$field] ?? 0);
+        }
+
+        return $components;
+    }
+
     private function decodeDetails(Request $request): void
     {
         if (! $request->has('details_json')) {

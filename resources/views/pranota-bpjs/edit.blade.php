@@ -348,6 +348,13 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
         `;
 
+        if (detail?.rincian_bpjs) {
+            const snapshot = document.createElement('input');
+            snapshot.type = 'hidden';
+            snapshot.name = `details[${rowCount}][rincian_bpjs]`;
+            snapshot.value = JSON.stringify(detail.rincian_bpjs);
+            tr.querySelector('td').appendChild(snapshot);
+        }
         BpjsJknColumns.syncEmploymentStatus(tr, k);
         container.appendChild(tr);
         BpjsJknColumns.syncRow(tr);

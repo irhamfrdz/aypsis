@@ -7,10 +7,10 @@
             <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Detail Pranota BPJS</h1>
         </div>
         <div class="flex items-center space-x-2">
-            <a href="{{ route('pranota-bpjs.index') }}" class="btn bg-white border-gray-200 hover:border-gray-300 text-gray-600">
+            <a href="{{ route('pranota-bpjs.index') }}" class="inline-flex items-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
-            <button onclick="window.print()" class="btn bg-indigo-500 hover:bg-indigo-600 text-white">
+            <button onclick="window.print()" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
                 <i class="fas fa-print mr-2"></i> Cetak
             </button>
         </div>
@@ -65,54 +65,89 @@
         </div>
         @endif
 
-        <div class="mb-8">
-            <h3 class="text-lg font-bold text-gray-800 mb-4 border-b pb-2">Rincian per Karyawan</h3>
-            <table class="w-full text-sm border-collapse">
-                <thead class="bg-gray-100">
-                    <tr>
-                        <th class="border border-gray-300 px-3 py-2 text-center w-12">No</th>
-                        <th class="border border-gray-300 px-3 py-2 text-left">Nama Karyawan</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 4% (TUNJ)</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 4% (BIAY)</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">KIS 1% (HUTANG)</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">BP Jamsostek</th>
-                        <th class="border border-gray-300 px-3 py-2 text-right">Subtotal</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach($pranota_bpj->details as $index => $detail)
-                        <tr>
-                            <td class="border border-gray-300 px-3 py-2 text-center">{{ $index + 1 }}</td>
-                            <td class="border border-gray-300 px-3 py-2">
-                                {{ $detail->karyawan->nama_lengkap ?? '-' }}
-                                @if($detail->karyawan?->tanggal_berhenti)
-                                    <span class="inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800 ml-1">Sudah Berhenti</span>
-                                @endif
-                                @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-100 text-amber-800 ml-1">Tidak Tetap</span>
-                                @endif
-                            </td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->kis_tunjangan, 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->kis_biaya, 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right">Rp {{ number_format($detail->jht_biaya + $detail->jht_hutang + $detail->jkk_tunjangan + $detail->jkm_tunjangan + $detail->jp_biaya + $detail->jp_hutang, 2, ',', '.') }}</td>
-                            <td class="border border-gray-300 px-3 py-2 text-right font-medium">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-                <tfoot class="bg-gray-50 font-bold">
-                    <tr>
-                        <td colspan="2" class="border border-gray-300 px-3 py-3 text-right uppercase">Total ({{ $pranota_bpj->total_karyawan }} Karyawan):</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('kis_tunjangan'), 2, ',', '.') }}</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('kis_biaya'), 2, ',', '.') }}</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->details->sum('bpjs_ketenagakerjaan'), 2, ',', '.') }}</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right">Rp {{ number_format($pranota_bpj->total_bpjs_ketenagakerjaan, 2, ',', '.') }}</td>
-                        <td class="border border-gray-300 px-3 py-3 text-right text-indigo-700">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
-                    </tr>
-                </tfoot>
-            </table>
+        @php
+            $componentGroups = [
+                'JKN' => ['kis_tunjangan' => 'KIS 4% (TUNJ)', 'kis_biaya' => 'KIS 4% (BIAY)', 'bpjs_ketenagakerjaan' => 'KIS 1% (Hutang)'],
+                'PPU' => ['jht_biaya' => 'PPU JHT 3.7%', 'jht_hutang' => 'PPU JHT 2%', 'jkk_tunjangan' => 'PPU JKK 0.24%', 'jkm_tunjangan' => 'PPU JKM 0.3%'],
+                'BPU Crew' => ['jkk_hutang' => 'BPU JHT (Kary)', 'bpu_jkk_tunjangan' => 'BPU JKK 1%', 'bpu_jkm' => 'BPU JKM'],
+                'BPU Non Crew' => ['noncrew_jht_biaya' => 'JHT 2% (Biaya)', 'noncrew_jht_hutang' => 'JHT 2% (Hutang)', 'noncrew_jkk_tunjangan' => 'JKK 1% (Tunj)', 'noncrew_jkm_tunjangan' => 'JKM (Rp)'],
+                'Jaminan Pensiun' => ['jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
+            ];
+            $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
+            if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
+            $amount = function ($detail, $field) {
+                if (in_array($field, ['kis_tunjangan', 'kis_biaya', 'bpjs_ketenagakerjaan'])) return (float) $detail->$field;
+                if ($field === 'legacy_jamsostek') return $detail->rincian_bpjs === null
+                    ? (float) $detail->jht_biaya + (float) $detail->jht_hutang + (float) $detail->jkk_tunjangan + (float) $detail->jkm_tunjangan + (float) $detail->jp_biaya + (float) $detail->jp_hutang : 0;
+                return (float) data_get($detail->rincian_bpjs, $field, 0);
+            };
+            $groupTotal = fn ($fields) => $pranota_bpj->details->sum(fn ($detail) => collect($fields)->sum(fn ($field) => $amount($detail, $field)));
+        @endphp
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            @foreach(['Total Karyawan' => $pranota_bpj->total_karyawan . ' Orang', 'Total JKN' => 'Rp ' . number_format($pranota_bpj->total_bpjs_kesehatan, 2, ',', '.'), 'Total PPU' => 'Rp ' . number_format($groupTotal(array_merge(array_keys($componentGroups['PPU']), array_keys($componentGroups['Jaminan Pensiun']))), 2, ',', '.'), 'Total BPU' => 'Rp ' . number_format($groupTotal(array_merge(array_keys($componentGroups['BPU Crew']), array_keys($componentGroups['BPU Non Crew']))), 2, ',', '.'), 'Grand Total' => 'Rp ' . number_format($pranota_bpj->grand_total, 2, ',', '.')] as $label => $value)
+                <div class="rounded-xl border border-gray-200 bg-gray-50 p-4"><p class="text-xs font-semibold uppercase text-gray-500">{{ $label }}</p><p class="mt-2 font-bold text-teal-800">{{ $value }}</p></div>
+            @endforeach
         </div>
-        
+        @if($hasLegacy)
+            <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-4 text-sm text-amber-900">Pranota ini memuat data lama tanpa rincian PPU/BPU terpisah. Nominalnya ditampilkan pada kolom Jamsostek Gabungan dan tetap masuk Grand Total. Total PPU/BPU di atas hanya menjumlahkan rincian yang tersedia.</p>
+        @endif
+        <div class="mb-8">
+            <h3 class="text-lg font-bold text-gray-800 mb-2">Rincian Iuran BPJS Karyawan</h3>
+            <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen JKN, PPU, BPU, dan Jaminan Pensiun.</p>
+            <div class="bpjs-detail-scroll overflow-x-auto rounded-lg border border-gray-200">
+                <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
+                    <thead>
+                        <tr class="bg-gray-100 text-gray-700">
+                            <th colspan="5" class="border border-gray-200 p-3">Informasi Karyawan</th>
+                            @foreach($componentGroups as $group => $columns)
+                                <th colspan="{{ count($columns) }}" class="border border-gray-200 p-3 {{ $group === 'JKN' ? 'bg-indigo-50 text-indigo-800' : 'bg-teal-50 text-teal-800' }}">{{ $group }}</th>
+                            @endforeach
+                            <th rowspan="2" class="border border-gray-200 p-3 bg-teal-50">Subtotal (Rp)</th>
+                        </tr>
+                        <tr class="bg-gray-50">
+                            @foreach(['No', 'Nama Karyawan', 'Group BPJS', 'Tipe JKN', 'Tipe Jamsostek'] as $label)
+                                <th class="border border-gray-200 p-3 text-left">{{ $label }}</th>
+                            @endforeach
+                            @foreach($componentGroups as $columns)
+                                @foreach($columns as $label)<th class="border border-gray-200 p-3 text-right">{{ $label }}</th>@endforeach
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pranota_bpj->details as $index => $detail)
+                            <tr class="hover:bg-gray-50">
+                                <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
+                                <td class="border border-gray-200 p-3" style="min-width:220px">
+                                    <span class="font-semibold">{{ $detail->karyawan->nama_lengkap ?? '-' }}</span>
+                                    @if($detail->karyawan?->tanggal_berhenti)<span class="ml-1 rounded bg-red-100 px-2 py-1 text-red-800">Sudah Berhenti</span>@endif
+                                    @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')<span class="ml-1 rounded bg-amber-100 px-2 py-1 text-amber-800">Tidak Tetap</span>@endif
+                                    <div class="mt-1 text-gray-500">NIK: {{ $detail->karyawan?->nik ?? '-' }}</div>
+                                </td>
+                                <td class="border border-gray-200 p-3"><div>{{ $detail->karyawan?->group_jkn ?: '-' }}</div><div>{{ $detail->karyawan?->group_bp_jamsostek ?: '-' }}</div></td>
+                                <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_jkn ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_bp_jamsostek ?: '-' }}</td>
+                                @foreach($componentGroups as $columns)
+                                    @foreach($columns as $field => $label)
+                                        <td class="border border-gray-200 p-3 text-right font-mono">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                    @endforeach
+                                @endforeach
+                                <td class="border border-gray-200 p-3 text-right font-bold text-teal-800">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                    <tfoot class="bg-gray-100 font-bold">
+                        <tr>
+                            <td colspan="5" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
+                            @foreach($componentGroups as $columns)
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono">Rp {{ number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
+                            @endforeach
+                            <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+
         <div class="flex justify-end mt-16 print:mt-10">
             <div class="text-center w-48">
                 <p class="mb-16 text-sm text-gray-600">Dibuat Oleh,</p>
@@ -126,6 +161,12 @@
 
 <style>
 @media print {
+    @page { size: A3 landscape; margin: 8mm; }
+    .bpjs-detail-scroll { overflow: visible !important; }
+    .bpjs-detail-table { font-size: 7px; white-space: normal; }
+    .bpjs-detail-table th, .bpjs-detail-table td { padding: 3px; min-width: 0 !important; }
+    .bpjs-detail-table tr { break-inside: avoid; }
+    .bpjs-detail-table thead { display: table-header-group; }
     body * {
         visibility: hidden;
     }

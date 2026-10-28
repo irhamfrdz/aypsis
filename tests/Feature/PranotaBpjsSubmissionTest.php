@@ -37,6 +37,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             }
             $table->timestamps();
         });
+        (require database_path('migrations/2026_10_28_160000_add_rincian_bpjs_to_pranota_bpjs_details_table.php'))->up();
         $details = [];
         foreach (range(1, 264) as $id) {
             $details[] = [
@@ -62,9 +63,32 @@ class PranotaBpjsSubmissionTest extends TestCase
             }
             $this->assertEquals(264, $header->total_karyawan);
             $this->assertSame(264, $header->details()->count());
+            $breakdown = $header->details()->firstOrFail()->rincian_bpjs;
+            $this->assertSame(4000.0, (float) $breakdown['bpu_jkk_tunjangan']);
+            $this->assertSame(8000.0, (float) $breakdown['noncrew_jkk_tunjangan']);
+            $this->assertSame(100000.8, (float) $breakdown['jht_biaya']);
             $expected = array_sum(array_diff_key($details[0], array_flip(['karyawan_id', 'tipe_karyawan']))) * 264;
             $this->assertEqualsWithDelta($expected, (float) $header->grand_total, 0.01);
             $this->assertEqualsWithDelta($expected, $header->details()->sum('total'), 0.01);
+            $header->load('details');
+            foreach ($header->details as $savedDetail) {
+                $savedDetail->setRelation('karyawan', new \App\Models\Karyawan([
+                    'nama_lengkap' => 'Karyawan Uji', 'group_jkn' => 'JKN-KIS',
+                    'group_bp_jamsostek' => 'PPU', 'tipe_jkn' => 'KANTOR',
+                ]));
+            }
+            $source = file_get_contents(resource_path('views/pranota-bpjs/show.blade.php'));
+            $start = strpos($source, '        @php');
+            $end = strpos($source, '        <div class="flex justify-end mt-16', $start);
+            $template = substr($source, $start, $end - $start);
+            $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
+            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80'] as $label) {
+                $this->assertStringContainsString($label, $html);
+            }
+            $header->details->first()->rincian_bpjs = null;
+            $legacyHtml = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
+            $this->assertStringContainsString('Jamsostek Gabungan', $legacyHtml);
+            $this->assertStringContainsString('data lama tanpa rincian PPU/BPU terpisah', $legacyHtml);
         }
     }
 }
