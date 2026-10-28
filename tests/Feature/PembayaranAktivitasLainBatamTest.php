@@ -204,16 +204,21 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertEquals(400, DB::table('akun_coa')->find($second)->saldo);
         $this->assertEquals(600, DB::table('akun_coa')->find($bank)->saldo);
 
-        $payload['akun_details'][] = ['akun_coa_id' => $second, 'nominal' => 50];
-        try {
-            app(PembayaranAktivitasLainController::class)->update(
-                Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
-                $payment->fresh()
-            );
-            $this->fail('Akun yang sama tidak boleh dipilih dua kali.');
-        } catch (ValidationException $exception) {
-            $this->assertArrayHasKey('akun_details.1.akun_coa_id', $exception->errors());
-        }
+        $payload['akun_details'][] = ['akun_coa_id' => $second, 'nominal' => 50, 'memo' => 'Biaya tambahan'];
+        $response = app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment->fresh()
+        );
+        $this->assertSame(route('pembayaran-aktivitas-lain.show', $payment), $response->getTargetUrl());
+        $this->assertSame(450, $payment->fresh()->jumlah);
+        $this->assertCount(2, $payment->fresh()->akun_details);
+        $this->assertEquals(450, DB::table('akun_coa')->find($second)->saldo);
+        $this->assertEquals(550, DB::table('akun_coa')->find($bank)->saldo);
+        $this->assertDatabaseHas('coa_transactions', [
+            'nomor_referensi' => $payment->nomor,
+            'coa_id' => $second,
+            'debit' => 50,
+        ]);
 
         $payload['akun_details'] = [['akun_coa_id' => $bank, 'nominal' => 100]];
         try {

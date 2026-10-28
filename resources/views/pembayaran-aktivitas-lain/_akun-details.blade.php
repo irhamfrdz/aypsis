@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isMulti()) return true;
         const details = [...rows.querySelectorAll('.akun-detail-row')];
         const ids = details.map(row => row.querySelector('.akun-detail-select').value);
-        return details.length > 0 && ids.every(Boolean) && new Set(ids).size === ids.length
+        return details.length > 0 && ids.every(Boolean)
             && !ids.includes(bank.value)
             && details.every(row => {
                 const value = Number(row.querySelector('.akun-detail-nominal').value);

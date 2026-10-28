@@ -1441,7 +1441,7 @@ function initializeSelect2() {
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
         }
         if (jenisAktivitas.value === 'Pembayaran Lain Lain' && !window.validateAkunDetails()) {
-            showErrorMessage('Pilih akun berbeda dan isi jumlah rupiah positif untuk setiap baris.');
+            showErrorMessage('Pilih akun dan isi jumlah rupiah positif untuk setiap baris.');
             return false;
         }
 
