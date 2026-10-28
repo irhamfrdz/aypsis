@@ -645,6 +645,7 @@ function initializeSelect2() {
         allowClear: true,
         width: '100%'
     });
+    window.initializeAkunDetailSelects?.();
 
     $('#akun_bank_select').select2({
         placeholder: "Pilih Bank/Kas",

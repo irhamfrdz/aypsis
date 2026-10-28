@@ -10,12 +10,14 @@
     <div id="akun_details_rows" class="space-y-2">
         @foreach($detailRows as $index => $detail)
             <div class="akun-detail-row flex flex-wrap items-start gap-2">
-                <select name="akun_details[{{ $index }}][akun_coa_id]" class="akun-detail-select min-w-48 flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
-                    <option value="">Pilih Akun COA</option>
-                    @foreach($akunBiaya as $akun)
-                        <option value="{{ $akun->id }}" @selected(($detail['akun_coa_id'] ?? '') == $akun->id)>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
-                    @endforeach
-                </select>
+                <div class="min-w-48 flex-1">
+                    <select name="akun_details[{{ $index }}][akun_coa_id]" class="akun-detail-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
+                        <option value="">Pilih Akun COA</option>
+                        @foreach($akunBiaya as $akun)
+                            <option value="{{ $akun->id }}" @selected(($detail['akun_coa_id'] ?? '') == $akun->id)>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
+                        @endforeach
+                    </select>
+                </div>
                 <input type="number" name="akun_details[{{ $index }}][nominal]" value="{{ $detail['nominal'] ?? '' }}" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah untuk akun {{ $index + 1 }}" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
                 <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
             </div>
@@ -31,12 +33,14 @@
 
 <template id="akun_detail_template">
     <div class="akun-detail-row flex flex-wrap items-start gap-2">
-        <select name="akun_details[__INDEX__][akun_coa_id]" class="akun-detail-select min-w-48 flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm" required>
-            <option value="">Pilih Akun COA</option>
-            @foreach($akunBiaya as $akun)
-                <option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
-            @endforeach
-        </select>
+        <div class="min-w-48 flex-1">
+            <select name="akun_details[__INDEX__][akun_coa_id]" class="akun-detail-select w-full px-3 py-2 border border-gray-300 rounded-md text-sm" required>
+                <option value="">Pilih Akun COA</option>
+                @foreach($akunBiaya as $akun)
+                    <option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>
+                @endforeach
+            </select>
+        </div>
         <input type="number" name="akun_details[__INDEX__][nominal]" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah per akun" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" required>
         <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
     </div>
@@ -85,6 +89,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
     window.updateAkunDetails = update;
+    window.initializeAkunDetailSelects = (container = rows) => {
+        if (!window.jQuery?.fn?.select2) return;
+        window.jQuery(container).find('.akun-detail-select').not('.select2-hidden-accessible').select2({
+            placeholder: 'Cari akun COA',
+            allowClear: true,
+            minimumResultsForSearch: 0,
+            width: '100%'
+        });
+    };
 
     window.validateAkunDetails = () => {
         if (!isMulti()) return true;
@@ -102,11 +115,15 @@ document.addEventListener('DOMContentLoaded', () => {
     rows.addEventListener('change', update);
     rows.addEventListener('click', event => {
         if (!event.target.closest('.remove-akun-detail') || rows.children.length === 1) return;
-        event.target.closest('.akun-detail-row').remove();
+        const row = event.target.closest('.akun-detail-row');
+        const select = row.querySelector('.akun-detail-select');
+        if (select.classList.contains('select2-hidden-accessible')) window.jQuery(select).select2('destroy');
+        row.remove();
         update();
     });
     document.getElementById('add_akun_detail').addEventListener('click', () => {
         rows.insertAdjacentHTML('beforeend', document.getElementById('akun_detail_template').innerHTML.replaceAll('__INDEX__', nextIndex++));
+        window.initializeAkunDetailSelects(rows.lastElementChild);
         update();
     });
     activity.addEventListener('change', () => setTimeout(update, 0));
