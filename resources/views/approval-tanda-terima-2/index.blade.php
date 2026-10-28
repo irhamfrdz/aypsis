@@ -35,6 +35,7 @@
     .approval-goods-rows > tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgb(15 23 42 / 3%); }
     .approval-goods-rows > tr::before { counter-increment: goods; content: 'Barang ' counter(goods); grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: #334155; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
     .approval-goods-rows td { display: block; min-width: 0; padding: 0; white-space: normal; overflow-wrap: anywhere; }
+    .approval-goods-rows td[hidden] { display: none; }
     .approval-goods-rows td::before { content: attr(data-label); display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; color: #475569; }
     .approval-goods-rows td[data-field="nama_barang"], .approval-goods-rows td[data-field="keterangan_barang"] { grid-column: span 2; }
     .approval-goods-dialog input:not([type="hidden"]), .approval-goods-dialog textarea { display: block; box-sizing: border-box; width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 14px; line-height: 20px; }
@@ -245,7 +246,7 @@
                                                     <tr>
                                                         @can('approval-tanda-terima-2-approve')
                                                             @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number'] as $field => $inputType)
-                                                                <td class="px-2 py-2">
+                                                                <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                                                     @if($field === 'nama_barang')
                                                                         <textarea name="goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ is_scalar($good) ? $good : data_get($good, $field) }}</textarea>
                                                                     @else
@@ -263,7 +264,7 @@
                                                             <td class="px-2 py-2"><button type="button" class="approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">Hapus</button></td>
                                                         @else
                                                             @foreach(['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik'] as $field)
-                                                                <td class="px-3 py-3">{{ $field === 'nama_barang' && is_scalar($good) ? $good : (data_get($good, $field) ?? '-') }}</td>
+                                                                <td class="px-3 py-3" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>{{ $field === 'nama_barang' && is_scalar($good) ? $good : (data_get($good, $field) ?? '-') }}</td>
                                                             @endforeach
                                                             @if($type !== 'ttsj')<td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>@endif
                                                         @endcan

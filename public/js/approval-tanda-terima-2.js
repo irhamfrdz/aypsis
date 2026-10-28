@@ -7,23 +7,33 @@
         const rows = dialog.querySelector('.approval-goods-rows');
         const form = dialog.querySelector('form');
         const labels = { nama_barang: 'Nama barang *', hs_code: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
-            ukuran: 'Ukuran', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m?)',
+            ukuran: 'Ukuran keramik', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m?)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
-            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 20 ft', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
+            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
         function labelRow(row) {
             const headings = Array.from(dialog.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
                 const input = cell.querySelector('input, textarea');
-                const field = input?.name.match(/\[([^\]]+)\]$/)?.[1];
+                const field = input?.name.match(/\[([^\]]+)\]$/)?.[1] || cell.dataset.field;
                 cell.dataset.label = field ? labels[field] : (cell.querySelector('button') ? '' : headings[index]?.textContent.trim() || '');
-                if (!field) return;
+                if (!input) return;
                 cell.dataset.field = field;
                 input.setAttribute('aria-label', labels[field]);
                 input.placeholder = placeholders[field] || (input.type === 'number' ? '0' : 'Opsional');
             });
         }
-        rows.querySelectorAll('tr').forEach(labelRow);
+        function toggleUkuranField(row) {
+            const ukuranCell = row.querySelector('[data-field="ukuran"]');
+            const namaCell = row.querySelector('[data-field="nama_barang"]');
+            if (!ukuranCell || !namaCell) return;
+            const namaBarang = namaCell.querySelector('input, textarea')?.value ?? namaCell.textContent;
+            ukuranCell.hidden = !namaBarang.toLowerCase().includes('keramik');
+        }
+        rows.querySelectorAll('tr').forEach(row => {
+            labelRow(row);
+            toggleUkuranField(row);
+        });
 
 
         button.addEventListener('click', () => dialog.showModal());
@@ -75,12 +85,16 @@
             action.append(remove);
             row.append(action);
             labelRow(row);
+            toggleUkuranField(row);
             rows.append(row);
             dialog.querySelector('.approval-goods-empty')?.remove();
             row.querySelector('input, textarea').focus();
         });
         rows.addEventListener('click', event => {
             if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
+        });
+        rows.addEventListener('input', event => {
+            if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
         });
         form?.addEventListener('submit', event => {
             if (!rows.querySelector('tr')) {
