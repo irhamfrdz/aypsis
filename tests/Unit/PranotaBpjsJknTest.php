@@ -18,14 +18,14 @@ class PranotaBpjsJknTest extends TestCase
                 'bpjs_ketenagakerjaan' => '53580.00', 'total' => '267899.00',
             ], true);
             $detail->setRelation('karyawan', new $type);
-            $this->assertSame($type === KaryawanTidakTetap::class ? 214319.0 : 0.0, $detail->kis_biaya);
-            $this->assertSame($type === Karyawan::class ? 214319.0 : 0.0, $detail->kis_tunjangan);
+            $this->assertSame(0.0, $detail->kis_biaya);
+            $this->assertSame(214319.0, $detail->kis_tunjangan);
             $this->assertSame(267899.0, $detail->kis_biaya + $detail->kis_tunjangan + (float) $detail->bpjs_ketenagakerjaan);
             $this->assertFalse($detail->isDirty());
         }
     }
 
-    public function test_special_case_temporary_employee_uses_tunjangan_and_preserves_debt_and_total(): void
+    public function test_special_case_temporary_employee_uses_biaya_and_preserves_debt_and_total(): void
     {
         $employee = new KaryawanTidakTetap(['is_special_case' => true]);
         $detail = new PranotaBpjsDetail;
@@ -34,11 +34,11 @@ class PranotaBpjsJknTest extends TestCase
             'bpjs_ketenagakerjaan' => '53580.00', 'total' => '267899.00',
         ], true);
         $detail->setRelation('karyawan', $employee);
-        $this->assertSame(0.0, $detail->kis_biaya);
-        $this->assertSame(214319.0, $detail->kis_tunjangan);
-        $this->assertSame(267899.0, $detail->kis_tunjangan + (float) $detail->bpjs_ketenagakerjaan);
-        $employee->is_special_case = false;
         $this->assertSame(214319.0, $detail->kis_biaya);
         $this->assertSame(0.0, $detail->kis_tunjangan);
+        $this->assertSame(267899.0, $detail->kis_biaya + $detail->kis_tunjangan + (float) $detail->bpjs_ketenagakerjaan);
+        $employee->is_special_case = false;
+        $this->assertSame(0.0, $detail->kis_biaya);
+        $this->assertSame(214319.0, $detail->kis_tunjangan);
     }
 }

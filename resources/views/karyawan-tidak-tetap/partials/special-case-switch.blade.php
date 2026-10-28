@@ -1,7 +1,7 @@
 <div class="mb-4 flex items-center justify-between gap-4 rounded-lg border border-gray-200 bg-gray-50 px-4 py-3">
     <div>
         <label for="is_special_case" class="text-sm font-semibold text-gray-800 cursor-pointer">Special Case</label>
-        <p id="special-case-help" class="mt-1 text-xs text-gray-500">Tandai karyawan ini sebagai kategori Special Case.</p>
+        <p id="special-case-help" class="mt-1 text-xs text-gray-500">Aktifkan agar iuran KIS 4% masuk ke kolom BIAY. Jika nonaktif, iuran masuk ke kolom TUNJ.</p>
     </div>
     <label class="relative inline-flex shrink-0 cursor-pointer items-center">
         <input type="hidden" name="is_special_case" value="0">
