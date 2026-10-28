@@ -68,7 +68,7 @@
                         <div class="mt-1">
                             @if($permohonan->status == 'pending')
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                    Pending
+                                    {{ $permohonan->items->contains(fn ($item) => $item->jumlah_disetujui !== null) ? 'Menunggu PO' : 'Pending' }}
                                 </span>
                             @elseif($permohonan->status == 'approved')
                                 <span class="px-3 py-1 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">

@@ -39,7 +39,8 @@ class PurchaseOrderController extends Controller
         if ($request->filled('permohonan_amprahan')) {
             $request->validate(['permohonan_amprahan' => ['integer', 'exists:permohonan_amprahans,id']]);
             $permohonanAmprahan = PermohonanAmprahan::with('items')->findOrFail($request->integer('permohonan_amprahan'));
-            abort_unless(in_array($permohonanAmprahan->status, ['approved', 'partially_approved'], true), 404);
+            abort_unless(in_array($permohonanAmprahan->status, ['pending', 'approved', 'partially_approved'], true), 404);
+            abort_if($permohonanAmprahan->purchaseOrder()->exists(), 404);
 
             $prefillItems = $permohonanAmprahan->items
                 ->filter(fn ($item) => (float) $item->jumlah_disetujui > 0)
@@ -60,6 +61,22 @@ class PurchaseOrderController extends Controller
         [$data, $items] = $this->validatedData($request);
 
         $order = DB::transaction(function () use ($data, $items) {
+            $permohonanAmprahan = null;
+            if ($data['permohonan_amprahan_id'] ?? null) {
+                $permohonanAmprahan = PermohonanAmprahan::query()
+                    ->lockForUpdate()->findOrFail($data['permohonan_amprahan_id']);
+                $permohonanAmprahan->load('items');
+
+                if (! in_array($permohonanAmprahan->status, ['pending', 'approved', 'partially_approved'], true)
+                    || $permohonanAmprahan->purchaseOrder()->exists()) {
+                    throw ValidationException::withMessages([
+                        'permohonan_amprahan_id' => 'Permohonan ini sudah diproses menjadi Purchase Order.',
+                    ]);
+                }
+
+                $this->assertMatchesAmprahan($permohonanAmprahan, $items);
+            }
+
             $order = PurchaseOrder::create($data + [
                 'created_by' => auth()->id(),
                 'updated_by' => auth()->id(),
@@ -68,6 +85,24 @@ class PurchaseOrderController extends Controller
                 $order->update(['nomor_po' => sprintf('PO-%s-%06d', $order->tanggal_po->format('Ym'), $order->id)]);
             }
             $order->items()->createMany($items);
+
+            if ($permohonanAmprahan && $permohonanAmprahan->status === 'pending') {
+                $fullyApproved = true;
+                foreach ($permohonanAmprahan->items as $item) {
+                    if ((float) $item->jumlah_disetujui === 0.0) {
+                        $item->status = 'rejected';
+                        $fullyApproved = false;
+                    } elseif ((float) $item->jumlah_disetujui === (float) $item->jumlah) {
+                        $item->status = 'approved';
+                    } else {
+                        $item->status = 'partially_approved';
+                        $fullyApproved = false;
+                    }
+                    $item->save();
+                }
+                $permohonanAmprahan->status = $fullyApproved ? 'approved' : 'partially_approved';
+                $permohonanAmprahan->save();
+            }
 
             return $order;
         });
@@ -85,9 +120,12 @@ class PurchaseOrderController extends Controller
 
     public function edit(PurchaseOrder $purchaseOrder): View
     {
-        $purchaseOrder->load('items');
+        $purchaseOrder->load(['items', 'permohonanAmprahan']);
 
-        return view('purchase-orders.edit', compact('purchaseOrder'));
+        return view('purchase-orders.edit', [
+            'purchaseOrder' => $purchaseOrder,
+            'permohonanAmprahan' => $purchaseOrder->permohonanAmprahan,
+        ]);
     }
 
     public function update(Request $request, PurchaseOrder $purchaseOrder): RedirectResponse
@@ -96,6 +134,12 @@ class PurchaseOrderController extends Controller
         $data['nomor_po'] = $data['nomor_po'] ?: $purchaseOrder->nomor_po;
 
         DB::transaction(function () use ($purchaseOrder, $data, $items) {
+            if ($purchaseOrder->permohonan_amprahan_id) {
+                $this->assertMatchesAmprahan(
+                    $purchaseOrder->permohonanAmprahan()->with('items')->firstOrFail(),
+                    $items
+                );
+            }
             $purchaseOrder->update($data + ['updated_by' => auth()->id()]);
             $purchaseOrder->items()->delete();
             $purchaseOrder->items()->createMany($items);
@@ -107,7 +151,19 @@ class PurchaseOrderController extends Controller
 
     public function destroy(PurchaseOrder $purchaseOrder): RedirectResponse
     {
-        $purchaseOrder->delete();
+        DB::transaction(function () use ($purchaseOrder) {
+            $permohonanAmprahan = $purchaseOrder->permohonanAmprahan()->lockForUpdate()->first();
+            $purchaseOrder->delete();
+
+            if ($permohonanAmprahan) {
+                foreach ($permohonanAmprahan->items as $item) {
+                    $item->status = 'pending';
+                    $item->save();
+                }
+                $permohonanAmprahan->status = 'pending';
+                $permohonanAmprahan->save();
+            }
+        });
 
         return redirect()->route('purchase-orders.index')
             ->with('success', 'Purchase Order berhasil dihapus.');
@@ -117,6 +173,7 @@ class PurchaseOrderController extends Controller
     {
         $data = $request->validate([
             'nomor_po' => ['nullable', 'string', 'max:60', Rule::unique('purchase_orders', 'nomor_po')->ignore($purchaseOrder?->id)],
+            'permohonan_amprahan_id' => [$purchaseOrder ? 'prohibited' : 'nullable', 'integer', 'exists:permohonan_amprahans,id'],
             'tanggal_po' => ['required', 'date'],
             'tanggal_dibutuhkan' => ['nullable', 'date', 'after_or_equal:tanggal_po'],
             'vendor' => ['required', 'string', 'max:255'],
@@ -162,5 +219,27 @@ class PurchaseOrderController extends Controller
         $data['total'] = ($subtotalCents - $discountCents + $taxCents) / 100;
 
         return [$data, $items];
+    }
+
+    private function assertMatchesAmprahan(PermohonanAmprahan $permohonanAmprahan, array $items): void
+    {
+        $approvedItems = $permohonanAmprahan->items
+            ->filter(fn ($item) => (float) $item->jumlah_disetujui > 0)->values();
+
+        if ($approvedItems->isEmpty() || $approvedItems->count() !== count($items)) {
+            throw ValidationException::withMessages([
+                'items' => 'Barang PO harus sama dengan barang yang disetujui.',
+            ]);
+        }
+
+        foreach ($approvedItems as $index => $approvedItem) {
+            if ($items[$index]['deskripsi'] !== $approvedItem->nama_barang
+                || abs((float) $items[$index]['kuantitas'] - (float) $approvedItem->jumlah_disetujui) > 0.0001
+                || ($items[$index]['satuan'] ?? '') !== ($approvedItem->satuan ?? '')) {
+                throw ValidationException::withMessages([
+                    'items' => 'Barang PO harus sama dengan barang yang disetujui.',
+                ]);
+            }
+        }
     }
 }

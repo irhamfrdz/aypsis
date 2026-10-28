@@ -97,7 +97,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->status == 'pending')
                                     <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                        Pending
+                                        {{ $item->items->contains(fn ($barang) => $barang->jumlah_disetujui !== null) ? 'Menunggu PO' : 'Pending' }}
                                     </span>
                                 @elseif($item->status == 'approved')
                                     <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">

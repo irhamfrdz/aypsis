@@ -6,6 +6,7 @@ use App\Http\Controllers\PermohonanAmprahanController;
 use App\Http\Controllers\PurchaseOrderController;
 use App\Models\PermohonanAmprahan;
 use App\Models\PermohonanAmprahanItem;
+use App\Models\PurchaseOrder;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,17 +35,51 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             $table->decimal('jumlah_disetujui', 10, 2)->nullable();
             $table->string('status')->default('pending');
         });
+
+        Schema::create('purchase_orders', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_po')->nullable()->unique();
+            $table->foreignId('permohonan_amprahan_id')->nullable()->unique();
+            $table->date('tanggal_po');
+            $table->date('tanggal_dibutuhkan')->nullable();
+            $table->string('vendor');
+            $table->string('alamat_vendor')->nullable();
+            $table->string('status');
+            $table->string('catatan')->nullable();
+            $table->decimal('subtotal', 18, 2)->default(0);
+            $table->decimal('diskon', 18, 2)->default(0);
+            $table->decimal('pajak_persen', 5, 2)->default(0);
+            $table->decimal('pajak', 18, 2)->default(0);
+            $table->decimal('total', 18, 2)->default(0);
+            $table->unsignedBigInteger('created_by')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('purchase_order_items', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('purchase_order_id');
+            $table->unsignedInteger('urutan');
+            $table->string('deskripsi');
+            $table->decimal('kuantitas', 14, 3);
+            $table->string('satuan')->nullable();
+            $table->decimal('harga_satuan', 18, 2);
+            $table->decimal('jumlah', 18, 2);
+            $table->timestamps();
+        });
     }
 
     protected function tearDown(): void
     {
+        Schema::dropIfExists('purchase_order_items');
+        Schema::dropIfExists('purchase_orders');
         Schema::dropIfExists('permohonan_amprahan_items');
         Schema::dropIfExists('permohonan_amprahans');
 
         parent::tearDown();
     }
 
-    public function test_approving_three_of_five_sets_partial_status_and_saves_quantity(): void
+    public function test_saving_three_of_five_keeps_request_pending_until_purchase_order_exists(): void
     {
         $permohonan = PermohonanAmprahan::create(['status' => 'pending']);
         $item = PermohonanAmprahanItem::create([
@@ -58,11 +93,11 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $this->assertDatabaseHas('permohonan_amprahan_items', [
             'id' => $item->id,
             'jumlah_disetujui' => 3,
-            'status' => 'partially_approved',
+            'status' => 'pending',
         ]);
         $this->assertDatabaseHas('permohonan_amprahans', [
             'id' => $permohonan->id,
-            'status' => 'partially_approved',
+            'status' => 'pending',
         ]);
     }
 
@@ -93,7 +128,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         ]);
     }
 
-    public function test_approved_request_can_be_corrected_to_rejected_and_reset_to_pending(): void
+    public function test_pending_approval_can_be_changed_to_rejected_and_reset(): void
     {
         $permohonan = PermohonanAmprahan::create(['status' => 'pending']);
         $item = PermohonanAmprahanItem::create([
@@ -103,7 +138,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         ]);
 
         $this->process($permohonan->id, [$item->id => '5']);
-        $this->assertSame('approved', $permohonan->fresh()->status);
+        $this->assertSame('pending', $permohonan->fresh()->status);
 
         $this->process($permohonan->id, [$item->id => '0']);
         $this->assertDatabaseHas('permohonan_amprahan_items', [
@@ -175,6 +210,7 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
                 return $permission === 'purchase-order-create';
             }
         });
+        Auth::shouldReceive('id')->andReturn(null);
 
         $request = Request::create('/approval-permohonan-amprahan/'.$permohonan->id.'/process', 'POST', [
             'items' => [$approvedItem->id => '3.50', $rejectedItem->id => '0'],
@@ -186,6 +222,8 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
             route('purchase-orders.create', ['permohonan_amprahan' => $permohonan->id]),
             $response->getTargetUrl()
         );
+        $this->assertSame('pending', $permohonan->fresh()->status);
+        $this->assertSame('pending', $approvedItem->fresh()->status);
 
         $createRequest = Request::create('/purchase-orders/create', 'GET', [
             'permohonan_amprahan' => $permohonan->id,
@@ -198,11 +236,72 @@ class PermohonanAmprahanApprovalQuantityTest extends TestCase
         $html = view('purchase-orders._form', [
             'submitLabel' => 'Simpan Purchase Order',
             'prefillItems' => $view->getData()['prefillItems'],
+            'permohonanAmprahan' => $permohonan,
             'errors' => new \Illuminate\Support\ViewErrorBag,
         ])->render();
         $this->assertStringContainsString('value="Oli"', $html);
         $this->assertStringContainsString('value="3.5"', $html);
         $this->assertStringNotContainsString('value="Filter"', $html);
+        $this->assertStringContainsString('readonly', $html);
+        $this->assertStringNotContainsString('id="add-po-item"', $html);
+
+        $wrongPoRequest = Request::create('/purchase-orders', 'POST', [
+            'permohonan_amprahan_id' => $permohonan->id,
+            'tanggal_po' => '2026-10-28',
+            'vendor' => 'PT Contoh',
+            'status' => 'draft',
+            'items' => [[
+                'deskripsi' => 'Oli',
+                'kuantitas' => '2',
+                'satuan' => 'liter',
+                'harga_satuan' => '10000',
+            ]],
+        ]);
+        $this->app->instance('request', $wrongPoRequest);
+        try {
+            PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($wrongPoRequest));
+            $this->fail('Jumlah PO yang berbeda seharusnya ditolak.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('items', $exception->errors());
+        }
+        $this->assertSame('pending', $permohonan->fresh()->status);
+        $this->assertDatabaseCount('purchase_orders', 0);
+
+        $poRequest = Request::create('/purchase-orders', 'POST', [
+            'permohonan_amprahan_id' => $permohonan->id,
+            'tanggal_po' => '2026-10-28',
+            'vendor' => 'PT Contoh',
+            'status' => 'draft',
+            'items' => [[
+                'deskripsi' => 'Oli',
+                'kuantitas' => '3.5',
+                'satuan' => 'liter',
+                'harga_satuan' => '10000',
+            ]],
+        ]);
+        $this->app->instance('request', $poRequest);
+        PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($poRequest));
+
+        $this->assertSame('partially_approved', $permohonan->fresh()->status);
+        $this->assertSame('partially_approved', $approvedItem->fresh()->status);
+        $this->assertSame('rejected', $rejectedItem->fresh()->status);
+        $this->assertDatabaseHas('purchase_orders', [
+            'permohonan_amprahan_id' => $permohonan->id,
+            'vendor' => 'PT Contoh',
+        ]);
+
+        try {
+            PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->store($poRequest));
+            $this->fail('Permohonan yang sudah memiliki PO tidak boleh menghasilkan PO kedua.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('permohonan_amprahan_id', $exception->errors());
+        }
+        $this->assertDatabaseCount('purchase_orders', 1);
+
+        PurchaseOrder::withoutEvents(fn () => (new PurchaseOrderController)->destroy(PurchaseOrder::firstOrFail()));
+        $this->assertSame('pending', $permohonan->fresh()->status);
+        $this->assertSame('pending', $approvedItem->fresh()->status);
+        $this->assertSame('pending', $rejectedItem->fresh()->status);
     }
 
     private function process(int $permohonanId, array $items): void

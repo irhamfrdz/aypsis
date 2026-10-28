@@ -52,4 +52,9 @@ class PermohonanAmprahan extends Model
     {
         return $this->hasMany(PermohonanAmprahanItem::class, 'permohonan_id');
     }
+
+    public function purchaseOrder()
+    {
+        return $this->hasOne(PurchaseOrder::class);
+    }
 }

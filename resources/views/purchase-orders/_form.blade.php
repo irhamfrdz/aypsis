@@ -1,5 +1,6 @@
 @php
     $order = $purchaseOrder ?? null;
+    $sourceLocked = isset($permohonanAmprahan) && $permohonanAmprahan !== null;
     $items = old('items', $order?->items->map(fn ($item) => [
         'deskripsi' => $item->deskripsi,
         'kuantitas' => $item->kuantitas,
@@ -62,7 +63,9 @@
                 <h2 class="text-base font-bold text-slate-900">Rincian Barang / Jasa</h2>
                 <p class="mt-1 text-xs text-slate-500">Jumlah setiap baris dihitung dari kuantitas × harga satuan.</p>
             </div>
-            <button type="button" id="add-po-item" class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"><i class="fas fa-plus"></i>Tambah Baris</button>
+            @unless($sourceLocked)
+                <button type="button" id="add-po-item" class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100"><i class="fas fa-plus"></i>Tambah Baris</button>
+            @endunless
         </div>
         @error('items')<p class="mb-3 text-sm text-red-600">{{ $message }}</p>@enderror
         <div class="overflow-x-auto rounded-xl border border-slate-200">
@@ -83,15 +86,15 @@
                         <tr class="po-item-row">
                             <td class="px-3 py-3 align-top text-slate-500 po-item-number">{{ $loop->iteration }}</td>
                             <td class="px-3 py-3 align-top">
-                                <input name="items[{{ $index }}][deskripsi]" type="text" required maxlength="500" value="{{ $item['deskripsi'] ?? '' }}" placeholder="Nama barang atau jasa" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input name="items[{{ $index }}][deskripsi]" type="text" required maxlength="500" value="{{ $item['deskripsi'] ?? '' }}" placeholder="Nama barang atau jasa" @readonly($sourceLocked) class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                                 @error("items.$index.deskripsi")<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </td>
                             <td class="px-3 py-3 align-top">
-                                <input name="items[{{ $index }}][kuantitas]" type="number" required min="0.001" step="0.001" value="{{ $item['kuantitas'] ?? 1 }}" class="po-qty w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input name="items[{{ $index }}][kuantitas]" type="number" required min="0.001" step="0.001" value="{{ $item['kuantitas'] ?? 1 }}" @readonly($sourceLocked) class="po-qty w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                                 @error("items.$index.kuantitas")<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </td>
                             <td class="px-3 py-3 align-top">
-                                <input name="items[{{ $index }}][satuan]" type="text" maxlength="30" value="{{ $item['satuan'] ?? '' }}" placeholder="pcs" class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                                <input name="items[{{ $index }}][satuan]" type="text" maxlength="30" value="{{ $item['satuan'] ?? '' }}" placeholder="pcs" @readonly($sourceLocked) class="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
                                 @error("items.$index.satuan")<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </td>
                             <td class="px-3 py-3 align-top">
@@ -99,7 +102,11 @@
                                 @error("items.$index.harga_satuan")<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                             </td>
                             <td class="po-line-total whitespace-nowrap px-3 py-4 text-right align-top font-semibold text-slate-800">Rp 0</td>
-                            <td class="px-3 py-3 text-right align-top"><button type="button" class="remove-po-item rounded-lg p-2 text-rose-600 hover:bg-rose-50" aria-label="Hapus baris"><i class="fas fa-trash"></i></button></td>
+                            <td class="px-3 py-3 text-right align-top">
+                                @unless($sourceLocked)
+                                    <button type="button" class="remove-po-item rounded-lg p-2 text-rose-600 hover:bg-rose-50" aria-label="Hapus baris"><i class="fas fa-trash"></i></button>
+                                @endunless
+                            </td>
                         </tr>
                     @endforeach
                 </tbody>
@@ -173,7 +180,7 @@
                 input.name = input.name.replace(/items\[\d+\]/, `items[${index}]`);
             });
         });
-        document.getElementById('add-po-item').addEventListener('click', () => {
+        document.getElementById('add-po-item')?.addEventListener('click', () => {
             if (list.querySelectorAll('.po-item-row').length >= 100) return;
             list.insertAdjacentHTML('beforeend', document.getElementById('po-item-template').innerHTML.replaceAll('__INDEX__', list.children.length));
             renumber();

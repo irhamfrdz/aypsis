@@ -15,6 +15,7 @@ class PurchaseOrder extends Model
         'nomor_po', 'tanggal_po', 'tanggal_dibutuhkan', 'vendor', 'alamat_vendor',
         'status', 'catatan', 'subtotal', 'diskon', 'pajak_persen', 'pajak', 'total',
         'created_by', 'updated_by',
+        'permohonan_amprahan_id',
     ];
 
     protected $casts = [
@@ -35,5 +36,10 @@ class PurchaseOrder extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function permohonanAmprahan(): BelongsTo
+    {
+        return $this->belongsTo(PermohonanAmprahan::class);
     }
 }

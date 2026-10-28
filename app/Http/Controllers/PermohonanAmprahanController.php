@@ -121,7 +121,7 @@ class PermohonanAmprahanController extends Controller
     {
         $selectedStatus = $request->input('status', 'pending');
 
-        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items'])->latest();
+        $query = PermohonanAmprahan::with(['kapal', 'mobil', 'alatBerat', 'user', 'items', 'purchaseOrder'])->latest();
 
         if ($selectedStatus && $selectedStatus != 'all') {
             $query->where('status', $selectedStatus);
@@ -135,6 +135,7 @@ class PermohonanAmprahanController extends Controller
     public function approvalProcessForm($id)
     {
         $permohonan = PermohonanAmprahan::with(['items', 'kapal', 'mobil', 'alatBerat', 'user'])->findOrFail($id);
+        abort_if($permohonan->purchaseOrder()->exists(), 403, 'Purchase Order untuk permohonan ini sudah dibuat.');
 
         return view('permohonan-amprahan.approval-process', compact('permohonan'));
     }
@@ -147,6 +148,11 @@ class PermohonanAmprahanController extends Controller
         ]);
 
         $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+        if ($permohonan->purchaseOrder()->exists()) {
+            throw ValidationException::withMessages([
+                'items' => 'Persetujuan tidak dapat diubah karena Purchase Order sudah dibuat.',
+            ]);
+        }
         $items = $permohonan->items->keyBy('id');
 
         if (count($validated['items']) !== $items->count()
@@ -165,29 +171,22 @@ class PermohonanAmprahanController extends Controller
         }
 
         DB::transaction(function () use ($permohonan, $items, $validated) {
-            $approvedCount = 0;
-            $rejectedCount = 0;
+            PermohonanAmprahan::query()->lockForUpdate()->findOrFail($permohonan->id);
+            if ($permohonan->purchaseOrder()->exists()) {
+                throw ValidationException::withMessages([
+                    'items' => 'Persetujuan tidak dapat diubah karena Purchase Order sudah dibuat.',
+                ]);
+            }
 
+            $allRejected = collect($validated['items'])->every(fn ($jumlah) => (float) $jumlah === 0.0);
             foreach ($validated['items'] as $itemId => $jumlahDisetujui) {
                 $item = $items[$itemId];
                 $item->jumlah_disetujui = $jumlahDisetujui;
-
-                if ((float) $jumlahDisetujui === 0.0) {
-                    $item->status = 'rejected';
-                    $rejectedCount++;
-                } elseif ((float) $jumlahDisetujui === (float) $item->jumlah) {
-                    $item->status = 'approved';
-                    $approvedCount++;
-                } else {
-                    $item->status = 'partially_approved';
-                }
-
+                $item->status = $allRejected ? 'rejected' : 'pending';
                 $item->save();
             }
 
-            $permohonan->status = $approvedCount === $items->count()
-                ? 'approved'
-                : ($rejectedCount === $items->count() ? 'rejected' : 'partially_approved');
+            $permohonan->status = $allRejected ? 'rejected' : 'pending';
             $permohonan->save();
         });
 
@@ -207,7 +206,12 @@ class PermohonanAmprahanController extends Controller
     public function reject($id)
     {
         DB::transaction(function () use ($id) {
-            $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+            $permohonan = PermohonanAmprahan::with('items')->lockForUpdate()->findOrFail($id);
+            if ($permohonan->purchaseOrder()->exists()) {
+                throw ValidationException::withMessages([
+                    'items' => 'Permohonan tidak dapat ditolak karena Purchase Order sudah dibuat.',
+                ]);
+            }
 
             foreach ($permohonan->items as $item) {
                 $item->jumlah_disetujui = 0;
@@ -226,7 +230,12 @@ class PermohonanAmprahanController extends Controller
     public function resetApproval($id)
     {
         DB::transaction(function () use ($id) {
-            $permohonan = PermohonanAmprahan::with('items')->findOrFail($id);
+            $permohonan = PermohonanAmprahan::with('items')->lockForUpdate()->findOrFail($id);
+            if ($permohonan->purchaseOrder()->exists()) {
+                throw ValidationException::withMessages([
+                    'items' => 'Persetujuan tidak dapat diulang karena Purchase Order sudah dibuat.',
+                ]);
+            }
 
             foreach ($permohonan->items as $item) {
                 $item->status = 'pending';

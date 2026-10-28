@@ -93,7 +93,7 @@
                             <td class="px-6 py-4 whitespace-nowrap">
                                   @if($item->status == 'pending')
                                       <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                          Pending
+                                          {{ $item->items->contains(fn ($barang) => $barang->jumlah_disetujui !== null) ? 'Menunggu PO' : 'Pending' }}
                                       </span>
                                   @elseif($item->status == 'approved')
                                       <span class="px-2.5 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
@@ -118,9 +118,20 @@
                                         <i class="fas fa-eye"></i> Detail
                                     </a>
                                     
-                                    <a href="{{ route('approval-permohonan-amprahan.process-form', $item->id) }}" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center" title="{{ $item->status == 'pending' ? 'Proses Persetujuan' : 'Koreksi Persetujuan' }}">
-                                        <i class="fas fa-clipboard-check mr-1.5"></i> {{ $item->status == 'pending' ? 'Proses' : 'Koreksi' }}
-                                    </a>
+                                    @if($item->purchaseOrder)
+                                        @can('purchase-order-view')
+                                            <a href="{{ route('purchase-orders.show', $item->purchaseOrder) }}" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center"><i class="fas fa-file-invoice mr-1.5"></i> Lihat PO</a>
+                                        @endcan
+                                    @else
+                                        <a href="{{ route('approval-permohonan-amprahan.process-form', $item->id) }}" class="text-white bg-blue-600 hover:bg-blue-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center" title="{{ $item->status == 'pending' ? 'Proses Persetujuan' : 'Koreksi Persetujuan' }}">
+                                            <i class="fas fa-clipboard-check mr-1.5"></i> {{ $item->status == 'pending' ? 'Proses' : 'Koreksi' }}
+                                        </a>
+                                        @if($item->status == 'pending' && $item->items->contains(fn ($barang) => (float) $barang->jumlah_disetujui > 0))
+                                            @can('purchase-order-create')
+                                                <a href="{{ route('purchase-orders.create', ['permohonan_amprahan' => $item->id]) }}" class="text-white bg-green-600 hover:bg-green-700 px-3 py-1.5 rounded-lg transition-colors text-xs font-medium inline-flex items-center"><i class="fas fa-file-invoice mr-1.5"></i> Buat PO</a>
+                                            @endcan
+                                        @endif
+                                    @endif
                                 </div>
                             </td>
                         </tr>
