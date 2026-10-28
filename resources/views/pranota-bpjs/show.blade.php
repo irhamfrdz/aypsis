@@ -77,8 +77,15 @@
                 'Jaminan Pensiun' => ['jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
             ];
             $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
+            $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
             $amount = function ($detail, $field) {
+                if ($field === 'allowance_jkn') return (float) $detail->kis_tunjangan;
+                if (in_array($field, ['allowance_ppu', 'allowance_bpu'])) {
+                    $fields = $field === 'allowance_ppu' ? ['jkk_tunjangan', 'jkm_tunjangan']
+                        : ['bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'];
+                    return collect($fields)->sum(fn ($key) => (float) data_get($detail->rincian_bpjs, $key, 0));
+                }
                 if (in_array($field, ['kis_tunjangan', 'kis_biaya', 'bpjs_ketenagakerjaan'])) return (float) $detail->$field;
                 if ($field === 'legacy_jamsostek') return $detail->rincian_bpjs === null
                     ? (float) $detail->jht_biaya + (float) $detail->jht_hutang + (float) $detail->jkk_tunjangan + (float) $detail->jkm_tunjangan + (float) $detail->jp_biaya + (float) $detail->jp_hutang : 0;
@@ -96,7 +103,7 @@
         @endif
         <div class="mb-8">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Rincian Iuran BPJS Karyawan</h3>
-            <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen JKN, PPU, BPU, dan Jaminan Pensiun.</p>
+            <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen dan ringkasan tunjangan. Ringkasan tidak ditambahkan kembali ke Grand Total.</p>
             <div class="bpjs-detail-scroll overflow-x-auto rounded-lg border border-gray-200">
                 <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
                     <thead>
@@ -151,6 +158,7 @@
             </div>
         </div>
 
+        @include('pranota-bpjs.partials.allowance-summary', ['allowanceSummary' => ['ppu' => $groupTotal(['allowance_ppu']), 'bpu' => $groupTotal(['allowance_bpu']), 'jkn' => $groupTotal(['allowance_jkn'])]])
         <div class="flex justify-end mt-16 print:mt-10">
             <div class="text-center w-48">
                 <p class="mb-16 text-sm text-gray-600">Dibuat Oleh,</p>

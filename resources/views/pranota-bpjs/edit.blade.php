@@ -124,6 +124,7 @@
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
+<th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:160px">Tunjangan JKN 4%</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
@@ -143,11 +144,15 @@
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_hutang">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-ppu">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-bpu">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-jkn">Rp 0,00</td>
+<td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
                             <td></td>
                         </tr>
                     </tfoot>
                 </table>
+                @include('pranota-bpjs.partials.allowance-summary')
             </div>
         </div>
 
@@ -169,6 +174,7 @@
 
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script>
@@ -220,6 +226,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
         document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
+        BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
     function findKaryawan(detailOrId) {
@@ -338,6 +345,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
             <td class="px-4 py-3 text-center align-middle">
                 <button type="button" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-all btn-remove mt-1" title="Hapus Baris">

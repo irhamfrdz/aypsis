@@ -291,6 +291,7 @@
                             <th id="th-group-jp" colspan="2" class="px-3 py-2 text-center border-r border-amber-200 bg-amber-50 text-amber-900 col-group-jp">
                                 <i class="fas fa-piggy-bank text-amber-600 mr-1"></i> Jaminan Pensiun (JP)
                             </th>
+                            <th colspan="3" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan</th>
                             <th rowspan="2" class="px-4 py-3 text-right bg-teal-50 text-teal-900 border-l border-teal-200 font-bold whitespace-nowrap" style="min-width:130px">
                                 Subtotal (Rp)
                             </th>
@@ -332,6 +333,7 @@
                             {{-- JP (2) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 col-group-jp" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-amber-700 bg-amber-50/30 border-r border-gray-200 col-group-jp" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
+<th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:160px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:160px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:160px">Tunjangan JKN 4%</th>
                         </tr>
                     </thead>
                     <tbody id="detail-container" class="divide-y divide-gray-100 bg-white font-medium">
@@ -369,11 +371,15 @@
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-amber-700 bg-amber-50/50 col-group-jp" id="total_jp_hutang">Rp 0</td>
                             
                             {{-- Grand Total --}}
-                            <td class="px-4 py-3.5 text-right font-mono font-bold text-teal-800 text-sm bg-teal-100/70" id="grand_total">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-ppu">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-bpu">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-jkn">Rp 0,00</td>
+<td class="px-4 py-3.5 text-right font-mono font-bold text-teal-800 text-sm bg-teal-100/70" id="grand_total">Rp 0</td>
                             <td class="bg-gray-100/90"></td>
                         </tr>
                     </tfoot>
                 </table>
+                @include('pranota-bpjs.partials.allowance-summary')
             </div>
 
             {{-- Empty State (Shown when 0 rows in table) --}}
@@ -422,6 +428,7 @@
 </div>
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
@@ -764,6 +771,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('card_total_ppu').innerText = 'Rp ' + formatNumber(globalTotalPpu);
         document.getElementById('card_total_bpu').innerText = 'Rp ' + formatNumber(globalTotalBpu);
         document.getElementById('card_grand_total').innerText = 'Rp ' + formatNumber(globalGrandTotal);
+        BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
     function addRow(karyawanId = null, autoCalculate = false) {
@@ -903,6 +911,9 @@ document.addEventListener('DOMContentLoaded', function() {
             </td>
             
             {{-- Subtotal & Action --}}
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono font-bold align-middle subtotal-text text-teal-800 bg-teal-50/40 whitespace-nowrap">Rp 0</td>
             <td class="px-2 py-2 text-center align-middle">
                 <button type="button" class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all btn-remove" title="Hapus Baris">

@@ -1,0 +1,12 @@
+<section class="my-5 rounded-xl border border-orange-200 bg-orange-50/40 p-4">
+    <h3 class="font-semibold text-gray-800">Ringkasan Tunjangan</h3>
+    <p class="mt-1 mb-3 text-xs text-gray-500">Ringkasan komponen yang sudah dihitung. Nominal tidak ditambahkan kembali ke Grand Total.</p>
+    <table class="w-full text-sm">
+        <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
+        <tbody>
+            @foreach(['ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'bpu' => 'Tunjangan BPU JKK 1% + JKM', 'jkn' => 'Tunjangan JKN 4%'] as $key => $label)
+                <tr class="border-b border-orange-100"><td class="py-2">{{ $label }}</td><td class="py-2 text-right font-mono font-semibold" data-allowance-total="{{ $key }}">Rp {{ number_format($allowanceSummary[$key] ?? 0, 2, ',', '.') }}</td></tr>
+            @endforeach
+        </tbody>
+    </table>
+</section>
