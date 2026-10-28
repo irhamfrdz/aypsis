@@ -14,7 +14,7 @@
         function labelRow(row) {
             const headings = Array.from(dialog.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
-                const input = cell.querySelector('input');
+                const input = cell.querySelector('input, textarea');
                 const field = input?.name.match(/\[([^\]]+)\]$/)?.[1];
                 cell.dataset.label = field ? labels[field] : (cell.querySelector('button') ? '' : headings[index]?.textContent.trim() || '');
                 if (!field) return;
@@ -39,8 +39,9 @@
             fields.forEach(field => {
                 const cell = document.createElement('td');
                 cell.className = 'px-2 py-2';
-                const input = document.createElement('input');
-                input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'].includes(field) ? 'number' : 'text';
+                const input = document.createElement(field === 'nama_barang' ? 'textarea' : 'input');
+                if (field === 'nama_barang') input.rows = 2;
+                else input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase'].includes(field) ? 'number' : 'text';
                 input.name = `goods[${index}][${field}]`;
                 input.className = 'w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500';
                 if (field === 'nama_barang') {
@@ -75,7 +76,7 @@
             labelRow(row);
             rows.append(row);
             dialog.querySelector('.approval-goods-empty')?.remove();
-            row.querySelector('input').focus();
+            row.querySelector('input, textarea').focus();
         });
         rows.addEventListener('click', event => {
             if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
