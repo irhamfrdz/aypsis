@@ -4,15 +4,14 @@
     document.querySelectorAll('.approval-goods-open').forEach(button => {
         const dialog = document.getElementById(button.dataset.dialogId);
         if (!dialog) return;
-        const rows = dialog.querySelector('.approval-goods-rows');
         const form = dialog.querySelector('form');
         const labels = { nama_barang: 'Nama barang *', hs_code: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
-            ukuran: 'Ukuran keramik', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m?)',
+            ukuran: 'Ukuran keramik', panjang: 'Panjang', lebar: 'Lebar', tinggi: 'Tinggi', meter_kubik: 'Volume (m³)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
             satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
-        function labelRow(row) {
-            const headings = Array.from(dialog.querySelectorAll('thead th'));
+        function labelRow(row, section) {
+            const headings = Array.from(section.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
                 const input = cell.querySelector('input, textarea');
                 const field = input?.name.match(/\[([^\]]+)\]$/)?.[1] || cell.dataset.field;
@@ -30,77 +29,80 @@
             const namaBarang = namaCell.querySelector('input, textarea')?.value ?? namaCell.textContent;
             ukuranCell.hidden = !namaBarang.toLowerCase().includes('keramik');
         }
-        rows.querySelectorAll('tr').forEach(row => {
-            labelRow(row);
-            toggleUkuranField(row);
-        });
-
-
         button.addEventListener('click', () => dialog.showModal());
         dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
             closeButton.addEventListener('click', () => dialog.close());
         });
         dialog.addEventListener('close', () => button.focus());
 
-        dialog.querySelector('.approval-goods-add')?.addEventListener('click', () => {
-            const index = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2);
-            const row = document.createElement('tr');
-            const fields = ['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik'];
-            fields.forEach(field => {
-                const cell = document.createElement('td');
-                cell.className = 'px-2 py-2';
-                const input = document.createElement(field === 'nama_barang' ? 'textarea' : 'input');
-                if (field === 'nama_barang') input.rows = 2;
-                else input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik'].includes(field) ? 'number' : 'text';
-                if (field === 'tonase') input.inputMode = 'decimal';
-                input.name = `goods[${index}][${field}]`;
-                input.className = 'w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500';
-                if (field === 'nama_barang') {
-                    input.required = true;
-                    input.classList.add('min-w-48');
-                }
-                if (input.type === 'number') {
-                    input.min = '0';
-                    input.step = field === 'jumlah' ? '1' : 'any';
-                }
-                cell.append(input);
-                row.append(cell);
+        dialog.querySelectorAll('.approval-goods-section').forEach(section => {
+            const rows = section.querySelector('.approval-goods-rows');
+            const fieldPrefix = section.dataset.fieldPrefix;
+            rows.querySelectorAll('tr').forEach(row => {
+                labelRow(row, section);
+                toggleUkuranField(row);
             });
-            if (dialog.dataset.sourceType !== 'ttsj') {
-                const cell = document.createElement('td');
-                cell.className = 'px-2 py-2';
-                const input = document.createElement('input');
-                input.type = 'text';
-                input.name = `goods[${index}][keterangan_barang]`;
-                input.className = 'w-40 rounded-lg border-gray-300 text-sm';
-                cell.append(input);
-                row.append(cell);
-            }
-            const action = document.createElement('td');
-            action.className = 'px-2 py-2';
-            const remove = document.createElement('button');
-            remove.type = 'button';
-            remove.className = 'approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50';
-            remove.textContent = 'Hapus';
-            action.append(remove);
-            row.append(action);
-            labelRow(row);
-            toggleUkuranField(row);
-            rows.append(row);
-            dialog.querySelector('.approval-goods-empty')?.remove();
-            row.querySelector('input, textarea').focus();
-        });
-        rows.addEventListener('click', event => {
-            if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
-        });
-        rows.addEventListener('input', event => {
-            if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
-        });
-        form?.addEventListener('submit', event => {
-            if (!rows.querySelector('tr')) {
-                event.preventDefault();
-                alert('Tambahkan setidaknya satu barang sebelum menyimpan.');
-            }
+
+            section.querySelector('.approval-goods-add')?.addEventListener('click', () => {
+                const index = 'new_' + Date.now() + '_' + Math.random().toString(36).slice(2);
+                const row = document.createElement('tr');
+                const fields = ['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik'];
+                fields.forEach(field => {
+                    const cell = document.createElement('td');
+                    cell.className = 'px-2 py-2';
+                    const input = document.createElement(field === 'nama_barang' ? 'textarea' : 'input');
+                    if (field === 'nama_barang') input.rows = 2;
+                    else input.type = ['jumlah', 'panjang', 'lebar', 'tinggi', 'meter_kubik'].includes(field) ? 'number' : 'text';
+                    if (field === 'tonase') input.inputMode = 'decimal';
+                    input.name = `${fieldPrefix}[${index}][${field}]`;
+                    input.className = 'w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500';
+                    if (field === 'nama_barang') {
+                        input.required = true;
+                        input.classList.add('min-w-48');
+                    }
+                    if (input.type === 'number') {
+                        input.min = '0';
+                        input.step = field === 'jumlah' ? '1' : 'any';
+                    }
+                    cell.append(input);
+                    row.append(cell);
+                });
+                if (dialog.dataset.sourceType !== 'ttsj') {
+                    const cell = document.createElement('td');
+                    cell.className = 'px-2 py-2';
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.name = `${fieldPrefix}[${index}][keterangan_barang]`;
+                    input.className = 'w-40 rounded-lg border-gray-300 text-sm';
+                    cell.append(input);
+                    row.append(cell);
+                }
+                const action = document.createElement('td');
+                action.className = 'px-2 py-2';
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50';
+                remove.textContent = 'Hapus';
+                action.append(remove);
+                row.append(action);
+                labelRow(row, section);
+                toggleUkuranField(row);
+                rows.append(row);
+                section.querySelector('.approval-goods-empty')?.remove();
+                row.querySelector('input, textarea').focus();
+            });
+            rows.addEventListener('click', event => {
+                if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
+            });
+            rows.addEventListener('input', event => {
+                if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
+            });
+            if (section.dataset.required === 'true') form?.addEventListener('submit', event => {
+                if (!rows.querySelector('tr')) {
+                    event.preventDefault();
+                    alert('Tambahkan setidaknya satu barang perincian sebelum menyimpan.');
+                }
+            });
         });
     });
 })();

@@ -88,6 +88,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
             $table->string('source_type');
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
+            $table->json('manifest_goods')->nullable();
             $table->text('keterangan_barang')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
@@ -159,6 +160,31 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
             array_column($override->fresh()->goods, 'nama_barang')
         );
         $this->assertSame('Lama', $receipt->fresh()->dimensi_items[0]['nama_barang']);
+    }
+
+    public function test_manifest_goods_and_perincian_goods_are_stored_separately(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId([]);
+        $controller = app(ApprovalTandaTerimaDuaController::class);
+
+        TandaTerima::withoutEvents(fn () => $controller->updateGoods(
+            Request::create('/', 'PUT', [
+                'goods' => [['nama_barang' => 'Barang Perincian', 'jumlah' => 2]],
+                'manifest_goods' => [['nama_barang' => 'Barang Manifest', 'hs_code' => '1234', 'jumlah' => 5]],
+            ]), 'fcl', $id
+        ));
+
+        $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail();
+        $this->assertSame('Barang Perincian', $override->goods[0]['nama_barang']);
+        $this->assertSame('Barang Manifest', $override->manifest_goods[0]['nama_barang']);
+        $this->assertSame('1234', $override->manifest_goods[0]['hs_code']);
+
+        $controller->updateGoods(Request::create('/', 'PUT', [
+            'goods' => [['nama_barang' => 'Barang Perincian', 'jumlah' => 3]],
+        ]), 'fcl', $id);
+
+        $this->assertSame('Barang Perincian', $override->fresh()->goods[0]['nama_barang']);
+        $this->assertSame([], $override->fresh()->manifest_goods);
     }
 
     public function test_lcl_goods_update_does_not_change_or_delete_original_items(): void

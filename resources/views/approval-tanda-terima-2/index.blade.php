@@ -236,7 +236,7 @@
                                         <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
                                     </div>
                                     <p class="mx-5 mt-4 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
-                                        {{ $goodsOverride ? 'Periksa atau perbarui rincian barang untuk approval.' : 'Lengkapi rincian barang untuk approval.' }}
+                                        {{ $goodsOverride ? 'Periksa atau perbarui detail barang manifest dan perincian.' : 'Lengkapi detail barang manifest dan perincian untuk approval.' }}
                                         Kolom bertanda * wajib diisi. Perubahan hanya berlaku pada versi approval.
                                     </p>
                                     @can('approval-tanda-terima-2-approve')
@@ -245,6 +245,9 @@
                                             @method('PUT')
                                     @endcan
                                     <div class="overflow-x-auto p-5">
+                                        @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect($goodsOverride?->manifest_goods ?? [])])
+                                        <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true">
+                                        <h3 class="mb-4 text-base font-semibold text-gray-900">Detail Barang Perincian</h3>
                                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                                                 <tr>
@@ -298,8 +301,9 @@
                                         @endif
                                         @if($goods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang belum tersedia.</p>@endif
                                         @can('approval-tanda-terima-2-approve')
-                                            <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang</button>
+                                            <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang Perincian</button>
                                         @endcan
+                                        </section>
                                     </div>
                                     <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4">
                                         <button type="button" class="approval-goods-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Tutup</button>

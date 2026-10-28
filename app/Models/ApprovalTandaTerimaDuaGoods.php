@@ -12,11 +12,13 @@ class ApprovalTandaTerimaDuaGoods extends Model
         'source_type',
         'source_id',
         'goods',
+        'manifest_goods',
         'keterangan_barang',
         'updated_by',
     ];
 
     protected $casts = [
         'goods' => 'array',
+        'manifest_goods' => 'array',
     ];
 }
