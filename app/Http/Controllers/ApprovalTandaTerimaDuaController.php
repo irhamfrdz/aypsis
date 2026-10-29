@@ -259,9 +259,14 @@ class ApprovalTandaTerimaDuaController extends Controller
         $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($goodsFields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
-        $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(fn ($good) => collect($manifestFields)
-            ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
-            ->all())->all();
+        $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(function ($good) use ($manifestFields) {
+            $item = collect($manifestFields)->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])->all();
+            if (filled($item['tonase'])) {
+                $item['tonase'] = $this->formatManifestTonase($item['tonase']);
+            }
+
+            return $item;
+        })->all();
 
         ApprovalTandaTerimaDuaGoods::updateOrCreate(
             ['source_type' => $sourceType, 'source_id' => $id],
@@ -274,6 +279,24 @@ class ApprovalTandaTerimaDuaController extends Controller
         );
 
         return back()->with('success', 'Detail barang approval berhasil disimpan tanpa mengubah data tanda terima asli.');
+    }
+
+    private function formatManifestTonase(string $value): string
+    {
+        $value = trim($value);
+        if (str_contains($value, ',')) {
+            [$whole, $fraction] = explode(',', $value, 2);
+        } elseif (preg_match('/^\d+\.\d{1,2}$/', $value)) {
+            [$whole, $fraction] = explode('.', $value, 2);
+        } else {
+            $whole = $value;
+            $fraction = null;
+        }
+
+        $whole = ltrim(str_replace('.', '', $whole), '0');
+        $grouped = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $whole === '' ? '0' : $whole);
+
+        return $grouped.($fraction === null ? '' : ','.$fraction);
     }
 
     public function destroy(string $sourceType, int $id): RedirectResponse

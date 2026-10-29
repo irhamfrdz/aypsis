@@ -10,6 +10,28 @@
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
             satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
+        function formatTonase(value) {
+            const clean = value.replace(/[^\d.,]/g, '');
+            const comma = clean.indexOf(',');
+            const decimalDot = comma === -1 && /^\d+\.\d{1,2}$/.test(clean);
+            const separator = comma >= 0 ? comma : (decimalDot ? clean.indexOf('.') : -1);
+            const whole = (separator >= 0 ? clean.slice(0, separator) : clean).replace(/\D/g, '');
+            const fraction = separator >= 0 ? clean.slice(separator + 1).replace(/\D/g, '') : null;
+            if (!whole && fraction === null) return '';
+            const grouped = (whole || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+            return grouped + (fraction !== null ? ',' + fraction : '');
+        }
+        function formatTonaseInput(input) {
+            const cursor = input.selectionStart;
+            const previousLength = input.value.length;
+            const formatted = formatTonase(input.value);
+            if (formatted === input.value) return;
+            input.value = formatted;
+            if (cursor !== null && document.activeElement === input) {
+                const nextCursor = Math.max(0, Math.min(formatted.length, cursor + formatted.length - previousLength));
+                input.setSelectionRange(nextCursor, nextCursor);
+            }
+        }
         function labelRow(row, section) {
             const headings = Array.from(section.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
@@ -54,6 +76,10 @@
             rows.querySelectorAll('tr').forEach(row => {
                 labelRow(row, section);
                 toggleUkuranField(row);
+                if (fieldPrefix === 'manifest_goods') {
+                    const tonase = row.querySelector('[data-field="tonase"] input');
+                    if (tonase) formatTonaseInput(tonase);
+                }
             });
             if (fieldPrefix === 'goods' && section.dataset.savedOverride === 'true') {
                 const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows').children;
@@ -70,6 +96,9 @@
             }
 
             rows.addEventListener('input', event => {
+                if (fieldPrefix === 'manifest_goods' && event.target.name?.endsWith('[tonase]')) {
+                    formatTonaseInput(event.target);
+                }
                 if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
                 if (fieldPrefix === 'goods') {
                     event.target.dataset.manuallyEdited = 'true';

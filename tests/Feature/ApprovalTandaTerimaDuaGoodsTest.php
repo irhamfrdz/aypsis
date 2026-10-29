@@ -167,7 +167,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         TandaTerima::withoutEvents(fn () => $controller->updateGoods(
             Request::create('/', 'PUT', [
                 'goods' => [['nama_barang' => 'Barang Perincian', 'jumlah' => 2]],
-                'manifest_goods' => [['nama_barang' => 'Barang Manifest', 'hs_code' => '1234', 'jumlah' => 5]],
+                'manifest_goods' => [['nama_barang' => 'Barang Manifest', 'hs_code' => '1234', 'jumlah' => 5, 'tonase' => '17000']],
             ]), 'fcl', $id
         ));
 
@@ -175,6 +175,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $this->assertSame('Barang Perincian', $override->goods[0]['nama_barang']);
         $this->assertSame('Barang Manifest', $override->manifest_goods[0]['nama_barang']);
         $this->assertSame('1234', $override->manifest_goods[0]['hs_code']);
+        $this->assertSame('17.000', $override->manifest_goods[0]['tonase']);
 
         $controller->updateGoods(Request::create('/', 'PUT', [
             'goods' => [['nama_barang' => 'Barang Perincian', 'jumlah' => 3]],

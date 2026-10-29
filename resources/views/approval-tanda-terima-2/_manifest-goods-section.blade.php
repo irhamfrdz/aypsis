@@ -36,7 +36,13 @@
                         @endif
                     @else
                         @foreach(['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'meter_kubik'] as $field)
-                            <td class="px-3 py-3" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>{{ data_get($good, $field) ?? '-' }}</td>
+                            @php
+                                $value = data_get($good, $field);
+                                if ($field === 'tonase' && preg_match('/^\d{4,}$/', (string) $value)) {
+                                    $value = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $value);
+                                }
+                            @endphp
+                            <td class="px-3 py-3" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>{{ $value ?? '-' }}</td>
                         @endforeach
                         @if($type !== 'ttsj')<td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>@endif
                     @endcan
