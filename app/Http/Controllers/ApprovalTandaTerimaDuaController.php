@@ -236,17 +236,11 @@ class ApprovalTandaTerimaDuaController extends Controller
                 ->all()]);
         }
         $validated = $request->validate([
-            'goods' => 'required|array|min:1|max:50',
+            'goods' => 'required|array|size:1',
             'goods.*.nama_barang' => 'required|string|max:255',
-            'goods.*.hs_code' => 'nullable|string|max:255',
             'goods.*.jumlah' => 'nullable|integer|min:0',
             'goods.*.satuan' => 'nullable|string|max:100',
             'goods.*.ukuran' => 'nullable|string|max:255',
-            'goods.*.panjang' => 'nullable|numeric|min:0',
-            'goods.*.lebar' => 'nullable|numeric|min:0',
-            'goods.*.tinggi' => 'nullable|numeric|min:0',
-            'goods.*.meter_kubik' => 'nullable|numeric|min:0',
-            'goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'goods.*.keterangan_barang' => 'nullable|string|max:2000',
             'manifest_goods' => 'nullable|array|max:1',
             'manifest_goods.*.nama_barang' => 'required|string|max:255',
@@ -260,9 +254,9 @@ class ApprovalTandaTerimaDuaController extends Controller
             'keterangan_barang' => 'nullable|string|max:2000',
         ]);
 
-        $fields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'keterangan_barang'];
-        $manifestFields = array_values(array_diff($fields, ['panjang', 'lebar', 'tinggi']));
-        $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($fields)
+        $goodsFields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'keterangan_barang'];
+        $manifestFields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'meter_kubik', 'tonase', 'keterangan_barang'];
+        $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($goodsFields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
         $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(fn ($good) => collect($manifestFields)

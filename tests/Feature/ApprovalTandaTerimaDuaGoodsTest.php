@@ -145,21 +145,17 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $this->assertNull($receipt->jumlah);
         $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail();
         $this->assertSame('Mesin', $override->goods[0]['nama_barang']);
-        $this->assertSame('8429.51.00', $override->goods[0]['hs_code']);
         $this->assertSame(2, $override->goods[0]['jumlah']);
+        foreach (['hs_code', 'tonase', 'panjang', 'lebar', 'tinggi', 'meter_kubik'] as $removedField) {
+            $this->assertArrayNotHasKey($removedField, $override->goods[0]);
+        }
 
         app(ApprovalTandaTerimaDuaController::class)->updateGoods(
-            Request::create('/', 'PUT', ['goods' => [
-                ['nama_barang' => 'Mesin Revisi', 'jumlah' => 3],
-                ['nama_barang' => 'Barang Tambahan', 'jumlah' => 1],
-            ]]), 'fcl', $id
+            Request::create('/', 'PUT', ['goods' => [['nama_barang' => 'Mesin Revisi', 'jumlah' => 3]]]), 'fcl', $id
         );
 
         $this->assertDatabaseCount('approval_tanda_terima_2_goods', 1);
-        $this->assertSame(
-            ['Mesin Revisi', 'Barang Tambahan'],
-            array_column($override->fresh()->goods, 'nama_barang')
-        );
+        $this->assertSame(['Mesin Revisi'], array_column($override->fresh()->goods, 'nama_barang'));
         $this->assertSame('Lama', $receipt->fresh()->dimensi_items[0]['nama_barang']);
     }
 
@@ -216,6 +212,51 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         }
     }
 
+    public function test_perincian_rejects_more_than_one_item_without_changing_saved_data(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId([]);
+        $controller = app(ApprovalTandaTerimaDuaController::class);
+        $controller->updateGoods(Request::create('/', 'PUT', [
+            'goods' => [['nama_barang' => 'Barang Awal', 'jumlah' => 1]],
+        ]), 'fcl', $id);
+
+        try {
+            $controller->updateGoods(Request::create('/', 'PUT', [
+                'goods' => [['nama_barang' => 'Pertama'], ['nama_barang' => 'Kedua']],
+            ]), 'fcl', $id);
+            $this->fail('Perincian tidak boleh berisi lebih dari satu barang.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('goods', $exception->errors());
+        }
+
+        $this->assertSame('Barang Awal', ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail()->goods[0]['nama_barang']);
+    }
+
+    public function test_perincian_migration_normalizes_existing_json_and_keeps_backup(): void
+    {
+        $original = [
+            ['nama_barang' => 'Pertama', 'jumlah' => 2, 'hs_code' => '1234', 'tonase' => '5', 'panjang' => 1, 'lebar' => 2, 'tinggi' => 3, 'meter_kubik' => 6],
+            ['nama_barang' => 'Kedua', 'jumlah' => 1],
+        ];
+        $id = DB::table('approval_tanda_terima_2_goods')->insertGetId([
+            'source_type' => 'fcl',
+            'source_id' => 1,
+            'goods' => json_encode($original),
+        ]);
+        $migration = require base_path('database/migrations/2026_10_29_120000_normalize_approval_tanda_terima_2_perincian_goods.php');
+
+        $migration->up();
+
+        $record = DB::table('approval_tanda_terima_2_goods')->find($id);
+        $this->assertSame([['nama_barang' => 'Pertama', 'jumlah' => 2]], json_decode($record->goods, true));
+        $this->assertSame($original, json_decode($record->goods_legacy, true));
+
+        $migration->down();
+
+        $this->assertSame($original, json_decode(DB::table('approval_tanda_terima_2_goods')->find($id)->goods, true));
+        $this->assertFalse(Schema::hasColumn('approval_tanda_terima_2_goods', 'goods_legacy'));
+    }
+
     public function test_lcl_goods_update_does_not_change_or_delete_original_items(): void
     {
         $receiptId = DB::table('tanda_terimas_lcl')->insertGetId([]);
@@ -225,10 +266,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $otherItemId = DB::table('tanda_terima_lcl_items')->insertGetId(['tanda_terima_lcl_id' => $otherId, 'nama_barang' => 'Lain']);
 
         TandaTerimaLcl::withoutEvents(fn () => app(ApprovalTandaTerimaDuaController::class)->updateGoods(
-            Request::create('/', 'PUT', ['goods' => [
-                ['id' => $keepId, 'nama_barang' => 'Baru', 'jumlah' => 4],
-                ['nama_barang' => 'Tambahan', 'jumlah' => 1],
-            ]]), 'lcl', $receiptId
+            Request::create('/', 'PUT', ['goods' => [['id' => $keepId, 'nama_barang' => 'Baru', 'jumlah' => 4]]]), 'lcl', $receiptId
         ));
 
         $this->assertDatabaseHas('tanda_terima_lcl_items', ['id' => $keepId, 'nama_barang' => 'Lama']);
@@ -236,7 +274,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $this->assertDatabaseHas('tanda_terima_lcl_items', ['id' => $otherItemId, 'nama_barang' => 'Lain']);
         $this->assertDatabaseMissing('tanda_terima_lcl_items', ['tanda_terima_lcl_id' => $receiptId, 'nama_barang' => 'Tambahan']);
         $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'lcl')->where('source_id', $receiptId)->firstOrFail();
-        $this->assertSame(['Baru', 'Tambahan'], array_column($override->goods, 'nama_barang'));
+        $this->assertSame(['Baru'], array_column($override->goods, 'nama_barang'));
     }
 
     public function test_ttsj_goods_update_keeps_parent_summary_and_items_unchanged(): void
@@ -260,6 +298,7 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         ]);
         $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'ttsj')->where('source_id', $id)->firstOrFail();
         $this->assertSame('Barang A', $override->goods[0]['nama_barang']);
+        $this->assertArrayNotHasKey('meter_kubik', $override->goods[0]);
         $this->assertSame('Rapuh', $override->keterangan_barang);
     }
 }

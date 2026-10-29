@@ -42,9 +42,6 @@
     .approval-goods-rows td[data-field="nama_barang"] textarea { min-width: 160px; max-width: 100%; min-height: 60px; resize: both; overflow: auto; }
     .approval-goods-dialog input::placeholder, .approval-goods-dialog textarea::placeholder { color: #94a3b8; }
     .approval-goods-dialog input:focus, .approval-goods-dialog textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
-    .approval-goods-dialog .approval-goods-remove { min-height: 40px; padding: 8px 12px; border: 1px solid #fecaca; background: #fff; }
-    .approval-goods-rows td:last-child:has(.approval-goods-remove) { grid-column: 1 / -1; text-align: right; padding-top: 12px; border-top: 1px solid #f1f5f9; }
-    .approval-goods-dialog .approval-goods-add { min-height: 42px; padding: 10px 16px; }
     @media (max-width: 640px) {
         .approval-goods-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
         .approval-goods-dialog .overflow-x-auto { padding: 16px; }
@@ -177,7 +174,7 @@
                             }
                             $perincianGoods = $goods->isEmpty() && auth()->user()?->can('approval-tanda-terima-2-approve')
                                 ? collect([[]])
-                                : $goods;
+                                : $goods->take(1)->values();
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
                         <tr class="{{ $isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70' }}">
@@ -251,22 +248,19 @@
                                         @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect($goodsOverride?->manifest_goods ?? [])])
                                         <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true" data-saved-override="{{ $goodsOverride ? 'true' : 'false' }}">
                                         <h3 class="mb-4 text-base font-semibold text-gray-900">Detail Barang Perincian</h3>
-                                        <p class="mb-4 text-xs text-gray-500">Nilai awal mengikuti Manifest. Anda dapat mengubah Perincian secara terpisah.</p>
+                                        <p class="mb-4 text-xs text-gray-500">Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.</p>
                                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                                                 <tr>
-                                                    <th class="px-3 py-2">HS Code</th><th class="px-3 py-2">Jumlah</th><th class="px-3 py-2">Satuan</th><th class="px-3 py-2">Nama Barang</th>
-                                                    <th class="px-3 py-2">Tonase</th><th class="px-3 py-2">Ukuran</th><th class="px-3 py-2">Panjang</th>
-                                                    <th class="px-3 py-2">Lebar</th><th class="px-3 py-2">Tinggi</th><th class="px-3 py-2">Volume (m³)</th>
+                                                    <th class="px-3 py-2">Jumlah</th><th class="px-3 py-2">Satuan</th><th class="px-3 py-2">Nama Barang</th><th class="px-3 py-2">Ukuran</th>
                                                     @if($type !== 'ttsj')<th class="px-3 py-2">Keterangan</th>@endif
-                                                    @can('approval-tanda-terima-2-approve')<th class="px-3 py-2">Aksi</th>@endcan
                                                 </tr>
                                             </thead>
                                             <tbody class="approval-goods-rows divide-y divide-gray-100">
                                                 @foreach($perincianGoods as $good)
                                                     <tr>
                                                         @can('approval-tanda-terima-2-approve')
-                                                            @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'panjang' => 'number', 'lebar' => 'number', 'tinggi' => 'number', 'meter_kubik' => 'number'] as $field => $inputType)
+                                                            @foreach(['jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'ukuran' => 'text'] as $field => $inputType)
                                                                 <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                                                     @if($field === 'nama_barang')
                                                                         <textarea name="goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ is_scalar($good) ? $good : data_get($good, $field) }}</textarea>
@@ -274,7 +268,6 @@
                                                                         <input type="{{ $inputType }}" name="goods[{{ $loop->parent->index }}][{{ $field }}]"
                                                                             value="{{ data_get($good, $field) }}"
                                                                             @if($inputType === 'number') min="0" step="{{ $field === 'jumlah' ? '1' : 'any' }}" @endif
-                                                                            @if($field === 'tonase') inputmode="decimal" placeholder="Contoh: 17.665,78" @endif
                                                                             class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                                                     @endif
                                                                 </td>
@@ -282,9 +275,8 @@
                                                             @if($type !== 'ttsj')
                                                                 <td class="px-2 py-2"><input type="text" name="goods[{{ $loop->index }}][keterangan_barang]" value="{{ data_get($good, 'keterangan_barang') }}" class="w-40 rounded-lg border-gray-300 text-sm"></td>
                                                             @endif
-                                                            <td class="px-2 py-2"><button type="button" class="approval-goods-remove rounded-lg px-2 py-1 text-xs font-semibold text-red-700 hover:bg-red-50">Hapus</button></td>
                                                         @else
-                                                            @foreach(['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik'] as $field)
+                                                            @foreach(['jumlah', 'satuan', 'nama_barang', 'ukuran'] as $field)
                                                                 <td class="px-3 py-3" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>{{ $field === 'nama_barang' && is_scalar($good) ? $good : (data_get($good, $field) ?? '-') }}</td>
                                                             @endforeach
                                                             @if($type !== 'ttsj')<td class="px-3 py-3">{{ data_get($good, 'keterangan_barang') ?: '-' }}</td>@endif
@@ -304,9 +296,6 @@
                                             </div>
                                         @endif
                                         @if($perincianGoods->isEmpty())<p class="approval-goods-empty mt-3 text-sm text-gray-500">Detail barang belum tersedia.</p>@endif
-                                        @can('approval-tanda-terima-2-approve')
-                                            <button type="button" class="approval-goods-add mt-4 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100">+ Tambah Barang Perincian</button>
-                                        @endcan
                                         </section>
                                     </div>
                                     <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4">
