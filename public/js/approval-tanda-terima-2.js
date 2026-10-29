@@ -125,6 +125,57 @@
 (() => {
     'use strict';
 
+    document.querySelectorAll('.approval-export-form').forEach(form => {
+        form.addEventListener('submit', async event => {
+            event.preventDefault();
+            const button = form.querySelector('.approval-export-button');
+            const label = button.querySelector('span');
+            const previousLabel = label.textContent;
+            button.disabled = true;
+            label.textContent = 'Membuat Excel...';
+
+            try {
+                const response = await fetch(form.action, {
+                    method: 'POST',
+                    body: new FormData(form),
+                    headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
+                    credentials: 'same-origin',
+                });
+                if (!response.ok) throw new Error('Export Excel gagal. Coba lagi.');
+                const blob = await response.blob();
+                const disposition = response.headers.get('Content-Disposition') || '';
+                const filename = disposition.match(/filename="?([^";]+)"?/i)?.[1] || 'Manifest.xlsx';
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.append(link);
+                link.click();
+                link.remove();
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+
+                label.textContent = 'Export Lagi';
+                button.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800', 'hover:bg-emerald-100');
+                button.classList.add('border-green-500', 'bg-green-300', 'text-green-950', 'hover:bg-green-400');
+                const row = form.closest('tr');
+                row.classList.remove('bg-yellow-100', 'hover:bg-yellow-100', 'hover:bg-gray-50/70');
+                row.classList.add('bg-green-100', 'hover:bg-green-100');
+                const actionCell = form.closest('td');
+                actionCell.classList.remove('bg-yellow-200');
+                actionCell.classList.add('bg-green-200');
+            } catch (error) {
+                label.textContent = previousLabel;
+                alert(error.message || 'Export Excel gagal. Coba lagi.');
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+})();
+
+(() => {
+    'use strict';
+
     const dialog = document.getElementById('approval-shipper-dialog');
     if (!dialog) return;
 

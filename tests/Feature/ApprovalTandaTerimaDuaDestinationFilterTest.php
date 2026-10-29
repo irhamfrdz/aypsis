@@ -70,6 +70,11 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->timestamps();
             $table->unique(['source_type', 'source_id']);
         });
+        Schema::create('approval_tanda_terima_2_exports', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_type', 4);
+            $table->unsignedBigInteger('source_id');
+        });
         Schema::create('prospek', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanda_terima_id')->nullable();
@@ -124,12 +129,16 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         DB::table('approval_tanda_terima_2_incomplete_marks')->insert([
             'source_type' => 'fcl', 'source_id' => $id,
         ]);
+        DB::table('approval_tanda_terima_2_exports')->insert([
+            'source_type' => 'fcl', 'source_id' => $id,
+        ]);
 
         $data = (new ApprovalTandaTerimaDuaController)->index(
             Request::create('/', 'GET', ['type' => 'fcl', 'destination' => 'batam'])
         )->getData();
 
         $this->assertTrue($data['incompleteMarks']->has($id));
+        $this->assertTrue($data['exportedMarks']->has($id));
     }
 
     public function test_receipts_already_used_in_a_manifest_are_hidden(): void
@@ -144,7 +153,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         ]);
 
         $fclItems = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'fcl'])
+            Request::create('/', 'GET', ['type' => 'fcl', 'destination' => ''])
         )->getData()['items'];
 
         $this->assertEqualsCanonicalizing([$visibleFclId], $fclItems->pluck('id')->all());
@@ -156,7 +165,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         DB::table('manifests')->insert(['nomor_tanda_terima' => 'LCL-MANIFEST']);
 
         $lclItems = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'lcl'])
+            Request::create('/', 'GET', ['type' => 'lcl', 'destination' => ''])
         )->getData()['items'];
         $this->assertEqualsCanonicalizing([$visibleLclId], $lclItems->pluck('id')->all());
 
@@ -170,7 +179,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         DB::table('manifests')->insert(['nomor_tanda_terima' => 'TTSJ-MANIFEST']);
 
         $ttsjItems = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'ttsj'])
+            Request::create('/', 'GET', ['type' => 'ttsj', 'destination' => ''])
         )->getData()['items'];
         $this->assertEqualsCanonicalizing([$visibleTtsjId], $ttsjItems->pluck('id')->all());
     }
@@ -184,7 +193,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         ]);
 
         $items = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'fcl'])
+            Request::create('/', 'GET', ['type' => 'fcl', 'destination' => ''])
         )->getData()['items'];
 
         $this->assertEqualsCanonicalizing(
@@ -197,7 +206,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             ['nomor_tanda_terima' => 'LCL-2026', 'tanggal_tanda_terima' => '2026-01-01'],
         ]);
         $lclItems = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'lcl'])
+            Request::create('/', 'GET', ['type' => 'lcl', 'destination' => ''])
         )->getData()['items'];
         $this->assertEqualsCanonicalizing(['LCL-2026'], $lclItems->pluck('nomor_tanda_terima')->all());
 
@@ -206,7 +215,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             ['no_tanda_terima' => 'TTSJ-2026', 'tanggal_tanda_terima' => '2026-06-15'],
         ]);
         $ttsjItems = (new ApprovalTandaTerimaDuaController)->index(
-            Request::create('/', 'GET', ['type' => 'ttsj'])
+            Request::create('/', 'GET', ['type' => 'ttsj', 'destination' => ''])
         )->getData()['items'];
         $this->assertEqualsCanonicalizing(['TTSJ-2026'], $ttsjItems->pluck('no_tanda_terima')->all());
     }

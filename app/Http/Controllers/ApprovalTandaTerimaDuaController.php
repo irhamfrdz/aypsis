@@ -8,11 +8,13 @@ use App\Models\ShipperConsignee;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
+use App\Services\ApprovalTandaTerimaDuaExcelService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class ApprovalTandaTerimaDuaController extends Controller
 {
@@ -153,6 +155,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             ->whereIn('source_id', $items->pluck('id'))
             ->pluck('source_id')
             ->flip();
+        $exportedMarks = DB::table('approval_tanda_terima_2_exports')
+            ->where('source_type', $type)
+            ->whereIn('source_id', $items->pluck('id'))
+            ->pluck('source_id')
+            ->flip();
 
         return view('approval-tanda-terima-2.index', [
             'type' => $type,
@@ -160,7 +167,45 @@ class ApprovalTandaTerimaDuaController extends Controller
             'items' => $items,
             'goodsOverrides' => $goodsOverrides,
             'incompleteMarks' => $incompleteMarks,
+            'exportedMarks' => $exportedMarks,
         ]);
+    }
+
+    public function export(string $sourceType, int $id, ApprovalTandaTerimaDuaExcelService $excel): BinaryFileResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $item = self::SOURCES[$sourceType]::with('shipperJb')->findOrFail($id);
+        if ($sourceType === 'lcl') {
+            $item->load('items', 'kontainerPivot');
+        }
+        if ($sourceType === 'ttsj') {
+            $item->load('dimensiItems');
+        }
+        $override = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)->where('source_id', $id)->first();
+        $path = $excel->create($sourceType, $item, $override);
+
+        $now = now();
+        try {
+            DB::table('approval_tanda_terima_2_exports')->upsert([[
+                'source_type' => $sourceType,
+                'source_id' => $id,
+                'exported_by' => auth()->id(),
+                'exported_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]], ['source_type', 'source_id'], ['exported_by', 'exported_at', 'updated_at']);
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        }
+
+        $number = $sourceType === 'fcl' ? $item->no_surat_jalan
+            : ($sourceType === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
+        $filename = 'Manifest_'.preg_replace('/[^A-Za-z0-9_-]+/', '_', $number ?: $sourceType.'_'.$id).'.xlsx';
+
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     public function setIncomplete(Request $request, string $sourceType, int $id): RedirectResponse

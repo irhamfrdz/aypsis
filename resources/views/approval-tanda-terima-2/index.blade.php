@@ -156,6 +156,7 @@
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
                             $goodsOverride = $goodsOverrides->get($item->id);
                             $isIncomplete = $incompleteMarks->has($item->id);
+                            $isExported = $exportedMarks->has($item->id);
                             $goods = $goodsOverride ? collect($goodsOverride->goods) : match ($type) {
                                 'fcl' => collect($item->dimensi_items ?: $item->dimensi_details ?: $item->nama_barang ?: []),
                                 'lcl' => $item->items,
@@ -177,7 +178,7 @@
                                 : $goods->take(1)->values();
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
-                        <tr class="{{ $isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70' }}">
+                        <tr class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
@@ -190,11 +191,17 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-5 py-4 text-right {{ $isIncomplete ? 'bg-yellow-200' : '' }}">
+                            <td class="whitespace-nowrap px-5 py-4 text-right {{ $isExported ? 'bg-green-200' : ($isIncomplete ? 'bg-yellow-200' : '') }}">
                                 @if($isIncomplete)
                                     <span class="mr-2 inline-flex rounded bg-yellow-300 px-2 py-1 text-xs font-semibold text-yellow-950">Belum lengkap</span>
                                 @endif
                                 @can('approval-tanda-terima-2-approve')
+                                    <form method="POST" action="{{ route('approval-tanda-terima-2.export', ['sourceType' => $type, 'id' => $item->id]) }}" class="approval-export-form mr-2 inline-block">
+                                        @csrf
+                                        <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 {{ $isExported ? 'border-green-500 bg-green-300 text-green-950 hover:bg-green-400' : 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' }}">
+                                            <i class="fas fa-file-excel" aria-hidden="true"></i><span>{{ $isExported ? 'Export Lagi' : 'Export Excel' }}</span>
+                                        </button>
+                                    </form>
                                     <form method="POST" action="{{ route('approval-tanda-terima-2.set-incomplete', ['sourceType' => $type, 'id' => $item->id]) }}" class="mr-2 inline-block">
                                         @csrf
                                         @method('PUT')
