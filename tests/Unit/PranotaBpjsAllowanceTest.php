@@ -8,6 +8,25 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_employer_burden_sums_only_ppu_jht_ppu_jp_and_noncrew_jht_biaya(): void
+    {
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes([
+            'bpjs_kesehatan' => 214319.20,
+            'rincian_bpjs' => json_encode(['jht_biaya' => 198320, 'jp_biaya' => 107200,
+                'noncrew_jht_biaya' => 49000.25, 'jht_hutang' => 107200, 'jp_hutang' => 53600]),
+        ]);
+        $detail->setRelation('karyawan', new Karyawan);
+        $this->assertSame(354520.25, $detail->summaryBurden('pt'));
+        // Older rows store company JHT as an aggregate of PPU and noncrew biaya.
+        $detail->rincian_bpjs = null;
+        $detail->jht_biaya = 247320.25;
+        $detail->jp_biaya = 107200;
+        $this->assertSame(354520.25, $detail->summaryBurden('pt'));
+        $detail->tunjangan_manual = ['pt' => 0];
+        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+    }
+
     public function test_burdens_use_saved_components_and_classify_non_employee_memberships(): void
     {
         $detail = new PranotaBpjsDetail;
@@ -22,7 +41,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $detail->setRelation('karyawan', $employee);
         $this->assertSame(180000.0, $detail->summaryBurden('kary_jht'));
         $this->assertSame(50000.0, $detail->summaryBurden('kary_jkn'));
-        $this->assertSame(485000.25, $detail->summaryBurden('pt'));
+        $this->assertSame(285000.25, $detail->summaryBurden('pt'));
         $employee->tipe_jkn = 'NON KARY';
         $this->assertSame(250000.0, $detail->summaryBurden('non_kary'));
         $this->assertSame(285000.25, $detail->summaryBurden('pt'));

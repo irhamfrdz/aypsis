@@ -2,6 +2,14 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('employer burden adds only PPU JHT, PPU JP and noncrew JHT biaya', () => {
+    const values = { jht_biaya: 198320, jp_biaya: 107200, noncrew_jht_biaya: 49000.25,
+        kis_tunjangan: 214319.20, kis_biaya: 70000, jht_hutang: 107200, jp_hutang: 53600 };
+    assert.equal(BpjsAllowances.calculate(values).pt, 354520.25);
+    assert.equal(BpjsAllowances.calculate({ ...values, is_special_case: '1' }).pt, 354520.25);
+    assert.equal(BpjsAllowances.effective(BpjsAllowances.calculate(values), { pt: 0 }).pt, 0);
+});
+
 test('manual allowances persist across recalculation, including zero, and reset to automatic when removed', () => {
     const automatic = { ppu: 28080, bpu: 5000, jkn: 229195.2 };
     const manual = { ppu: 30000.75, bpu: 0 };
@@ -40,7 +48,7 @@ test('burdens sum the contribution amounts and route non employee memberships se
     const regular = BpjsAllowances.calculate(values);
     assert.equal(regular.kary_jht, 180000);
     assert.equal(regular.kary_jkn, 50000);
-    assert.equal(regular.pt, 485000.25);
+    assert.equal(regular.pt, 285000.25);
     assert.equal(regular.non_kary, 0);
     const nonJkn = BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY' });
     assert.equal(nonJkn.kary_jht, 180000);
@@ -48,6 +56,7 @@ test('burdens sum the contribution amounts and route non employee memberships se
     assert.equal(nonJkn.pt, 285000.25);
     assert.equal(nonJkn.non_kary, 250000);
     const special = BpjsAllowances.calculate({ ...values, is_special_case: '1' });
-    assert.equal(special.kary_jht + special.kary_jkn + special.pt, 0);
+    assert.equal(special.kary_jht + special.kary_jkn, 0);
+    assert.equal(special.pt, 285000.25);
     assert.equal(special.non_kary, 742000.25);
 });

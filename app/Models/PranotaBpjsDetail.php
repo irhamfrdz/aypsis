@@ -76,7 +76,7 @@ class PranotaBpjsDetail extends Model
         return match ($key) {
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
-            'pt' => ($nonJamsostek ? 0 : $cost) + ($nonJkn ? 0 : $this->kis_tunjangan),
+            'pt' => $cost,
             'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
                 + ($nonJamsostek ? $debt + $cost
                 + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0),

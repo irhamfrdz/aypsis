@@ -15,7 +15,7 @@
             jkn: Number(values.kis_tunjangan) || 0,
             kary_jht: nonJamsostek ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: (nonJamsostek ? 0 : employerCost) + (nonJkn ? 0 : n('kis_tunjangan')),
+            pt: employerCost,
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -53,7 +53,19 @@
         if (!select('.input-bpu-jkk') && select('.select-tipe-jkn')?.value === 'manual') {
             const snapshot = select('input[name$="[rincian_bpjs]"]');
             if (snapshot) {
-                try { values = JSON.parse(snapshot.value); } catch (_) { /* Keep displayed values. */ }
+                try {
+                    const saved = JSON.parse(snapshot.value);
+                    const groups = {
+                        jht_biaya: ['jht_biaya', 'noncrew_jht_biaya'],
+                        jht_hutang: ['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang'],
+                        jkk_tunjangan: ['jkk_tunjangan', 'bpu_jkk_tunjangan', 'noncrew_jkk_tunjangan'],
+                        jkm_tunjangan: ['jkm_tunjangan', 'bpu_jkm', 'noncrew_jkm_tunjangan'],
+                        jp_biaya: ['jp_biaya'], jp_hutang: ['jp_hutang'],
+                    };
+                    const matches = saved && Object.entries(groups).every(([key, fields]) =>
+                        Math.abs(fields.reduce((sum, field) => sum + (Number(saved[field]) || 0), 0) - values[key]) <= 0.005);
+                    if (matches) values = saved;
+                } catch (_) { /* Keep displayed values. */ }
             }
         }
         const split = root.BpjsJknColumns.split(read('.input-kes'),
@@ -80,7 +92,7 @@
                     input.className = 'bpjs-allowance-input';
                     input.setAttribute('aria-label', { ppu: 'Tunjangan PPU', bpu: 'Tunjangan BPU', jkn: 'Tunjangan JKN',
                         kary_jht: 'Beban KARY. JHT 2%, JP 1% & BPU JHT', kary_jkn: 'Beban KARY. JKN 1%',
-                        pt: 'Beban PT. JHT 3.7%, JP 2%, BPU JHT 1% & JKN', non_kary: 'Beban NON KARY. JKN & BPJS' }[key]);
+                        pt: 'Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)', non_kary: 'Beban NON KARY. JKN & BPJS' }[key]);
                     const reset = document.createElement('button');
                     reset.type = 'button';
                     reset.className = 'bpjs-allowance-reset';

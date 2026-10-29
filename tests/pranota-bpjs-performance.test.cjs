@@ -4,6 +4,22 @@ require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('editing saved aggregate JHT and JP recalculates employer burden using the displayed amounts', () => {
+    const fields = new Map([
+        ['.input-jht-biaya', { value: '247320.25' }], ['.input-jp-biaya', { value: '107200' }],
+        ['.input-kes', { value: '214319.20' }], ['.select-tipe-jkn', { value: 'manual' }],
+        ['input[name$="[rincian_bpjs]"]', { value: JSON.stringify({ jht_biaya: 198320,
+            noncrew_jht_biaya: 49000.25, jp_biaya: 107200 }) }],
+    ]);
+    const row = { dataset: {}, querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
+    assert.equal(calculate(), 354520.25);
+    fields.get('.input-jht-biaya').value = '250000.50';
+    fields.get('.input-jp-biaya').value = '110000.25';
+    assert.equal(calculate(), 360000.75);
+});
+
 function fakeClock() {
     let id = 0;
     const jobs = new Map();
