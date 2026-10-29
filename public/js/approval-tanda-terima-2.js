@@ -124,8 +124,10 @@
                 if (focus) row.querySelector('input, textarea').focus();
                 return row;
             };
-            addRowFor[fieldPrefix] = addRow;
-            section.querySelector('.approval-goods-add')?.addEventListener('click', () => addRow());
+            if (fieldPrefix === 'goods') {
+                addRowFor.goods = addRow;
+                section.querySelector('.approval-goods-add')?.addEventListener('click', () => addRow());
+            }
             rows.addEventListener('click', event => {
                 if (event.target.closest('.approval-goods-remove')) event.target.closest('tr').remove();
             });

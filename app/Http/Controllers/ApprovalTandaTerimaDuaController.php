@@ -248,15 +248,12 @@ class ApprovalTandaTerimaDuaController extends Controller
             'goods.*.meter_kubik' => 'nullable|numeric|min:0',
             'goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'goods.*.keterangan_barang' => 'nullable|string|max:2000',
-            'manifest_goods' => 'nullable|array|max:50',
+            'manifest_goods' => 'nullable|array|max:1',
             'manifest_goods.*.nama_barang' => 'required|string|max:255',
             'manifest_goods.*.hs_code' => 'nullable|string|max:255',
             'manifest_goods.*.jumlah' => 'nullable|integer|min:0',
             'manifest_goods.*.satuan' => 'nullable|string|max:100',
             'manifest_goods.*.ukuran' => 'nullable|string|max:255',
-            'manifest_goods.*.panjang' => 'nullable|numeric|min:0',
-            'manifest_goods.*.lebar' => 'nullable|numeric|min:0',
-            'manifest_goods.*.tinggi' => 'nullable|numeric|min:0',
             'manifest_goods.*.meter_kubik' => 'nullable|numeric|min:0',
             'manifest_goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'manifest_goods.*.keterangan_barang' => 'nullable|string|max:2000',
@@ -264,10 +261,11 @@ class ApprovalTandaTerimaDuaController extends Controller
         ]);
 
         $fields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase', 'keterangan_barang'];
+        $manifestFields = array_values(array_diff($fields, ['panjang', 'lebar', 'tinggi']));
         $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($fields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
-        $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(fn ($good) => collect($fields)
+        $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(fn ($good) => collect($manifestFields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
 

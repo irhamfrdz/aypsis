@@ -11,6 +11,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Validation\ValidationException;
 use Tests\TestCase;
 
 class ApprovalTandaTerimaDuaGoodsTest extends TestCase
@@ -186,6 +187,33 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
 
         $this->assertSame('Barang Perincian', $override->fresh()->goods[0]['nama_barang']);
         $this->assertSame([], $override->fresh()->manifest_goods);
+    }
+
+    public function test_manifest_accepts_only_one_item_without_dimensions(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId([]);
+        $controller = app(ApprovalTandaTerimaDuaController::class);
+
+        $controller->updateGoods(Request::create('/', 'PUT', [
+            'goods' => [['nama_barang' => 'Barang Perincian']],
+            'manifest_goods' => [['nama_barang' => 'Barang Manifest', 'panjang' => 2, 'lebar' => 3, 'tinggi' => 4]],
+        ]), 'fcl', $id);
+
+        $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail();
+        $this->assertCount(1, $override->manifest_goods);
+        $this->assertArrayNotHasKey('panjang', $override->manifest_goods[0]);
+        $this->assertArrayNotHasKey('lebar', $override->manifest_goods[0]);
+        $this->assertArrayNotHasKey('tinggi', $override->manifest_goods[0]);
+
+        try {
+            $controller->updateGoods(Request::create('/', 'PUT', [
+                'goods' => [['nama_barang' => 'Barang Perincian']],
+                'manifest_goods' => [['nama_barang' => 'Pertama'], ['nama_barang' => 'Kedua']],
+            ]), 'fcl', $id);
+            $this->fail('Manifest tidak boleh berisi lebih dari satu barang.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('manifest_goods', $exception->errors());
+        }
     }
 
     public function test_lcl_goods_update_does_not_change_or_delete_original_items(): void
