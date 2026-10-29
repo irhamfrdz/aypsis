@@ -13,6 +13,12 @@
         const umkmCost = values.aggregate_jamsostek
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
+        const compact = value => String(value || '').toUpperCase().replace(/[\s_-]+/g, '');
+        const useTotalJkn = compact(values.group_jkn) === 'JKNKIS' && compact(values.tipe_jkn) === 'NONKARY';
+        const useTotalPpu = compact(values.group_bp_jamsostek) === 'PPU' && compact(values.tipe_bp_jamsostek) === 'NONKARY';
+        const nonKaryTotal = (useTotalJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
+            + (useTotalPpu ? n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
+                + n('jkm_tunjangan') + n('jp_biaya') + n('jp_hutang') : 0);
         return {
             ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
             bpu: (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
@@ -20,7 +26,7 @@
             jkn: Number(values.kis_tunjangan) || 0,
             kary_jht: nonJamsostek ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: isUmkmNonPp ? umkmCost : employerCost,
+            pt: useTotalJkn || useTotalPpu ? nonKaryTotal : (isUmkmNonPp ? umkmCost : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -78,6 +84,7 @@
             select('.tipe-karyawan-hidden-input')?.value, row.dataset.isSpecialCase);
         row.allowanceOverrides ??= {};
         const automaticAmounts = calculate({ ...values, group_bp_jamsostek: row.dataset.groupJamsostek,
+            group_jkn: row.dataset.groupJkn,
             kis_tunjangan: split.tunjangan, kis_biaya: split.biaya,
             is_special_case: row.dataset.isSpecialCase,
             tipe_jkn: row.dataset.tipeJkn, tipe_bp_jamsostek: row.dataset.tipeJamsostek,

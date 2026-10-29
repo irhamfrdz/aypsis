@@ -330,6 +330,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 detail-row hover:bg-indigo-50/30 transition-colors";
         tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
+        tr.dataset.groupJkn = k?.group_jkn || '';
         tr.dataset.tipeJkn = k?.tipe_jkn || '';
         tr.dataset.tipeJamsostek = k?.tipe_bp_jamsostek || '';
         tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
@@ -604,6 +605,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         const handleKaryawanChange = function(kId) {
             const k = findKaryawan(kId);
             tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
+        tr.dataset.groupJkn = k?.group_jkn || '';
         tr.dataset.tipeJkn = k?.tipe_jkn || '';
         tr.dataset.tipeJamsostek = k?.tipe_bp_jamsostek || '';
         tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';

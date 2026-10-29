@@ -4,6 +4,25 @@ require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('changing membership data invalidates the cached NON KARY employer burden', () => {
+    const fields = new Map([
+        ['.input-kes', { value: '200000.25' }], ['.input-ket', { value: '50000' }],
+        ['.input-jht-biaya', { value: '100000' }], ['.input-jht-hutang', { value: '20000' }],
+    ]);
+    const row = { dataset: { groupJkn: 'JKN-KIS', tipeJkn: 'NON KARY' },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
+    assert.equal(calculate(), 250000.25);
+    row.dataset.groupJamsostek = 'PPU';
+    row.dataset.tipeJamsostek = 'NON KARY';
+    assert.equal(calculate(), 370000.25);
+    row.dataset.tipeJkn = 'KARYAWAN';
+    assert.equal(calculate(), 120000);
+    row.dataset.tipeJamsostek = 'KARYAWAN';
+    assert.equal(calculate(), 100000);
+});
+
 test('group totals sum each membership separately and exclude allowance summaries', () => {
     const amounts = { bpjs_kesehatan: 229195.20, bpjs_ketenagakerjaan: 57298.80,
         jht_biaya: 100000.80, jht_hutang: 20000, jkk_tunjangan: 1000,
