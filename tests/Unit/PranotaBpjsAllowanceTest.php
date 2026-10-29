@@ -337,4 +337,26 @@ class PranotaBpjsAllowanceTest extends TestCase
         $this->assertSame(9000.0, $detail->summaryBurden('pt'));
     }
 
+    public function test_erwin_jkn_kis_non_kary_moves_kis_biaya_to_employer_burden(): void
+    {
+        foreach ([Karyawan::class, \App\Models\KaryawanTidakTetap::class] as $model) {
+            $employee = new $model;
+            $employee->setRawAttributes(['group_jkn' => 'JKN-KIS', 'tipe_jkn' => 'NON KARY',
+                'is_special_case' => true, 'tanggal_berhenti' => '2026-10-01']);
+            $detail = new PranotaBpjsDetail;
+            $detail->setRawAttributes(['tipe_karyawan' => $model, 'bpjs_kesehatan' => 229195.2,
+                'bpjs_ketenagakerjaan' => 57298.8]);
+            $detail->setRelation('karyawan', $employee);
+            $this->assertSame(229195.2, $detail->summaryBurden('pt'));
+            $this->assertSame(57298.8, $detail->summaryBurden('non_kary'));
+            $this->assertSame(0.0, $detail->tunjangan_jkn);
+            $detail->jht_biaya = 8000;
+            $this->assertSame(237195.2, $detail->summaryBurden('pt'));
+            $detail->jht_biaya = 0;
+            $employee->is_special_case = false;
+            $this->assertSame(0.0, $detail->summaryBurden('pt'));
+            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
+        }
+    }
+
 }

@@ -16,6 +16,8 @@
         const n = key => Number(values[key]) || 0;
         const nonEmployee = type => String(type || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
         const nonJkn = nonEmployee(values.tipe_jkn);
+        const jknEmployerCost = nonJkn && String(values.group_jkn || '').toUpperCase()
+            .replace(/[\s_-]+/g, '') === 'JKNKIS' ? n('kis_biaya') : 0;
         const nonJamsostek = nonEmployee(values.tipe_bp_jamsostek);
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
@@ -36,8 +38,8 @@
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: useTotalPpu ? ppuTotal : (useNoncrewCost ? noncrewCost : employerCost),
-            non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
+            pt: jknEmployerCost + (useTotalPpu ? ppuTotal : (useNoncrewCost ? noncrewCost : employerCost)),
+            non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') - jknEmployerCost + n('bpjs_ketenagakerjaan') : 0)
                 + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
                 + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan') : 0)),

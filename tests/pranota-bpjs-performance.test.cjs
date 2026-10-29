@@ -438,3 +438,22 @@ test('INSANI and PALEN full group names sum noncrew employer costs to 89300', ()
     assert.equal(amounts.reduce((total, amount) => total + amount.pt, 0), 89300);
     assert.deepEqual(amounts.map(amount => amount.non_kary), [70000, 70000]);
 });
+
+test('ERWIN special case row includes KIS biaya and recalculates on status changes', () => {
+    const fields = new Map([
+        ['.input-kes', { value: '229195.2' }], ['.input-ket', { value: '57298.8' }],
+        ['.tipe-karyawan-hidden-input', { value: 'App\\Models\\Karyawan' }],
+    ]);
+    const row = { dataset: { groupJkn: 'JKN-KIS', tipeJkn: 'NON KARY', isSpecialCase: '1' },
+        querySelector: selector => fields.get(selector) || null };
+    let result = BpjsAllowances.updateRow(row, {}, Number, String);
+    assert.equal(result.pt, 229195.2);
+    assert.equal(result.non_kary, 57298.8);
+    fields.get('.input-kes').value = '230000.25';
+    result = BpjsAllowances.updateRow(row, {}, Number, String);
+    assert.equal(result.pt, 230000.25);
+    row.dataset.isSpecialCase = '0';
+    result = BpjsAllowances.updateRow(row, {}, Number, String);
+    assert.equal(result.pt, 0);
+    assert.equal(result.non_kary, 287299.05);
+});

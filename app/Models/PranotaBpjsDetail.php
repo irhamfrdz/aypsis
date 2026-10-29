@@ -108,6 +108,8 @@ class PranotaBpjsDetail extends Model
         $cost = $sum(['jht_biaya', 'noncrew_jht_biaya', 'jp_biaya']);
         $nonEmployee = fn ($type) => preg_replace('/[\s_-]+/', '', strtoupper((string) $type)) === 'NONKARY';
         $nonJkn = $nonEmployee($this->karyawan?->tipe_jkn);
+        $jknGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_jkn));
+        $jknEmployerCost = $nonJkn && $jknGroup === 'JKNKIS' ? $this->kis_biaya : 0;
         $nonJamsostek = $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
         $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';
         $useNoncrewCost = $isUmkmNonPp && in_array($jamsostekGroup, ['BPUSUPIR', 'BPUSUPIRJKTPLUIT', 'CILANDAKHL'], true);
@@ -122,8 +124,8 @@ class PranotaBpjsDetail extends Model
         return match ($key) {
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
-            'pt' => $useTotalPpu ? $ppuTotal : ($useNoncrewCost ? $noncrewCost : $cost),
-            'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
+            'pt' => $jknEmployerCost + ($useTotalPpu ? $ppuTotal : ($useNoncrewCost ? $noncrewCost : $cost)),
+            'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya - $jknEmployerCost + (float) $this->bpjs_ketenagakerjaan : 0)
                 + ($isUmkmNonPp ? $umkmDebt : ($nonJamsostek ? $debt + $cost
                 + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0)),
             default => 0,

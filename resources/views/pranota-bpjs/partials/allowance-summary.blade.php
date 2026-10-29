@@ -8,6 +8,7 @@
     <p class="mb-3 text-xs text-gray-500">Beban Karyawan JHT 2%, JP 1% &amp; BPU JHT tidak menghitung tipe BP Jamsostek NON KARY dan NON KARY-UMKM NON PP.</p>
     <p class="mb-3 text-xs text-gray-500">Untuk tipe BP Jamsostek NON KARY-UMKM NON PP, JHT 2% (HUTANG) masuk ke Beban Non Kary. JKN &amp; BPJS.</p>
     <p class="mb-3 text-xs text-gray-500">Beban PT dihitung dari komponen BP Jamsostek yang berlaku, termasuk untuk Group JKN JKN-KIS. Untuk Group BP Jamsostek PPU dan Tipe NON KARY, Beban PT menggunakan TOTAL PPU.</p>
+    <p class="mb-3 text-xs text-gray-500">Untuk Group JKN-KIS dengan tipe JKN NON KARY, KIS 4% (BIAY) masuk ke Beban PT dan tidak dihitung lagi pada Beban Non Kary.</p>
     <table class="w-full text-sm">
         <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
         <tbody>

@@ -140,7 +140,7 @@ test('employer burden uses Jamsostek costs and NON KARY PPU totals regardless of
     assert.equal(BpjsAllowances.calculate({ ...values, ...jkn }).pt, 116000.8);
     assert.equal(BpjsAllowances.calculate({ ...values, ...ppu }).pt, 144000.8);
     assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, ...ppu }).pt, 144000.8);
-    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, kis_tunjangan: 0, kis_biaya: 229195.2 }).pt, 116000.8);
+    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, kis_tunjangan: 0, kis_biaya: 229195.2 }).pt, 345196);
     assert.equal(BpjsAllowances.calculate({ ...jkn, ...ppu }).pt, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, group_jkn: 'LAIN' }).pt, 116000.8);
     assert.equal(BpjsAllowances.calculate({ ...values, ...ppu, tipe_bp_jamsostek: 'KARYAWAN' }).pt, 116000.8);
@@ -236,4 +236,21 @@ test('BPU-SUPIR UMKM Non PP adds JHT biaya, JKK and JKM for create and aggregate
         assert.equal(BpjsAllowances.calculate({ ...values, aggregate_jamsostek: true,
             noncrew_jht_biaya: 0, jht_biaya: 19000, jkk_tunjangan: 22250, jkm_tunjangan: 3400 }).pt, 44650);
     }
+});
+
+test('JKN-KIS NON KARY moves only KIS biaya to employer burden', () => {
+    const values = { group_jkn: 'JKN-KIS', tipe_jkn: 'NON KARY', kis_biaya: 229195.2,
+        kis_tunjangan: 0, bpjs_ketenagakerjaan: 57298.8 };
+    for (const group of ['JKN-KIS', ' jkn - kis ', 'JKN_KIS']) {
+        const result = BpjsAllowances.calculate({ ...values, group_jkn: group });
+        assert.equal(result.pt, 229195.2);
+        assert.equal(result.non_kary, 57298.8);
+        assert.equal(result.jkn, 0);
+    }
+    assert.equal(BpjsAllowances.calculate({ ...values, noncrew_jht_biaya: 8000 }).pt, 237195.2);
+    const active = BpjsAllowances.calculate({ ...values, kis_biaya: 0, kis_tunjangan: 229195.2 });
+    assert.equal(active.pt, 0);
+    assert.equal(active.non_kary, 286494);
+    assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).pt, 0);
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'KARYAWAN' }).pt, 0);
 });
