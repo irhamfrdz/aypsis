@@ -82,10 +82,11 @@
                 'Jaminan Pensiun' => ['jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
             ];
             $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
-            $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%'];
+            $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%', 'allowance_kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'allowance_kary_jkn' => 'Beban KARY. JKN 1%', 'allowance_pt' => 'Beban PT. JHT 3.7%, JP 2% & JKN', 'allowance_non_kary' => 'Beban NON KARY. JKN & BPJS', 'no_voucher' => 'No Voucher'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
             $amount = function ($detail, $field) {
                 if (str_starts_with($field, 'allowance_') && isset($detail->tunjangan_manual[substr($field, 10)])) return (float) $detail->tunjangan_manual[substr($field, 10)];
+                if (in_array($field, ['allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary'])) return $detail->summaryBurden(substr($field, 10));
                 if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if ($field === 'allowance_jkn') return (float) $detail->kis_tunjangan;
                 if (in_array($field, ['allowance_ppu', 'allowance_bpu'])) {
@@ -145,7 +146,11 @@
                                 <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_bp_jamsostek ?: '-' }}</td>
                                 @foreach($componentGroups as $columns)
                                     @foreach($columns as $field => $label)
-                                        <td class="border border-gray-200 p-3 text-right font-mono">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                        @if($field === 'no_voucher')
+                                            <td class="border border-gray-200 p-3">{{ $detail->no_voucher ?: '-' }}</td>
+                                        @else
+                                            <td class="border border-gray-200 p-3 text-right font-mono">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                        @endif
                                     @endforeach
                                 @endforeach
                                 <td class="border border-gray-200 p-3 text-right font-bold text-teal-800">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
@@ -156,7 +161,7 @@
                         <tr>
                             <td colspan="5" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono">Rp {{ number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
                             @endforeach
                             <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
                         </tr>
@@ -165,7 +170,7 @@
             </div>
         </div>
 
-        @include('pranota-bpjs.partials.allowance-summary', ['allowanceSummary' => ['ppu' => $groupTotal(['allowance_ppu']), 'bpu' => $groupTotal(['allowance_bpu']), 'jkn' => $groupTotal(['allowance_jkn'])]])
+        @include('pranota-bpjs.partials.allowance-summary', ['allowanceSummary' => ['ppu' => $groupTotal(['allowance_ppu']), 'bpu' => $groupTotal(['allowance_bpu']), 'jkn' => $groupTotal(['allowance_jkn']), 'kary_jht' => $groupTotal(['allowance_kary_jht']), 'kary_jkn' => $groupTotal(['allowance_kary_jkn']), 'pt' => $groupTotal(['allowance_pt']), 'non_kary' => $groupTotal(['allowance_non_kary'])]])
         <div class="flex justify-end mt-16 print:mt-10">
             <div class="text-center w-48">
                 <p class="mb-16 text-sm text-gray-600">Dibuat Oleh,</p>

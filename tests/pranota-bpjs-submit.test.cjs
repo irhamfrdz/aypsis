@@ -7,9 +7,9 @@ test('264 employee rows become one payload while preserving IDs and fractional a
     const fields = [];
     for (let index = 1; index <= 264; index++) {
         for (const [key, value] of Object.entries({ karyawan_id: String(index), tipe_karyawan: 'App\\Models\\Karyawan',
-            bpjs_kesehatan: '229.195', bpjs_ketenagakerjaan: '57.299', jht_biaya: '100.000,8' })) {
+            bpjs_kesehatan: '229.195', bpjs_ketenagakerjaan: '57.299', jht_biaya: '100.000,8', no_voucher: '001/VC-BPJS' })) {
             fields.push({ name: `details[${index}][${key}]`, value, disabled: false,
-                matches: () => key.startsWith('bpjs_') || key === 'jht_biaya',
+                matches: () => key.startsWith('bpjs_') || key === 'jht_biaya' || key === 'no_voucher',
                 removeAttribute() { this.name = ''; } });
         }
     }
@@ -19,6 +19,7 @@ test('264 employee rows become one payload while preserving IDs and fractional a
     prepareBpjsSubmission(form, BpjsJamsostek.parseAmount);
     const details = JSON.parse(form.payload.value);
     assert.equal(details.length, 264);
+    assert.equal(details[263].no_voucher, '001/VC-BPJS');
     assert.equal(details[263].karyawan_id, '264');
     assert.equal(details[263].tipe_karyawan, 'App\\Models\\Karyawan');
     assert.equal(details[263].bpjs_kesehatan, 229195);

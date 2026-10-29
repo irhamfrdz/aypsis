@@ -58,4 +58,29 @@ class PranotaBpjsDetail extends Model
     {
         return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');
     }
+
+    public function summaryBurden(string $key): float
+    {
+        if (isset($this->tunjangan_manual[$key])) {
+            return (float) $this->tunjangan_manual[$key];
+        }
+        $values = $this->rincian_bpjs ?? [];
+        $sum = fn (array $fields) => array_sum(array_map(fn ($field) => (float) ($values[$field] ?? $this->getAttribute($field) ?? 0), $fields));
+        $debt = $sum(['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang', 'jp_hutang']);
+        $cost = $sum(['jht_biaya', 'noncrew_jht_biaya', 'jp_biaya']);
+        $special = (bool) $this->karyawan?->is_special_case;
+        $nonEmployee = fn ($type) => str_starts_with(preg_replace('/[\s_-]+/', '', strtoupper((string) $type)), 'NONKARY');
+        $nonJkn = $special || $nonEmployee($this->karyawan?->tipe_jkn);
+        $nonJamsostek = $special || $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
+
+        return match ($key) {
+            'kary_jht' => $nonJamsostek ? 0 : $debt,
+            'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
+            'pt' => ($nonJamsostek ? 0 : $cost) + ($nonJkn ? 0 : $this->kis_tunjangan),
+            'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
+                + ($nonJamsostek ? $debt + $cost
+                + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0),
+            default => 0,
+        };
+    }
 }

@@ -135,6 +135,11 @@ class PranotaBpjsController extends Controller
             'details.*.allowance_ppu' => 'nullable|numeric|min:0',
             'details.*.allowance_bpu' => 'nullable|numeric|min:0',
             'details.*.allowance_jkn' => 'nullable|numeric|min:0',
+            'details.*.allowance_kary_jht' => 'nullable|numeric|min:0',
+            'details.*.allowance_kary_jkn' => 'nullable|numeric|min:0',
+            'details.*.allowance_pt' => 'nullable|numeric|min:0',
+            'details.*.allowance_non_kary' => 'nullable|numeric|min:0',
+            'details.*.no_voucher' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -198,6 +203,7 @@ class PranotaBpjsController extends Controller
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
+                            'no_voucher' => $detail['no_voucher'] ?? null,
                         ]);
 
                         $totalKes += $jknTotal;
@@ -303,6 +309,11 @@ class PranotaBpjsController extends Controller
             'details.*.allowance_ppu' => 'nullable|numeric|min:0',
             'details.*.allowance_bpu' => 'nullable|numeric|min:0',
             'details.*.allowance_jkn' => 'nullable|numeric|min:0',
+            'details.*.allowance_kary_jht' => 'nullable|numeric|min:0',
+            'details.*.allowance_kary_jkn' => 'nullable|numeric|min:0',
+            'details.*.allowance_pt' => 'nullable|numeric|min:0',
+            'details.*.allowance_non_kary' => 'nullable|numeric|min:0',
+            'details.*.no_voucher' => 'nullable|string|max:100',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -365,6 +376,7 @@ class PranotaBpjsController extends Controller
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
+                            'no_voucher' => $detail['no_voucher'] ?? null,
                         ]);
 
                         $totalKes += $jknTotal;
@@ -425,7 +437,7 @@ class PranotaBpjsController extends Controller
     private function manualAllowances(array $detail): ?array
     {
         $values = [];
-        foreach (['ppu', 'bpu', 'jkn'] as $key) {
+        foreach (['ppu', 'bpu', 'jkn', 'kary_jht', 'kary_jkn', 'pt', 'non_kary'] as $key) {
             $field = 'allowance_'.$key;
             if (isset($detail[$field]) && $detail[$field] !== '') {
                 $values[$key] = (float) $detail[$field];

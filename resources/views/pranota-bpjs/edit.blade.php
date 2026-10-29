@@ -128,7 +128,7 @@
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
-<th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKN 4%</th>
+<th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban PT. JHT 3.7%, JP 2% & JKN</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
@@ -151,6 +151,11 @@
                             <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-ppu">Rp 0,00</td>
 <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-bpu">Rp 0,00</td>
 <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-jkn">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-kary_jht">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-kary_jkn">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-pt">Rp 0,00</td>
+<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-non_kary">Rp 0,00</td>
+<td class="px-3 py-3 bg-orange-50"></td>
 <td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
                             <td></td>
                         </tr>
@@ -311,6 +316,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const tr = document.createElement('tr');
         tr.className = "border-b border-gray-100 detail-row hover:bg-indigo-50/30 transition-colors";
         tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
+        tr.dataset.tipeJkn = k?.tipe_jkn || '';
+        tr.dataset.tipeJamsostek = k?.tipe_bp_jamsostek || '';
+        tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
         tr.innerHTML = `
             <td class="px-4 py-3 text-center align-middle row-number text-gray-500 font-medium">${rowCount}</td>
             <td class="px-4 py-3 align-middle">
@@ -357,6 +365,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
+            <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
             <td class="px-4 py-3 text-center align-middle">
                 <button type="button" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-all btn-remove mt-1" title="Hapus Baris">
@@ -365,6 +378,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             </td>
         `;
 
+        tr.querySelector('.bpjs-voucher-input').value = detail?.no_voucher || '';
         tr.allowanceOverrides = { ...(detail?.tunjangan_manual || {}) };
         if (detail?.rincian_bpjs) {
             const snapshot = document.createElement('input');
@@ -573,7 +587,9 @@ document.addEventListener('DOMContentLoaded', async function() {
         const handleKaryawanChange = function(kId) {
             const k = findKaryawan(kId);
             tr.dataset.isSpecialCase = k?.is_special_case ? '1' : '0';
-            tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
+        tr.dataset.tipeJkn = k?.tipe_jkn || '';
+        tr.dataset.tipeJamsostek = k?.tipe_bp_jamsostek || '';
+        tr.dataset.groupJamsostek = k?.group_bp_jamsostek || '';
         BpjsJknColumns.syncEmploymentStatus(tr, k);
             const hiddenKaryawanId = tr.querySelector('.karyawan-hidden-input');
             const hiddenTipeKaryawan = tr.querySelector('.tipe-karyawan-hidden-input');

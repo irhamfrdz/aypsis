@@ -7,7 +7,7 @@
             if (!match) return;
             const [, index, key] = match;
             details[index] ??= {};
-            details[index][key] = field.matches('input[type="text"]') ? parseAmount(field.value) : field.value;
+            details[index][key] = key !== 'no_voucher' && field.matches('input[type="text"]') ? parseAmount(field.value) : field.value;
         });
         let payload = form.querySelector('[name="details_json"]');
         if (!payload) {
