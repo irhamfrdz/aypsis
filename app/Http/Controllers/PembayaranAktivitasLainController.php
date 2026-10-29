@@ -384,7 +384,9 @@ class PembayaranAktivitasLainController extends Controller
     public function store(Request $request)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
-        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain';
+        $isVehiclePayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan';
+        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'
+            || ($isVehiclePayment && $request->filled('akun_details'));
         $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
             && $request->input('sub_jenis_kendaraan') === 'KIR';
         if ($isKirPayment) {
@@ -453,13 +455,19 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
+            if ($isVehiclePayment && collect($validated['akun_details'])->contains(fn ($detail) => $detail['debit_kredit'] !== 'debit')) {
+                throw ValidationException::withMessages(['akun_details' => 'Rincian akun biaya kendaraan harus berupa debit.']);
+            }
+            if ($isVehiclePayment && ! empty($validated['akun_pph_id']) && collect($validated['akun_details'])->contains(fn ($detail) => (int) $detail['akun_coa_id'] === (int) $validated['akun_pph_id'])) {
+                throw ValidationException::withMessages(['akun_details' => 'Akun PPh tidak boleh digunakan sebagai akun biaya kendaraan.']);
+            }
             $net = $this->akunDetailsNet($validated['akun_details']);
             if ($net === 0) {
                 throw ValidationException::withMessages(['akun_details' => 'Selisih debit dan kredit harus lebih dari nol agar Bank/Kas memiliki nilai transaksi.']);
             }
             $validated['jumlah'] = abs($net);
             $validated['debit_kredit'] = $net > 0 ? 'kredit' : 'debit';
-            $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
+            $validated['akun_coa_id'] = $requiresDoubleBook ? $validated['akun_details'][0]['akun_coa_id'] : null;
         } else {
             $validated['akun_details'] = null;
         }
@@ -467,6 +475,9 @@ class PembayaranAktivitasLainController extends Controller
             ? array_values($validated['kendaraan_details'])
             : null;
         if ($isKirPayment) {
+            if ($hasAkunDetails && $validated['jumlah'] !== array_sum(array_column($validated['kendaraan_details'], 'nominal'))) {
+                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total nominal kendaraan KIR.']);
+            }
             $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
             $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
         } else {
@@ -640,7 +651,7 @@ class PembayaranAktivitasLainController extends Controller
             $net = $this->akunDetailsNet($akunDetails);
             $this->createExpenseJournalLines($akunDetails, $tanggal, $nomorReferensi, $jenisTransaksiDesc, $keterangan.' - '.$validated['keterangan'], true);
             $bankDebit = $net < 0;
-            $bankAmount = abs($net);
+            $bankAmount = $pembayaran->jenis_aktivitas === 'Pembayaran Kendaraan' ? $jumlahBank : abs($net);
             $bankSaldo = $akunBank->saldo + ($bankDebit ? $bankAmount : -$bankAmount);
             $this->createCoaTransaction([
                 'coa_id' => $akunBank->id,
@@ -654,6 +665,21 @@ class PembayaranAktivitasLainController extends Controller
                 'created_by' => Auth::id(),
             ]);
             $akunBank->update(['saldo' => $bankSaldo]);
+            if ($akunPph) {
+                $pphSaldo = $akunPph->saldo - $pphNominal;
+                $this->createCoaTransaction([
+                    'coa_id' => $akunPph->id,
+                    'tanggal_transaksi' => $tanggal,
+                    'nomor_referensi' => $nomorReferensi,
+                    'jenis_transaksi' => $jenisTransaksiDesc,
+                    'keterangan' => $keterangan.' - Potongan PPh',
+                    'debit' => 0,
+                    'kredit' => $pphNominal,
+                    'saldo' => $pphSaldo,
+                    'created_by' => Auth::id(),
+                ]);
+                $akunPph->update(['saldo' => $pphSaldo]);
+            }
 
             return;
         }
@@ -892,7 +918,9 @@ class PembayaranAktivitasLainController extends Controller
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
-        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain';
+        $isVehiclePayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan';
+        $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'
+            || ($isVehiclePayment && $request->filled('akun_details'));
         $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
             && $request->input('sub_jenis_kendaraan') === 'KIR';
         if ($isKirPayment) {
@@ -961,13 +989,19 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
+            if ($isVehiclePayment && collect($validated['akun_details'])->contains(fn ($detail) => $detail['debit_kredit'] !== 'debit')) {
+                throw ValidationException::withMessages(['akun_details' => 'Rincian akun biaya kendaraan harus berupa debit.']);
+            }
+            if ($isVehiclePayment && ! empty($validated['akun_pph_id']) && collect($validated['akun_details'])->contains(fn ($detail) => (int) $detail['akun_coa_id'] === (int) $validated['akun_pph_id'])) {
+                throw ValidationException::withMessages(['akun_details' => 'Akun PPh tidak boleh digunakan sebagai akun biaya kendaraan.']);
+            }
             $net = $this->akunDetailsNet($validated['akun_details']);
             if ($net === 0) {
                 throw ValidationException::withMessages(['akun_details' => 'Selisih debit dan kredit harus lebih dari nol agar Bank/Kas memiliki nilai transaksi.']);
             }
             $validated['jumlah'] = abs($net);
             $validated['debit_kredit'] = $net > 0 ? 'kredit' : 'debit';
-            $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
+            $validated['akun_coa_id'] = $requiresDoubleBook ? $validated['akun_details'][0]['akun_coa_id'] : null;
         } else {
             $validated['akun_details'] = null;
         }
@@ -975,6 +1009,9 @@ class PembayaranAktivitasLainController extends Controller
             ? array_values($validated['kendaraan_details'])
             : null;
         if ($isKirPayment) {
+            if ($hasAkunDetails && $validated['jumlah'] !== array_sum(array_column($validated['kendaraan_details'], 'nominal'))) {
+                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total nominal kendaraan KIR.']);
+            }
             $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
             $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
         } else {

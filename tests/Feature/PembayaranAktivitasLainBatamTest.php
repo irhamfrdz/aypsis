@@ -398,6 +398,50 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertEquals(-2, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
     }
 
+    public function test_vehicle_payment_saves_costs_and_memos_per_account_with_pph_journal(): void
+    {
+        $this->withoutMiddleware();
+
+        $first = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $second = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $bank = DB::table('akun_coa')->insertGetId(['saldo' => 1000]);
+        $payload = $this->vehiclePayload('jakarta') + ['akun_bank_id' => $bank];
+        $payload['akun_details'] = [
+            ['akun_coa_id' => $first, 'debit_kredit' => 'debit', 'nominal' => 100, 'memo' => 'Pajak kendaraan'],
+            ['akun_coa_id' => $second, 'debit_kredit' => 'debit', 'nominal' => 200, 'memo' => 'Administrasi'],
+        ];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(300, $payment->jumlah);
+        $this->assertSame('Administrasi', $payment->akun_details[1]['memo']);
+        $this->assertEquals(294, $payment->grand_total);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'debit' => 100]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'debit' => 200]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'kredit' => 294]);
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $this->taxAccountId, 'kredit' => 6]);
+        $this->assertStringContainsString('Administrasi', DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $second)->value('keterangan'));
+    }
+
+    public function test_batam_vehicle_payment_saves_account_breakdown_without_journal(): void
+    {
+        $this->withoutMiddleware();
+
+        $expense = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $payload = $this->vehiclePayload('batam');
+        $payload['akun_details'] = [['akun_coa_id' => $expense, 'debit_kredit' => 'debit', 'nominal' => 250, 'memo' => 'Biaya STNK']];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(250, $payment->jumlah);
+        $this->assertSame('Biaya STNK', $payment->akun_details[0]['memo']);
+        $this->assertSame(0, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
+    }
+
     private function vehiclePayload(string $lokasi): array
     {
         return [

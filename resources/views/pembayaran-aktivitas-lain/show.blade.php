@@ -208,7 +208,7 @@
                         <p class="mt-1 text-base text-gray-900">{{ ucfirst($pembayaranAktivitasLain->metode_pembayaran) }}</p>
                     </div>
 
-                    @if($pembayaranAktivitasLain->usesDoubleBook())
+                    @if($pembayaranAktivitasLain->usesDoubleBook() || $pembayaranAktivitasLain->akun_details)
                     @if(!$pembayaranAktivitasLain->akun_details)
                     <div>
                         <label class="block text-sm font-medium text-gray-500">Debit/Kredit</label>

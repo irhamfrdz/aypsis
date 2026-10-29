@@ -393,7 +393,7 @@
                     @enderror
                 </div>
 
-                <!-- Rincian akun untuk Pembayaran Lain Lain -->
+                <!-- Rincian biaya per akun -->
                 @include('pembayaran-aktivitas-lain._akun-details')
 
                 <!-- Akun Bank -->
@@ -1383,7 +1383,7 @@ function initializeSelect2() {
     function toggleDoubleBookFields() {
         const isBatamVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan'
             && document.getElementById('lokasi_kendaraan_select').value === 'batam';
-        const isMultiAccount = jenisAktivitas.value === 'Pembayaran Lain Lain';
+        const isMultiAccount = ['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas.value);
         [
             ['debit_kredit_field', debitKreditSelect],
             ['akun_coa_field', akunBiayaSelect],
@@ -1403,7 +1403,7 @@ function initializeSelect2() {
     toggleDoubleBookFields();
     
     function updateJournalPreview() {
-        if (jenisAktivitas.value === 'Pembayaran Lain Lain') {
+        if (['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas.value)) {
             journalPreview.classList.add('hidden');
             return;
         }
@@ -1536,11 +1536,11 @@ function initializeSelect2() {
         
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
         if (jenisAktivitas !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
-            if (jenisAktivitas !== 'Pembayaran Lain Lain') requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
-            if (jenisAktivitas !== 'Pembayaran Lain Lain') requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
+            if (!['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas)) requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
+            if (!['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas)) requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
         }
-        if (jenisAktivitas === 'Pembayaran Lain Lain' && !window.validateAkunDetails()) {
+        if (['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas) && !window.validateAkunDetails()) {
             showErrorMessage('Pilih akun, debit/kredit, dan nominal positif. Selisih debit dan kredit harus lebih dari nol.');
             return false;
         }
