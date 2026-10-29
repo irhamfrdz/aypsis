@@ -42,6 +42,23 @@
     .approval-goods-rows td[data-field="nama_barang"] textarea { min-width: 160px; max-width: 100%; min-height: 60px; resize: both; overflow: auto; }
     .approval-goods-dialog input::placeholder, .approval-goods-dialog textarea::placeholder { color: #94a3b8; }
     .approval-goods-dialog input:focus, .approval-goods-dialog textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
+    .approval-receipts-table { width: 100%; table-layout: fixed; }
+    .approval-receipts-table > thead > tr > th, .approval-receipts-table > tbody > tr > td { padding: 12px 8px; overflow-wrap: anywhere; }
+    .approval-receipts-table .approval-actions-cell { white-space: normal; text-align: left; }
+    .approval-actions-cell > form, .approval-actions-cell > button { margin: 0 6px 6px 0; vertical-align: top; }
+    @media (max-width: 1279px) {
+        .approval-receipts-table, .approval-receipts-table > tbody { display: block; width: 100%; }
+        .approval-receipts-table > colgroup, .approval-receipts-table > thead { display: none; }
+        .approval-receipts-table > tbody { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 12px; padding: 12px; }
+        .approval-receipts-table > tbody > tr { position: relative; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px 14px; min-width: 0; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; }
+        .approval-receipts-table > tbody > tr > td { display: block; min-width: 0; padding: 0; border: 0; white-space: normal; }
+        .approval-receipts-table > tbody > tr > td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+        .approval-receipts-table .approval-receipt-select { position: absolute; top: 20px; left: 16px; }
+        .approval-receipts-table .approval-receipt-number { grid-column: 1 / -1; padding-left: 28px; }
+        .approval-receipts-table .approval-receipt-wide, .approval-receipts-table .approval-actions-cell { grid-column: 1 / -1; }
+        .approval-receipts-table .approval-actions-cell { padding-top: 10px; border-top: 1px solid #e2e8f0; background: transparent !important; }
+        .approval-receipts-table .approval-empty-row { display: block; grid-column: 1 / -1; }
+    }
     @media (max-width: 640px) {
         .approval-goods-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
         .approval-goods-dialog .overflow-x-auto { padding: 16px; }
@@ -135,6 +152,7 @@
             <h2 class="font-semibold text-gray-900">Daftar Tanda Terima</h2>
             <div class="flex flex-wrap items-center gap-3">
                 @can('approval-tanda-terima-2-approve')
+                    <label class="inline-flex items-center gap-2 text-xs font-medium text-gray-700"><input id="approval-select-all" type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih semua tanda terima di halaman ini">Pilih halaman ini</label>
                     <form id="approval-bulk-export-form" method="POST" action="{{ route('approval-tanda-terima-2.export-bulk', ['sourceType' => $type]) }}" class="approval-export-form">
                         @csrf
                         <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" disabled>
@@ -153,12 +171,17 @@
                 <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
             </div>
         </div>
-        <div class="overflow-x-auto">
-            <table class="min-w-[1100px] w-full divide-y divide-gray-200 text-sm">
+        <div>
+            <table class="approval-receipts-table divide-y divide-gray-200 text-sm">
+                <colgroup>
+                    @can('approval-tanda-terima-2-approve')<col style="width:4%">@endcan
+                    <col style="width:10%"><col style="width:8%"><col style="width:11%"><col style="width:12%">
+                    <col style="width:12%"><col style="width:13%"><col style="width:30%">
+                </colgroup>
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         @can('approval-tanda-terima-2-approve')
-                            <th scope="col" class="px-5 py-3"><input id="approval-select-all" type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih semua tanda terima di halaman ini"></th>
+                            <th scope="col" aria-label="Pilihan"></th>
                         @endcan
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
@@ -204,14 +227,14 @@
                         @endphp
                         <tr class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
                             @can('approval-tanda-terima-2-approve')
-                                <td class="px-5 py-4"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
+                                <td class="approval-receipt-select"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
                             @endcan
-                            <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
-                            <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
-                            <td class="max-w-xs px-5 py-4 text-gray-700">{{ is_scalar($goodsName) && filled($goodsName) ? $goodsName : '-' }}</td>
-                            <td class="max-w-xs px-5 py-4 text-gray-700">{{ $sender ?: '-' }}</td>
-                            <td class="px-5 py-4">
+                            <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
+                            <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
+                            <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
+                            <td data-label="Nama Barang" class="approval-receipt-wide text-gray-700">{{ is_scalar($goodsName) && filled($goodsName) ? $goodsName : '-' }}</td>
+                            <td data-label="Shipper Perincian" class="text-gray-700">{{ $sender ?: '-' }}</td>
+                            <td data-label="Shipper Manifest JB">
                                 @if($item->shipperJb)
                                     <div class="font-medium text-gray-900">{{ $item->shipperJb->shipper }}</div>
                                     @if($item->shipperJb->consignee)<div class="mt-0.5 text-xs text-gray-500">Consignee: {{ $item->shipperJb->consignee }}</div>@endif
@@ -219,7 +242,7 @@
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                             </td>
-                            <td class="whitespace-nowrap px-5 py-4 text-right {{ $isExported ? 'bg-green-200' : ($isIncomplete ? 'bg-yellow-200' : '') }}">
+                            <td data-label="Aksi" class="approval-actions-cell {{ $isExported ? 'bg-green-200' : ($isIncomplete ? 'bg-yellow-200' : '') }}">
                                 @if($isIncomplete)
                                     <span class="mr-2 inline-flex rounded bg-yellow-300 px-2 py-1 text-xs font-semibold text-yellow-950">Belum lengkap</span>
                                 @endif
@@ -351,7 +374,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 8 : 7 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr class="approval-empty-row"><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 8 : 7 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>
