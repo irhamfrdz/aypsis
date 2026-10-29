@@ -394,6 +394,7 @@ test('CILANDAK-HL UMKM Non PP excludes manual burden while BPU-SUPIR of the same
     const status = {}, editor = { dataset: {} }, reset = {};
     const fields = new Map([
         ['.input-jht-biaya', { value: '19000' }],
+        ['.input-jkk', { value: '22250' }], ['.input-jkm', { value: '3400' }],
         ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
         ['[data-allowance="pt"]', { querySelector: selector => ({ input,
             '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
@@ -414,7 +415,7 @@ test('CILANDAK-HL UMKM Non PP excludes manual burden while BPU-SUPIR of the same
         row.dataset.groupJamsostek = 'BPU-SUPIR';
         row.dataset.tipeJamsostek = 'Non Kary-UMKM non PP';
         delete row.allowanceOverrides.pt;
-        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 19000);
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 44650);
         assert.equal(input.disabled, false);
         assert.equal(status.textContent, 'Sesuai rumus');
     } finally { globalThis.document = previousDocument; }

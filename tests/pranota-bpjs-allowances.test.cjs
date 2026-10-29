@@ -223,17 +223,17 @@ test('burdens sum the contribution amounts and route non employee memberships se
     assert.equal(special.non_kary, 0);
 });
 
-test('BPU-SUPIR UMKM Non PP includes JHT biaya without adding JKK or JKM', () => {
+test('BPU-SUPIR UMKM Non PP adds JHT biaya, JKK and JKM for create and aggregate edit rows', () => {
     for (const group of ['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR']) {
         const values = { group_bp_jamsostek: group, tipe_bp_jamsostek: 'Non Kary-UMKM non PP',
-            group_jkn: 'JKN-KIS', noncrew_jht_biaya: 8000, noncrew_jht_hutang: 81000,
+            group_jkn: 'JKN-KIS', noncrew_jht_biaya: 19000, noncrew_jht_hutang: 81000,
             noncrew_jkk_tunjangan: 22250, noncrew_jkm_tunjangan: 3400 };
         const result = BpjsAllowances.calculate(values);
-        assert.equal(result.pt, 8000);
+        assert.equal(result.pt, 44650);
         assert.equal(result.non_kary, 81000);
         assert.equal(result.bpu, 0);
         assert.equal(result.kary_jht, 0);
         assert.equal(BpjsAllowances.calculate({ ...values, aggregate_jamsostek: true,
-            noncrew_jht_biaya: 0, jht_biaya: 8000 }).pt, 8000);
+            noncrew_jht_biaya: 0, jht_biaya: 19000, jkk_tunjangan: 22250, jkm_tunjangan: 3400 }).pt, 44650);
     }
 });

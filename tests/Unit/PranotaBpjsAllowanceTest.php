@@ -314,21 +314,23 @@ class PranotaBpjsAllowanceTest extends TestCase
         $employee->group_bp_jamsostek = 'BPU-CREW';
         $this->assertSame(0.0, $detail->tunjangan_ppu);
     }
-    public function test_bpu_supir_umkm_non_pp_retains_jht_cost_with_or_without_saved_breakdown(): void
+    public function test_bpu_supir_umkm_non_pp_sums_jht_jkk_and_jkm_with_or_without_saved_breakdown(): void
     {
         $employee = new Karyawan(['group_jkn' => 'JKN-KIS', 'tipe_bp_jamsostek' => 'Non Kary-UMKM non PP']);
         $detail = new PranotaBpjsDetail;
         $detail->setRawAttributes(['rincian_bpjs' => json_encode([
-            'noncrew_jht_biaya' => 8000, 'noncrew_jkk_tunjangan' => 22250, 'noncrew_jkm_tunjangan' => 3400,
+            'noncrew_jht_biaya' => 19000, 'noncrew_jkk_tunjangan' => 22250, 'noncrew_jkm_tunjangan' => 3400,
         ])]);
         $detail->setRelation('karyawan', $employee);
         foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR'] as $group) {
             $employee->group_bp_jamsostek = $group;
-            $this->assertSame(8000.0, $detail->summaryBurden('pt'));
+            $this->assertSame(44650.0, $detail->summaryBurden('pt'));
         }
         $detail->rincian_bpjs = null;
-        $detail->jht_biaya = 8000;
-        $this->assertSame(8000.0, $detail->summaryBurden('pt'));
+        $detail->jht_biaya = 19000;
+        $detail->jkk_tunjangan = 22250;
+        $detail->jkm_tunjangan = 3400;
+        $this->assertSame(44650.0, $detail->summaryBurden('pt'));
         $detail->tunjangan_manual = ['pt' => 9000];
         $this->assertSame(9000.0, $detail->summaryBurden('pt'));
         $employee->group_bp_jamsostek = ' cilandak - hl ';

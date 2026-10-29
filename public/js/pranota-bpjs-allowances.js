@@ -22,6 +22,11 @@
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = isBpuExcluded(values);
+        const useSupirCost = isUmkmNonPp && String(values.group_bp_jamsostek || '').toUpperCase()
+            .replace(/[\s_-]+/g, '') === 'BPUSUPIR';
+        const supirCost = values.aggregate_jamsostek
+            ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
+            : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
         const umkmDebt = values.aggregate_jamsostek ? n('jht_hutang') : n('noncrew_jht_hutang');
         const useTotalPpu = usesNonKaryPpuTotal(values);
         const ppuTotal = n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
@@ -33,7 +38,7 @@
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: isPtExcluded(values) ? 0 : (useTotalPpu ? ppuTotal : employerCost),
+            pt: isPtExcluded(values) ? 0 : (useTotalPpu ? ppuTotal : (useSupirCost ? supirCost : employerCost)),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
