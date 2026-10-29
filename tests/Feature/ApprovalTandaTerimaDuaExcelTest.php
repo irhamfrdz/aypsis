@@ -128,7 +128,7 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
         }
     }
 
-    public function test_export_displays_tonnage_and_volume_with_three_decimal_places(): void
+    public function test_export_displays_tonnage_and_volume_with_the_input_precision(): void
     {
         $receiptId = DB::table('tanda_terimas')->insertGetId([
             'no_surat_jalan' => 'TEST-DECIMAL',
@@ -139,14 +139,25 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             'goods' => [['nama_barang' => 'Barang']],
             'manifest_goods' => [['nama_barang' => 'Barang', 'tonase' => '16.556,880', 'meter_kubik' => '3.500,250']],
         ]);
+        $wholeNumberOverride = new \App\Models\ApprovalTandaTerimaDuaGoods([
+            'goods' => [['nama_barang' => 'Barang']],
+            'manifest_goods' => [['nama_barang' => 'Barang', 'tonase' => '25.000', 'meter_kubik' => '25.000']],
+        ]);
 
-        $file = app(ApprovalTandaTerimaDuaExcelService::class)->create('fcl', $receipt, $override);
+        $file = app(ApprovalTandaTerimaDuaExcelService::class)->createMany('fcl', [
+            ['receipt' => $receipt, 'override' => $override],
+            ['receipt' => $receipt, 'override' => $wholeNumberOverride],
+        ]);
         try {
             $sheet = IOFactory::load($file)->getSheet(0);
             $this->assertEquals(16556.88, $sheet->getCell('O9')->getValue());
             $this->assertSame('16,556.880', $sheet->getCell('O9')->getFormattedValue());
             $this->assertEquals(3500.25, $sheet->getCell('P9')->getValue());
             $this->assertSame('3,500.250', $sheet->getCell('P9')->getFormattedValue());
+            $this->assertEquals(25000, $sheet->getCell('O10')->getValue());
+            $this->assertSame('25,000', $sheet->getCell('O10')->getFormattedValue());
+            $this->assertEquals(25000, $sheet->getCell('P10')->getValue());
+            $this->assertSame('25,000', $sheet->getCell('P10')->getFormattedValue());
         } finally {
             @unlink($file);
         }

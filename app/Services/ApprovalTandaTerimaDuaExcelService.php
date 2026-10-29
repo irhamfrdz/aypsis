@@ -96,15 +96,12 @@ class ApprovalTandaTerimaDuaExcelService
                 $sheet->setCellValue($column.$row, (int) $value);
             }
         }
-        $weight = $this->indonesianNumber(data_get($manifestGood, 'tonase'));
-        $measure = $this->indonesianNumber(data_get($manifestGood, 'meter_kubik'));
-        if ($weight !== null) {
-            $sheet->setCellValue('O'.$row, $weight);
-            $sheet->getStyle('O'.$row)->getNumberFormat()->setFormatCode('#,##0.000');
-        }
-        if ($measure !== null) {
-            $sheet->setCellValue('P'.$row, $measure);
-            $sheet->getStyle('P'.$row)->getNumberFormat()->setFormatCode('#,##0.000');
+        foreach (['O' => data_get($manifestGood, 'tonase'), 'P' => data_get($manifestGood, 'meter_kubik')] as $column => $input) {
+            $number = $this->indonesianNumber($input);
+            if ($number !== null) {
+                $sheet->setCellValue($column.$row, $number);
+                $sheet->getStyle($column.$row)->getNumberFormat()->setFormatCode($this->numberFormatForInput($input));
+            }
         }
         if ($date) {
             $sheet->setCellValue('AD'.$row, ExcelDate::PHPToExcel(Carbon::parse($date)));
@@ -170,5 +167,20 @@ class ApprovalTandaTerimaDuaExcelService
         }
 
         return is_numeric($value) ? (float) $value : null;
+    }
+
+    private function numberFormatForInput(mixed $value): string
+    {
+        $value = trim((string) $value);
+        if (str_contains($value, ',')) {
+            $decimals = strlen(substr(strrchr($value, ','), 1));
+        } elseif (preg_match('/^\d+\.(\d+)$/', $value, $matches)
+            && ! preg_match('/^\d{1,3}(?:\.\d{3})+$/', $value)) {
+            $decimals = strlen($matches[1]);
+        } else {
+            $decimals = 0;
+        }
+
+        return '#,##0'.($decimals > 0 ? '.'.str_repeat('0', $decimals) : '');
     }
 }
