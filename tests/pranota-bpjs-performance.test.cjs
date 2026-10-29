@@ -52,6 +52,15 @@ test('JKN-KIS employer burden displays zero and cannot submit a manual amount', 
         assert.equal(input.disabled, true);
         assert.equal(input.name, undefined);
         assert.equal(status.textContent, 'Tidak dihitung');
+        row.dataset.groupJamsostek = 'PPU';
+        row.dataset.tipeJamsostek = 'NON KARY';
+        delete row.allowanceOverrides.pt;
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 296400);
+        assert.equal(input.disabled, false);
+        assert.equal(status.textContent, 'Sesuai rumus');
+        row.dataset.tipeJamsostek = 'KARYAWAN';
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 0);
+        assert.equal(input.disabled, true);
         row.dataset.groupJkn = 'LAIN';
         delete row.allowanceOverrides.pt;
         assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 296400);
@@ -201,7 +210,7 @@ test('changing membership data invalidates the cached NON KARY employer burden',
     assert.equal(calculate(), 0);
     row.dataset.groupJamsostek = 'PPU';
     row.dataset.tipeJamsostek = 'NON KARY';
-    assert.equal(calculate(), 0);
+    assert.equal(calculate(), 120000);
     row.dataset.groupJkn = 'LAIN';
     assert.equal(calculate(), 120000);
     row.dataset.tipeJkn = 'KARYAWAN';

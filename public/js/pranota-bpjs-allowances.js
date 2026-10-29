@@ -5,7 +5,10 @@
         || String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
     const isJknExcluded = values => String(values.tipe_jkn || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARY';
-    const isPtExcluded = values => String(values.group_jkn || '').toUpperCase()
+    const usesNonKaryPpuTotal = values => String(values.group_bp_jamsostek || '').toUpperCase()
+        .replace(/[\s_-]+/g, '') === 'PPU'
+        && String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
+    const isPtExcluded = values => !usesNonKaryPpuTotal(values) && String(values.group_jkn || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'JKNKIS';
     const isPpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARY';
@@ -23,8 +26,7 @@
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
         const umkmDebt = values.aggregate_jamsostek ? n('jht_hutang') : n('noncrew_jht_hutang');
-        const compact = value => String(value || '').toUpperCase().replace(/[\s_-]+/g, '');
-        const useTotalPpu = compact(values.group_bp_jamsostek) === 'PPU' && compact(values.tipe_bp_jamsostek) === 'NONKARY';
+        const useTotalPpu = usesNonKaryPpuTotal(values);
         const ppuTotal = n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
             + n('jkm_tunjangan') + n('jp_biaya') + n('jp_hutang');
         return {
@@ -105,7 +107,8 @@
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');
-        if (isPtExcluded({ group_jkn: row.dataset.groupJkn })) excludedKeys.push('pt');
+        if (isPtExcluded({ group_jkn: row.dataset.groupJkn, group_bp_jamsostek: row.dataset.groupJamsostek,
+            tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('pt');
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);
         const cached = rowStates.get(row);
         if (cached?.signature === signature) return cached.amounts;

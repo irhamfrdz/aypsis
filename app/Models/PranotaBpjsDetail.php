@@ -94,10 +94,12 @@ class PranotaBpjsDetail extends Model
     public function summaryBurden(string $key): float
     {
         $jknGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_jkn));
-        if ($key === 'pt' && $jknGroup === 'JKNKIS') {
+        $jamsostekGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_bp_jamsostek));
+        $jamsostekType = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
+        $useTotalPpu = $jamsostekGroup === 'PPU' && $jamsostekType === 'NONKARY';
+        if ($key === 'pt' && $jknGroup === 'JKNKIS' && ! $useTotalPpu) {
             return 0;
         }
-        $jamsostekType = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
         if ($key === 'kary_jht' && in_array($jamsostekType, ['NONKARY', 'NONKARYUMKMNONPP'], true)) {
             return 0;
         }
@@ -118,8 +120,6 @@ class PranotaBpjsDetail extends Model
         $umkmDebt = $this->rincian_bpjs !== null
             ? (float) ($values['noncrew_jht_hutang'] ?? 0)
             : (float) $this->jht_hutang;
-        $compact = fn ($value) => preg_replace('/[\s_-]+/', '', strtoupper((string) $value));
-        $useTotalPpu = $compact($this->karyawan?->group_bp_jamsostek) === 'PPU' && $compact($this->karyawan?->tipe_bp_jamsostek) === 'NONKARY';
         $ppuTotal = $sum(['jht_biaya', 'jht_hutang', 'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang']);
 
         return match ($key) {

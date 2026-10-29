@@ -8,6 +8,29 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_non_kary_ppu_total_takes_priority_over_jkn_kis_exclusion(): void
+    {
+        $employee = new Karyawan;
+        $employee->group_jkn = 'JKN-KIS';
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['bpjs_kesehatan' => 229195.2, 'bpjs_ketenagakerjaan' => 57298.8,
+            'rincian_bpjs' => json_encode(['jht_biaya' => 100000.8, 'jht_hutang' => 20000,
+                'jkk_tunjangan' => 1000, 'jkm_tunjangan' => 2000, 'jp_biaya' => 10000,
+                'jp_hutang' => 11000, 'noncrew_jht_biaya' => 50000, 'bpu_jkm' => 3400]),
+        ]);
+        $detail->setRelation('karyawan', $employee);
+        foreach ([['PPU', 'NON KARY'], [' ppu ', ' non kary '], ['PPU', 'NON_KARY']] as [$group, $type]) {
+            $employee->group_bp_jamsostek = $group;
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(144000.8, $detail->summaryBurden('pt'));
+        }
+        $employee->tipe_bp_jamsostek = 'KARYAWAN';
+        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+        $employee->group_bp_jamsostek = 'BPU';
+        $employee->tipe_bp_jamsostek = 'NON KARY';
+        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+    }
+
     public function test_ppu_allowance_excludes_exact_non_kary_even_with_saved_manual_amount(): void
     {
         $employee = new Karyawan(['group_bp_jamsostek' => 'PPU']);
@@ -202,7 +225,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $this->assertSame(0.0, $detail->summaryBurden('pt'));
         $employee->group_bp_jamsostek = 'ppu';
         $employee->tipe_bp_jamsostek = 'NON_KARY';
-        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+        $this->assertSame(144000.8, $detail->summaryBurden('pt'));
         $employee->group_jkn = 'LAIN';
         $this->assertSame(144000.8, $detail->summaryBurden('pt'));
         $employee->tipe_bp_jamsostek = 'KARYAWAN';
