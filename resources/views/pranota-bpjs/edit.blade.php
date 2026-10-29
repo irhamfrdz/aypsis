@@ -122,12 +122,14 @@
                             <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (TUNJ)</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (BIAY)</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 1%</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-jkn col-group-jkn" style="min-width:130px">TOTAL JKN</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JHT 3.7%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JHT 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKK 0.24%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 1%</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-ppu col-group-ppu" style="min-width:130px">TOTAL PPU</th>
 <th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
@@ -142,12 +144,14 @@
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_ket">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0,00</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_hutang">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkk">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_hutang">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0,00</td>
                             <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
 <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
 <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
@@ -221,6 +225,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
         container.querySelectorAll('tr.detail-row').forEach(row => {
+            BpjsPerformance.updateGroupTotals(row, parseIdNumber, formatNumber);
             const read = selector => BpjsPerformance.readNumber(row, selector, parseIdNumber);
             const kes = read('.input-kes');
             sumKes += kes;
@@ -245,6 +250,8 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('total_jp_biaya').textContent = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').textContent = 'Rp ' + formatNumber(sumJpH);
         
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
         const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
         document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(grandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
@@ -351,6 +358,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKet)}" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtB)}" autocomplete="off">
             </td>
@@ -369,6 +377,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>
             <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
             <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
             <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
@@ -414,6 +423,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         const updateSubtotal = () => {
             BpjsJknColumns.syncRow(tr);
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
             const kes = parseIdNumber(inputKes.value);
             const ket = parseIdNumber(inputKet.value);
             const jhtB = parseIdNumber(inputJhtBiaya.value);

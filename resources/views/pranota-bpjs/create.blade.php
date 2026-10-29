@@ -280,10 +280,10 @@
                             <th id="th-group-info" colspan="5" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
                                 <i class="fas fa-id-card-clip text-gray-500 mr-1"></i> Informasi Karyawan
                             </th>
-                            <th id="th-group-jkn" colspan="3" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
+                            <th id="th-group-jkn" colspan="4" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
                                 <i class="fas fa-heart-pulse text-indigo-600 mr-1"></i> BPJS Kesehatan (JKN)
                             </th>
-                            <th id="th-group-ppu" colspan="6" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900 col-group-ppu">
+                            <th id="th-group-ppu" colspan="7" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900 col-group-ppu">
                                 <i class="fas fa-building text-emerald-600 mr-1"></i> BP Jamsostek (PPU)
                             </th>
                             <th id="th-group-bpu-crew" colspan="3" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900 col-group-bpu-crew">
@@ -309,12 +309,13 @@
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-tipe-jkn" style="min-width:130px">Tipe JKN</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200 col-info-tipe-jam" style="min-width:140px">Tipe Jamsostek</th>
                             
-                            {{-- JKN (3) --}}
+                            {{-- JKN (4) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (TUNJ)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Biaya karyawan tidak tetap">KIS 4% (BIAY)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 border-r border-indigo-100 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 1% Hutang">KIS 1% (Hutang)</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-jkn col-group-jkn" style="min-width:130px">TOTAL JKN</th>
                             
-                            {{-- PPU (6) --}}
+                            {{-- PPU (7) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:100px" title="JHT Biaya Perusahaan 3.7%">PPU JHT 3.7%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:90px" title="JHT Hutang Karyawan 2%">PPU JHT 2%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:95px" title="JKK Tunjangan 0.24%">PPU JKK 0.24%</th>
@@ -322,6 +323,7 @@
 
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-emerald-100 col-group-ppu" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-ppu col-group-ppu" style="min-width:130px">TOTAL PPU</th>
                             {{-- BPU-CREW (3) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30 col-group-bpu-crew" style="min-width:115px" title="BPU JHT Karyawan (Hutang Potongan)">BPU JHT (Kary)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 col-group-bpu-crew" style="min-width:110px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
@@ -348,6 +350,7 @@
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_kes">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_kes_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn" id="total_ket">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0,00</td>
                             
                             {{-- PPU --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jht_biaya">Rp 0</td>
@@ -357,6 +360,7 @@
                             
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jp_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu" id="total_jp_hutang">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0,00</td>
                             {{-- BPU-CREW --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50 col-group-bpu-crew" id="total_jkk_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew" id="total_bpu_jkk">Rp 0</td>
@@ -654,6 +658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         allRows.forEach(tr => {
             const isVisible = !tr.classList.contains('hidden');
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
 
             const valKes   = BpjsPerformance.readNumber(tr, '.input-kes', parseIdNumber);
             const valKet   = BpjsPerformance.readNumber(tr, '.input-ket', parseIdNumber);
@@ -747,6 +752,8 @@ document.addEventListener('DOMContentLoaded', function() {
             bpu_non_crew: sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm
         });
         
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
         document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(visibleGrandTotal);
 
         // Update Footer Label
@@ -857,7 +864,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </select>
             </td>
             
-            {{-- JKN (3) --}}
+            {{-- JKN (4) --}}
             <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right font-mono text-xs input-kes font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -865,8 +872,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-indigo-50/10 border-r border-indigo-100 col-group-jkn">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right font-mono text-xs input-ket font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
             
-            {{-- PPU (6) --}}
+            {{-- PPU (7) --}}
             <td class="px-1.5 py-2 align-middle bg-emerald-50/10 col-group-ppu">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right font-mono text-xs input-jht-biaya font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -886,6 +894,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-emerald-50/10 border-r border-emerald-100 col-group-ppu">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right font-mono text-xs input-jp-hutang font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>
             {{-- BPU-CREW (3) --}}
             <td class="px-1.5 py-2 align-middle bg-rose-50/10 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][jkk_hutang]" class="w-full text-right font-mono text-xs input-jkk-hutang font-semibold text-rose-600 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
@@ -956,6 +965,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const updateSubtotal = () => {
             BpjsJknColumns.syncRow(tr);
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
             const currentSelectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
             const kes       = parseIdNumber(inputKes.value);
             const ket       = parseIdNumber(inputKet.value);

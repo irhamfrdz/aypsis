@@ -4,6 +4,32 @@ require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('JKN and PPU totals add their components once without BPU or allowance summaries', () => {
+    const amounts = { bpjs_kesehatan: 229195.20, bpjs_ketenagakerjaan: 57298.80,
+        jht_biaya: 100000.80, jht_hutang: 20000, jkk_tunjangan: 1000,
+        jkm_tunjangan: 2000, jp_biaya: 10000, jp_hutang: 11000,
+        noncrew_jht_biaya: 50000, bpu_jkk_tunjangan: 15000, allowance_pt: 99999 };
+    assert.deepEqual(BpjsPerformance.groupTotals(amounts), { jkn: 286494, ppu: 144000.8 });
+    assert.deepEqual(BpjsPerformance.groupTotals({}), { jkn: 0, ppu: 0 });
+});
+
+test('displayed group totals refresh on edits and never become submitted input fields', () => {
+    const fields = new Map([
+        ['.input-kes', { value: '229195.20' }], ['.input-ket', { value: '57298.80' }],
+        ['.input-jht-biaya', { value: '100000.80' }], ['.input-jp-biaya', { value: '11000' }],
+        ['.row-total-jkn', {}], ['.row-total-ppu', {}],
+    ]);
+    const row = { querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    BpjsPerformance.updateGroupTotals(row, parse, value => value.toFixed(2));
+    assert.equal(fields.get('.row-total-jkn').textContent, 'Rp 286494.00');
+    assert.equal(fields.get('.row-total-ppu').textContent, 'Rp 111000.80');
+    fields.get('.input-jp-biaya').value = '15000.25';
+    BpjsPerformance.updateGroupTotals(row, parse, value => value.toFixed(2));
+    assert.equal(fields.get('.row-total-ppu').textContent, 'Rp 115001.05');
+    assert.equal(fields.get('.row-total-ppu').name, undefined);
+});
+
 test('UMKM Non PP edit rows use saved noncrew components and recalculate changed aggregates', () => {
     const fields = new Map([
         ['.input-jht-biaya', { value: '19000' }], ['.input-jkk', { value: '9500.25' }],
