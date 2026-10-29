@@ -22,13 +22,21 @@ class PembayaranPranotaObController extends Controller
         $this->coaTransactionService = $coaTransactionService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        // Get all pembayaran_pranota_ob
-        $pembayaranList = PembayaranPranotaOb::orderBy('created_at', 'desc')
-            ->paginate(15);
+        $search = trim((string) $request->input('search', ''));
+        $pembayaranList = PembayaranPranotaOb::query()
+            ->when($search !== '', function ($query) use ($search) {
+                $query->where(function ($query) use ($search) {
+                    $query->where('nomor_pembayaran', 'like', '%'.$search.'%')
+                        ->orWhere('nomor_accurate', 'like', '%'.$search.'%');
+                });
+            })
+            ->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->withQueryString();
 
-        return view('pembayaran-pranota-ob.index', compact('pembayaranList'));
+        return view('pembayaran-pranota-ob.index', compact('pembayaranList', 'search'));
     }
 
     public function show(string $id)

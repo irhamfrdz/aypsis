@@ -37,6 +37,17 @@
             </div>
         @endif
 
+        <form method="GET" action="{{ route('pembayaran-pranota-ob.index') }}" class="px-6 py-4 border-b border-gray-200 flex flex-wrap items-center gap-3">
+            <label for="search" class="sr-only">Cari nomor pembayaran atau nomor Accurate</label>
+            <input type="search" name="search" id="search" value="{{ $search }}"
+                   placeholder="Cari nomor pembayaran atau Accurate"
+                   class="w-full sm:w-80 rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+            <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">Cari</button>
+            @if($search !== '')
+                <a href="{{ route('pembayaran-pranota-ob.index') }}" class="text-sm text-gray-600 hover:text-gray-900">Reset</a>
+            @endif
+        </form>
+
         <!-- Table -->
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pembayaranPranotaObTable">
@@ -44,6 +55,10 @@
                     <tr>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                             Nomor Pembayaran
+                            <div class="resize-handle"></div>
+                        </th>
+                        <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
+                            Nomor Accurate
                             <div class="resize-handle"></div>
                         </th>
                         <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
@@ -77,6 +92,9 @@
                                 <div class="text-sm text-gray-500">
                                     ID: #{{ $pembayaran->id }}
                                 </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $pembayaran->nomor_accurate ?: '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
@@ -158,8 +176,8 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-4 text-center text-gray-500">
-                                Tidak ada data pembayaran pranota OB.
+                            <td colspan="7" class="px-6 py-4 text-center text-gray-500">
+                                {{ $search !== '' ? 'Tidak ada pembayaran yang cocok dengan pencarian.' : 'Tidak ada data pembayaran pranota OB.' }}
                             </td>
                         </tr>
                     @endforelse
