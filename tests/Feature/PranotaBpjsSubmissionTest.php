@@ -90,6 +90,7 @@ class PranotaBpjsSubmissionTest extends TestCase
                 $savedDetail->setRelation('karyawan', new \App\Models\Karyawan([
                     'nama_lengkap' => 'Karyawan Uji', 'group_jkn' => 'JKN-KIS',
                     'group_bp_jamsostek' => 'PPU', 'tipe_jkn' => 'KANTOR',
+                    'tipe_bp_jamsostek' => 'KARYAWAN', 'dpp_jkn' => 5729880, 'dpp_bp_jamsostek' => 4450000.50,
                 ]));
             }
             $source = file_get_contents(resource_path('views/pranota-bpjs/show.blade.php'));
@@ -97,7 +98,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $end = strpos($source, '        <div class="flex justify-end mt-16', $start);
             $template = substr($source, $start, $end - $start);
             $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
-            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000,00', '30.000,00'] as $label) {
+            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000,00', '30.000,00', 'DPP JKN', 'DPP BP Jamsostek', '5.729.880,00', '4.450.000,50', 'BP Jamsostek: PPU', 'KARYAWAN'] as $label) {
                 $this->assertStringContainsString($label, $html);
             }
             $header->details->first()->rincian_bpjs = null;

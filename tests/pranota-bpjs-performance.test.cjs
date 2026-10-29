@@ -2,7 +2,29 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
+require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
+
+test('employee information shows master groups, types and separate DPP amounts and clears stale selections', () => {
+    const fields = new Map(['.group-text', '.employee-tipe-jkn', '.employee-tipe-jamsostek',
+        '.employee-dpp-jkn', '.employee-dpp-jamsostek'].map(selector => [selector, {}]));
+    const row = { querySelector: selector => fields.get(selector) || null };
+    const format = value => new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2 }).format(value);
+    const update = employee => BpjsPerformance.updateEmployeeInfo(row, employee, BpjsJamsostek.parseAmount, format);
+    update({ group_jkn: 'JKN-KIS', group_bp_jamsostek: 'BPU-ALEXINDO PLUIT', cabang_bpjs: 'PLUIT',
+        tipe_jkn: 'NON KARY', tipe_bp_jamsostek: 'CREW', dpp_jkn: '5729880.00', dpp_bp_jamsostek: '4.450.000,50' });
+    assert.equal(fields.get('.group-text').textContent, 'JKN: JKN-KIS\nBP Jamsostek: BPU-ALEXINDO PLUIT');
+    assert.equal(fields.get('.employee-tipe-jkn').textContent, 'NON KARY');
+    assert.equal(fields.get('.employee-tipe-jamsostek').textContent, 'CREW');
+    assert.equal(fields.get('.employee-dpp-jkn').textContent, 'Rp 5.729.880,00');
+    assert.equal(fields.get('.employee-dpp-jamsostek').textContent, 'Rp 4.450.000,50');
+    update({ group_bp_jamsostek: 'PPU', tipe_bp_jamsostek: 'KARYAWAN', dpp_bp_jamsostek: 0 });
+    assert.equal(fields.get('.employee-dpp-jkn').textContent, '-');
+    assert.equal(fields.get('.employee-tipe-jkn').textContent, '-');
+    assert.equal(fields.get('.employee-dpp-jamsostek').textContent, 'Rp 0,00');
+    update(null);
+    for (const field of fields.values()) assert.equal(field.textContent, '-');
+});
 
 test('changing membership data invalidates the cached NON KARY employer burden', () => {
     const fields = new Map([

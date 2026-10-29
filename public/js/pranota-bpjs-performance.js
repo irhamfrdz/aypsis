@@ -79,5 +79,22 @@
         return totals;
     }
 
-    root.BpjsPerformance = { field, readNumber, scheduler, groupTotals, updateGroupTotals };
+    function updateEmployeeInfo(row, employee, parseAmount, formatNumber) {
+        const set = (selector, value) => {
+            const element = field(row, selector);
+            if (element) element.textContent = value;
+        };
+        const groups = [];
+        if (employee?.group_jkn) groups.push('JKN: ' + employee.group_jkn);
+        if (employee?.group_bp_jamsostek) groups.push('BP Jamsostek: ' + employee.group_bp_jamsostek);
+        set('.group-text', groups.join('\n') || '-');
+        set('.employee-tipe-jkn', employee?.tipe_jkn || '-');
+        set('.employee-tipe-jamsostek', employee?.tipe_bp_jamsostek || '-');
+        for (const [selector, key] of [['.employee-dpp-jkn', 'dpp_jkn'], ['.employee-dpp-jamsostek', 'dpp_bp_jamsostek']]) {
+            const value = employee?.[key];
+            set(selector, value === null || value === undefined || value === '' ? '-' : 'Rp ' + formatNumber(parseAmount(value)));
+        }
+    }
+
+    root.BpjsPerformance = { field, readNumber, scheduler, groupTotals, updateGroupTotals, updateEmployeeInfo };
 })(globalThis);

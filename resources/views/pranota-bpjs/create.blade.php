@@ -277,7 +277,7 @@
                     <thead>
                         {{-- ── Group Header Row ── --}}
                         <tr class="text-[11px] uppercase tracking-wider font-bold border-b border-gray-200 text-gray-700">
-                            <th id="th-group-info" colspan="5" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
+                            <th id="th-group-info" colspan="7" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
                                 <i class="fas fa-id-card-clip text-gray-500 mr-1"></i> Informasi Karyawan
                             </th>
                             <th id="th-group-jkn" colspan="4" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
@@ -307,7 +307,9 @@
                             <th class="px-3 py-2.5 text-left font-bold text-gray-700 col-info-nama" style="min-width:200px">Nama Karyawan</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-group" style="min-width:120px">Group BPJS</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-tipe-jkn" style="min-width:130px">Tipe JKN</th>
+                            <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jkn" style="min-width:150px">DPP JKN</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200 col-info-tipe-jam" style="min-width:140px">Tipe Jamsostek</th>
+                            <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jam" style="min-width:150px">DPP BP Jamsostek</th>
                             
                             {{-- JKN (4) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-indigo-700 bg-indigo-50/30 col-group-jkn" style="min-width:105px" title="BPJS Kesehatan 4% Tunjangan">KIS 4% (TUNJ)</th>
@@ -345,7 +347,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50/95 border-t-2 border-gray-300 shadow-xs text-xs">
                         <tr class="divide-x divide-gray-200/60 font-semibold">
-                            <td colspan="5" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90" id="footer-total-label">
+                            <td colspan="7" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90" id="footer-total-label">
                                 Total Keseluruhan:
                             </td>
                             {{-- JKN --}}
@@ -512,7 +514,9 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleElements('.col-group-bpu-noncrew', showBpuNonCrew);
 
         toggleElements('.col-info-tipe-jkn', showTipeJkn);
+        toggleElements('.col-info-dpp-jkn', showTipeJkn);
         toggleElements('.col-info-tipe-jam', showTipeJam);
+        toggleElements('.col-info-dpp-jam', showTipeJam);
 
         // Group Header Row 1 colspans and visibility
         const thInfo = document.getElementById('th-group-info');
@@ -528,8 +532,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (thBpuNonCrew) thBpuNonCrew.classList.toggle('hidden', !showBpuNonCrew);
 
         let infoColspan = 3; // #, Nama, Group
-        if (showTipeJkn) infoColspan++;
-        if (showTipeJam) infoColspan++;
+        if (showTipeJkn) infoColspan += 2;
+        if (showTipeJam) infoColspan += 2;
 
         if (thInfo) thInfo.setAttribute('colspan', infoColspan);
         if (footerInfo) footerInfo.setAttribute('colspan', infoColspan);
@@ -858,17 +862,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="employee-termination-badge hidden mt-1 inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800"></span>
                 <div class="info-jkn mt-1 hidden"></div>
             </td>
-            <td class="px-3 py-2.5 align-middle text-center text-[11px] group-text whitespace-nowrap col-info-group">-</td>
+            <td class="px-3 py-2.5 align-middle text-center text-[11px] group-text bpjs-employee-group col-info-group">-</td>
             <td class="px-2 py-2.5 align-middle text-center col-info-tipe-jkn">
-                <select class="w-full text-[11px] py-1 px-1.5 text-center select-tipe-jkn border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-md bg-gray-50/60 shadow-2xs font-medium" name="details[${rowCount}][tipe_jkn]">
-                    <option value="tunjangan_hutang">TOTAL JKN</option>
-                </select>
+                <span class="employee-tipe-jkn bpjs-employee-type">-</span>
+                <input type="hidden" class="select-tipe-jkn" name="details[${rowCount}][tipe_jkn]" value="tunjangan_hutang">
             </td>
+            <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jkn"><span class="employee-dpp-jkn">-</span></td>
             <td class="px-2 py-2.5 align-middle text-center border-r border-gray-200 col-info-tipe-jam">
-                <select class="w-full text-[11px] py-1 px-1.5 text-center select-tipe-bp-jamsostek border-gray-200 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-md bg-gray-50/60 shadow-2xs font-medium" name="details[${rowCount}][tipe_bp_jamsostek]">
-                    <option value="total">TOTAL BP JAMSOSTEK</option>
-                </select>
+                <span class="employee-tipe-jamsostek bpjs-employee-type">-</span>
+                <input type="hidden" class="select-tipe-bp-jamsostek" name="details[${rowCount}][tipe_bp_jamsostek]" value="total">
             </td>
+            <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
             
             {{-- JKN (4) --}}
             <td class="px-1.5 py-2 align-middle bg-indigo-50/10 col-group-jkn" data-jkn-tunjangan>
@@ -954,7 +958,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const inputKet     = tr.querySelector('.input-ket');
         const subtotalText = tr.querySelector('.subtotal-text');
         const infoJkn      = tr.querySelector('.info-jkn');
-        const groupText    = tr.querySelector('.group-text');
         const selectTipe   = tr.querySelector('.select-tipe-jkn');
         const selectTipeJamsostek = tr.querySelector('.select-tipe-bp-jamsostek');
         const inputJhtBiaya  = tr.querySelector('.input-jht-biaya');
@@ -1027,34 +1030,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function updateInfoBadgeJkn(kId) {
             const karyawan = karyawans.find(k => k.unique_id == kId || k.id == kId);
-            if (!karyawan) { groupText.innerHTML = '-'; return; }
-
-            let badges = [];
-
-            if (karyawan.group_jkn) {
-                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-indigo-100 text-indigo-800" title="Group JKN">${karyawan.group_jkn}</span>`);
-                selectTipe.options[0].text = BpjsJknColumns.isReimbursement(karyawan) ? 'DPP JKN (REUMBERSMENT)' : 'TOTAL JKN';
-            }
-
-            if (karyawan.group_bp_jamsostek) {
-                const formula = BpjsJamsostek.findFormula(rumusBpjs, karyawan);
-                const category = formula ? BpjsMasterFilters.category(formula) : '';
-                const isPpu = category === 'ppu';
-                const isBpuCrew = category === 'bpu_crew';
-                let badgeClass = 'bg-purple-100 text-purple-800';
-                if (isPpu) badgeClass = 'bg-emerald-100 text-emerald-800';
-                else if (isBpuCrew) badgeClass = 'bg-sky-100 text-sky-800';
-
-                let label = karyawan.group_bp_jamsostek;
-                if (karyawan.cabang_bpjs) {
-                    label += ` — ${karyawan.cabang_bpjs}`;
-                }
-                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold ${badgeClass}" title="Group Jamsostek">${label}</span>`);
-            } else if (karyawan.cabang_bpjs) {
-                badges.push(`<span class="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-100 text-purple-800" title="Cabang BPJS">${karyawan.cabang_bpjs}</span>`);
-            }
-
-            groupText.innerHTML = badges.length > 0 ? badges.join('<br>') : '-';
+            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, formatNumber);
         }
 
         function calculateBpjsForKaryawan(kId, tipeJkn) {

@@ -118,7 +118,9 @@
                             <th class="px-4 py-3 text-left">Nama Karyawan</th>
                             <th class="px-4 py-3 text-left">Group</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN</th>
+                            <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jkn" style="min-width:150px">DPP JKN</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe BP JAMSOSTEK</th>
+                            <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jam" style="min-width:150px">DPP BP Jamsostek</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (TUNJ)</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (BIAY)</th>
                             <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 1%</th>
@@ -140,7 +142,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 shadow-sm">
                         <tr>
-                            <td colspan="5" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
+                            <td colspan="7" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_ket">Rp 0</td>
@@ -341,17 +343,17 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <span class="employee-termination-badge hidden mt-1 inline-flex rounded bg-red-100 px-2 py-0.5 text-[10px] font-semibold text-red-800"></span>
                 <div class="info-jkn mt-1 hidden"></div>
             </td>
-            <td class="px-4 py-3 align-middle text-center text-xs group-text font-semibold text-gray-600 whitespace-nowrap">-</td>
+            <td class="px-4 py-3 align-middle text-center text-xs group-text bpjs-employee-group font-semibold text-gray-600">-</td>
             <td class="px-4 py-3 align-middle text-center">
-                <select class="form-select w-full text-sm text-center select-tipe-jkn border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition-colors" name="details[${rowCount}][tipe_jkn]">
-                    <option value="tunjangan_hutang" ${tipeJkn === 'tunjangan_hutang' ? 'selected' : ''}>TOTAL JKN</option>
-                </select>
+                <span class="employee-tipe-jkn bpjs-employee-type">-</span>
+                <input type="hidden" class="select-tipe-jkn" name="details[${rowCount}][tipe_jkn]" value="${tipeJkn}">
             </td>
+            <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jkn"><span class="employee-dpp-jkn">-</span></td>
             <td class="px-4 py-3 align-middle text-center">
-                <select class="form-select w-full text-sm text-center select-tipe-bp-jamsostek border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm transition-colors" name="details[${rowCount}][tipe_bp_jamsostek]">
-                    <option value="total" selected>TOTAL BP JAMSOSTEK</option>
-                </select>
+                <span class="employee-tipe-jamsostek bpjs-employee-type">-</span>
+                <input type="hidden" class="select-tipe-bp-jamsostek" name="details[${rowCount}][tipe_bp_jamsostek]" value="total">
             </td>
+            <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
             <td class="px-4 py-3 align-middle" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKes)}" autocomplete="off">
             </td>
@@ -412,7 +414,6 @@ document.addEventListener('DOMContentLoaded', async function() {
         const inputKes     = tr.querySelector('.input-kes');
         const inputKet     = tr.querySelector('.input-ket');
         const subtotalText = tr.querySelector('.subtotal-text');
-        const groupText    = tr.querySelector('.group-text');
         const selectTipe   = tr.querySelector('.select-tipe-jkn');
         const selectTipeJamsostek = tr.querySelector('.select-tipe-bp-jamsostek');
         const inputJhtBiaya = tr.querySelector('.input-jht-biaya');
@@ -462,31 +463,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         function updateInfoBadgeJkn(kId) {
             const karyawan = findKaryawan(kId);
-            if (!karyawan) { groupText.innerHTML = '-'; return; }
-
-            let groupHtml = '';
-
-            if (karyawan.group_jkn) {
-                const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
-                if (rumus) {
-                    const tunjPersen   = parseFloat(rumus.tunjangan_persen || 0);
-                    const hutangPersen = parseFloat(rumus.hutang_persen    || 0);
-                    groupHtml += `<div class="text-indigo-600 mb-1" title="Group JKN">${karyawan.group_jkn}</div>`;
-                    selectTipe.options[0].text = BpjsJknColumns.isReimbursement(karyawan) ? 'DPP JKN (REUMBERSMENT)' : 'TOTAL JKN';
-                } else {
-                    groupHtml += `<div class="text-orange-500 mb-1" title="Rumus tidak ditemukan">${karyawan.group_jkn} &#9888;</div>`;
-                }
-            }
-
-            if (karyawan.group_bp_jamsostek) {
-                groupHtml += `<div class="text-emerald-600" title="Group BP Jamsostek">${karyawan.group_bp_jamsostek}</div>`;
-            }
-
-            if (groupHtml) {
-                groupText.innerHTML = groupHtml;
-            } else {
-                groupText.innerHTML = `<span class="text-gray-400">-</span>`;
-            }
+            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, formatNumber);
         }
 
         function calculateBpjsForKaryawan(kId, tipeJkn) {
@@ -615,7 +592,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (k) {
                 if (hiddenKaryawanId) hiddenKaryawanId.value = k.id;
                 if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = k.tipe_karyawan || 'App\\Models\\Karyawan';
+            } else {
+                if (hiddenKaryawanId) hiddenKaryawanId.value = '';
+                if (hiddenTipeKaryawan) hiddenTipeKaryawan.value = 'App\\Models\\Karyawan';
             }
+            updateInfoBadgeJkn(k ? k.unique_id : kId);
             calculateBpjsForKaryawan(k ? k.unique_id : kId, selectTipe.value);
         };
 

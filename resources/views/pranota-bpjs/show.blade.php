@@ -78,6 +78,11 @@
         @endif
 
         @php
+            $formatDpp = function ($value) {
+                if ($value === null || $value === '') return '-';
+                $amount = is_numeric($value) ? (float) $value : (float) str_replace(',', '.', str_replace('.', '', (string) $value));
+                return 'Rp ' . number_format($amount, 2, ',', '.');
+            };
             $componentGroups = [
                 'JKN' => ['kis_tunjangan' => 'KIS 4% (TUNJ)', 'kis_biaya' => 'KIS 4% (BIAY)', 'bpjs_ketenagakerjaan' => 'KIS 1% (Hutang)'],
                 'PPU' => ['jht_biaya' => 'PPU JHT 3.7%', 'jht_hutang' => 'PPU JHT 2%', 'jkk_tunjangan' => 'PPU JKK 0.24%', 'jkm_tunjangan' => 'PPU JKM 0.3%', 'jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
@@ -128,14 +133,14 @@
                 <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700">
-                            <th colspan="5" class="border border-gray-200 p-3">Informasi Karyawan</th>
+                            <th colspan="7" class="border border-gray-200 p-3">Informasi Karyawan</th>
                             @foreach($componentGroups as $group => $columns)
                                 <th colspan="{{ count($columns) }}" class="border border-gray-200 p-3 {{ $group === 'JKN' ? 'bg-indigo-50 text-indigo-800' : 'bg-teal-50 text-teal-800' }}">{{ $group }}</th>
                             @endforeach
                             <th rowspan="2" class="border border-gray-200 p-3 bg-teal-50">Subtotal (Rp)</th>
                         </tr>
                         <tr class="bg-gray-50">
-                            @foreach(['No', 'Nama Karyawan', 'Group BPJS', 'Tipe JKN', 'Tipe Jamsostek'] as $label)
+                            @foreach(['No', 'Nama Karyawan', 'Group BPJS', 'Tipe JKN', 'DPP JKN', 'Tipe BP Jamsostek', 'DPP BP Jamsostek'] as $label)
                                 <th class="border border-gray-200 p-3 text-left">{{ $label }}</th>
                             @endforeach
                             @foreach($componentGroups as $columns)
@@ -153,9 +158,15 @@
                                     @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')<span class="ml-1 rounded bg-amber-100 px-2 py-1 text-amber-800">Tidak Tetap</span>@endif
                                     <div class="mt-1 text-gray-500">NIK: {{ $detail->karyawan?->nik ?? '-' }}</div>
                                 </td>
-                                <td class="border border-gray-200 p-3"><div>{{ $detail->karyawan?->group_jkn ?: '-' }}</div><div>{{ $detail->karyawan?->group_bp_jamsostek ?: '-' }}</div></td>
+                                <td class="border border-gray-200 p-3">
+                                    @if($detail->karyawan?->group_jkn)<div>JKN: {{ $detail->karyawan->group_jkn }}</div>@endif
+                                    @if($detail->karyawan?->group_bp_jamsostek)<div>BP Jamsostek: {{ $detail->karyawan->group_bp_jamsostek }}</div>@endif
+                                    @if(!$detail->karyawan?->group_jkn && !$detail->karyawan?->group_bp_jamsostek)-@endif
+                                </td>
                                 <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_jkn ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan?->dpp_jkn) }}</td>
                                 <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_bp_jamsostek ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan?->dpp_bp_jamsostek) }}</td>
                                 @foreach($componentGroups as $columns)
                                     @foreach($columns as $field => $label)
                                         @if($field === 'no_voucher')
@@ -171,7 +182,7 @@
                     </tbody>
                     <tfoot class="bg-gray-100 font-bold">
                         <tr>
-                            <td colspan="5" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
+                            <td colspan="7" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
                                 @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
                             @endforeach
