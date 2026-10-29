@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranAktivitasLainController extends Controller
 {
@@ -423,10 +424,11 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
-            'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
+            'debit_kredit' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'different:akun_bank_id'],
+            'akun_details.*.debit_kredit' => [Rule::requiredIf($hasAkunDetails), 'in:debit,kredit'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
@@ -451,7 +453,12 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
-            $validated['jumlah'] = array_sum(array_column($validated['akun_details'], 'nominal'));
+            $net = $this->akunDetailsNet($validated['akun_details']);
+            if ($net === 0) {
+                throw ValidationException::withMessages(['akun_details' => 'Selisih debit dan kredit harus lebih dari nol agar Bank/Kas memiliki nilai transaksi.']);
+            }
+            $validated['jumlah'] = abs($net);
+            $validated['debit_kredit'] = $net > 0 ? 'kredit' : 'debit';
             $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
         } else {
             $validated['akun_details'] = null;
@@ -629,6 +636,28 @@ class PembayaranAktivitasLainController extends Controller
             'nominal' => $jumlah,
         ]];
 
+        if (isset($akunDetails[0]['debit_kredit'])) {
+            $net = $this->akunDetailsNet($akunDetails);
+            $this->createExpenseJournalLines($akunDetails, $tanggal, $nomorReferensi, $jenisTransaksiDesc, $keterangan.' - '.$validated['keterangan'], true);
+            $bankDebit = $net < 0;
+            $bankAmount = abs($net);
+            $bankSaldo = $akunBank->saldo + ($bankDebit ? $bankAmount : -$bankAmount);
+            $this->createCoaTransaction([
+                'coa_id' => $akunBank->id,
+                'tanggal_transaksi' => $tanggal,
+                'nomor_referensi' => $nomorReferensi,
+                'jenis_transaksi' => $jenisTransaksiDesc,
+                'keterangan' => $keterangan.' - '.$validated['keterangan'],
+                'debit' => $bankDebit ? $bankAmount : 0,
+                'kredit' => $bankDebit ? 0 : $bankAmount,
+                'saldo' => $bankSaldo,
+                'created_by' => Auth::id(),
+            ]);
+            $akunBank->update(['saldo' => $bankSaldo]);
+
+            return;
+        }
+
         // Create journal entries based on debit/credit selection
         if ($jenisTransaksi === 'kredit') {
             // KREDIT: Increase expense/cost account, decrease bank account
@@ -704,9 +733,10 @@ class PembayaranAktivitasLainController extends Controller
     private function createExpenseJournalLines(array $details, $tanggal, string $nomorReferensi, string $jenisTransaksi, string $keterangan, bool $isDebit): void
     {
         foreach ($details as $detail) {
+            $lineIsDebit = isset($detail['debit_kredit']) ? $detail['debit_kredit'] === 'debit' : $isDebit;
             $akun = Coa::findOrFail($detail['akun_coa_id']);
             $nominal = (int) $detail['nominal'];
-            $saldo = $akun->saldo + ($isDebit ? $nominal : -$nominal);
+            $saldo = $akun->saldo + ($lineIsDebit ? $nominal : -$nominal);
             $memo = trim((string) ($detail['memo'] ?? ''));
             $this->createCoaTransaction([
                 'coa_id' => $akun->id,
@@ -714,13 +744,19 @@ class PembayaranAktivitasLainController extends Controller
                 'nomor_referensi' => $nomorReferensi,
                 'jenis_transaksi' => $jenisTransaksi,
                 'keterangan' => $memo === '' ? $keterangan : $keterangan.' - '.$memo,
-                'debit' => $isDebit ? $nominal : 0,
-                'kredit' => $isDebit ? 0 : $nominal,
+                'debit' => $lineIsDebit ? $nominal : 0,
+                'kredit' => $lineIsDebit ? 0 : $nominal,
                 'saldo' => $saldo,
                 'created_by' => Auth::id(),
             ]);
             $akun->update(['saldo' => $saldo]);
         }
+    }
+
+    private function akunDetailsNet(array $details): int
+    {
+        return array_reduce($details, fn (int $net, array $detail) => $net
+            + ($detail['debit_kredit'] === 'debit' ? 1 : -1) * (int) $detail['nominal'], 0);
     }
 
     /**
@@ -896,10 +932,11 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
-            'debit_kredit' => ($requiresDoubleBook ? 'required' : 'nullable').'|in:debit,kredit',
+            'debit_kredit' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'different:akun_bank_id'],
+            'akun_details.*.debit_kredit' => [Rule::requiredIf($hasAkunDetails), 'in:debit,kredit'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
@@ -924,7 +961,12 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
-            $validated['jumlah'] = array_sum(array_column($validated['akun_details'], 'nominal'));
+            $net = $this->akunDetailsNet($validated['akun_details']);
+            if ($net === 0) {
+                throw ValidationException::withMessages(['akun_details' => 'Selisih debit dan kredit harus lebih dari nol agar Bank/Kas memiliki nilai transaksi.']);
+            }
+            $validated['jumlah'] = abs($net);
+            $validated['debit_kredit'] = $net > 0 ? 'kredit' : 'debit';
             $validated['akun_coa_id'] = $validated['akun_details'][0]['akun_coa_id'];
         } else {
             $validated['akun_details'] = null;

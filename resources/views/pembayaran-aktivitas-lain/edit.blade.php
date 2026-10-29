@@ -1309,7 +1309,7 @@ function initializeSelect2() {
             ['akun_coa_field', akunBiayaSelect],
             ['akun_bank_field', akunBankSelect]
         ].forEach(([fieldId, select]) => {
-            const hidden = isBatamVehicle || (fieldId === 'akun_coa_field' && isMultiAccount);
+            const hidden = isBatamVehicle || (isMultiAccount && fieldId !== 'akun_bank_field');
             document.getElementById(fieldId).classList.toggle('hidden', hidden);
             select.required = !hidden;
             select.disabled = hidden;
@@ -1436,12 +1436,12 @@ function initializeSelect2() {
         ];
 
         if (document.getElementById('jenis_aktivitas').value !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
-            requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
+            if (jenisAktivitas.value !== 'Pembayaran Lain Lain') requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
             if (jenisAktivitas.value !== 'Pembayaran Lain Lain') requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
         }
         if (jenisAktivitas.value === 'Pembayaran Lain Lain' && !window.validateAkunDetails()) {
-            showErrorMessage('Pilih akun dan isi jumlah rupiah positif untuk setiap baris.');
+            showErrorMessage('Pilih akun, debit/kredit, dan nominal positif. Selisih debit dan kredit harus lebih dari nol.');
             return false;
         }
 

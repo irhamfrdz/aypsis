@@ -18,6 +18,11 @@
                         @endforeach
                     </select>
                 </div>
+                <select name="akun_details[{{ $index }}][debit_kredit]" aria-label="Debit atau kredit untuk akun {{ $index + 1 }}" class="akun-detail-direction w-32 px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
+                    @php $direction = $detail['debit_kredit'] ?? ($payment?->debit_kredit === 'debit' ? 'kredit' : 'debit'); @endphp
+                    <option value="debit" @selected($direction === 'debit')>Debit</option>
+                    <option value="kredit" @selected($direction === 'kredit')>Kredit</option>
+                </select>
                 <input type="number" name="akun_details[{{ $index }}][nominal]" value="{{ $detail['nominal'] ?? '' }}" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah untuk akun {{ $index + 1 }}" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
                 <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
                 <input type="text" name="akun_details[{{ $index }}][memo]" value="{{ $detail['memo'] ?? '' }}" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo untuk akun {{ $index + 1 }}" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? '') !== 'Pembayaran Lain Lain')>
@@ -25,10 +30,11 @@
         @endforeach
     </div>
     <button type="button" id="add_akun_detail" class="mt-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm">Tambah Akun</button>
-    <p class="mt-2 text-sm font-semibold text-gray-700">Total: <span id="akun_details_total">Rp 0</span></p>
-    <p class="text-xs text-gray-500">Jumlah pembayaran dihitung dari seluruh akun. Setiap akun akan memiliki baris jurnal tersendiri.</p>
+    <p class="mt-2 text-sm font-semibold text-gray-700">Bank/Kas: <span id="akun_details_total">Rp 0</span></p>
+    <p class="text-xs text-gray-500">Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.</p>
     @error('akun_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     @error('akun_details.*.akun_coa_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+    @error('akun_details.*.debit_kredit')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     @error('akun_details.*.nominal')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
     @error('akun_details.*.memo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
 </div>
@@ -43,6 +49,10 @@
                 @endforeach
             </select>
         </div>
+        <select name="akun_details[__INDEX__][debit_kredit]" aria-label="Debit atau kredit per akun" class="akun-detail-direction w-32 px-3 py-2 border border-gray-300 rounded-md text-sm" required>
+            <option value="debit">Debit</option>
+            <option value="kredit">Kredit</option>
+        </select>
         <input type="number" name="akun_details[__INDEX__][nominal]" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah per akun" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" required>
         <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
         <input type="text" name="akun_details[__INDEX__][memo]" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo per akun" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -63,8 +73,9 @@ document.addEventListener('DOMContentLoaded', () => {
         .map(select => Number(select.name.match(/\[(\d+)\]/)?.[1] ?? -1))) + 1;
 
     const isMulti = () => activity.value === 'Pembayaran Lain Lain';
-    const total = () => [...rows.querySelectorAll('.akun-detail-nominal')]
-        .reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+    const balance = () => [...rows.querySelectorAll('.akun-detail-row')]
+        .reduce((sum, row) => sum + (row.querySelector('.akun-detail-direction').value === 'debit' ? 1 : -1)
+            * (Number(row.querySelector('.akun-detail-nominal').value) || 0), 0);
     const update = () => {
         const active = isMulti();
         field.classList.toggle('hidden', !active);
@@ -75,9 +86,10 @@ document.addEventListener('DOMContentLoaded', () => {
         single.disabled = active || (activity.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam');
         single.required = !single.disabled;
         document.getElementById('akun_coa_field').classList.toggle('hidden', single.disabled);
-        document.getElementById('akun_details_total').textContent = 'Rp ' + total().toLocaleString('id-ID');
+        const net = balance();
+        document.getElementById('akun_details_total').textContent = (net > 0 ? 'Kredit ' : net < 0 ? 'Debit ' : '') + 'Rp ' + Math.abs(net).toLocaleString('id-ID');
         if (active) {
-            const amount = total();
+            const amount = Math.abs(net);
             hidden.value = amount || '';
             display.value = amount ? amount.toLocaleString('id-ID') : '';
             display.readOnly = true;
@@ -106,11 +118,12 @@ document.addEventListener('DOMContentLoaded', () => {
         if (!isMulti()) return true;
         const details = [...rows.querySelectorAll('.akun-detail-row')];
         const ids = details.map(row => row.querySelector('.akun-detail-select').value);
-        return details.length > 0 && ids.every(Boolean)
+        return details.length > 0 && ids.every(Boolean) && balance() !== 0
             && !ids.includes(bank.value)
             && details.every(row => {
                 const value = Number(row.querySelector('.akun-detail-nominal').value);
-                return Number.isSafeInteger(value) && value > 0;
+                return Number.isSafeInteger(value) && value > 0
+                    && ['debit', 'kredit'].includes(row.querySelector('.akun-detail-direction').value);
             });
     };
 
