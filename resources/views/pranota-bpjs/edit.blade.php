@@ -128,7 +128,7 @@
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
-<th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="px-3 py-3 text-right bg-orange-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban PT. JHT 3.7%, JP 2% & JKN</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
+<th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban PT. JHT 3.7%, JP 2% & JKN</th><th class="px-3 py-3 text-right bg-orange-50 text-orange-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
@@ -148,9 +148,9 @@
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_hutang">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-ppu">Rp 0,00</td>
-<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-bpu">Rp 0,00</td>
-<td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-jkn">Rp 0,00</td>
+                            <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
+<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
+<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
 <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-kary_jht">Rp 0,00</td>
 <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-kary_jkn">Rp 0,00</td>
 <td class="px-3 py-3 text-right font-mono bg-orange-50" id="total-allowance-pt">Rp 0,00</td>
@@ -362,9 +362,9 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
-            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
-            <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
             <td class="px-3 py-2 text-right font-mono bg-orange-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
