@@ -212,7 +212,7 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $validated = $request->validate([
-            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids' => ['required', 'array', 'min:1', 'max:300'],
             'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
         ]);
         $ids = array_map('intval', $validated['ids']);
@@ -268,7 +268,7 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $validated = $request->validate([
-            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids' => ['required', 'array', 'min:1', 'max:300'],
             'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
         ]);
         $ids = array_map('intval', $validated['ids']);
@@ -366,7 +366,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'manifest_goods.*.jumlah' => 'nullable|integer|min:0',
             'manifest_goods.*.satuan' => 'nullable|string|max:100',
             'manifest_goods.*.ukuran' => 'nullable|string|max:255',
-            'manifest_goods.*.meter_kubik' => 'nullable|numeric|min:0',
+            'manifest_goods.*.meter_kubik' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'manifest_goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'manifest_goods.*.keterangan_barang' => 'nullable|string|max:2000',
             'keterangan_barang' => 'nullable|string|max:2000',
@@ -380,7 +380,10 @@ class ApprovalTandaTerimaDuaController extends Controller
         $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(function ($good) use ($manifestFields) {
             $item = collect($manifestFields)->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])->all();
             if (filled($item['tonase'])) {
-                $item['tonase'] = $this->formatManifestTonase($item['tonase']);
+                $item['tonase'] = $this->formatManifestNumber($item['tonase']);
+            }
+            if (filled($item['meter_kubik'])) {
+                $item['meter_kubik'] = $this->formatManifestNumber($item['meter_kubik']);
             }
 
             return $item;
@@ -399,7 +402,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         return back()->with('success', 'Detail barang approval berhasil disimpan tanpa mengubah data tanda terima asli.');
     }
 
-    private function formatManifestTonase(string $value): string
+    private function formatManifestNumber(string $value): string
     {
         $value = trim($value);
         if (str_contains($value, ',')) {

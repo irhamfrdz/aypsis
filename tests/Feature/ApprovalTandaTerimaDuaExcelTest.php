@@ -71,7 +71,7 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             'source_type' => 'fcl', 'source_id' => $receiptId,
             'goods' => json_encode([['nama_barang' => 'Barang Perincian', 'jumlah' => 4, 'satuan' => 'Karton']]),
             'manifest_goods' => json_encode([['nama_barang' => 'Barang Manifest', 'hs_code' => '1234', 'jumlah' => 5,
-                'satuan' => 'Peti', 'tonase' => '17.000', 'meter_kubik' => 3.5]]),
+                'satuan' => 'Peti', 'tonase' => '17.000', 'meter_kubik' => '3.500,25']]),
         ]);
 
         $response = app(ApprovalTandaTerimaDuaController::class)->export(
@@ -97,7 +97,7 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame('Barang Manifest', $sheet->getCell('K9')->getValue());
             $this->assertSame('Barang Perincian', $sheet->getCell('N9')->getValue());
             $this->assertEquals(17000, $sheet->getCell('O9')->getValue());
-            $this->assertEquals(3.5, $sheet->getCell('P9')->getValue());
+            $this->assertEquals(3500.25, $sheet->getCell('P9')->getValue());
             $this->assertNull($sheet->getCell('AE9')->getValue());
             $this->assertNull($sheet->getCell('AF9')->getValue());
             $this->assertSame('PT Pengirim', $sheet->getCell('Q9')->getValue());

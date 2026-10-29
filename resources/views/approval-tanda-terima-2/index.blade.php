@@ -148,6 +148,7 @@
                             <i class="fas fa-rotate-left" aria-hidden="true"></i><span>Lepas Tanda Export (0)</span>
                         </button>
                     </form>
+                    <button id="approval-clear-selection" type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Hapus Pilihan</button>
                 @endcan
                 <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
             </div>

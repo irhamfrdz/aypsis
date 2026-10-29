@@ -18,7 +18,7 @@
             @foreach($displayManifestGoods as $good)
                 <tr>
                     @can('approval-tanda-terima-2-approve')
-                        @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'meter_kubik' => 'number'] as $field => $inputType)
+                        @foreach(['hs_code' => 'text', 'jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'meter_kubik' => 'text'] as $field => $inputType)
                             <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                 @if($field === 'nama_barang')
                                     <textarea name="manifest_goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" @if($manifestGoods->isNotEmpty()) required @endif class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($good, $field) }}</textarea>
@@ -26,7 +26,7 @@
                                     <input type="{{ $inputType }}" name="manifest_goods[{{ $loop->parent->index }}][{{ $field }}]"
                                         value="{{ data_get($good, $field) }}"
                                         @if($inputType === 'number') min="0" step="{{ $field === 'jumlah' ? '1' : 'any' }}" @endif
-                                        @if($field === 'tonase') inputmode="decimal" placeholder="Contoh: 17.665,78" @endif
+                                        @if(in_array($field, ['tonase', 'meter_kubik'])) inputmode="decimal" placeholder="Contoh: 17.665,78" @endif
                                         class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 @endif
                             </td>
@@ -38,7 +38,7 @@
                         @foreach(['hs_code', 'jumlah', 'satuan', 'nama_barang', 'tonase', 'ukuran', 'meter_kubik'] as $field)
                             @php
                                 $value = data_get($good, $field);
-                                if ($field === 'tonase' && preg_match('/^\d{4,}$/', (string) $value)) {
+                                if (in_array($field, ['tonase', 'meter_kubik']) && preg_match('/^\d{4,}$/', (string) $value)) {
                                     $value = preg_replace('/\B(?=(\d{3})+(?!\d))/', '.', $value);
                                 }
                             @endphp

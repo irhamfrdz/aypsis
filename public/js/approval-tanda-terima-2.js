@@ -9,8 +9,8 @@
             ukuran: 'Ukuran keramik', meter_kubik: 'Volume (m³)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
-            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', keterangan_barang: 'Catatan tambahan (opsional)' };
-        function formatTonase(value) {
+            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', meter_kubik: 'Contoh: 3.500,25', keterangan_barang: 'Catatan tambahan (opsional)' };
+        function formatLocalizedNumber(value) {
             const clean = value.replace(/[^\d.,]/g, '');
             const comma = clean.indexOf(',');
             const decimalDot = comma === -1 && /^\d+\.\d{1,2}$/.test(clean);
@@ -21,10 +21,10 @@
             const grouped = (whole || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
             return grouped + (fraction !== null ? ',' + fraction : '');
         }
-        function formatTonaseInput(input) {
+        function formatNumberInput(input) {
             const cursor = input.selectionStart;
             const previousLength = input.value.length;
-            const formatted = formatTonase(input.value);
+            const formatted = formatLocalizedNumber(input.value);
             if (formatted === input.value) return;
             input.value = formatted;
             if (cursor !== null && document.activeElement === input) {
@@ -77,8 +77,8 @@
                 labelRow(row, section);
                 toggleUkuranField(row);
                 if (fieldPrefix === 'manifest_goods') {
-                    const tonase = row.querySelector('[data-field="tonase"] input');
-                    if (tonase) formatTonaseInput(tonase);
+                    row.querySelectorAll('[data-field="tonase"] input, [data-field="meter_kubik"] input')
+                        .forEach(formatNumberInput);
                 }
             });
             if (fieldPrefix === 'goods' && section.dataset.savedOverride === 'true') {
@@ -96,8 +96,8 @@
             }
 
             rows.addEventListener('input', event => {
-                if (fieldPrefix === 'manifest_goods' && event.target.name?.endsWith('[tonase]')) {
-                    formatTonaseInput(event.target);
+                if (fieldPrefix === 'manifest_goods' && /\[(tonase|meter_kubik)\]$/.test(event.target.name || '')) {
+                    formatNumberInput(event.target);
                 }
                 if (event.target.name?.endsWith('[nama_barang]')) toggleUkuranField(event.target.closest('tr'));
                 if (fieldPrefix === 'goods') {
@@ -129,38 +129,93 @@
     const bulkClearForm = document.getElementById('approval-bulk-clear-form');
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
+    const clearSelection = document.getElementById('approval-clear-selection');
+    const filters = new URLSearchParams(window.location.search);
+    filters.delete('page');
+    filters.sort();
+    const selectionKey = `approval-tt2-selection:${window.location.pathname}?${filters}`;
+    let selected = {};
+    try {
+        selected = JSON.parse(sessionStorage.getItem(selectionKey) || '{}');
+        if (!selected || Array.isArray(selected) || typeof selected !== 'object') selected = {};
+    } catch {
+        selected = {};
+    }
+    function saveSelection() {
+        try { sessionStorage.setItem(selectionKey, JSON.stringify(selected)); } catch { /* Keep the current page usable without storage. */ }
+    }
+    bulkCheckboxes.forEach(checkbox => {
+        if (Object.hasOwn(selected, checkbox.value)) {
+            checkbox.checked = true;
+            selected[checkbox.value] = checkbox.dataset.exported === 'true';
+        }
+    });
+    saveSelection();
     function updateBulkSelection() {
         if (!bulkForm) return;
-        const count = bulkCheckboxes.filter(checkbox => checkbox.checked).length;
-        const exportedCount = bulkCheckboxes.filter(checkbox => checkbox.checked && checkbox.dataset.exported === 'true').length;
+        const values = Object.values(selected);
+        const count = values.length;
+        const exportedCount = values.filter(Boolean).length;
         bulkForm.querySelector('button').disabled = count === 0;
         bulkForm.querySelector('button span').textContent = `Export Pilihan (${count})`;
         bulkClearForm.querySelector('button').disabled = exportedCount === 0;
         bulkClearForm.querySelector('button span').textContent = `Lepas Tanda Export (${exportedCount})`;
+        clearSelection.disabled = count === 0;
         if (selectAll) {
-            selectAll.checked = bulkCheckboxes.length > 0 && count === bulkCheckboxes.length;
-            selectAll.indeterminate = count > 0 && count < bulkCheckboxes.length;
+            const currentPageCount = bulkCheckboxes.filter(checkbox => checkbox.checked).length;
+            selectAll.checked = bulkCheckboxes.length > 0 && currentPageCount === bulkCheckboxes.length;
+            selectAll.indeterminate = currentPageCount > 0 && currentPageCount < bulkCheckboxes.length;
         }
     }
     selectAll?.addEventListener('change', () => {
-        bulkCheckboxes.forEach(checkbox => { checkbox.checked = selectAll.checked; });
+        const previous = { ...selected };
+        bulkCheckboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+            if (checkbox.checked) selected[checkbox.value] = checkbox.dataset.exported === 'true';
+            else delete selected[checkbox.value];
+        });
+        if (Object.keys(selected).length > 300) {
+            selected = previous;
+            bulkCheckboxes.forEach(checkbox => {
+                checkbox.checked = Object.hasOwn(selected, checkbox.value);
+            });
+            alert('Maksimal 300 tanda terima dapat dipilih sekaligus.');
+        }
+        saveSelection();
         updateBulkSelection();
     });
-    bulkCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBulkSelection));
+    bulkCheckboxes.forEach(checkbox => checkbox.addEventListener('change', () => {
+        if (checkbox.checked && Object.keys(selected).length >= 300) {
+            checkbox.checked = false;
+            alert('Maksimal 300 tanda terima dapat dipilih sekaligus.');
+        }
+        if (checkbox.checked) selected[checkbox.value] = checkbox.dataset.exported === 'true';
+        else delete selected[checkbox.value];
+        saveSelection();
+        updateBulkSelection();
+    }));
+    clearSelection?.addEventListener('click', () => {
+        selected = {};
+        bulkCheckboxes.forEach(checkbox => { checkbox.checked = false; });
+        saveSelection();
+        updateBulkSelection();
+    });
     bulkClearForm?.addEventListener('submit', event => {
         bulkClearForm.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
-        const selected = bulkCheckboxes.filter(checkbox => checkbox.checked && checkbox.dataset.exported === 'true');
-        if (selected.length === 0) {
+        const exportedIds = Object.keys(selected).filter(id => selected[id]);
+        if (exportedIds.length === 0) {
             event.preventDefault();
             return;
         }
-        selected.forEach(checkbox => {
+        exportedIds.forEach(id => {
             const input = document.createElement('input');
             input.type = 'hidden';
             input.name = 'ids[]';
-            input.value = checkbox.value;
+            input.value = id;
             bulkClearForm.append(input);
         });
+        exportedIds.forEach(id => { selected[id] = false; });
+        saveSelection();
     });
     updateBulkSelection();
 
@@ -174,9 +229,14 @@
             label.textContent = 'Membuat Excel...';
 
             try {
+                const data = new FormData(form);
+                if (form === bulkForm) {
+                    data.delete('ids[]');
+                    Object.keys(selected).forEach(id => data.append('ids[]', id));
+                }
                 const response = await fetch(form.action, {
                     method: 'POST',
-                    body: new FormData(form),
+                    body: data,
                     headers: { Accept: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' },
                     credentials: 'same-origin',
                 });
@@ -212,8 +272,13 @@
                     resetForm?.classList.remove('hidden');
                     resetForm?.classList.add('inline-block');
                     const checkbox = row.querySelector('.approval-bulk-checkbox');
-                    if (checkbox) checkbox.dataset.exported = 'true';
+                    if (checkbox) {
+                        checkbox.dataset.exported = 'true';
+                        if (Object.hasOwn(selected, checkbox.value)) selected[checkbox.value] = true;
+                    }
                 });
+                if (form === bulkForm) Object.keys(selected).forEach(id => { selected[id] = true; });
+                saveSelection();
                 updateBulkSelection();
             } catch (error) {
                 label.textContent = previousLabel;
