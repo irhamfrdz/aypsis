@@ -92,6 +92,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.disabled = !active;
             input.required = active && !input.classList.contains('akun-detail-memo');
         });
+        if (active) window.initializeAkunDetailSelects?.();
         single.disabled = active || (activity.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam');
         single.required = !single.disabled;
         document.getElementById('akun_coa_field').classList.toggle('hidden', single.disabled);
@@ -114,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     window.updateAkunDetails = update;
     window.initializeAkunDetailSelects = (container = rows) => {
-        if (!window.jQuery?.fn?.select2) return;
+        if (field.classList.contains('hidden') || !window.jQuery?.fn?.select2) return;
         window.jQuery(container).find('.akun-detail-select').not('.select2-hidden-accessible').select2({
             placeholder: 'Cari akun COA',
             allowClear: true,
@@ -152,7 +153,7 @@ document.addEventListener('DOMContentLoaded', () => {
         window.initializeAkunDetailSelects(rows.lastElementChild);
         update();
     });
-    activity.addEventListener('change', () => setTimeout(update, 0));
+    activity.addEventListener('change', update);
     document.getElementById('pembayaran_form').addEventListener('submit', update, true);
     update();
 });

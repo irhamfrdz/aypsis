@@ -1300,6 +1300,7 @@ function initializeSelect2() {
     $('#jenis_aktivitas').on('change select2:select select2:unselect', function() {
         jenisAktivitas.value = this.value;
         toggleSubJenisKendaraan();
+        window.updateAkunDetails?.();
     });
     
     $('#sub_jenis_kendaraan_select').on('change', function() {
