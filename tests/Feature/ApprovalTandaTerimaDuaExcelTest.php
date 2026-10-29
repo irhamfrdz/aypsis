@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\ApprovalTandaTerimaDuaController;
+use App\Models\TandaTerima;
+use App\Services\ApprovalTandaTerimaDuaExcelService;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -60,6 +62,7 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             'no_surat_jalan' => 'JB10036397',
             'tanggal' => '2026-10-29',
             'no_kontainer' => 'AYPU3797127',
+            'size' => '20ft',
             'no_seal' => 'SEAL123',
             'dimensi_items' => json_encode([['nama_barang' => 'Barang Asal', 'jumlah' => 3, 'satuan' => 'Koli']]),
         ]);
@@ -85,6 +88,10 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             }
             $this->assertSame('1234', $sheet->getCell('C9')->getValue());
             $this->assertSame('AYPU3797127', $sheet->getCell('D9')->getValue());
+            $this->assertSame(1, $sheet->getCell('F9')->getValue());
+            $this->assertSame('Unit', $sheet->getCell('G9')->getValue());
+            $this->assertSame('Container 20 feet stc :', $sheet->getCell('H9')->getValue());
+            $this->assertSame(5, $sheet->getCell('I9')->getValue());
             $this->assertSame('Barang Manifest', $sheet->getCell('K9')->getValue());
             $this->assertSame('Barang Perincian', $sheet->getCell('N9')->getValue());
             $this->assertEquals(17000, $sheet->getCell('O9')->getValue());
@@ -94,6 +101,24 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame('JB10036397', $sheet->getCell('AC9')->getValue());
             $this->assertSame($template->getSheet(0)->getCell('P402')->getValue(), $sheet->getCell('P402')->getValue());
             $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $receiptId]);
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    public function test_container_description_uses_the_receipt_size(): void
+    {
+        $receipt = new TandaTerima;
+        $receipt->no_surat_jalan = 'TEST-40HC';
+        $receipt->size = '40hc';
+        $receipt->setRelation('shipperJb', null);
+
+        $file = app(ApprovalTandaTerimaDuaExcelService::class)->create('fcl', $receipt);
+        try {
+            $sheet = IOFactory::load($file)->getSheet(0);
+            $this->assertSame(1, $sheet->getCell('F9')->getValue());
+            $this->assertSame('Unit', $sheet->getCell('G9')->getValue());
+            $this->assertSame('Container 40 feet HC stc :', $sheet->getCell('H9')->getValue());
         } finally {
             @unlink($file);
         }

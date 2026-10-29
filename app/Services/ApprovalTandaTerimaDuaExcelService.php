@@ -32,13 +32,13 @@ class ApprovalTandaTerimaDuaExcelService
         $sender = $sourceType === 'lcl' ? $receipt->nama_pengirim : $receipt->pengirim;
         $receiver = $sourceType === 'lcl' ? $receipt->nama_penerima : $receipt->penerima;
 
-        // Sheet 1 has three description groups: receipt (F:H), manifest (I:K), and perincian (L:N).
+        // Sheet 1 has container details (F:H), manifest goods (I:K), and perincian goods (L:N).
         $textCells = [
             'C9' => data_get($manifestGood, 'hs_code'),
             'D9' => $container,
             'E9' => $seal,
-            'G9' => data_get($sourceGood, 'satuan'),
-            'H9' => data_get($sourceGood, 'nama_barang'),
+            'G9' => 'Unit',
+            'H9' => $this->containerDescription($sourceType, $receipt),
             'J9' => data_get($manifestGood, 'satuan'),
             'K9' => data_get($manifestGood, 'nama_barang'),
             'M9' => data_get($perincianGood, 'satuan'),
@@ -64,7 +64,7 @@ class ApprovalTandaTerimaDuaExcelService
             }
         }
 
-        foreach (['F9' => data_get($sourceGood, 'jumlah'), 'I9' => data_get($manifestGood, 'jumlah'), 'L9' => data_get($perincianGood, 'jumlah')] as $cell => $value) {
+        foreach (['F9' => 1, 'I9' => data_get($manifestGood, 'jumlah'), 'L9' => data_get($perincianGood, 'jumlah')] as $cell => $value) {
             if (is_numeric($value)) {
                 $sheet->setCellValue($cell, (int) $value);
             }
@@ -122,6 +122,26 @@ class ApprovalTandaTerimaDuaExcelService
             'tonase' => $receipt->tonase,
             'meter_kubik' => $receipt->meter_kubik,
         ];
+    }
+
+    private function containerDescription(string $sourceType, Model $receipt): string
+    {
+        $size = $receipt->size_kontainer ?: $receipt->size;
+        if ($sourceType === 'lcl' && blank($size)) {
+            $pivot = $receipt->kontainerPivot->firstWhere('nomor_kontainer', $receipt->nomor_kontainer)
+                ?? $receipt->kontainerPivot->first();
+            $size = $pivot?->size_kontainer;
+        }
+        if (blank($size)) {
+            $size = $receipt->tipe_kontainer;
+        }
+        if (is_scalar($size) && preg_match('/\b(20|40|45)\s*(?:ft|feet|hc)?\b/i', (string) $size, $matches)) {
+            $highCube = preg_match('/\b40\s*hc\b/i', (string) $size) ? ' HC' : '';
+
+            return "Container {$matches[1]} feet{$highCube} stc :";
+        }
+
+        return 'Container stc :';
     }
 
     private function indonesianNumber(mixed $value): ?float
