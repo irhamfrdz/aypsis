@@ -380,6 +380,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'manifest_goods' => 'nullable|array|max:1',
             'manifest_goods.*.nama_barang' => 'required|string',
             'manifest_goods.*.hs_code' => 'nullable|string|max:255',
+            'manifest_goods.*.hs_codes' => 'nullable|string|max:4000',
             'manifest_goods.*.jumlah' => 'nullable|integer|min:0',
             'manifest_goods.*.satuan' => 'nullable|string|max:100',
             'manifest_goods.*.ukuran' => 'nullable|string|max:255',
@@ -390,12 +391,19 @@ class ApprovalTandaTerimaDuaController extends Controller
         ]);
 
         $goodsFields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'keterangan_barang'];
-        $manifestFields = ['nama_barang', 'hs_code', 'jumlah', 'satuan', 'ukuran', 'meter_kubik', 'tonase', 'keterangan_barang'];
+        $manifestFields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'meter_kubik', 'tonase', 'keterangan_barang'];
         $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($goodsFields)
             ->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])
             ->all())->all();
         $manifestGoods = collect($validated['manifest_goods'] ?? [])->values()->map(function ($good) use ($manifestFields) {
             $item = collect($manifestFields)->mapWithKeys(fn ($field) => [$field => $good[$field] ?? null])->all();
+            $hsCodesInput = $good['hs_codes'] ?? ($good['hs_code'] ?? '');
+            $item['hs_codes'] = collect(preg_split('/\R/u', $hsCodesInput))
+                ->map(fn ($code) => trim($code))
+                ->filter(fn ($code) => $code !== '')
+                ->values()
+                ->all();
+            $item['hs_code'] = $item['hs_codes'][0] ?? null;
             if (filled($item['tonase'])) {
                 $item['tonase'] = $this->formatManifestNumber($item['tonase']);
             }

@@ -5,10 +5,10 @@
         const dialog = document.getElementById(button.dataset.dialogId);
         if (!dialog) return;
         const form = dialog.querySelector('form');
-        const labels = { nama_barang: 'Nama barang *', hs_code: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
+        const labels = { nama_barang: 'Nama barang *', hs_codes: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
             ukuran: 'Ukuran keramik', meter_kubik: 'Volume (m³)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
-        const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_code: 'Contoh: 8479.89', jumlah: '0',
+        const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_codes: 'Contoh: 8479.89 (satu kode per baris)', jumlah: '0',
             satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', meter_kubik: 'Contoh: 3.500,25', keterangan_barang: 'Catatan tambahan (opsional)' };
         function formatLocalizedNumber(value) {
             const clean = value.replace(/[^\d.,]/g, '');

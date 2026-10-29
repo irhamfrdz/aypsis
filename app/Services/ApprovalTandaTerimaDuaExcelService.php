@@ -47,6 +47,8 @@ class ApprovalTandaTerimaDuaExcelService
         $sourceGood = $this->sourceGood($sourceType, $receipt);
         $manifestGood = $override?->manifest_goods[0] ?? $sourceGood;
         $perincianGood = $override?->goods[0] ?? $sourceGood;
+        $hsCodes = data_get($manifestGood, 'hs_codes');
+        $hsCodes = is_array($hsCodes) ? $hsCodes : (filled(data_get($manifestGood, 'hs_code')) ? [data_get($manifestGood, 'hs_code')] : []);
         $shipper = $receipt->shipperJb;
         $number = match ($sourceType) {
             'fcl' => $receipt->no_surat_jalan,
@@ -61,7 +63,7 @@ class ApprovalTandaTerimaDuaExcelService
 
         // Sheet 1 has container details (F:H), manifest goods (I:K), and perincian goods (L:N).
         $textCells = [
-            'C' => data_get($manifestGood, 'hs_code'),
+            'C' => implode("\n", $hsCodes),
             'D' => $container,
             'E' => $seal,
             'G' => 'Unit',
@@ -90,6 +92,7 @@ class ApprovalTandaTerimaDuaExcelService
                 $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
             }
         }
+        $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
 
         foreach (['F' => 1, 'I' => data_get($manifestGood, 'jumlah'), 'L' => data_get($perincianGood, 'jumlah')] as $column => $value) {
             if (is_numeric($value)) {

@@ -48,6 +48,8 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
             $table->json('manifest_goods')->nullable();
+            $table->text('keterangan_barang')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
         (require base_path('database/migrations/2026_10_29_130000_create_approval_tanda_terima_2_exports_table.php'))->up();
@@ -123,6 +125,38 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame(1, $sheet->getCell('F9')->getValue());
             $this->assertSame('Unit', $sheet->getCell('G9')->getValue());
             $this->assertSame('Container 40 feet HC stc :', $sheet->getCell('H9')->getValue());
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    public function test_one_manifest_good_can_store_and_export_multiple_hs_codes(): void
+    {
+        $receiptId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'MULTI-HS']);
+
+        app(ApprovalTandaTerimaDuaController::class)->updateGoods(
+            Request::create('/approval-tanda-terima-2/fcl/'.$receiptId.'/goods', 'PUT', [
+                'goods' => [['nama_barang' => 'Barang Perincian']],
+                'manifest_goods' => [[
+                    'nama_barang' => 'Satu Barang',
+                    'hs_codes' => "1234.56\n\n7890.12\n3456.78",
+                ]],
+            ]),
+            'fcl',
+            $receiptId
+        );
+
+        $override = \App\Models\ApprovalTandaTerimaDuaGoods::firstOrFail();
+        $this->assertCount(1, $override->manifest_goods);
+        $this->assertSame(['1234.56', '7890.12', '3456.78'], $override->manifest_goods[0]['hs_codes']);
+        $this->assertSame('1234.56', $override->manifest_goods[0]['hs_code']);
+
+        $file = app(ApprovalTandaTerimaDuaExcelService::class)->create('fcl', TandaTerima::findOrFail($receiptId), $override);
+        try {
+            $sheet = IOFactory::load($file)->getSheet(0);
+            $this->assertSame("1234.56\n7890.12\n3456.78", $sheet->getCell('C9')->getValue());
+            $this->assertTrue($sheet->getStyle('C9')->getAlignment()->getWrapText());
+            $this->assertSame('Satu Barang', $sheet->getCell('K9')->getValue());
         } finally {
             @unlink($file);
         }
