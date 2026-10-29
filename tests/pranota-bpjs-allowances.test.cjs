@@ -2,6 +2,23 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('terminated CREW with Special Case retains employee JHT and JKN debt like an active employee', () => {
+    const values = { group_bp_jamsostek: 'BPU-ALEXINDO PLUIT', tipe_bp_jamsostek: 'CREW',
+        tipe_jkn: 'KARYAWAN', jkk_hutang: 5720, bpu_jkk_tunjangan: 16530,
+        bpu_jkm: 3400, bpjs_ketenagakerjaan: 50000 };
+    const active = BpjsAllowances.calculate(values);
+    for (const flag of [true, 1, '1']) {
+        const special = BpjsAllowances.calculate({ ...values, is_special_case: flag, tanggal_berhenti: '2026-10-01' });
+        assert.equal(special.kary_jht, 5720);
+        assert.equal(special.kary_jkn, 50000);
+        assert.equal(special.non_kary, 0);
+        assert.deepEqual(special, active);
+    }
+    const nonEmployee = BpjsAllowances.calculate({ ...values, is_special_case: true, tipe_bp_jamsostek: 'NON KARY' });
+    assert.equal(nonEmployee.kary_jht, 0);
+    assert.equal(nonEmployee.non_kary, 25650);
+});
+
 test('NON KARY employer burden follows the matching JKN-KIS and PPU membership totals', () => {
     const values = { kis_tunjangan: 229195.20, bpjs_ketenagakerjaan: 57298.80,
         jht_biaya: 100000.8, jht_hutang: 20000, jkk_tunjangan: 1000,
@@ -88,7 +105,8 @@ test('burdens sum the contribution amounts and route non employee memberships se
     assert.equal(nonJkn.pt, 285000.25);
     assert.equal(nonJkn.non_kary, 250000);
     const special = BpjsAllowances.calculate({ ...values, is_special_case: '1' });
-    assert.equal(special.kary_jht + special.kary_jkn, 0);
+    assert.equal(special.kary_jht, 180000);
+    assert.equal(special.kary_jkn, 50000);
     assert.equal(special.pt, 285000.25);
-    assert.equal(special.non_kary, 742000.25);
+    assert.equal(special.non_kary, 0);
 });

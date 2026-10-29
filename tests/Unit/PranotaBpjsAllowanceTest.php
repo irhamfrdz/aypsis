@@ -8,6 +8,30 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_terminated_special_case_crew_retains_normal_employee_burdens(): void
+    {
+        foreach ([Karyawan::class, \App\Models\KaryawanTidakTetap::class] as $type) {
+            $employee = new $type;
+            $employee->setRawAttributes(['is_special_case' => true, 'tanggal_berhenti' => '2026-10-01',
+                'tipe_bp_jamsostek' => 'CREW', 'tipe_jkn' => 'KARYAWAN']);
+            $detail = new PranotaBpjsDetail;
+            $detail->setRawAttributes([
+                'tipe_karyawan' => $type, 'bpjs_ketenagakerjaan' => 50000,
+                'jht_hutang' => 5720,
+                'rincian_bpjs' => json_encode(['jht_hutang' => 0, 'jkk_hutang' => 5720,
+                    'bpu_jkk_tunjangan' => 16530, 'bpu_jkm' => 3400]),
+            ]);
+            $detail->setRelation('karyawan', $employee);
+            $this->assertSame(5720.0, $detail->summaryBurden('kary_jht'));
+            $this->assertSame(50000.0, $detail->summaryBurden('kary_jkn'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $detail->rincian_bpjs = null;
+            $this->assertSame(5720.0, $detail->summaryBurden('kary_jht'));
+            $detail->tunjangan_manual = ['kary_jht' => 0];
+            $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+        }
+    }
+
     public function test_non_kary_employer_burden_uses_matching_jkn_and_ppu_totals(): void
     {
         $detail = new PranotaBpjsDetail;
@@ -100,7 +124,8 @@ class PranotaBpjsAllowanceTest extends TestCase
         $this->assertSame(250000.0, $detail->summaryBurden('non_kary'));
         $this->assertSame(285000.25, $detail->summaryBurden('pt'));
         $employee->is_special_case = true;
-        $this->assertSame(742000.25, $detail->summaryBurden('non_kary'));
+        $this->assertSame(250000.0, $detail->summaryBurden('non_kary'));
+        $this->assertSame(180000.0, $detail->summaryBurden('kary_jht'));
         $detail->tunjangan_manual = ['non_kary' => 0];
         $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
     }

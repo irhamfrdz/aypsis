@@ -5,6 +5,23 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('Special Case crew displays employee JHT from the row and remains correct after refresh', () => {
+    const fields = new Map([
+        ['.input-bpu-jkk', { value: '16530' }], ['.input-jkk-hutang', { value: '5720' }],
+        ['.input-bpu-jkm', { value: '3400' }],
+    ]);
+    const row = { dataset: { isSpecialCase: '1', groupJamsostek: 'BPU-ALEXINDO PLUIT', tipeJamsostek: 'CREW' },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).kary_jht;
+    assert.equal(calculate(), 5720);
+    row.dataset.isSpecialCase = '0';
+    assert.equal(calculate(), 5720);
+    row.dataset.isSpecialCase = '1';
+    fields.get('.input-jkk-hutang').value = '6000.25';
+    assert.equal(calculate(), 6000.25);
+});
+
 test('employee information shows master groups, types and separate DPP amounts and clears stale selections', () => {
     const fields = new Map(['.group-text', '.employee-tipe-jkn', '.employee-tipe-jamsostek',
         '.employee-dpp-jkn', '.employee-dpp-jamsostek'].map(selector => [selector, {}]));

@@ -68,10 +68,9 @@ class PranotaBpjsDetail extends Model
         $sum = fn (array $fields) => array_sum(array_map(fn ($field) => (float) ($values[$field] ?? $this->getAttribute($field) ?? 0), $fields));
         $debt = $sum(['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang', 'jp_hutang']);
         $cost = $sum(['jht_biaya', 'noncrew_jht_biaya', 'jp_biaya']);
-        $special = (bool) $this->karyawan?->is_special_case;
         $nonEmployee = fn ($type) => str_starts_with(preg_replace('/[\s_-]+/', '', strtoupper((string) $type)), 'NONKARY');
-        $nonJkn = $special || $nonEmployee($this->karyawan?->tipe_jkn);
-        $nonJamsostek = $special || $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
+        $nonJkn = $nonEmployee($this->karyawan?->tipe_jkn);
+        $nonJamsostek = $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
         $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';
         $umkmCost = $this->rincian_bpjs !== null
             ? $sum(['noncrew_jht_biaya', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'])

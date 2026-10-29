@@ -2,10 +2,9 @@
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
         const n = key => Number(values[key]) || 0;
-        const special = [true, 1, '1'].includes(values.is_special_case);
         const nonEmployee = type => String(type || '').toUpperCase().replace(/[\s_-]+/g, '').startsWith('NONKARY');
-        const nonJkn = special || nonEmployee(values.tipe_jkn);
-        const nonJamsostek = special || nonEmployee(values.tipe_bp_jamsostek);
+        const nonJkn = nonEmployee(values.tipe_jkn);
+        const nonJamsostek = nonEmployee(values.tipe_bp_jamsostek);
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = String(values.tipe_bp_jamsostek || '').toUpperCase()
