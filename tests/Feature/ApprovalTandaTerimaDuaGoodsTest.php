@@ -187,6 +187,24 @@ class ApprovalTandaTerimaDuaGoodsTest extends TestCase
         $this->assertSame([], $override->fresh()->manifest_goods);
     }
 
+    public function test_goods_names_longer_than_255_characters_are_saved_without_truncation(): void
+    {
+        $id = DB::table('tanda_terimas')->insertGetId([]);
+        $perincianName = str_repeat('Barang perincian panjang ', 25);
+        $manifestName = str_repeat('Barang manifest panjang ', 25);
+
+        app(ApprovalTandaTerimaDuaController::class)->updateGoods(
+            Request::create('/', 'PUT', [
+                'goods' => [['nama_barang' => $perincianName]],
+                'manifest_goods' => [['nama_barang' => $manifestName]],
+            ]), 'fcl', $id
+        );
+
+        $override = ApprovalTandaTerimaDuaGoods::where('source_type', 'fcl')->where('source_id', $id)->firstOrFail();
+        $this->assertSame($perincianName, $override->goods[0]['nama_barang']);
+        $this->assertSame($manifestName, $override->manifest_goods[0]['nama_barang']);
+    }
+
     public function test_manifest_accepts_only_one_item_without_dimensions(): void
     {
         $id = DB::table('tanda_terimas')->insertGetId([]);

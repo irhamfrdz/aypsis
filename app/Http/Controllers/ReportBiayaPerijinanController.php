@@ -7,11 +7,16 @@ use Illuminate\Http\Request;
 
 class ReportBiayaPerijinanController extends Controller
 {
-    public function index(Request $request)
+    public function index()
+    {
+        return view('report.biaya-perijinan.select-date');
+    }
+
+    public function view(Request $request)
     {
         $filters = $request->validate([
-            'tanggal_dari' => ['nullable', 'date'],
-            'tanggal_sampai' => ['nullable', 'date', 'after_or_equal:tanggal_dari'],
+            'tanggal_dari' => ['required', 'date'],
+            'tanggal_sampai' => ['required', 'date', 'after_or_equal:tanggal_dari'],
             'search' => ['nullable', 'string', 'max:255'],
         ]);
 
@@ -19,13 +24,8 @@ class ReportBiayaPerijinanController extends Controller
             ->where('jenis_aktivitas', 'Pembayaran Kendaraan')
             ->where('sub_jenis_kendaraan', 'KIR');
 
-        if (! empty($filters['tanggal_dari'])) {
-            $query->whereDate('tanggal', '>=', $filters['tanggal_dari']);
-        }
-
-        if (! empty($filters['tanggal_sampai'])) {
-            $query->whereDate('tanggal', '<=', $filters['tanggal_sampai']);
-        }
+        $query->whereDate('tanggal', '>=', $filters['tanggal_dari'])
+            ->whereDate('tanggal', '<=', $filters['tanggal_sampai']);
 
         if (! empty($filters['search'])) {
             $search = $filters['search'];

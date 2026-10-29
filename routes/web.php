@@ -6768,6 +6768,9 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/biaya-perijinan', [App\Http\Controllers\ReportBiayaPerijinanController::class, 'index'])
         ->name('biaya-perijinan.index')
         ->middleware('can:pembayaran-aktivitas-lain-view');
+    Route::get('/biaya-perijinan/view', [App\Http\Controllers\ReportBiayaPerijinanController::class, 'view'])
+        ->name('biaya-perijinan.view')
+        ->middleware('can:pembayaran-aktivitas-lain-view');
 
     // Report Tagihan
 

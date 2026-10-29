@@ -11,14 +11,14 @@
             <p class="text-sm text-gray-500 mt-1">Pembayaran Kendaraan dengan subjenis KIR</p>
         </div>
 
-        <form method="GET" action="{{ route('report.biaya-perijinan.index') }}" class="p-5 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+        <form method="GET" action="{{ route('report.biaya-perijinan.view') }}" class="p-5 grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
             <div>
                 <label for="tanggal_dari" class="block text-xs font-medium text-gray-700 mb-1">Tanggal Dari</label>
-                <input id="tanggal_dari" name="tanggal_dari" type="date" value="{{ request('tanggal_dari') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <input id="tanggal_dari" name="tanggal_dari" type="date" value="{{ request('tanggal_dari') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
             </div>
             <div>
                 <label for="tanggal_sampai" class="block text-xs font-medium text-gray-700 mb-1">Tanggal Sampai</label>
-                <input id="tanggal_sampai" name="tanggal_sampai" type="date" value="{{ request('tanggal_sampai') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
+                <input id="tanggal_sampai" name="tanggal_sampai" type="date" value="{{ request('tanggal_sampai') }}" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
             </div>
             <div>
                 <label for="search" class="block text-xs font-medium text-gray-700 mb-1">Pencarian</label>
@@ -26,7 +26,7 @@
             </div>
             <div class="flex gap-2">
                 <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-md">Filter</button>
-                <a href="{{ route('report.biaya-perijinan.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-md">Reset</a>
+                <a href="{{ route('report.biaya-perijinan.index') }}" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm rounded-md">Pilih Periode Baru</a>
             </div>
         </form>
     </div>

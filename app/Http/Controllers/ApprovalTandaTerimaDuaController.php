@@ -372,13 +372,13 @@ class ApprovalTandaTerimaDuaController extends Controller
         }
         $validated = $request->validate([
             'goods' => 'required|array|size:1',
-            'goods.*.nama_barang' => 'required|string|max:255',
+            'goods.*.nama_barang' => 'required|string',
             'goods.*.jumlah' => 'nullable|integer|min:0',
             'goods.*.satuan' => 'nullable|string|max:100',
             'goods.*.ukuran' => 'nullable|string|max:255',
             'goods.*.keterangan_barang' => 'nullable|string|max:2000',
             'manifest_goods' => 'nullable|array|max:1',
-            'manifest_goods.*.nama_barang' => 'required|string|max:255',
+            'manifest_goods.*.nama_barang' => 'required|string',
             'manifest_goods.*.hs_code' => 'nullable|string|max:255',
             'manifest_goods.*.jumlah' => 'nullable|integer|min:0',
             'manifest_goods.*.satuan' => 'nullable|string|max:100',
