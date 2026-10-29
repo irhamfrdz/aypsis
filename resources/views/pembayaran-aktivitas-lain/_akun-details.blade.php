@@ -8,6 +8,9 @@
 @endphp
 <div id="akun_details_field" data-bank-direction-mode="{{ $bankDirectionMode ? 'true' : 'false' }}" class="md:col-span-2 {{ in_array(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? ''), ['Pembayaran Lain Lain', 'Pembayaran Kendaraan']) ? '' : 'hidden' }}">
     <label class="block text-sm font-medium text-gray-700 mb-2">Rincian Akun Biaya <span class="text-red-500">*</span></label>
+    @if($bankDirectionMode && $payment && collect($payment->akun_details ?? [])->contains(fn ($detail) => ($detail['debit_kredit'] ?? null) !== ($payment->debit_kredit === 'debit' ? 'kredit' : 'debit')))
+        <p class="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">Rincian akun lama memiliki arah jurnal yang berbeda. Saat disimpan, arah semua akun akan mengikuti sisi berlawanan dari Bank/Kas dan total akan dihitung ulang.</p>
+    @endif
     <div id="akun_details_rows" class="space-y-2">
         @foreach($detailRows as $index => $detail)
             <div class="akun-detail-row flex flex-wrap items-start gap-2">
