@@ -248,13 +248,14 @@ class PembayaranAktivitasLainBatamTest extends TestCase
             'debit_kredit' => 'debit',
             'akun_bank_id' => $bank,
             'akun_details' => [
-                ['akun_coa_id' => $first, 'nominal' => 100],
+                ['akun_coa_id' => $first, 'debit_kredit' => 'debit', 'nominal' => 100],
                 ['akun_coa_id' => $second, 'nominal' => 200],
             ],
         ])->assertRedirect(route('pembayaran-aktivitas-lain.index'));
 
         $payment = PembayaranAktivitasLain::firstOrFail();
         $this->assertSame(300, $payment->jumlah);
+        $this->assertSame(['kredit', 'kredit'], array_column($payment->akun_details, 'debit_kredit'));
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'kredit' => 100]);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'kredit' => 200]);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'debit' => 300]);

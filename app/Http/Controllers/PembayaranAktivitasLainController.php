@@ -427,11 +427,11 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
-            'debit_kredit' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|in:debit,kredit',
+            'debit_kredit' => ($requiresDoubleBook && (! $hasAkunDetails || ! $isVehiclePayment) ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'different:akun_bank_id'],
-            'akun_details.*.debit_kredit' => [Rule::requiredIf($hasAkunDetails), 'in:debit,kredit'],
+            'akun_details.*.debit_kredit' => ['nullable', 'in:debit,kredit'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
@@ -456,9 +456,13 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
-            if ($isVehiclePayment && collect($validated['akun_details'])->contains(fn ($detail) => $detail['debit_kredit'] !== 'debit')) {
-                throw ValidationException::withMessages(['akun_details' => 'Rincian akun biaya kendaraan harus berupa debit.']);
-            }
+            $detailDirection = $isVehiclePayment ? 'debit'
+                : ($validated['debit_kredit'] === 'debit' ? 'kredit' : 'debit');
+            $validated['akun_details'] = array_map(function ($detail) use ($detailDirection) {
+                $detail['debit_kredit'] = $detailDirection;
+
+                return $detail;
+            }, $validated['akun_details']);
             if ($isVehiclePayment && ! empty($validated['akun_pph_id']) && collect($validated['akun_details'])->contains(fn ($detail) => (int) $detail['akun_coa_id'] === (int) $validated['akun_pph_id'])) {
                 throw ValidationException::withMessages(['akun_details' => 'Akun PPh tidak boleh digunakan sebagai akun biaya kendaraan.']);
             }
@@ -937,6 +941,8 @@ class PembayaranAktivitasLainController extends Controller
         $isVehiclePayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan';
         $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'
             || ($isVehiclePayment && $request->filled('akun_details'));
+        $hasLineDirections = collect($request->input('akun_details', []))
+            ->every(fn ($detail) => is_array($detail) && filled($detail['debit_kredit'] ?? null));
         $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
             && $request->input('sub_jenis_kendaraan') === 'KIR';
         if ($isKirPayment) {
@@ -976,11 +982,11 @@ class PembayaranAktivitasLainController extends Controller
             'penerima' => 'required|string|max:255',
             'keterangan' => 'required|string',
             'jumlah' => ($hasAkunDetails ? 'nullable' : 'required').'|integer|min:0',
-            'debit_kredit' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|in:debit,kredit',
+            'debit_kredit' => ($requiresDoubleBook && (! $hasAkunDetails || (! $isVehiclePayment && ! $hasLineDirections)) ? 'required' : 'nullable').'|in:debit,kredit',
             'akun_coa_id' => ($requiresDoubleBook && ! $hasAkunDetails ? 'required' : 'nullable').'|exists:akun_coa,id',
             'akun_details' => [Rule::requiredIf($hasAkunDetails), 'nullable', 'array', 'min:1'],
             'akun_details.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id', 'different:akun_bank_id'],
-            'akun_details.*.debit_kredit' => [Rule::requiredIf($hasAkunDetails), 'in:debit,kredit'],
+            'akun_details.*.debit_kredit' => ['nullable', 'in:debit,kredit'],
             'akun_details.*.nominal' => ['required', 'integer', 'min:1'],
             'akun_details.*.memo' => ['nullable', 'string', 'max:500'],
             'akun_bank_id' => ($requiresDoubleBook ? 'required' : 'nullable').'|exists:akun_coa,id',
@@ -1005,6 +1011,15 @@ class PembayaranAktivitasLainController extends Controller
         }
         if ($hasAkunDetails) {
             $validated['akun_details'] = array_values($validated['akun_details']);
+            if (! $hasLineDirections) {
+                $detailDirection = $isVehiclePayment ? 'debit'
+                    : ($validated['debit_kredit'] === 'debit' ? 'kredit' : 'debit');
+                $validated['akun_details'] = array_map(function ($detail) use ($detailDirection) {
+                    $detail['debit_kredit'] = $detailDirection;
+
+                    return $detail;
+                }, $validated['akun_details']);
+            }
             if ($isVehiclePayment && collect($validated['akun_details'])->contains(fn ($detail) => $detail['debit_kredit'] !== 'debit')) {
                 throw ValidationException::withMessages(['akun_details' => 'Rincian akun biaya kendaraan harus berupa debit.']);
             }

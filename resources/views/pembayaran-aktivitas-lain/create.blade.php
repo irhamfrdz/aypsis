@@ -87,12 +87,12 @@
                             <p><strong>Otomatis Jurnal Akuntansi:</strong></p>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
                                 <div class="bg-white p-3 rounded border border-blue-200">
-                                    <p class="font-medium text-green-700">✅ Jika pilih KREDIT:</p>
+                                    <p class="font-medium text-green-700">✅ Jika Bank/Kas KREDIT:</p>
                                     <p class="text-xs mt-1">• <strong>Dr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-green-600">+</span></p>
                                     <p class="text-xs">• <strong>Cr.</strong> Akun Bank yang dipilih <span class="text-red-600">-</span></p>
                                 </div>
                                 <div class="bg-white p-3 rounded border border-blue-200">
-                                    <p class="font-medium text-blue-700">✅ Jika pilih DEBIT:</p>
+                                    <p class="font-medium text-blue-700">✅ Jika Bank/Kas DEBIT:</p>
                                     <p class="text-xs mt-1">• <strong>Dr.</strong> Akun Bank yang dipilih <span class="text-green-600">+</span></p>
                                     <p class="text-xs">• <strong>Cr.</strong> Akun yang dipilih (Biaya/Beban) <span class="text-red-600">-</span></p>
                                 </div>
@@ -353,32 +353,6 @@
                     <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
                 </div>
 
-                <!-- Debit/Kredit (Double Book) -->
-                <div id="debit_kredit_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Transaksi (Double Book) <span class="text-red-500">*</span>
-                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 ml-1">
-                            📊 Auto Jurnal
-                        </span>
-                    </label>
-                    <select name="debit_kredit" id="debit_kredit" {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? '' : 'required' }} class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
-                        <option value="">Pilih Jenis Transaksi</option>
-                        <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah, Biaya/Beban berkurang)</option>
-                        <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Biaya/Beban bertambah, Bank berkurang)</option>
-                    </select>
-                    @error('debit_kredit')
-                        <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
-                    @enderror
-                    
-                    <!-- Dynamic Journal Preview -->
-                    <div id="journal_preview" class="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs hidden">
-                        <p class="font-medium text-gray-700 mb-1">📋 Preview Jurnal Akuntansi:</p>
-                        <div id="journal_content" class="text-gray-600">
-                            <!-- Content will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-
                 <!-- Akun Biaya -->
                 <div id="akun_coa_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun Biaya <span class="text-red-500">*</span></label>
@@ -396,7 +370,7 @@
                 </div>
 
                 <!-- Rincian biaya per akun -->
-                @include('pembayaran-aktivitas-lain._akun-details')
+                @include('pembayaran-aktivitas-lain._akun-details', ['bankDirectionMode' => true])
 
                 <!-- Akun Bank -->
                 <div id="akun_bank_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
@@ -412,6 +386,21 @@
                     @error('akun_bank_id')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Arah jurnal pada Bank/Kas -->
+                <div id="debit_kredit_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
+                    <label for="debit_kredit" class="block text-sm font-medium text-gray-700 mb-2">Debit/Kredit Bank/Kas <span class="text-red-500">*</span></label>
+                    <select name="debit_kredit" id="debit_kredit" {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? '' : 'required' }} class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('debit_kredit') border-red-500 @enderror">
+                        <option value="">Pilih Debit/Kredit Bank/Kas</option>
+                        <option value="debit" {{ old('debit_kredit') == 'debit' ? 'selected' : '' }}>DEBIT (Bank bertambah)</option>
+                        <option value="kredit" {{ old('debit_kredit') == 'kredit' ? 'selected' : '' }}>KREDIT (Bank berkurang)</option>
+                    </select>
+                    @error('debit_kredit')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    <div id="journal_preview" class="mt-2 p-2 bg-gray-50 border border-gray-200 rounded text-xs hidden">
+                        <p class="font-medium text-gray-700 mb-1">Preview Jurnal Akuntansi:</p>
+                        <div id="journal_content" class="text-gray-600"></div>
+                    </div>
                 </div>
 
                 <!-- Penerima -->
@@ -1389,7 +1378,8 @@ function initializeSelect2() {
             ['akun_coa_field', akunBiayaSelect],
             ['akun_bank_field', akunBankSelect]
         ].forEach(([fieldId, select]) => {
-            const hidden = isBatamVehicle || (isMultiAccount && fieldId !== 'akun_bank_field');
+            const hidden = isBatamVehicle || (isMultiAccount && fieldId === 'akun_coa_field')
+                || (jenisAktivitas.value === 'Pembayaran Kendaraan' && fieldId === 'debit_kredit_field');
             document.getElementById(fieldId).classList.toggle('hidden', hidden);
             select.required = !hidden;
             select.disabled = hidden;
@@ -1536,12 +1526,12 @@ function initializeSelect2() {
         
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
         if (jenisAktivitas !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
-            if (!['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas)) requiredFields.push({ id: 'debit_kredit', name: 'Jenis Transaksi' });
+            if (jenisAktivitas !== 'Pembayaran Kendaraan') requiredFields.push({ id: 'debit_kredit', name: 'Debit/Kredit Bank/Kas' });
             if (!['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas)) requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
         }
         if (['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas) && !window.validateAkunDetails()) {
-            showErrorMessage('Pilih akun, debit/kredit, dan nominal positif. Selisih debit dan kredit harus lebih dari nol.');
+            showErrorMessage('Pilih akun, arah Bank/Kas, dan nominal positif.');
             return false;
         }
         
