@@ -8,6 +8,28 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_non_kary_umkm_is_distinct_from_exact_non_kary_for_employee_burdens(): void
+    {
+        $employee = new Karyawan;
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['bpjs_ketenagakerjaan' => 50000,
+            'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 36000.25, 'jp_hutang' => 2000]),
+        ]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY-UMKM', ' non kary - umkm ', 'NON_KARY_UMKM', 'NON KARY-UMKM non PP'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $employee->tipe_jkn = $type;
+            $this->assertSame(38000.25, $detail->summaryBurden('kary_jht'));
+            $this->assertSame(50000.0, $detail->summaryBurden('kary_jkn'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+        }
+        $employee->tipe_bp_jamsostek = 'NON KARY';
+        $employee->tipe_jkn = 'NON KARY';
+        $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+        $this->assertSame(0.0, $detail->summaryBurden('kary_jkn'));
+        $this->assertSame(88000.25, $detail->summaryBurden('non_kary'));
+    }
+
     public function test_umkm_non_pp_has_no_bpu_allowance_even_with_saved_manual_amount(): void
     {
         $employee = new Karyawan;

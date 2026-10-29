@@ -5,7 +5,7 @@
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
         const n = key => Number(values[key]) || 0;
-        const nonEmployee = type => String(type || '').toUpperCase().replace(/[\s_-]+/g, '').startsWith('NONKARY');
+        const nonEmployee = type => String(type || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
         const nonJkn = nonEmployee(values.tipe_jkn);
         const nonJamsostek = nonEmployee(values.tipe_bp_jamsostek);
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');

@@ -5,6 +5,21 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('refreshing a row from NON KARY to NON KARY-UMKM restores its employee JHT amount', () => {
+    const fields = new Map([
+        ['.input-noncrew-jht-hutang', { value: '36000.25' }],
+        ['.input-bpu-jkk', { value: '0' }],
+    ]);
+    const row = { dataset: { tipeJamsostek: 'NON KARY' },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String);
+    assert.equal(calculate().kary_jht, 0);
+    row.dataset.tipeJamsostek = 'NON KARY-UMKM';
+    assert.equal(calculate().kary_jht, 36000.25);
+    assert.equal(calculate().non_kary, 0);
+});
+
 test('excluded BPU allowance shows zero, disables manual editing and omits its submitted name', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };

@@ -83,7 +83,7 @@ class PranotaBpjsDetail extends Model
         $sum = fn (array $fields) => array_sum(array_map(fn ($field) => (float) ($values[$field] ?? $this->getAttribute($field) ?? 0), $fields));
         $debt = $sum(['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang', 'jp_hutang']);
         $cost = $sum(['jht_biaya', 'noncrew_jht_biaya', 'jp_biaya']);
-        $nonEmployee = fn ($type) => str_starts_with(preg_replace('/[\s_-]+/', '', strtoupper((string) $type)), 'NONKARY');
+        $nonEmployee = fn ($type) => preg_replace('/[\s_-]+/', '', strtoupper((string) $type)) === 'NONKARY';
         $nonJkn = $nonEmployee($this->karyawan?->tipe_jkn);
         $nonJamsostek = $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
         $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';

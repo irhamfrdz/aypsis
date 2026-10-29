@@ -2,6 +2,22 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('NON KARY-UMKM retains employee debt and is distinct from exact NON KARY', () => {
+    const values = { noncrew_jht_hutang: 36000.25, jp_hutang: 2000, bpjs_ketenagakerjaan: 50000 };
+    for (const type of ['NON KARY-UMKM', ' non kary - umkm ', 'NON_KARY_UMKM', 'NON KARY-UMKM non PP']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_jkn: type, tipe_bp_jamsostek: type });
+        assert.equal(result.kary_jht, 38000.25);
+        assert.equal(result.kary_jkn, 50000);
+        assert.equal(result.non_kary, 0);
+    }
+    for (const type of ['NON KARY', ' non kary ', 'NON_KARY']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_jkn: type, tipe_bp_jamsostek: type });
+        assert.equal(result.kary_jht, 0);
+        assert.equal(result.kary_jkn, 0);
+        assert.equal(result.non_kary, 88000.25);
+    }
+});
+
 test('NON KARY-UMKM non PP is excluded from BPU allowance without changing contributions or employer burden', () => {
     const values = { noncrew_jht_biaya: 19000, noncrew_jkk_tunjangan: 22250,
         noncrew_jkm_tunjangan: 3400, bpu_jkk_tunjangan: 16530, bpu_jkm: 3400 };
