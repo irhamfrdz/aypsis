@@ -1,8 +1,6 @@
 (function (root) {
     const isBpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
-    const isPtExcluded = values => isBpuExcluded(values)
-        && String(values.group_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'CILANDAKHL';
     const isEmployeeJhtExcluded = values => isBpuExcluded(values)
         || String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
     const isJknExcluded = values => String(values.tipe_jkn || '').toUpperCase()
@@ -22,9 +20,9 @@
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = isBpuExcluded(values);
-        const useSupirCost = isUmkmNonPp && ['BPUSUPIR', 'BPUSUPIRJKTPLUIT'].includes(
+        const useNoncrewCost = isUmkmNonPp && ['BPUSUPIR', 'BPUSUPIRJKTPLUIT', 'CILANDAKHL'].includes(
             String(values.group_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, ''));
-        const supirCost = values.aggregate_jamsostek
+        const noncrewCost = values.aggregate_jamsostek
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
         const umkmDebt = values.aggregate_jamsostek ? n('jht_hutang') : n('noncrew_jht_hutang');
@@ -38,7 +36,7 @@
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: isPtExcluded(values) ? 0 : (useTotalPpu ? ppuTotal : (useSupirCost ? supirCost : employerCost)),
+            pt: useTotalPpu ? ppuTotal : (useNoncrewCost ? noncrewCost : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -107,8 +105,6 @@
         const excludedKeys = [];
         if (isPpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('ppu');
         if (excludedBpu) excludedKeys.push('bpu');
-        if (isPtExcluded({ group_bp_jamsostek: row.dataset.groupJamsostek,
-            tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('pt');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);
@@ -178,8 +174,7 @@
                 if (manual && index) input.name = `details[${index}][allowance_${key}]`;
                 else input.removeAttribute('name');
                 if (document.activeElement !== input) input.value = formatNumber(amount);
-                input.title = excluded ? (key === 'pt' ? 'Tidak dihitung untuk group BP Jamsostek ' + row.dataset.groupJamsostek + ' dan tipe ' + row.dataset.tipeJamsostek
-                    : key === 'jkn' ? 'Tidak dihitung untuk tipe JKN ' + row.dataset.tipeJkn
+                input.title = excluded ? (key === 'jkn' ? 'Tidak dihitung untuk tipe JKN ' + row.dataset.tipeJkn
                     : 'Tidak dihitung untuk tipe BP Jamsostek ' + row.dataset.tipeJamsostek)
                     : (manual ? 'Nominal manual' : 'Nominal otomatis sesuai rumus');
                 cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);

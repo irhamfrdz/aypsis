@@ -170,7 +170,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         foreach (['NON KARY-UMKM non PP', ' non kary - umkm NON pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
             $employee->tipe_bp_jamsostek = $type;
             $this->assertSame(0.0, $detail->tunjangan_bpu);
-            $this->assertSame(0.0, $detail->summaryBurden('pt'));
+            $this->assertSame(44650.0, $detail->summaryBurden('pt'));
         }
         $detail->tunjangan_manual = ['bpu' => 25650];
         $this->assertSame(0.0, $detail->tunjangan_bpu);
@@ -232,7 +232,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $this->assertSame(0.0, $detail->summaryBurden('pt'));
     }
 
-    public function test_umkm_non_pp_excludes_employer_burden_even_with_saved_manual_amount(): void
+    public function test_cilandak_umkm_non_pp_sums_costs_and_preserves_manual_amount(): void
     {
         $detail = new PranotaBpjsDetail;
         $detail->setRawAttributes([
@@ -244,7 +244,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $detail->setRelation('karyawan', $employee);
         foreach (['NON KARY-UMKM Non PP', ' non kary - umkm  non pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
             $employee->tipe_bp_jamsostek = $type;
-            $this->assertSame(0.0, $detail->summaryBurden('pt'));
+            $this->assertSame(35300.25, $detail->summaryBurden('pt'));
         }
         $employee->tipe_bp_jamsostek = 'PPU';
         $this->assertSame(139000.0, $detail->summaryBurden('pt'));
@@ -253,9 +253,9 @@ class PranotaBpjsAllowanceTest extends TestCase
         $detail->jht_biaya = 19000;
         $detail->jkk_tunjangan = 9500.25;
         $detail->jkm_tunjangan = 6800;
-        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+        $this->assertSame(35300.25, $detail->summaryBurden('pt'));
         $detail->tunjangan_manual = ['pt' => 44650];
-        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+        $this->assertSame(44650.0, $detail->summaryBurden('pt'));
     }
 
     public function test_employer_burden_sums_only_ppu_jht_ppu_jp_and_noncrew_jht_biaya(): void
@@ -322,7 +322,7 @@ class PranotaBpjsAllowanceTest extends TestCase
             'noncrew_jht_biaya' => 19000, 'noncrew_jkk_tunjangan' => 22250, 'noncrew_jkm_tunjangan' => 3400,
         ])]);
         $detail->setRelation('karyawan', $employee);
-        foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR', 'BPU-SUPIR JKT PLUIT', ' bpu-supir  jkt pluit ', "BPU-SUPIR\nJKT PLUIT"] as $group) {
+        foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR', 'BPU-SUPIR JKT PLUIT', ' bpu-supir  jkt pluit ', "BPU-SUPIR\nJKT PLUIT", 'CILANDAK-HL', ' cilandak - hl '] as $group) {
             $employee->group_bp_jamsostek = $group;
             $this->assertSame(44650.0, $detail->summaryBurden('pt'));
         }
@@ -334,7 +334,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $detail->tunjangan_manual = ['pt' => 9000];
         $this->assertSame(9000.0, $detail->summaryBurden('pt'));
         $employee->group_bp_jamsostek = ' cilandak - hl ';
-        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+        $this->assertSame(9000.0, $detail->summaryBurden('pt'));
     }
 
 }
