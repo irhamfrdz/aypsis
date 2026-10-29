@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
+@endpush
+
 @section('content')
 <div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
     <div class="sm:flex sm:items-center sm:justify-between mb-8">
@@ -112,7 +116,7 @@
         <div class="mb-8">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Rincian Iuran BPJS Karyawan</h3>
             <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen dan ringkasan tunjangan. Ringkasan tidak ditambahkan kembali ke Grand Total.</p>
-            <div class="bpjs-detail-scroll overflow-x-auto rounded-lg border border-gray-200">
+            <div class="bpjs-detail-scroll bpjs-table-scroll overflow-x-auto rounded-lg border border-gray-200" role="region" aria-label="Rincian iuran BPJS, gulir untuk melihat seluruh data" tabindex="0">
                 <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700">

@@ -272,7 +272,7 @@
             </div>
 
             {{-- ── Table Detail ──────────────────────────────────────────────── --}}
-            <div class="overflow-x-auto">
+            <div class="bpjs-table-scroll overflow-x-auto" role="region" aria-label="Rincian iuran BPJS, gulir untuk melihat seluruh data" tabindex="0">
                 <table class="w-full text-xs text-left border-collapse" id="tabel-detail">
                     <thead>
                         {{-- ── Group Header Row ── --}}

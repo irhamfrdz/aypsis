@@ -110,7 +110,7 @@
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="bpjs-table-scroll overflow-x-auto" role="region" aria-label="Rincian iuran BPJS, gulir untuk melihat seluruh data" tabindex="0">
                 <table class="table-auto w-full" id="tabel-detail">
                     <thead class="text-xs font-semibold uppercase text-gray-600 bg-gray-50 border-b-2 border-gray-200 tracking-wider">
                         <tr>

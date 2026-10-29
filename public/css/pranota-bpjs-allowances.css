@@ -51,3 +51,23 @@ td.bpjs-allowance-green[data-allowance] { background: #f0fdf466; border-left-col
 .bpjs-hide-col-group-jp .col-group-jp,
 .bpjs-hide-col-info-tipe-jkn .col-info-tipe-jkn,
 .bpjs-hide-col-info-tipe-jam .col-info-tipe-jam { display: none; }
+
+@media screen {
+    .bpjs-table-scroll {
+        max-height: 70vh;
+        overflow: auto;
+        position: relative;
+        isolation: isolate;
+    }
+    .bpjs-table-scroll > table > thead {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        background: #f9fafb;
+        box-shadow: 0 2px 3px rgb(15 23 42 / 12%);
+    }
+    .bpjs-table-scroll:focus-visible {
+        outline: 2px solid #0d9488;
+        outline-offset: -2px;
+    }
+}
