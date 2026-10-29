@@ -412,11 +412,29 @@ test('CILANDAK-HL UMKM Non PP excludes manual burden while BPU-SUPIR of the same
             assert.equal(status.textContent, 'Tidak dihitung');
         }
         row.dataset.groupJkn = 'JKN-KIS';
-        row.dataset.groupJamsostek = 'BPU-SUPIR';
+        row.dataset.groupJamsostek = 'BPU-SUPIR JKT PLUIT';
         row.dataset.tipeJamsostek = 'Non Kary-UMKM non PP';
         delete row.allowanceOverrides.pt;
         assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 44650);
         assert.equal(input.disabled, false);
         assert.equal(status.textContent, 'Sesuai rumus');
     } finally { globalThis.document = previousDocument; }
+});
+
+test('INSANI and PALEN full group names sum noncrew employer costs to 89300', () => {
+    const rows = ['INSANI', 'PALEN RENDIKA'].map(name => {
+        const fields = new Map([
+            ['.input-bpu-jkk', { value: '0' }],
+            ['.input-noncrew-jht-biaya', { value: '19000' }],
+            ['.input-noncrew-jht-hutang', { value: '70000' }],
+            ['.input-noncrew-jkk', { value: '22250' }],
+            ['.input-noncrew-jkm', { value: '3400' }],
+        ]);
+        return { dataset: { namaKaryawan: name, groupJamsostek: 'BPU-SUPIR JKT PLUIT',
+            tipeJamsostek: 'Non Kary-UMKM non PP' }, querySelector: selector => fields.get(selector) || null };
+    });
+    const amounts = rows.map(row => BpjsAllowances.updateRow(row, {}, Number, String));
+    assert.deepEqual(amounts.map(amount => amount.pt), [44650, 44650]);
+    assert.equal(amounts.reduce((total, amount) => total + amount.pt, 0), 89300);
+    assert.deepEqual(amounts.map(amount => amount.non_kary), [70000, 70000]);
 });

@@ -113,7 +113,7 @@ class PranotaBpjsDetail extends Model
         $nonJkn = $nonEmployee($this->karyawan?->tipe_jkn);
         $nonJamsostek = $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
         $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';
-        $useSupirCost = $isUmkmNonPp && $jamsostekGroup === 'BPUSUPIR';
+        $useSupirCost = $isUmkmNonPp && in_array($jamsostekGroup, ['BPUSUPIR', 'BPUSUPIRJKTPLUIT'], true);
         $supirCost = $this->rincian_bpjs !== null
             ? $sum(['noncrew_jht_biaya', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'])
             : $sum(['jht_biaya', 'jkk_tunjangan', 'jkm_tunjangan']);

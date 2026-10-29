@@ -224,7 +224,7 @@ test('burdens sum the contribution amounts and route non employee memberships se
 });
 
 test('BPU-SUPIR UMKM Non PP adds JHT biaya, JKK and JKM for create and aggregate edit rows', () => {
-    for (const group of ['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR']) {
+    for (const group of ['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR', 'BPU-SUPIR JKT PLUIT', ' bpu-supir  jkt pluit ', 'BPU-SUPIR\nJKT PLUIT']) {
         const values = { group_bp_jamsostek: group, tipe_bp_jamsostek: 'Non Kary-UMKM non PP',
             group_jkn: 'JKN-KIS', noncrew_jht_biaya: 19000, noncrew_jht_hutang: 81000,
             noncrew_jkk_tunjangan: 22250, noncrew_jkm_tunjangan: 3400 };

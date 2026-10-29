@@ -22,8 +22,8 @@
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = isBpuExcluded(values);
-        const useSupirCost = isUmkmNonPp && String(values.group_bp_jamsostek || '').toUpperCase()
-            .replace(/[\s_-]+/g, '') === 'BPUSUPIR';
+        const useSupirCost = isUmkmNonPp && ['BPUSUPIR', 'BPUSUPIRJKTPLUIT'].includes(
+            String(values.group_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, ''));
         const supirCost = values.aggregate_jamsostek
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');

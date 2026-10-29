@@ -322,7 +322,7 @@ class PranotaBpjsAllowanceTest extends TestCase
             'noncrew_jht_biaya' => 19000, 'noncrew_jkk_tunjangan' => 22250, 'noncrew_jkm_tunjangan' => 3400,
         ])]);
         $detail->setRelation('karyawan', $employee);
-        foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR'] as $group) {
+        foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR', 'BPU-SUPIR JKT PLUIT', ' bpu-supir  jkt pluit ', "BPU-SUPIR\nJKT PLUIT"] as $group) {
             $employee->group_bp_jamsostek = $group;
             $this->assertSame(44650.0, $detail->summaryBurden('pt'));
         }
