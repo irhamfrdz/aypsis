@@ -27,6 +27,15 @@
             if (isAll(group) && isAll(tipe)) return new Set(['jkn', 'ppu', 'bpu_crew', 'bpu_non_crew']);
             return new Set(selectedRecords(records, group, tipe).map(category));
         },
+        allowanceKeys(categories) {
+            const keys = new Set(['pt', 'non_kary']);
+            const jamsostek = ['ppu', 'bpu_crew', 'bpu_non_crew'].some(key => categories.has(key));
+            if (categories.has('ppu')) keys.add('ppu');
+            if (categories.has('bpu_crew') || categories.has('bpu_non_crew')) keys.add('bpu');
+            if (categories.has('jkn')) { keys.add('jkn'); keys.add('kary_jkn'); }
+            if (jamsostek) keys.add('kary_jht');
+            return keys;
+        },
         matches(employee, records, group = 'all', tipe = 'all') {
             if (isAll(group) && isAll(tipe)) return true;
             return ['jkn', 'jamsostek'].some(jenis => {

@@ -292,7 +292,7 @@
                             <th id="th-group-bpu-noncrew" colspan="5" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900 col-group-bpu-noncrew">
                                 <i class="fas fa-user-tag text-purple-600 mr-1"></i> BP Jamsostek (Non BPU-CREW)
                             </th>
-                            <th colspan="8" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan</th>
+                            <th id="th-group-summary" colspan="8" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan</th>
                             <th rowspan="2" class="px-4 py-3 text-right bg-teal-50 text-teal-900 border-l border-teal-200 font-bold whitespace-nowrap" style="min-width:130px">
                                 Subtotal (Rp)
                             </th>
@@ -339,7 +339,7 @@
                             <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 border-r border-purple-100 col-group-bpu-noncrew" style="min-width:95px" title="JKM Tunjangan Nominal (Rp)">JKM (Rp)</th>
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" style="min-width:150px">TOTAL NON BPU-CREW</th>
 
-<th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
+<th class="col-group-ppu bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="col-summary-bpu bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="col-group-jkn bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKN 4%</th><th class="col-summary-jamsostek bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="col-group-jkn bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                         </tr>
                     </thead>
                     <tbody id="detail-container" class="divide-y divide-gray-100 bg-white font-medium">
@@ -380,11 +380,11 @@
 
                             
                             {{-- Grand Total --}}
-                            <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
-<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
-<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
-<td class="bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0,00</td>
-<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0,00</td>
+                            <td class="col-group-ppu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
+<td class="col-summary-bpu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
+<td class="col-group-jkn bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
+<td class="col-summary-jamsostek bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0,00</td>
+<td class="col-group-jkn bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0,00</td>
 <td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0,00</td>
 <td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0,00</td>
 <td class="px-3 py-3 bg-orange-50"></td>
@@ -512,6 +512,13 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleElements('.col-group-ppu', showPpu);
         toggleElements('.col-group-bpu-crew', showBpuCrew);
         toggleElements('.col-group-bpu-noncrew', showBpuNonCrew);
+        toggleElements('.col-summary-bpu', showBpuCrew || showBpuNonCrew);
+        toggleElements('.col-summary-jamsostek', showTipeJam);
+        const allowanceKeys = BpjsMasterFilters.allowanceKeys(categories);
+        document.getElementById('th-group-summary').setAttribute('colspan', allowanceKeys.size + 1);
+        document.querySelectorAll('[data-allowance-component]').forEach(row => {
+            row.classList.toggle('hidden', !allowanceKeys.has(row.dataset.allowanceComponent));
+        });
 
         toggleElements('.col-info-tipe-jkn', showTipeJkn);
         toggleElements('.col-info-dpp-jkn', showTipeJkn);
@@ -934,11 +941,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             
             {{-- Subtotal & Action --}}
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
-            <td class="bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
-            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
+            <td class="col-group-ppu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
+            <td class="col-summary-bpu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
+            <td class="col-group-jkn bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
+            <td class="col-summary-jamsostek bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
+            <td class="col-group-jkn bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
             <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
             <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
             <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>

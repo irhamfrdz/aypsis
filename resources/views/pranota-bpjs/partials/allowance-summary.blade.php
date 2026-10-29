@@ -7,7 +7,7 @@
         <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
         <tbody>
             @foreach(['ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'bpu' => 'Tunjangan BPU JKK 1% + JKM', 'jkn' => 'Tunjangan JKN 4%', 'kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'kary_jkn' => 'Beban KARY. JKN 1%', 'pt' => 'Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)', 'non_kary' => 'Beban NON KARY. JKN & BPJS'] as $key => $label)
-                <tr class="border-b border-orange-100"><td class="py-2">{{ $label }}</td><td class="py-2 text-right font-mono font-semibold" data-allowance-total="{{ $key }}">Rp {{ number_format($allowanceSummary[$key] ?? 0, 2, ',', '.') }}</td></tr>
+                <tr class="border-b border-orange-100" data-allowance-component="{{ $key }}"><td class="py-2">{{ $label }}</td><td class="py-2 text-right font-mono font-semibold" data-allowance-total="{{ $key }}">Rp {{ number_format($allowanceSummary[$key] ?? 0, 2, ',', '.') }}</td></tr>
             @endforeach
         </tbody>
     </table>

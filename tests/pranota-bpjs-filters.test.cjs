@@ -43,3 +43,20 @@ test('custom master groups select correct contribution columns and totals', () =
     assert.equal(filters.total(records, 'all', 'KANTOR', amounts), 300);
     assert.equal(filters.total(records, 'all', 'all', amounts), 1000);
 });
+
+test('BPU filters hide JKN summaries while retaining BPU and employee JHT summaries', () => {
+    const selected = filters.allowanceKeys(filters.categories(records, 'BPU ALEXINDO PLUIT', 'all'));
+    assert.equal(selected.has('jkn'), false);
+    assert.equal(selected.has('kary_jkn'), false);
+    assert.equal(selected.has('ppu'), false);
+    assert.equal(selected.has('bpu'), true);
+    assert.equal(selected.has('kary_jht'), true);
+    const jkn = filters.allowanceKeys(filters.categories(records, 'JKN ALEXINDO', 'KANTOR'));
+    assert.equal(jkn.has('jkn'), true);
+    assert.equal(jkn.has('kary_jkn'), true);
+    assert.equal(jkn.has('bpu'), false);
+    assert.equal(jkn.has('kary_jht'), false);
+    const all = filters.allowanceKeys(filters.categories(records));
+    assert.equal(all.size, 7);
+    assert.equal(all.has('jkn'), true);
+});

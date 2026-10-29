@@ -57,6 +57,8 @@ td.bpjs-allowance-green[data-allowance] { background: #f0fdf466; border-left-col
 .bpjs-hide-col-info-tipe-jam .col-info-tipe-jam { display: none; }
 .bpjs-hide-col-info-dpp-jkn .col-info-dpp-jkn,
 .bpjs-hide-col-info-dpp-jam .col-info-dpp-jam { display: none; }
+.bpjs-hide-col-summary-bpu .col-summary-bpu,
+.bpjs-hide-col-summary-jamsostek .col-summary-jamsostek { display: none; }
 .bpjs-employee-group { white-space: pre-line; min-width: 170px; }
 .bpjs-employee-type { display: block; min-width: 130px; font-size: 11px; font-weight: 600; }
 
