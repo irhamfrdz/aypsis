@@ -128,6 +128,30 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
         }
     }
 
+    public function test_export_displays_tonnage_and_volume_with_three_decimal_places(): void
+    {
+        $receiptId = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'TEST-DECIMAL',
+            'size' => '20ft',
+        ]);
+        $receipt = TandaTerima::findOrFail($receiptId);
+        $override = new \App\Models\ApprovalTandaTerimaDuaGoods([
+            'goods' => [['nama_barang' => 'Barang']],
+            'manifest_goods' => [['nama_barang' => 'Barang', 'tonase' => '16.556,880', 'meter_kubik' => '3.500,250']],
+        ]);
+
+        $file = app(ApprovalTandaTerimaDuaExcelService::class)->create('fcl', $receipt, $override);
+        try {
+            $sheet = IOFactory::load($file)->getSheet(0);
+            $this->assertEquals(16556.88, $sheet->getCell('O9')->getValue());
+            $this->assertSame('16,556.880', $sheet->getCell('O9')->getFormattedValue());
+            $this->assertEquals(3500.25, $sheet->getCell('P9')->getValue());
+            $this->assertSame('3,500.250', $sheet->getCell('P9')->getFormattedValue());
+        } finally {
+            @unlink($file);
+        }
+    }
+
     public function test_bulk_export_contains_only_selected_receipts_in_selected_order(): void
     {
         $first = DB::table('tanda_terimas')->insertGetId([

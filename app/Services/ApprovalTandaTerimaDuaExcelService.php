@@ -100,9 +100,11 @@ class ApprovalTandaTerimaDuaExcelService
         $measure = $this->indonesianNumber(data_get($manifestGood, 'meter_kubik'));
         if ($weight !== null) {
             $sheet->setCellValue('O'.$row, $weight);
+            $sheet->getStyle('O'.$row)->getNumberFormat()->setFormatCode('#,##0.000');
         }
         if ($measure !== null) {
             $sheet->setCellValue('P'.$row, $measure);
+            $sheet->getStyle('P'.$row)->getNumberFormat()->setFormatCode('#,##0.000');
         }
         if ($date) {
             $sheet->setCellValue('AD'.$row, ExcelDate::PHPToExcel(Carbon::parse($date)));
