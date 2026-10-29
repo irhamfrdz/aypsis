@@ -58,6 +58,7 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
             $table->unsignedBigInteger('akun_coa_id')->nullable();
             $table->unsignedBigInteger('akun_bank_id')->nullable();
             $table->json('akun_details')->nullable();
+            $table->string('debit_kredit')->nullable();
             $table->decimal('pph_nominal', 15, 2)->default(0);
             $table->decimal('grand_total', 15, 2)->default(0);
             $table->softDeletes();
@@ -263,9 +264,10 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
             'nomor_accurate' => 'BTJ26 1000169',
             'akun_coa_id' => 2,
             'akun_bank_id' => 1,
+            'debit_kredit' => 'kredit',
             'akun_details' => json_encode([
                 ['akun_coa_id' => 2, 'nominal' => 60, 'memo' => 'Bahan bakar'],
-                ['akun_coa_id' => 3, 'nominal' => 30, 'memo' => 'Tol'],
+                ['akun_coa_id' => 3, 'debit_kredit' => 'kredit', 'nominal' => 30, 'memo' => 'Tol'],
                 ['akun_coa_id' => 2, 'nominal' => 10, 'memo' => 'Tambahan'],
             ]),
         ]);
@@ -286,14 +288,15 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
         $this->assertEquals(100, $transaction->kredit);
         $this->assertSame('BTJ26 1000169', $transaction->nomor_accurate);
         $this->assertSame([
-            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 60, 'memo' => 'Bahan bakar'],
-            ['nomor_akun' => '5002', 'nama_akun' => 'Biaya B', 'nominal' => 30, 'memo' => 'Tol'],
-            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 10, 'memo' => 'Tambahan'],
+            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 60, 'memo' => 'Bahan bakar', 'debit_kredit' => 'debit'],
+            ['nomor_akun' => '5002', 'nama_akun' => 'Biaya B', 'nominal' => 30, 'memo' => 'Tol', 'debit_kredit' => 'kredit'],
+            ['nomor_akun' => '5001', 'nama_akun' => 'Biaya A', 'nominal' => 10, 'memo' => 'Tambahan', 'debit_kredit' => 'debit'],
         ], array_map(fn ($line) => [
             'nomor_akun' => $line['nomor_akun'],
             'nama_akun' => $line['nama_akun'],
             'nominal' => (int) $line['nominal'],
             'memo' => $line['memo'],
+            'debit_kredit' => $line['debit_kredit'],
         ], $transaction->rincian_akun_pembayaran));
     }
 }

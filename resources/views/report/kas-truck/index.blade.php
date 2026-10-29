@@ -179,7 +179,12 @@
                                                     <div class="py-2">
                                                         <div class="flex items-start justify-between gap-3">
                                                             <span class="min-w-0 break-words font-medium text-gray-800">@if(!empty($rincian['nomor_akun'])){{ $rincian['nomor_akun'] }} - @endif{{ $rincian['nama_akun'] }}</span>
-                                                            <span class="flex-none whitespace-nowrap font-semibold text-gray-900">Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}</span>
+                                                            <span class="flex-none whitespace-nowrap font-semibold text-gray-900">
+                                                                @if(!empty($rincian['debit_kredit']))
+                                                                    <span class="mr-1 text-xs {{ $rincian['debit_kredit'] === 'debit' ? 'text-green-700' : 'text-red-700' }}">{{ ucfirst($rincian['debit_kredit']) }}</span>
+                                                                @endif
+                                                                Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}
+                                                            </span>
                                                         </div>
                                                         @if(!empty($rincian['memo']))<p class="mt-1 break-words text-xs leading-5 text-gray-500">{{ $rincian['memo'] }}</p>@endif
                                                     </div>
