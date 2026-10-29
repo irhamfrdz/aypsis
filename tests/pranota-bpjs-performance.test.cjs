@@ -263,7 +263,7 @@ test('UMKM Non PP edit rows exclude employer burden with saved or edited aggrega
         ['input[name$="[rincian_bpjs]"]', { value: JSON.stringify({ noncrew_jht_biaya: 19000,
             noncrew_jkk_tunjangan: 9500.25, noncrew_jkm_tunjangan: 6800 }) }],
     ]);
-    const row = { dataset: { tipeJamsostek: 'NON KARY-UMKM Non PP' },
+    const row = { dataset: { groupJamsostek: 'CILANDAK-HL', tipeJamsostek: 'NON KARY-UMKM Non PP' },
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
@@ -387,7 +387,7 @@ test('264 unchanged rows skip all 1848 editor writes; edits, manual zero, and fi
     }
 });
 
-test('UMKM Non PP employer burden ignores saved manual amounts and restores other memberships', () => {
+test('CILANDAK-HL UMKM Non PP excludes manual burden while BPU-SUPIR of the same type remains automatic', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };
     const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
@@ -412,7 +412,7 @@ test('UMKM Non PP employer burden ignores saved manual amounts and restores othe
         }
         row.dataset.groupJkn = 'JKN-KIS';
         row.dataset.groupJamsostek = 'BPU-SUPIR';
-        row.dataset.tipeJamsostek = 'KARYAWAN';
+        row.dataset.tipeJamsostek = 'Non Kary-UMKM non PP';
         delete row.allowanceOverrides.pt;
         assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 19000);
         assert.equal(input.disabled, false);

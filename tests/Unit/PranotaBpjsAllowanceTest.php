@@ -160,7 +160,7 @@ class PranotaBpjsAllowanceTest extends TestCase
 
     public function test_umkm_non_pp_has_no_bpu_allowance_even_with_saved_manual_amount(): void
     {
-        $employee = new Karyawan;
+        $employee = new Karyawan(['group_bp_jamsostek' => 'CILANDAK-HL']);
         $detail = new PranotaBpjsDetail;
         $detail->setRawAttributes(['rincian_bpjs' => json_encode([
             'noncrew_jht_biaya' => 19000, 'noncrew_jkk_tunjangan' => 22250,
@@ -240,7 +240,7 @@ class PranotaBpjsAllowanceTest extends TestCase
                 'noncrew_jkk_tunjangan' => 9500.25, 'noncrew_jkm_tunjangan' => 6800,
                 'jht_biaya' => 100000, 'jp_biaya' => 20000, 'noncrew_jht_hutang' => 50000]),
         ]);
-        $employee = new Karyawan;
+        $employee = new Karyawan(['group_bp_jamsostek' => 'CILANDAK-HL']);
         $detail->setRelation('karyawan', $employee);
         foreach (['NON KARY-UMKM Non PP', ' non kary - umkm  non pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
             $employee->tipe_bp_jamsostek = $type;
@@ -314,4 +314,25 @@ class PranotaBpjsAllowanceTest extends TestCase
         $employee->group_bp_jamsostek = 'BPU-CREW';
         $this->assertSame(0.0, $detail->tunjangan_ppu);
     }
+    public function test_bpu_supir_umkm_non_pp_retains_jht_cost_with_or_without_saved_breakdown(): void
+    {
+        $employee = new Karyawan(['group_jkn' => 'JKN-KIS', 'tipe_bp_jamsostek' => 'Non Kary-UMKM non PP']);
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['rincian_bpjs' => json_encode([
+            'noncrew_jht_biaya' => 8000, 'noncrew_jkk_tunjangan' => 22250, 'noncrew_jkm_tunjangan' => 3400,
+        ])]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['BPU-SUPIR', ' bpu - supir ', 'BPU_SUPIR'] as $group) {
+            $employee->group_bp_jamsostek = $group;
+            $this->assertSame(8000.0, $detail->summaryBurden('pt'));
+        }
+        $detail->rincian_bpjs = null;
+        $detail->jht_biaya = 8000;
+        $this->assertSame(8000.0, $detail->summaryBurden('pt'));
+        $detail->tunjangan_manual = ['pt' => 9000];
+        $this->assertSame(9000.0, $detail->summaryBurden('pt'));
+        $employee->group_bp_jamsostek = ' cilandak - hl ';
+        $this->assertSame(0.0, $detail->summaryBurden('pt'));
+    }
+
 }
