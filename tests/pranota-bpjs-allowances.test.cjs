@@ -2,6 +2,21 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('NON KARY-UMKM Non PP employer burden uses noncrew JHT biaya plus JKK and JKM only', () => {
+    const values = { noncrew_jht_biaya: 19000, noncrew_jkk_tunjangan: 9500.25,
+        noncrew_jkm_tunjangan: 6800, jht_biaya: 100000, jp_biaya: 20000,
+        kis_tunjangan: 214319.2, noncrew_jht_hutang: 50000 };
+    for (const type of ['NON KARY-UMKM Non PP', ' non kary - umkm  non pp ', 'NON_KARY_UMKM_NON_PP']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
+        assert.equal(result.pt, 35300.25);
+        assert.equal(BpjsAllowances.effective(result, { pt: 0 }).pt, 0);
+    }
+    for (const type of ['PPU', 'NON KARY-UMKM', '', 'NON KARY-UMKM PP']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type }).pt, 139000);
+    }
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY-UMKM Non PP' }).pt, 139000);
+});
+
 test('employer burden adds only PPU JHT, PPU JP and noncrew JHT biaya', () => {
     const values = { jht_biaya: 198320, jp_biaya: 107200, noncrew_jht_biaya: 49000.25,
         kis_tunjangan: 214319.20, kis_biaya: 70000, jht_hutang: 107200, jp_hutang: 53600 };

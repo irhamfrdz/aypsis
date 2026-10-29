@@ -72,11 +72,15 @@ class PranotaBpjsDetail extends Model
         $nonEmployee = fn ($type) => str_starts_with(preg_replace('/[\s_-]+/', '', strtoupper((string) $type)), 'NONKARY');
         $nonJkn = $special || $nonEmployee($this->karyawan?->tipe_jkn);
         $nonJamsostek = $special || $nonEmployee($this->karyawan?->tipe_bp_jamsostek);
+        $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';
+        $umkmCost = $this->rincian_bpjs !== null
+            ? $sum(['noncrew_jht_biaya', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'])
+            : $sum(['jht_biaya', 'jkk_tunjangan', 'jkm_tunjangan']);
 
         return match ($key) {
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
-            'pt' => $cost,
+            'pt' => $isUmkmNonPp ? $umkmCost : $cost,
             'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
                 + ($nonJamsostek ? $debt + $cost
                 + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0),

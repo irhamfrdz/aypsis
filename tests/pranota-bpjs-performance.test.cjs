@@ -4,6 +4,25 @@ require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('UMKM Non PP edit rows use saved noncrew components and recalculate changed aggregates', () => {
+    const fields = new Map([
+        ['.input-jht-biaya', { value: '19000' }], ['.input-jkk', { value: '9500.25' }],
+        ['.input-jkm', { value: '6800' }], ['.select-tipe-jkn', { value: 'manual' }],
+        ['input[name$="[rincian_bpjs]"]', { value: JSON.stringify({ noncrew_jht_biaya: 19000,
+            noncrew_jkk_tunjangan: 9500.25, noncrew_jkm_tunjangan: 6800 }) }],
+    ]);
+    const row = { dataset: { tipeJamsostek: 'NON KARY-UMKM Non PP' },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
+    assert.equal(calculate(), 35300.25);
+    fields.get('.input-jkk').value = '10000';
+    assert.equal(calculate(), 35800);
+    fields.delete('input[name$="[rincian_bpjs]"]');
+    row.dataset.tipeJamsostek = 'PPU';
+    assert.equal(calculate(), 19000);
+});
+
 test('editing saved aggregate JHT and JP recalculates employer burden using the displayed amounts', () => {
     const fields = new Map([
         ['.input-jht-biaya', { value: '247320.25' }], ['.input-jp-biaya', { value: '107200' }],

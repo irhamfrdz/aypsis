@@ -8,6 +8,11 @@
         const nonJamsostek = special || nonEmployee(values.tipe_bp_jamsostek);
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
+        const isUmkmNonPp = String(values.tipe_bp_jamsostek || '').toUpperCase()
+            .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
+        const umkmCost = values.aggregate_jamsostek
+            ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
+            : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
         return {
             ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
             bpu: (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
@@ -15,7 +20,7 @@
             jkn: Number(values.kis_tunjangan) || 0,
             kary_jht: nonJamsostek ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: employerCost,
+            pt: isUmkmNonPp ? umkmCost : employerCost,
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -50,7 +55,8 @@
             jp_biaya: read('.input-jp-biaya'), jp_hutang: read('.input-jp-hutang'),
         };
         // The edit form displays aggregate amounts; use its saved breakdown for manual rows.
-        if (!select('.input-bpu-jkk') && select('.select-tipe-jkn')?.value === 'manual') {
+        let aggregateJamsostek = !select('.input-bpu-jkk');
+        if (aggregateJamsostek && select('.select-tipe-jkn')?.value === 'manual') {
             const snapshot = select('input[name$="[rincian_bpjs]"]');
             if (snapshot) {
                 try {
@@ -64,7 +70,7 @@
                     };
                     const matches = saved && Object.entries(groups).every(([key, fields]) =>
                         Math.abs(fields.reduce((sum, field) => sum + (Number(saved[field]) || 0), 0) - values[key]) <= 0.005);
-                    if (matches) values = saved;
+                    if (matches) { values = saved; aggregateJamsostek = false; }
                 } catch (_) { /* Keep displayed values. */ }
             }
         }
@@ -75,6 +81,7 @@
             kis_tunjangan: split.tunjangan, kis_biaya: split.biaya,
             is_special_case: row.dataset.isSpecialCase,
             tipe_jkn: row.dataset.tipeJkn, tipe_bp_jamsostek: row.dataset.tipeJamsostek,
+            aggregate_jamsostek: aggregateJamsostek,
             bpjs_ketenagakerjaan: read('.input-ket') });
         const index = select('.karyawan-hidden-input')?.name.match(/^details\[([^\]]+)\]/)?.[1];
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index]);
