@@ -82,7 +82,7 @@
                 'Jaminan Pensiun' => ['jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
             ];
             $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
-            $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%', 'allowance_kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'allowance_kary_jkn' => 'Beban KARY. JKN 1%', 'allowance_pt' => 'Beban PT. JHT 3.7%, JP 2% & JKN', 'allowance_non_kary' => 'Beban NON KARY. JKN & BPJS', 'no_voucher' => 'No Voucher'];
+            $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%', 'allowance_kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'allowance_kary_jkn' => 'Beban KARY. JKN 1%', 'allowance_pt' => 'Beban PT. JHT 3.7%, JP 2%, BPU JHT 1% & JKN', 'allowance_non_kary' => 'Beban NON KARY. JKN & BPJS', 'no_voucher' => 'No Voucher'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
             $amount = function ($detail, $field) {
                 if (str_starts_with($field, 'allowance_') && isset($detail->tunjangan_manual[substr($field, 10)])) return (float) $detail->tunjangan_manual[substr($field, 10)];

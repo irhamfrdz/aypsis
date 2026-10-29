@@ -68,7 +68,7 @@
                         input.className = 'bpjs-allowance-input';
                         input.setAttribute('aria-label', { ppu: 'Tunjangan PPU', bpu: 'Tunjangan BPU', jkn: 'Tunjangan JKN',
                             kary_jht: 'Beban KARY. JHT 2%, JP 1% & BPU JHT', kary_jkn: 'Beban KARY. JKN 1%',
-                            pt: 'Beban PT. JHT 3.7%, JP 2% & JKN', non_kary: 'Beban NON KARY. JKN & BPJS' }[key]);
+                            pt: 'Beban PT. JHT 3.7%, JP 2%, BPU JHT 1% & JKN', non_kary: 'Beban NON KARY. JKN & BPJS' }[key]);
                         const reset = document.createElement('button');
                         reset.type = 'button';
                         reset.className = 'bpjs-allowance-reset';

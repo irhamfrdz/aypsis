@@ -28,3 +28,18 @@ td.bpjs-allowance-green[data-allowance] { background: #f0fdf466; border-left-col
 .bpjs-allowance-green .bpjs-allowance-reset:hover:not(:disabled) { background: #bbf7d0; border-color: #4ade80; }
 .bpjs-allowance-green .bpjs-allowance-reset:focus-visible { outline-color: #16a34a; }
 .bpjs-allowance-green .bpjs-allowance-reset:disabled { border-color: #dcfce7; background: #f0fdf4; color: #86a993; }
+
+.bpjs-allowance-red { --bpjs-bg: #fef2f2; --bpjs-border: #fecaca; --bpjs-text: #991b1b; --bpjs-accent: #dc2626; }
+.bpjs-allowance-yellow { --bpjs-bg: #fefce8; --bpjs-border: #fde68a; --bpjs-text: #854d0e; --bpjs-accent: #ca8a04; }
+.bpjs-allowance-blue { --bpjs-bg: #eff6ff; --bpjs-border: #bfdbfe; --bpjs-text: #1e40af; --bpjs-accent: #2563eb; }
+:is(th, td):is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) {
+    background: var(--bpjs-bg); color: var(--bpjs-text); border-left-color: var(--bpjs-border);
+}
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-money { border-color: var(--bpjs-border); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-money:hover { border-color: var(--bpjs-accent); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-money:focus-within { border-color: var(--bpjs-accent); box-shadow: 0 0 0 3px var(--bpjs-border); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) :is(.bpjs-allowance-input, .bpjs-allowance-currency, .bpjs-allowance-status) { color: var(--bpjs-text); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-reset { border-color: var(--bpjs-border); background: var(--bpjs-bg); color: var(--bpjs-text); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-reset:hover:not(:disabled) { background: var(--bpjs-border); border-color: var(--bpjs-accent); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-reset:focus-visible { outline-color: var(--bpjs-accent); }
+:is(.bpjs-allowance-red, .bpjs-allowance-yellow, .bpjs-allowance-blue) .bpjs-allowance-reset:disabled { opacity: .55; }
