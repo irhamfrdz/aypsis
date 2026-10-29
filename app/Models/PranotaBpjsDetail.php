@@ -94,6 +94,9 @@ class PranotaBpjsDetail extends Model
         $umkmCost = $this->rincian_bpjs !== null
             ? $sum(['noncrew_jht_biaya', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'])
             : $sum(['jht_biaya', 'jkk_tunjangan', 'jkm_tunjangan']);
+        $umkmDebt = $this->rincian_bpjs !== null
+            ? (float) ($values['noncrew_jht_hutang'] ?? 0)
+            : (float) $this->jht_hutang;
         $compact = fn ($value) => preg_replace('/[\s_-]+/', '', strtoupper((string) $value));
         $useTotalJkn = $compact($this->karyawan?->group_jkn) === 'JKNKIS' && $compact($this->karyawan?->tipe_jkn) === 'NONKARY';
         $useTotalPpu = $compact($this->karyawan?->group_bp_jamsostek) === 'PPU' && $compact($this->karyawan?->tipe_bp_jamsostek) === 'NONKARY';
@@ -105,8 +108,8 @@ class PranotaBpjsDetail extends Model
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
             'pt' => $useTotalJkn || $useTotalPpu ? $nonKaryTotal : ($isUmkmNonPp ? $umkmCost : $cost),
             'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
-                + ($nonJamsostek ? $debt + $cost
-                + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0),
+                + ($isUmkmNonPp ? $umkmDebt : ($nonJamsostek ? $debt + $cost
+                + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0)),
             default => 0,
         };
     }

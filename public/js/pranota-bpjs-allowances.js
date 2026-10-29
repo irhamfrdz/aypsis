@@ -16,6 +16,7 @@
         const umkmCost = values.aggregate_jamsostek
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
+        const umkmDebt = values.aggregate_jamsostek ? n('jht_hutang') : n('noncrew_jht_hutang');
         const compact = value => String(value || '').toUpperCase().replace(/[\s_-]+/g, '');
         const useTotalJkn = compact(values.group_jkn) === 'JKNKIS' && compact(values.tipe_jkn) === 'NONKARY';
         const useTotalPpu = compact(values.group_bp_jamsostek) === 'PPU' && compact(values.tipe_bp_jamsostek) === 'NONKARY';
@@ -31,9 +32,9 @@
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
             pt: useTotalJkn || useTotalPpu ? nonKaryTotal : (isUmkmNonPp ? umkmCost : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
-                + (nonJamsostek ? employeeDebt + employerCost
+                + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
-                + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan') : 0),
+                + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan') : 0)),
         };
     }
 

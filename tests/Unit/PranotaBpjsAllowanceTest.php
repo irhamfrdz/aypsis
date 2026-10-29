@@ -8,6 +8,30 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_umkm_non_pp_non_employee_burden_uses_jht_debt(): void
+    {
+        $employee = new Karyawan;
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['jht_hutang' => 99999,
+            'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 70000.25, 'noncrew_jht_biaya' => 19000,
+                'noncrew_jkk_tunjangan' => 9500, 'noncrew_jkm_tunjangan' => 6800, 'jp_hutang' => 2000]),
+        ]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(70000.25, $detail->summaryBurden('non_kary'));
+            $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+        }
+        $employee->tipe_bp_jamsostek = 'NON KARY-UMKM';
+        $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+        $employee->tipe_bp_jamsostek = 'NON KARY-UMKM NON PP';
+        $detail->rincian_bpjs = null;
+        $detail->jht_hutang = 75000.5;
+        $this->assertSame(75000.5, $detail->summaryBurden('non_kary'));
+        $detail->tunjangan_manual = ['non_kary' => 0];
+        $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+    }
+
     public function test_umkm_non_pp_is_excluded_from_employee_jht_even_with_manual_amount(): void
     {
         $employee = new Karyawan;

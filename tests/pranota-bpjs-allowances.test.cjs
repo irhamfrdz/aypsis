@@ -2,13 +2,29 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('UMKM NON PP non employee burden takes only noncrew JHT debt for its Jamsostek membership', () => {
+    const values = { noncrew_jht_hutang: 70000.25, noncrew_jht_biaya: 19000,
+        noncrew_jkk_tunjangan: 9500, noncrew_jkm_tunjangan: 6800,
+        jht_hutang: 99999, jp_hutang: 2000, kis_tunjangan: 200000, bpjs_ketenagakerjaan: 50000 };
+    for (const type of ['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
+        assert.equal(result.non_kary, 70000.25);
+        assert.equal(result.kary_jht, 0);
+    }
+    for (const type of ['CREW', 'NON KARY-UMKM', 'NON KARY-UMKM PP']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type }).non_kary, 0);
+    }
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: 'NON KARY-UMKM NON PP',
+        aggregate_jamsostek: true, jht_hutang: 75000.5 }).non_kary, 75000.5);
+});
+
 test('NON KARY-UMKM NON PP is excluded from employee JHT while regular UMKM is still counted', () => {
     const values = { noncrew_jht_hutang: 70000, jp_hutang: 2000, bpjs_ketenagakerjaan: 50000 };
     for (const type of ['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP']) {
         const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
         assert.equal(result.kary_jht, 0);
         assert.equal(result.kary_jkn, 50000);
-        assert.equal(result.non_kary, 0);
+        assert.equal(result.non_kary, 70000);
         assert.equal(BpjsAllowances.effective(result, { kary_jht: 70000 }, ['kary_jht']).kary_jht, 0);
     }
     assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: 'NON KARY-UMKM' }).kary_jht, 72000);

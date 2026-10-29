@@ -5,6 +5,22 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('UMKM NON PP JHT debt updates the non employee burden on saved and edited rows', () => {
+    const fields = new Map([
+        ['.input-jht-hutang', { value: '70000.25' }], ['.select-tipe-jkn', { value: 'manual' }],
+        ['input[name$="[rincian_bpjs]"]', { value: JSON.stringify({ noncrew_jht_hutang: 70000.25 }) }],
+    ]);
+    const row = { dataset: { tipeJamsostek: 'NON KARY-UMKM NON PP' },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).non_kary;
+    assert.equal(calculate(), 70000.25);
+    fields.get('.input-jht-hutang').value = '75000.5';
+    assert.equal(calculate(), 75000.5);
+    row.dataset.tipeJamsostek = 'NON KARY-UMKM';
+    assert.equal(calculate(), 0);
+});
+
 test('refreshing a row from NON KARY to NON KARY-UMKM restores its employee JHT amount', () => {
     const fields = new Map([
         ['.input-noncrew-jht-hutang', { value: '36000.25' }],
