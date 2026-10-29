@@ -41,6 +41,19 @@ class PranotaBpjsDetail extends Model
         return (float) $this->bpjs_kesehatan - $this->kis_biaya;
     }
 
+    public function getTunjanganJknAttribute(): float
+    {
+        $type = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_jkn));
+        if ($type === 'NONKARY') {
+            return 0;
+        }
+        if (isset($this->tunjangan_manual['jkn'])) {
+            return (float) $this->tunjangan_manual['jkn'];
+        }
+
+        return $this->kis_tunjangan;
+    }
+
     public function getTunjanganPpuAttribute(): float
     {
         if (isset($this->tunjangan_manual['ppu'])) {

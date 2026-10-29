@@ -2,6 +2,20 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('JKN allowance excludes exact NON KARY JKN type while preserving the contribution and employer burden', () => {
+    const values = { group_jkn: 'JKN-KIS', kis_tunjangan: 286494, bpjs_ketenagakerjaan: 0 };
+    for (const type of ['NON KARY', ' non kary ', 'NON_KARY']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_jkn: type });
+        assert.equal(result.jkn, 0);
+        assert.equal(result.pt, 286494);
+        assert.equal(BpjsAllowances.effective(result, { jkn: 99999 }, ['jkn']).jkn, 0);
+    }
+    for (const type of ['KARYAWAN', 'NON KARY-UMKM', 'NON KARY-UMKM NON PP', '']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: type }).jkn, 286494);
+    }
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'KARYAWAN', tipe_bp_jamsostek: 'NON KARY' }).jkn, 286494);
+});
+
 test('UMKM NON PP non employee burden takes only noncrew JHT debt for its Jamsostek membership', () => {
     const values = { noncrew_jht_hutang: 70000.25, noncrew_jht_biaya: 19000,
         noncrew_jkk_tunjangan: 9500, noncrew_jkm_tunjangan: 6800,

@@ -8,6 +8,28 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_jkn_allowance_excludes_only_exact_non_kary_jkn_type(): void
+    {
+        $employee = new Karyawan;
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['tipe_karyawan' => Karyawan::class, 'bpjs_kesehatan' => 286494]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY', ' non kary ', 'NON_KARY'] as $type) {
+            $employee->tipe_jkn = $type;
+            $this->assertSame(0.0, $detail->tunjangan_jkn);
+            $this->assertSame(286494.0, $detail->kis_tunjangan);
+        }
+        $detail->tunjangan_manual = ['jkn' => 99999];
+        $this->assertSame(0.0, $detail->tunjangan_jkn);
+        $employee->tipe_jkn = 'KARYAWAN';
+        $this->assertSame(99999.0, $detail->tunjangan_jkn);
+        $detail->tunjangan_manual = null;
+        foreach (['KARYAWAN', 'NON KARY-UMKM', 'NON KARY-UMKM NON PP'] as $type) {
+            $employee->tipe_jkn = $type;
+            $this->assertSame(286494.0, $detail->tunjangan_jkn);
+        }
+    }
+
     public function test_umkm_non_pp_non_employee_burden_uses_jht_debt(): void
     {
         $employee = new Karyawan;

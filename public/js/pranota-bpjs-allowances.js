@@ -3,6 +3,8 @@
         .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
     const isEmployeeJhtExcluded = values => isBpuExcluded(values)
         || String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
+    const isJknExcluded = values => String(values.tipe_jkn || '').toUpperCase()
+        .replace(/[\s_-]+/g, '') === 'NONKARY';
 
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
@@ -27,7 +29,7 @@
             ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
             bpu: isUmkmNonPp ? 0 : (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
                 + (Number(values.noncrew_jkk_tunjangan) || 0) + (Number(values.noncrew_jkm_tunjangan) || 0),
-            jkn: Number(values.kis_tunjangan) || 0,
+            jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
             pt: useTotalJkn || useTotalPpu ? nonKaryTotal : (isUmkmNonPp ? umkmCost : employerCost),
@@ -99,6 +101,7 @@
         const excludedKeys = [];
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
+        if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);
         const cached = rowStates.get(row);
         if (cached?.signature === signature) return cached.amounts;
@@ -166,7 +169,8 @@
                 if (manual && index) input.name = `details[${index}][allowance_${key}]`;
                 else input.removeAttribute('name');
                 if (document.activeElement !== input) input.value = formatNumber(amount);
-                input.title = excluded ? 'Tidak dihitung untuk tipe BP Jamsostek ' + row.dataset.tipeJamsostek
+                input.title = excluded ? (key === 'jkn' ? 'Tidak dihitung untuk tipe JKN ' + row.dataset.tipeJkn
+                    : 'Tidak dihitung untuk tipe BP Jamsostek ' + row.dataset.tipeJamsostek)
                     : (manual ? 'Nominal manual' : 'Nominal otomatis sesuai rumus');
                 cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);
                 cell.querySelector('.bpjs-allowance-status').textContent = excluded ? 'Tidak dihitung' : (manual ? 'Diubah manual' : 'Sesuai rumus');
