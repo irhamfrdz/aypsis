@@ -1,6 +1,8 @@
 (function (root) {
     const isBpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
+    const isEmployeeJhtExcluded = values => isBpuExcluded(values)
+        || String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
 
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
@@ -25,7 +27,7 @@
             bpu: isUmkmNonPp ? 0 : (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
                 + (Number(values.noncrew_jkk_tunjangan) || 0) + (Number(values.noncrew_jkm_tunjangan) || 0),
             jkn: Number(values.kis_tunjangan) || 0,
-            kary_jht: nonJamsostek ? 0 : employeeDebt,
+            kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
             pt: useTotalJkn || useTotalPpu ? nonKaryTotal : (isUmkmNonPp ? umkmCost : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
@@ -93,10 +95,13 @@
             bpjs_ketenagakerjaan: read('.input-ket') });
         const index = select('.karyawan-hidden-input')?.name.match(/^details\[([^\]]+)\]/)?.[1];
         const excludedBpu = isBpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek });
-        const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedBpu]);
+        const excludedKeys = [];
+        if (excludedBpu) excludedKeys.push('bpu');
+        if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
+        const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);
         const cached = rowStates.get(row);
         if (cached?.signature === signature) return cached.amounts;
-        const amounts = effective(automaticAmounts, row.allowanceOverrides, excludedBpu ? ['bpu'] : []);
+        const amounts = effective(automaticAmounts, row.allowanceOverrides, excludedKeys);
         Object.entries(amounts).forEach(([key, amount]) => {
             const cell = select(`[data-allowance="${key}"]`);
             if (cell) {
@@ -154,13 +159,13 @@
                     });
                 }
                 input.dataset.automaticAmount = automaticAmounts[key];
-                const excluded = key === 'bpu' && excludedBpu;
+                const excluded = excludedKeys.includes(key);
                 const manual = !excluded && Object.hasOwn(row.allowanceOverrides, key);
                 input.disabled = excluded;
                 if (manual && index) input.name = `details[${index}][allowance_${key}]`;
                 else input.removeAttribute('name');
                 if (document.activeElement !== input) input.value = formatNumber(amount);
-                input.title = excluded ? 'Tidak dihitung untuk tipe NON KARY-UMKM non PP'
+                input.title = excluded ? 'Tidak dihitung untuk tipe BP Jamsostek ' + row.dataset.tipeJamsostek
                     : (manual ? 'Nominal manual' : 'Nominal otomatis sesuai rumus');
                 cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);
                 cell.querySelector('.bpjs-allowance-status').textContent = excluded ? 'Tidak dihitung' : (manual ? 'Diubah manual' : 'Sesuai rumus');

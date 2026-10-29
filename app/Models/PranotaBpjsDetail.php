@@ -76,6 +76,10 @@ class PranotaBpjsDetail extends Model
 
     public function summaryBurden(string $key): float
     {
+        $jamsostekType = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
+        if ($key === 'kary_jht' && in_array($jamsostekType, ['NONKARY', 'NONKARYUMKMNONPP'], true)) {
+            return 0;
+        }
         if (isset($this->tunjangan_manual[$key])) {
             return (float) $this->tunjangan_manual[$key];
         }

@@ -18,6 +18,12 @@ test('refreshing a row from NON KARY to NON KARY-UMKM restores its employee JHT 
     row.dataset.tipeJamsostek = 'NON KARY-UMKM';
     assert.equal(calculate().kary_jht, 36000.25);
     assert.equal(calculate().non_kary, 0);
+    row.allowanceOverrides = { kary_jht: 70000 };
+    row.dataset.tipeJamsostek = 'NON KARY-UMKM NON PP';
+    assert.equal(calculate().kary_jht, 0);
+    delete row.allowanceOverrides.kary_jht;
+    row.dataset.tipeJamsostek = 'NON KARY-UMKM';
+    assert.equal(calculate().kary_jht, 36000.25);
 });
 
 test('excluded BPU allowance shows zero, disables manual editing and omits its submitted name', () => {

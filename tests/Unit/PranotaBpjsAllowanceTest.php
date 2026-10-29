@@ -8,6 +8,28 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_umkm_non_pp_is_excluded_from_employee_jht_even_with_manual_amount(): void
+    {
+        $employee = new Karyawan;
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['bpjs_ketenagakerjaan' => 50000,
+            'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 70000, 'jp_hutang' => 2000]),
+        ]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+            $this->assertSame(50000.0, $detail->summaryBurden('kary_jkn'));
+        }
+        $detail->tunjangan_manual = ['kary_jht' => 70000];
+        $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+        $employee->tipe_bp_jamsostek = 'NON KARY';
+        $this->assertSame(0.0, $detail->summaryBurden('kary_jht'));
+        $detail->tunjangan_manual = null;
+        $employee->tipe_bp_jamsostek = 'NON KARY-UMKM';
+        $this->assertSame(72000.0, $detail->summaryBurden('kary_jht'));
+    }
+
     public function test_non_kary_umkm_is_distinct_from_exact_non_kary_for_employee_burdens(): void
     {
         $employee = new Karyawan;
@@ -16,7 +38,7 @@ class PranotaBpjsAllowanceTest extends TestCase
             'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 36000.25, 'jp_hutang' => 2000]),
         ]);
         $detail->setRelation('karyawan', $employee);
-        foreach (['NON KARY-UMKM', ' non kary - umkm ', 'NON_KARY_UMKM', 'NON KARY-UMKM non PP'] as $type) {
+        foreach (['NON KARY-UMKM', ' non kary - umkm ', 'NON_KARY_UMKM'] as $type) {
             $employee->tipe_bp_jamsostek = $type;
             $employee->tipe_jkn = $type;
             $this->assertSame(38000.25, $detail->summaryBurden('kary_jht'));
