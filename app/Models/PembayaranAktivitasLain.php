@@ -34,6 +34,7 @@ class PembayaranAktivitasLain extends Model
         'metode_pembayaran',
         'akun_coa_id',
         'akun_details',
+        'gunakan_debit_kredit_per_akun',
         'akun_bank_id',
         'akun_pph_id',
         'invoice_ids',
@@ -55,6 +56,7 @@ class PembayaranAktivitasLain extends Model
         'nomor_polisi_list' => 'array',
         'kendaraan_details' => 'array',
         'akun_details' => 'array',
+        'gunakan_debit_kredit_per_akun' => 'boolean',
         'approved_at' => 'datetime',
     ];
 

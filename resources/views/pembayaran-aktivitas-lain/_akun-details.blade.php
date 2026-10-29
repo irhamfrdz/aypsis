@@ -1,6 +1,8 @@
 @php
     $payment = $pembayaranAktivitasLain ?? null;
     $bankDirectionMode = $bankDirectionMode ?? false;
+    $allowPerAccountMode = $allowPerAccountMode ?? false;
+    $perAccountChecked = $allowPerAccountMode && (bool) old('gunakan_debit_kredit_per_akun', $payment?->gunakan_debit_kredit_per_akun);
     $detailRows = old('akun_details', $payment?->akun_details);
     if (empty($detailRows)) {
         $detailRows = [['akun_coa_id' => $payment?->akun_coa_id ?? '', 'nominal' => $payment?->jumlah ?? '']];
@@ -8,7 +10,7 @@
 @endphp
 <div id="akun_details_field" data-bank-direction-mode="{{ $bankDirectionMode ? 'true' : 'false' }}" class="md:col-span-2 {{ in_array(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? ''), ['Pembayaran Lain Lain', 'Pembayaran Kendaraan']) ? '' : 'hidden' }}">
     <label class="block text-sm font-medium text-gray-700 mb-2">Rincian Akun Biaya <span class="text-red-500">*</span></label>
-    @if($bankDirectionMode && $payment && collect($payment->akun_details ?? [])->contains(fn ($detail) => ($detail['debit_kredit'] ?? null) !== ($payment->debit_kredit === 'debit' ? 'kredit' : 'debit')))
+    @if($bankDirectionMode && ! $perAccountChecked && $payment && collect($payment->akun_details ?? [])->contains(fn ($detail) => ($detail['debit_kredit'] ?? null) !== ($payment->debit_kredit === 'debit' ? 'kredit' : 'debit')))
         <p class="mb-3 rounded-md border border-amber-300 bg-amber-50 px-3 py-2 text-xs text-amber-900">Rincian akun lama memiliki arah jurnal yang berbeda. Saat disimpan, arah semua akun akan mengikuti sisi berlawanan dari Bank/Kas dan total akan dihitung ulang.</p>
     @endif
     <div id="akun_details_rows" class="space-y-2">
@@ -22,13 +24,13 @@
                         @endforeach
                     </select>
                 </div>
-                @unless($bankDirectionMode)
-                    <select name="akun_details[{{ $index }}][debit_kredit]" aria-label="Debit atau kredit untuk akun {{ $index + 1 }}" class="akun-detail-direction w-32 px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(!in_array(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? ''), ['Pembayaran Lain Lain', 'Pembayaran Kendaraan']))>
+                @if(! $bankDirectionMode || $allowPerAccountMode)
+                    <select name="akun_details[{{ $index }}][debit_kredit]" aria-label="Debit atau kredit untuk akun {{ $index + 1 }}" class="akun-detail-direction w-32 px-3 py-2 border border-gray-300 rounded-md text-sm {{ $perAccountChecked ? '' : 'hidden' }}" @disabled(! $perAccountChecked)>
                         @php $direction = $detail['debit_kredit'] ?? ($payment?->debit_kredit === 'debit' ? 'kredit' : 'debit'); @endphp
                         <option value="debit" @selected($direction === 'debit')>Debit</option>
                         <option value="kredit" @selected($direction === 'kredit')>Kredit</option>
                     </select>
-                @endunless
+                @endif
                 <input type="number" name="akun_details[{{ $index }}][nominal]" value="{{ $detail['nominal'] ?? '' }}" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah untuk akun {{ $index + 1 }}" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" @disabled(!in_array(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? ''), ['Pembayaran Lain Lain', 'Pembayaran Kendaraan']))>
                 <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
                 <input type="text" name="akun_details[{{ $index }}][memo]" value="{{ $detail['memo'] ?? '' }}" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo untuk akun {{ $index + 1 }}" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm" @disabled(!in_array(old('jenis_aktivitas', $payment?->jenis_aktivitas ?? ''), ['Pembayaran Lain Lain', 'Pembayaran Kendaraan']))>
@@ -55,12 +57,12 @@
                 @endforeach
             </select>
         </div>
-        @unless($bankDirectionMode)
+        @if(! $bankDirectionMode || $allowPerAccountMode)
             <select name="akun_details[__INDEX__][debit_kredit]" aria-label="Debit atau kredit per akun" class="akun-detail-direction w-32 px-3 py-2 border border-gray-300 rounded-md text-sm" required>
                 <option value="debit">Debit</option>
                 <option value="kredit">Kredit</option>
             </select>
-        @endunless
+        @endif
         <input type="number" name="akun_details[__INDEX__][nominal]" min="1" step="1" placeholder="Jumlah (Rp)" aria-label="Jumlah rupiah per akun" class="akun-detail-nominal w-48 px-3 py-2 border border-gray-300 rounded-md text-sm text-right" required>
         <button type="button" class="remove-akun-detail px-3 py-2 text-red-700 border border-red-200 rounded-md text-sm">Hapus</button>
         <input type="text" name="akun_details[__INDEX__][memo]" maxlength="500" placeholder="Memo untuk akun ini (opsional)" aria-label="Memo per akun" class="akun-detail-memo w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
@@ -79,13 +81,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const bank = document.getElementById('akun_bank_select');
     const bankDirection = document.getElementById('debit_kredit');
     const bankDirectionMode = field.dataset.bankDirectionMode === 'true';
+    const perAccountCheckbox = document.getElementById('gunakan_debit_kredit_per_akun');
+    const isPerAccount = () => activity.value === 'Pembayaran Lain Lain' && perAccountCheckbox?.checked;
     let nextIndex = Math.max(-1, ...[...rows.querySelectorAll('.akun-detail-select')]
         .map(select => Number(select.name.match(/\[(\d+)\]/)?.[1] ?? -1))) + 1;
 
     const isVehicle = () => activity.value === 'Pembayaran Kendaraan';
     const isMulti = () => activity.value === 'Pembayaran Lain Lain' || isVehicle();
     const balance = () => [...rows.querySelectorAll('.akun-detail-row')]
-        .reduce((sum, row) => sum + (bankDirectionMode
+        .reduce((sum, row) => sum + (bankDirectionMode && !isPerAccount()
             ? (isVehicle() || bankDirection.value !== 'debit' ? 1 : -1)
             : (row.querySelector('.akun-detail-direction').value === 'debit' ? 1 : -1))
             * (Number(row.querySelector('.akun-detail-nominal').value) || 0), 0);
@@ -95,22 +99,24 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('akun_details_total_label').textContent = isVehicle() ? 'Total biaya' : 'Bank/Kas';
         document.getElementById('akun_details_help').textContent = isVehicle()
             ? 'Jumlah pembayaran dihitung dari total biaya per akun. Untuk KIR, total ini harus sama dengan total nominal kendaraan.'
+            : isPerAccount() ? 'Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.'
             : bankDirectionMode ? 'Arah akun biaya mengikuti sisi berlawanan dari Bank/Kas.'
                 : 'Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.';
         rows.querySelectorAll('.akun-detail-direction').forEach(select => {
             if (isVehicle()) select.value = 'debit';
-            select.classList.toggle('hidden', isVehicle());
+            select.classList.toggle('hidden', isVehicle() || (bankDirectionMode && !isPerAccount()));
         });
         rows.querySelectorAll('select, input').forEach(input => {
-            input.disabled = !active;
-            input.required = active && !input.classList.contains('akun-detail-memo');
+            const directionInactive = input.classList.contains('akun-detail-direction') && (isVehicle() || (bankDirectionMode && !isPerAccount()));
+            input.disabled = !active || directionInactive;
+            input.required = active && !directionInactive && !input.classList.contains('akun-detail-memo');
         });
         if (active) window.initializeAkunDetailSelects?.();
         single.disabled = active || (activity.value === 'Pembayaran Kendaraan' && document.getElementById('lokasi_kendaraan_select').value === 'batam');
         single.required = !single.disabled;
         document.getElementById('akun_coa_field').classList.toggle('hidden', single.disabled);
         const net = balance();
-        const bankLabel = bankDirectionMode && !isVehicle()
+        const bankLabel = bankDirectionMode && !isVehicle() && !isPerAccount()
             ? (bankDirection.value ? bankDirection.value.toUpperCase() + ' ' : 'Pilih arah: ')
             : (isVehicle() ? '' : net > 0 ? 'Kredit ' : net < 0 ? 'Debit ' : '');
         document.getElementById('akun_details_total').textContent = bankLabel + 'Rp ' + Math.abs(net).toLocaleString('id-ID');
@@ -145,12 +151,13 @@ document.addEventListener('DOMContentLoaded', () => {
         const details = [...rows.querySelectorAll('.akun-detail-row')];
         const ids = details.map(row => row.querySelector('.akun-detail-select').value);
         return details.length > 0 && ids.every(Boolean) && balance() !== 0
-            && (!bankDirectionMode || isVehicle() || ['debit', 'kredit'].includes(bankDirection.value))
+            && (!bankDirectionMode || isVehicle() || isPerAccount() || ['debit', 'kredit'].includes(bankDirection.value))
             && (bank.disabled || !ids.includes(bank.value))
             && details.every(row => {
                 const value = Number(row.querySelector('.akun-detail-nominal').value);
                 return Number.isSafeInteger(value) && value > 0
-                    && (bankDirectionMode ? true : isVehicle() ? row.querySelector('.akun-detail-direction').value === 'debit'
+                    && (isPerAccount() ? ['debit', 'kredit'].includes(row.querySelector('.akun-detail-direction').value)
+                        : bankDirectionMode ? true : isVehicle() ? row.querySelector('.akun-detail-direction').value === 'debit'
                         : ['debit', 'kredit'].includes(row.querySelector('.akun-detail-direction').value));
             });
     };
@@ -171,6 +178,7 @@ document.addEventListener('DOMContentLoaded', () => {
         update();
     });
     activity.addEventListener('change', update);
+    perAccountCheckbox?.addEventListener('change', update);
     bankDirection.addEventListener('change', update);
     document.getElementById('pembayaran_form').addEventListener('submit', update, true);
     update();

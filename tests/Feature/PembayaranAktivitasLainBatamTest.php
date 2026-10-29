@@ -60,6 +60,8 @@ class PembayaranAktivitasLainBatamTest extends TestCase
 
         $migration = require base_path('database/migrations/2026_10_17_000005_make_debit_kredit_nullable_for_batam_vehicle_payments.php');
         $migration->up();
+        $perAccountMigration = require base_path('database/migrations/2026_10_30_000001_add_debit_kredit_per_akun_to_pembayaran_aktivitas_lains_table.php');
+        $perAccountMigration->up();
 
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
@@ -259,6 +261,50 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $first, 'kredit' => 100]);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $second, 'kredit' => 200]);
         $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'debit' => 300]);
+    }
+
+    public function test_other_payment_can_use_account_directions_on_create_and_switch_back_on_edit(): void
+    {
+        $this->withoutMiddleware();
+
+        $first = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $second = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $bank = DB::table('akun_coa')->insertGetId(['saldo' => 1000]);
+        $payload = [
+            'tanggal' => '2026-10-30',
+            'jenis_aktivitas' => 'Pembayaran Lain Lain',
+            'penerima' => 'Penerima',
+            'keterangan' => 'Biaya dan koreksi',
+            'akun_bank_id' => $bank,
+            'gunakan_debit_kredit_per_akun' => 1,
+            'akun_details' => [
+                ['akun_coa_id' => $first, 'debit_kredit' => 'debit', 'nominal' => 100],
+                ['akun_coa_id' => $second, 'debit_kredit' => 'kredit', 'nominal' => 30],
+            ],
+        ];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertTrue($payment->gunakan_debit_kredit_per_akun);
+        $this->assertSame(70, $payment->jumlah);
+        $this->assertSame('kredit', $payment->debit_kredit);
+        $this->assertSame(['debit', 'kredit'], array_column($payment->akun_details, 'debit_kredit'));
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'kredit' => 70]);
+
+        $payload['gunakan_debit_kredit_per_akun'] = 0;
+        $payload['debit_kredit'] = 'debit';
+        app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment
+        );
+
+        $payment->refresh();
+        $this->assertFalse($payment->gunakan_debit_kredit_per_akun);
+        $this->assertSame(130, $payment->jumlah);
+        $this->assertSame(['kredit', 'kredit'], array_column($payment->akun_details, 'debit_kredit'));
+        $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => $payment->nomor, 'coa_id' => $bank, 'debit' => 130]);
     }
 
     public function test_changing_vehicle_payment_to_batam_reverses_existing_journal(): void

@@ -370,7 +370,15 @@
                 </div>
 
                 <!-- Rincian biaya per akun -->
-                @include('pembayaran-aktivitas-lain._akun-details', ['bankDirectionMode' => true])
+                <div id="debit_kredit_per_akun_field" class="md:col-span-2 {{ old('jenis_aktivitas') === 'Pembayaran Lain Lain' ? '' : 'hidden' }}">
+                    <input type="hidden" name="gunakan_debit_kredit_per_akun" value="0">
+                    <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                        <input type="checkbox" id="gunakan_debit_kredit_per_akun" name="gunakan_debit_kredit_per_akun" value="1" @checked(old('gunakan_debit_kredit_per_akun')) class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        Gunakan debit/kredit per akun
+                    </label>
+                    <p class="mt-1 text-xs text-gray-500">Tentukan debit atau kredit pada setiap akun. Arah dan jumlah Bank/Kas dihitung dari selisihnya.</p>
+                </div>
+                @include('pembayaran-aktivitas-lain._akun-details', ['bankDirectionMode' => true, 'allowPerAccountMode' => true])
 
                 <!-- Akun Bank -->
                 <div id="akun_bank_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
@@ -1373,12 +1381,15 @@ function initializeSelect2() {
         const isBatamVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan'
             && document.getElementById('lokasi_kendaraan_select').value === 'batam';
         const isMultiAccount = ['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas.value);
+        document.getElementById('debit_kredit_per_akun_field').classList.toggle('hidden', jenisAktivitas.value !== 'Pembayaran Lain Lain');
         [
             ['debit_kredit_field', debitKreditSelect],
             ['akun_coa_field', akunBiayaSelect],
             ['akun_bank_field', akunBankSelect]
         ].forEach(([fieldId, select]) => {
             const hidden = isBatamVehicle || (isMultiAccount && fieldId === 'akun_coa_field')
+                || (jenisAktivitas.value === 'Pembayaran Lain Lain' && fieldId === 'debit_kredit_field'
+                    && document.getElementById('gunakan_debit_kredit_per_akun').checked)
                 || (jenisAktivitas.value === 'Pembayaran Kendaraan' && fieldId === 'debit_kredit_field');
             document.getElementById(fieldId).classList.toggle('hidden', hidden);
             select.required = !hidden;
@@ -1389,6 +1400,7 @@ function initializeSelect2() {
         else updateJournalPreview();
     }
     jenisAktivitas.addEventListener('change', toggleDoubleBookFields);
+    document.getElementById('gunakan_debit_kredit_per_akun').addEventListener('change', toggleDoubleBookFields);
     document.getElementById('lokasi_kendaraan_select').addEventListener('change', toggleDoubleBookFields);
     toggleDoubleBookFields();
     
@@ -1526,7 +1538,8 @@ function initializeSelect2() {
         
         const jenisAktivitas = document.getElementById('jenis_aktivitas').value;
         if (jenisAktivitas !== 'Pembayaran Kendaraan' || document.getElementById('lokasi_kendaraan_select').value !== 'batam') {
-            if (jenisAktivitas !== 'Pembayaran Kendaraan') requiredFields.push({ id: 'debit_kredit', name: 'Debit/Kredit Bank/Kas' });
+            if (jenisAktivitas !== 'Pembayaran Kendaraan'
+                && !(jenisAktivitas === 'Pembayaran Lain Lain' && document.getElementById('gunakan_debit_kredit_per_akun').checked)) requiredFields.push({ id: 'debit_kredit', name: 'Debit/Kredit Bank/Kas' });
             if (!['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas)) requiredFields.push({ id: 'akun_coa_select', name: 'Akun Biaya' });
             requiredFields.push({ id: 'akun_bank_select', name: 'Bank/Kas' });
         }
