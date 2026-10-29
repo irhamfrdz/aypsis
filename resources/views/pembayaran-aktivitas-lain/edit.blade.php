@@ -345,15 +345,17 @@
                     @enderror
                     <p id="pph_nominal_error" class="hidden text-red-500 text-xs mt-1">Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.</p>
                     <div id="akun_pph_field" class="mt-3 {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' && (float) old('pph_persen', $pembayaranAktivitasLain->pph_persen) > 0 ? '' : 'hidden' }}">
-                        <label for="akun_pph_select" class="block text-gray-700 mb-2">Akun PPh <span class="text-red-500">*</span></label>
-                        <select name="akun_pph_id" id="akun_pph_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_pph_id') border-red-500 @enderror">
-                            <option value="">Pilih akun PPh</option>
+                        <label for="akun_pph_select" class="block text-gray-700 mb-2">Akun Utang Pajak PPh 21 (otomatis)</label>
+                        <select id="akun_pph_select" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 @error('akun_pph_id') border-red-500 @enderror">
+                            @if($akunPph->isEmpty())<option value="">Akun 2102.003 tidak ditemukan</option>@endif
                             @foreach($akunPph as $akun)
-                                <option value="{{ $akun->id }}" {{ old('akun_pph_id', $pembayaranAktivitasLain->akun_pph_id) == $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                                <option value="{{ $akun->id }}" selected>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
                             @endforeach
                         </select>
+                        <p class="text-xs text-gray-500 mt-1">Nominal PPh dicatat otomatis sebagai kredit pada akun ini.</p>
                         @error('akun_pph_id')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     </div>
+                    <div id="pph_account_amount_row" class="mt-2 flex justify-between text-blue-900 hidden"><span>Utang Pajak PPh 21</span><span id="pph_account_amount">Rp 0</span></div>
                     <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
                 </div>
 
@@ -659,12 +661,6 @@ function initializeSelect2() {
         width: '100%'
     });
 
-    $('#akun_pph_select').select2({
-        placeholder: "Pilih Akun PPh",
-        allowClear: true,
-        width: '100%'
-    });
-
     $('#penerima_dropdown').select2({
         placeholder: "Pilih dari Karyawan",
         allowClear: true,
@@ -741,8 +737,8 @@ function initializeSelect2() {
         const hasRate = isVehicle && pphSelect.value !== '';
         const canEdit = hasRate && Number(pphSelect.value) > 0;
         akunPphField.classList.toggle('hidden', !canEdit);
-        akunPphSelect.disabled = !canEdit;
-        akunPphSelect.required = canEdit;
+        akunPphSelect.disabled = true;
+        document.getElementById('pph_account_amount_row').classList.toggle('hidden', !canEdit);
         pphInput.disabled = !canEdit;
         pphInput.required = canEdit;
         pphAutoButton.disabled = !canEdit;
@@ -762,16 +758,19 @@ function initializeSelect2() {
             pphManualInput.value = '0';
         }
         if (pphInput.value === '') {
+            document.getElementById('pph_account_amount').textContent = 'Rp 0';
             document.getElementById('grand_total_display').textContent = '-';
             return;
         }
         const pphNominal = Number(pphInput.value);
         if (!Number.isInteger(pphNominal) || pphNominal < 0 || pphNominal > jumlah) {
+            document.getElementById('pph_account_amount').textContent = 'Rp 0';
             pphInput.setCustomValidity('Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.');
             pphError.classList.remove('hidden');
             document.getElementById('grand_total_display').textContent = '-';
             return;
         }
+        document.getElementById('pph_account_amount').textContent = 'Rp ' + pphNominal.toLocaleString('id-ID');
         document.getElementById('grand_total_display').textContent = 'Rp ' + (jumlah - pphNominal).toLocaleString('id-ID');
     }
     jumlahDisplay.addEventListener('input', () => updatePphSummary(true));

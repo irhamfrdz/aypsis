@@ -260,7 +260,7 @@ class PembayaranAktivitasLainController extends Controller
             ->sortBy('no_surat_jalan')
             ->values();
 
-        $akunPph = DB::table('akun_coa')->orderBy('nomor_akun')->get();
+        $akunPph = DB::table('akun_coa')->where('nomor_akun', '2102.003')->get();
 
         return view('pembayaran-aktivitas-lain.create', compact('nomor', 'akunBiaya', 'akunBank', 'akunPph', 'mobils', 'voyages', 'karyawans', 'suratJalans'));
     }
@@ -383,6 +383,7 @@ class PembayaranAktivitasLainController extends Controller
 
     public function store(Request $request)
     {
+        $this->setVehiclePphAccount($request);
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
         $isVehiclePayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan';
         $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'
@@ -537,6 +538,20 @@ class PembayaranAktivitasLainController extends Controller
         }
 
         return back()->withInput()->with('error', 'Gagal menyimpan data: tidak dapat menghasilkan nomor unik setelah beberapa percobaan.');
+    }
+
+    private function setVehiclePphAccount(Request $request): void
+    {
+        if ($request->input('jenis_aktivitas') !== 'Pembayaran Kendaraan' || (float) $request->input('pph_persen') <= 0) {
+            return;
+        }
+
+        $accountId = DB::table('akun_coa')->where('nomor_akun', '2102.003')->value('id');
+        if (! $accountId) {
+            throw ValidationException::withMessages(['akun_pph_id' => 'Akun Utang Pajak PPh 21 (2102.003) tidak ditemukan.']);
+        }
+
+        $request->merge(['akun_pph_id' => $accountId]);
     }
 
     /**
@@ -901,7 +916,7 @@ class PembayaranAktivitasLainController extends Controller
             ->sortBy('no_surat_jalan')
             ->values();
 
-        $akunPph = DB::table('akun_coa')->orderBy('nomor_akun')->get();
+        $akunPph = DB::table('akun_coa')->where('nomor_akun', '2102.003')->get();
 
         return view('pembayaran-aktivitas-lain.edit', compact(
             'pembayaranAktivitasLain',
@@ -917,6 +932,7 @@ class PembayaranAktivitasLainController extends Controller
 
     public function update(Request $request, PembayaranAktivitasLain $pembayaranAktivitasLain)
     {
+        $this->setVehiclePphAccount($request);
         $requiresDoubleBook = PembayaranAktivitasLain::requiresDoubleBook($request->input('jenis_aktivitas'), $request->input('lokasi'));
         $isVehiclePayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan';
         $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'

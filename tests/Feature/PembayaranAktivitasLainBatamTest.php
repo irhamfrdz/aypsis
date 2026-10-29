@@ -361,7 +361,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(3, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
     }
 
-    public function test_selected_pph_account_is_saved_and_used_for_journal(): void
+    public function test_vehicle_pph_automatically_uses_tax_payable_account(): void
     {
         $this->withoutMiddleware();
 
@@ -375,19 +375,16 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         ];
         unset($payload['akun_pph_id']);
         $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
-            ->assertSessionHasErrors('akun_pph_id');
-        $this->assertSame(0, PembayaranAktivitasLain::count());
-        $payload['akun_pph_id'] = $customTaxId;
-
-        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
             ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
 
         $payment = PembayaranAktivitasLain::firstOrFail();
-        $this->assertSame($customTaxId, $payment->akun_pph_id);
-        $this->assertEquals(2, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $customTaxId)->value('kredit'));
-        $this->assertEquals(0, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
+        $this->assertSame($this->taxAccountId, $payment->akun_pph_id);
+        $this->assertEquals(2, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $this->taxAccountId)->value('kredit'));
+        $this->assertEquals(0, DB::table('akun_coa')->find($customTaxId)->saldo);
 
-        $payload['akun_pph_id'] = $this->taxAccountId;
+        $payload['akun_pph_id'] = $customTaxId;
+        $payload['pph_manual'] = '1';
+        $payload['pph_nominal'] = 3;
         app(PembayaranAktivitasLainController::class)->update(
             Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
             $payment
@@ -395,7 +392,7 @@ class PembayaranAktivitasLainBatamTest extends TestCase
 
         $this->assertSame($this->taxAccountId, $payment->fresh()->akun_pph_id);
         $this->assertEquals(0, DB::table('akun_coa')->find($customTaxId)->saldo);
-        $this->assertEquals(-2, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
+        $this->assertEquals(-3, DB::table('akun_coa')->find($this->taxAccountId)->saldo);
     }
 
     public function test_vehicle_payment_saves_costs_and_memos_per_account_with_pph_journal(): void
