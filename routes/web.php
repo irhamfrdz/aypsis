@@ -7502,6 +7502,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::post('approval-tanda-terima-2/{sourceType}/{id}/export', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'export'])
         ->name('approval-tanda-terima-2.export')
         ->middleware('can:approval-tanda-terima-2-approve');
+    Route::post('approval-tanda-terima-2/{sourceType}/export-bulk', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'exportBulk'])
+        ->name('approval-tanda-terima-2.export-bulk')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
         ->middleware('can:approval-tanda-terima-2-approve');

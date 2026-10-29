@@ -208,6 +208,50 @@ class ApprovalTandaTerimaDuaController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    public function exportBulk(Request $request, string $sourceType, ApprovalTandaTerimaDuaExcelService $excel): BinaryFileResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+        ]);
+        $ids = array_map('intval', $validated['ids']);
+        $query = self::SOURCES[$sourceType]::with('shipperJb')->whereKey($ids);
+        if ($sourceType === 'lcl') {
+            $query->with('items', 'kontainerPivot');
+        } elseif ($sourceType === 'ttsj') {
+            $query->with('dimensiItems');
+        }
+        $receipts = $query->get()->keyBy('id');
+        abort_if($receipts->count() !== count($ids), 404);
+        $overrides = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)
+            ->whereIn('source_id', $ids)->get()->keyBy('source_id');
+        $entries = array_map(fn ($id) => [
+            'receipt' => $receipts->get($id),
+            'override' => $overrides->get($id),
+        ], $ids);
+        $path = $excel->createMany($sourceType, $entries);
+
+        $now = now();
+        try {
+            DB::table('approval_tanda_terima_2_exports')->upsert(array_map(fn ($id) => [
+                'source_type' => $sourceType,
+                'source_id' => $id,
+                'exported_by' => auth()->id(),
+                'exported_at' => $now,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ], $ids), ['source_type', 'source_id'], ['exported_by', 'exported_at', 'updated_at']);
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        }
+
+        return response()->download($path, 'Manifest_Bulk_'.now()->format('Ymd_His').'.xlsx', [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
+    }
+
     public function setIncomplete(Request $request, string $sourceType, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);

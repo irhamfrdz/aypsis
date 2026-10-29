@@ -125,6 +125,26 @@
 (() => {
     'use strict';
 
+    const bulkForm = document.getElementById('approval-bulk-export-form');
+    const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
+    const selectAll = document.getElementById('approval-select-all');
+    function updateBulkSelection() {
+        if (!bulkForm) return;
+        const count = bulkCheckboxes.filter(checkbox => checkbox.checked).length;
+        bulkForm.querySelector('button').disabled = count === 0;
+        bulkForm.querySelector('button span').textContent = `Export Pilihan (${count})`;
+        if (selectAll) {
+            selectAll.checked = bulkCheckboxes.length > 0 && count === bulkCheckboxes.length;
+            selectAll.indeterminate = count > 0 && count < bulkCheckboxes.length;
+        }
+    }
+    selectAll?.addEventListener('change', () => {
+        bulkCheckboxes.forEach(checkbox => { checkbox.checked = selectAll.checked; });
+        updateBulkSelection();
+    });
+    bulkCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBulkSelection));
+    updateBulkSelection();
+
     document.querySelectorAll('.approval-export-form').forEach(form => {
         form.addEventListener('submit', async event => {
             event.preventDefault();
@@ -154,15 +174,23 @@
                 link.remove();
                 setTimeout(() => URL.revokeObjectURL(url), 1000);
 
-                label.textContent = 'Export Lagi';
-                button.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800', 'hover:bg-emerald-100');
-                button.classList.add('border-green-500', 'bg-green-300', 'text-green-950', 'hover:bg-green-400');
-                const row = form.closest('tr');
-                row.classList.remove('bg-yellow-100', 'hover:bg-yellow-100', 'hover:bg-gray-50/70');
-                row.classList.add('bg-green-100', 'hover:bg-green-100');
-                const actionCell = form.closest('td');
-                actionCell.classList.remove('bg-yellow-200');
-                actionCell.classList.add('bg-green-200');
+                const rows = form === bulkForm
+                    ? bulkCheckboxes.filter(checkbox => checkbox.checked).map(checkbox => checkbox.closest('tr'))
+                    : [form.closest('tr')];
+                rows.forEach(row => {
+                    row.classList.remove('bg-yellow-100', 'hover:bg-yellow-100', 'hover:bg-gray-50/70');
+                    row.classList.add('bg-green-100', 'hover:bg-green-100');
+                    const actionCell = row.querySelector('td:last-child');
+                    actionCell.classList.remove('bg-yellow-200');
+                    actionCell.classList.add('bg-green-200');
+                    const rowButton = row.querySelector('.approval-export-button');
+                    if (rowButton) {
+                        rowButton.querySelector('span').textContent = 'Export Lagi';
+                        rowButton.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800', 'hover:bg-emerald-100');
+                        rowButton.classList.add('border-green-500', 'bg-green-300', 'text-green-950', 'hover:bg-green-400');
+                    }
+                });
+                if (form === bulkForm) updateBulkSelection();
             } catch (error) {
                 label.textContent = previousLabel;
                 alert(error.message || 'Export Excel gagal. Coba lagi.');

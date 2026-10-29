@@ -133,12 +133,25 @@
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-5 py-4">
             <h2 class="font-semibold text-gray-900">Daftar Tanda Terima</h2>
-            <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
+            <div class="flex flex-wrap items-center gap-3">
+                @can('approval-tanda-terima-2-approve')
+                    <form id="approval-bulk-export-form" method="POST" action="{{ route('approval-tanda-terima-2.export-bulk', ['sourceType' => $type]) }}" class="approval-export-form">
+                        @csrf
+                        <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                            <i class="fas fa-file-excel" aria-hidden="true"></i><span>Export Pilihan (0)</span>
+                        </button>
+                    </form>
+                @endcan
+                <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
+            </div>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-[1000px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
+                        @can('approval-tanda-terima-2-approve')
+                            <th scope="col" class="px-5 py-3"><input id="approval-select-all" type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih semua tanda terima di halaman ini"></th>
+                        @endcan
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
@@ -179,6 +192,9 @@
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
                         <tr class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
+                            @can('approval-tanda-terima-2-approve')
+                                <td class="px-5 py-4"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
+                            @endcan
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
@@ -316,7 +332,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="6" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 7 : 6 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>

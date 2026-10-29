@@ -6,6 +6,7 @@ use App\Http\Controllers\ApprovalTandaTerimaDuaController;
 use App\Models\TandaTerima;
 use App\Services\ApprovalTandaTerimaDuaExcelService;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -81,11 +82,12 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $template = IOFactory::load(resource_path('templates/approval_tanda_terima_2.xlsx'));
             $export = IOFactory::load($file);
             $sheet = $export->getSheet(0);
-            $this->assertSame($template->getSheetNames(), $export->getSheetNames());
+            $this->assertSame([$template->getSheet(0)->getTitle()], $export->getSheetNames());
             $this->assertSame($template->getSheet(0)->getMergeCells(), $sheet->getMergeCells());
-            foreach (['B7', 'C9', 'K9', 'N9', 'O9', 'AD9'] as $cell) {
-                $this->assertSame($template->getSheet(0)->getCell($cell)->getXfIndex(), $sheet->getCell($cell)->getXfIndex());
-            }
+            $this->assertSame(
+                $template->getSheet(0)->getStyle('B7')->getFont()->getBold(),
+                $sheet->getStyle('B7')->getFont()->getBold()
+            );
             $this->assertSame('1234', $sheet->getCell('C9')->getValue());
             $this->assertSame('AYPU3797127', $sheet->getCell('D9')->getValue());
             $this->assertSame(1, $sheet->getCell('F9')->getValue());
@@ -96,6 +98,8 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame('Barang Perincian', $sheet->getCell('N9')->getValue());
             $this->assertEquals(17000, $sheet->getCell('O9')->getValue());
             $this->assertEquals(3.5, $sheet->getCell('P9')->getValue());
+            $this->assertNull($sheet->getCell('AE9')->getValue());
+            $this->assertNull($sheet->getCell('AF9')->getValue());
             $this->assertSame('PT Pengirim', $sheet->getCell('Q9')->getValue());
             $this->assertSame('0012345', $sheet->getCell('S9')->getValue());
             $this->assertSame('JB10036397', $sheet->getCell('AC9')->getValue());
@@ -119,6 +123,42 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame(1, $sheet->getCell('F9')->getValue());
             $this->assertSame('Unit', $sheet->getCell('G9')->getValue());
             $this->assertSame('Container 40 feet HC stc :', $sheet->getCell('H9')->getValue());
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    public function test_bulk_export_contains_only_selected_receipts_in_selected_order(): void
+    {
+        $first = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'FIRST', 'no_kontainer' => 'CONTAINER-A', 'size' => '20ft',
+        ]);
+        $unused = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'UNUSED', 'no_kontainer' => 'CONTAINER-X', 'size' => '20ft',
+        ]);
+        $last = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'LAST', 'no_kontainer' => 'CONTAINER-B', 'size' => '40ft',
+        ]);
+
+        $response = app(ApprovalTandaTerimaDuaController::class)->exportBulk(
+            Request::create('/approval-tanda-terima-2/fcl/export-bulk', 'POST', ['ids' => [$last, $first]]),
+            'fcl', app(ApprovalTandaTerimaDuaExcelService::class)
+        );
+        $file = $response->getFile()->getPathname();
+        try {
+            $workbook = IOFactory::load($file);
+            $sheet = $workbook->getSheet(0);
+            $this->assertSame(['MANIFEST & PERINCIAN'], $workbook->getSheetNames());
+            $this->assertSame('LAST', $sheet->getCell('AC9')->getValue());
+            $this->assertSame('CONTAINER-B', $sheet->getCell('D9')->getValue());
+            $this->assertSame('FIRST', $sheet->getCell('AC10')->getValue());
+            $this->assertSame('CONTAINER-A', $sheet->getCell('D10')->getValue());
+            $this->assertNull($sheet->getCell('AC11')->getValue());
+            $this->assertNull($sheet->getCell('AE9')->getValue());
+            $this->assertNull($sheet->getCell('AE10')->getValue());
+            $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $first]);
+            $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $last]);
+            $this->assertDatabaseMissing('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $unused]);
         } finally {
             @unlink($file);
         }

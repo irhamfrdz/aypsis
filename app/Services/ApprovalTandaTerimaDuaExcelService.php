@@ -14,9 +14,36 @@ class ApprovalTandaTerimaDuaExcelService
 {
     public function create(string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override = null): string
     {
+        return $this->createMany($sourceType, [['receipt' => $receipt, 'override' => $override]]);
+    }
+
+    public function createMany(string $sourceType, array $entries): string
+    {
         $template = resource_path('templates/approval_tanda_terima_2.xlsx');
         $workbook = IOFactory::load($template);
         $sheet = $workbook->getSheet(0);
+        foreach ($entries as $index => $entry) {
+            $this->fillRow($sheet, 9 + $index, $sourceType, $entry['receipt'], $entry['override'] ?? null);
+        }
+        while ($workbook->getSheetCount() > 1) {
+            $workbook->removeSheetByIndex(1);
+        }
+
+        $path = tempnam(sys_get_temp_dir(), 'approval_tt2_');
+        try {
+            (new Xlsx($workbook))->save($path);
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        } finally {
+            $workbook->disconnectWorksheets();
+        }
+
+        return $path;
+    }
+
+    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override): void
+    {
         $sourceGood = $this->sourceGood($sourceType, $receipt);
         $manifestGood = $override?->manifest_goods[0] ?? $sourceGood;
         $perincianGood = $override?->goods[0] ?? $sourceGood;
@@ -34,71 +61,52 @@ class ApprovalTandaTerimaDuaExcelService
 
         // Sheet 1 has container details (F:H), manifest goods (I:K), and perincian goods (L:N).
         $textCells = [
-            'C9' => data_get($manifestGood, 'hs_code'),
-            'D9' => $container,
-            'E9' => $seal,
-            'G9' => 'Unit',
-            'H9' => $this->containerDescription($sourceType, $receipt),
-            'J9' => data_get($manifestGood, 'satuan'),
-            'K9' => data_get($manifestGood, 'nama_barang'),
-            'M9' => data_get($perincianGood, 'satuan'),
-            'N9' => data_get($perincianGood, 'nama_barang'),
-            'Q9' => $shipper?->shipper ?: $sender,
-            'R9' => $shipper?->alamat_shipper ?: $receipt->alamat_pengirim,
-            'S9' => $shipper?->npwp_shipper,
-            'T9' => $shipper?->consignee ?: $receiver,
-            'U9' => $shipper?->alamat_consignee ?: $receipt->alamat_penerima,
-            'V9' => $shipper?->npwp_consignee,
-            'W9' => $shipper?->notify_party_consignee ?: $receipt->notify_party,
-            'X9' => $shipper?->alamat_notify_party_consignee ?: $receipt->alamat_notify_party,
-            'Y9' => $shipper?->npwp_notify_party_consignee,
-            'Z9' => $shipper?->delivery_address_contact_person,
-            'AA9' => $shipper?->document_ppftz_03,
-            'AB9' => $shipper?->condition,
-            'AC9' => $number,
-            'AG9' => $receipt->tipe_kontainer ?: ($receipt->size_kontainer ?: $receipt->size),
+            'C' => data_get($manifestGood, 'hs_code'),
+            'D' => $container,
+            'E' => $seal,
+            'G' => 'Unit',
+            'H' => $this->containerDescription($sourceType, $receipt),
+            'J' => data_get($manifestGood, 'satuan'),
+            'K' => data_get($manifestGood, 'nama_barang'),
+            'M' => data_get($perincianGood, 'satuan'),
+            'N' => data_get($perincianGood, 'nama_barang'),
+            'Q' => $shipper?->shipper ?: $sender,
+            'R' => $shipper?->alamat_shipper ?: $receipt->alamat_pengirim,
+            'S' => $shipper?->npwp_shipper,
+            'T' => $shipper?->consignee ?: $receiver,
+            'U' => $shipper?->alamat_consignee ?: $receipt->alamat_penerima,
+            'V' => $shipper?->npwp_consignee,
+            'W' => $shipper?->notify_party_consignee ?: $receipt->notify_party,
+            'X' => $shipper?->alamat_notify_party_consignee ?: $receipt->alamat_notify_party,
+            'Y' => $shipper?->npwp_notify_party_consignee,
+            'Z' => $shipper?->delivery_address_contact_person,
+            'AA' => $shipper?->document_ppftz_03,
+            'AB' => $shipper?->condition,
+            'AC' => $number,
+            'AG' => $receipt->tipe_kontainer ?: ($receipt->size_kontainer ?: $receipt->size),
         ];
-        foreach ($textCells as $cell => $value) {
+        foreach ($textCells as $column => $value) {
             if (filled($value)) {
-                $sheet->setCellValueExplicit($cell, (string) $value, DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
             }
         }
 
-        foreach (['F9' => 1, 'I9' => data_get($manifestGood, 'jumlah'), 'L9' => data_get($perincianGood, 'jumlah')] as $cell => $value) {
+        foreach (['F' => 1, 'I' => data_get($manifestGood, 'jumlah'), 'L' => data_get($perincianGood, 'jumlah')] as $column => $value) {
             if (is_numeric($value)) {
-                $sheet->setCellValue($cell, (int) $value);
+                $sheet->setCellValue($column.$row, (int) $value);
             }
         }
         $weight = $this->indonesianNumber(data_get($manifestGood, 'tonase'));
         $measure = $this->indonesianNumber(data_get($manifestGood, 'meter_kubik'));
         if ($weight !== null) {
-            $sheet->setCellValue('O9', $weight);
+            $sheet->setCellValue('O'.$row, $weight);
         }
         if ($measure !== null) {
-            $sheet->setCellValue('P9', $measure);
+            $sheet->setCellValue('P'.$row, $measure);
         }
         if ($date) {
-            $sheet->setCellValue('AD9', ExcelDate::PHPToExcel(Carbon::parse($date)));
+            $sheet->setCellValue('AD'.$row, ExcelDate::PHPToExcel(Carbon::parse($date)));
         }
-        if ($measure !== null) {
-            $sheet->setCellValue('AE9', $measure);
-            $sheet->setCellValueExplicit('AF9', 'M3', DataType::TYPE_STRING);
-        } elseif ($weight !== null) {
-            $sheet->setCellValue('AE9', $weight);
-            $sheet->setCellValueExplicit('AF9', 'KGS', DataType::TYPE_STRING);
-        }
-
-        $path = tempnam(sys_get_temp_dir(), 'approval_tt2_');
-        try {
-            (new Xlsx($workbook))->save($path);
-        } catch (\Throwable $exception) {
-            @unlink($path);
-            throw $exception;
-        } finally {
-            $workbook->disconnectWorksheets();
-        }
-
-        return $path;
     }
 
     private function sourceGood(string $sourceType, Model $receipt): array
