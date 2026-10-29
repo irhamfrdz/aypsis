@@ -20,9 +20,6 @@
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = isBpuExcluded(values);
-        const umkmCost = values.aggregate_jamsostek
-            ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
-            : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
         const umkmDebt = values.aggregate_jamsostek ? n('jht_hutang') : n('noncrew_jht_hutang');
         const useTotalPpu = usesNonKaryPpuTotal(values);
         const ppuTotal = n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
@@ -34,7 +31,7 @@
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: useTotalPpu ? ppuTotal : (isUmkmNonPp ? umkmCost : employerCost),
+            pt: isUmkmNonPp ? 0 : (useTotalPpu ? ppuTotal : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -103,6 +100,7 @@
         const excludedKeys = [];
         if (isPpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('ppu');
         if (excludedBpu) excludedKeys.push('bpu');
+        if (excludedBpu) excludedKeys.push('pt');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);

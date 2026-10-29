@@ -256,7 +256,7 @@ test('displayed group totals refresh on edits and never become submitted input f
     assert.equal(fields.get('.row-total-ppu').name, undefined);
 });
 
-test('UMKM Non PP edit rows use saved noncrew components and recalculate changed aggregates', () => {
+test('UMKM Non PP edit rows exclude employer burden with saved or edited aggregates', () => {
     const fields = new Map([
         ['.input-jht-biaya', { value: '19000' }], ['.input-jkk', { value: '9500.25' }],
         ['.input-jkm', { value: '6800' }], ['.select-tipe-jkn', { value: 'manual' }],
@@ -267,9 +267,9 @@ test('UMKM Non PP edit rows use saved noncrew components and recalculate changed
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
-    assert.equal(calculate(), 35300.25);
+    assert.equal(calculate(), 0);
     fields.get('.input-jkk').value = '10000';
-    assert.equal(calculate(), 35800);
+    assert.equal(calculate(), 0);
     fields.delete('input[name$="[rincian_bpjs]"]');
     row.dataset.tipeJamsostek = 'PPU';
     assert.equal(calculate(), 19000);
@@ -385,4 +385,37 @@ test('264 unchanged rows skip all 1848 editor writes; edits, manual zero, and fi
     } finally {
         globalThis.document = previousDocument;
     }
+});
+
+test('UMKM Non PP employer burden ignores saved manual amounts and restores other memberships', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { activeElement: null };
+    const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
+    const status = {}, editor = { dataset: {} }, reset = {};
+    const fields = new Map([
+        ['.input-jht-biaya', { value: '19000' }],
+        ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
+        ['[data-allowance="pt"]', { querySelector: selector => ({ input,
+            '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
+    ]);
+    const row = { dataset: { groupJamsostek: 'CILANDAK-HL' }, allowanceOverrides: { pt: 44650 },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    try {
+        for (const type of ['Non Kary-UMKM non PP', ' non kary - umkm NON pp ', 'NON_KARY_UMKM_NON_PP']) {
+            row.dataset.tipeJamsostek = type;
+            assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 0);
+            assert.equal(input.value, '0');
+            assert.equal(input.disabled, true);
+            assert.equal(input.name, undefined);
+            assert.equal(status.textContent, 'Tidak dihitung');
+        }
+        row.dataset.groupJkn = 'JKN-KIS';
+        row.dataset.groupJamsostek = 'BPU-SUPIR';
+        row.dataset.tipeJamsostek = 'KARYAWAN';
+        delete row.allowanceOverrides.pt;
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 19000);
+        assert.equal(input.disabled, false);
+        assert.equal(status.textContent, 'Sesuai rumus');
+    } finally { globalThis.document = previousDocument; }
 });

@@ -3,7 +3,7 @@
     <p class="mt-1 mb-3 text-xs text-gray-500">Nominal per karyawan dapat diubah pada kolom Ringkasan Tunjangan di form. Pilih Auto untuk kembali ke rumus. Perubahan ringkasan tidak mengubah komponen iuran atau Grand Total.</p>
     <p class="mb-3 text-xs text-gray-500">Tunjangan JKN 4% tidak menghitung karyawan dengan tipe JKN NON KARY.</p>
     <p class="mb-3 text-xs text-gray-500">Tunjangan JKK 0,24% + JKM 0,3% tidak menghitung karyawan dengan tipe BP Jamsostek NON KARY.</p>
-    <p class="mb-3 text-xs text-gray-500">Khusus tipe BP Jamsostek NON KARY-UMKM Non PP, Beban PT = JHT 2% (BIAYA) + JKK 1% (TUNJ) + JKM (Rp).</p>
+    <p class="mb-3 text-xs text-gray-500">Tipe BP Jamsostek NON KARY-UMKM NON PP tidak dihitung pada Beban PT, termasuk nominal manual yang tersimpan.</p>
     <p class="mb-3 text-xs text-gray-500">Tipe NON KARY-UMKM non PP tidak dihitung pada Tunjangan BPU JKK 1% + JKM.</p>
     <p class="mb-3 text-xs text-gray-500">Beban Karyawan JHT 2%, JP 1% &amp; BPU JHT tidak menghitung tipe BP Jamsostek NON KARY dan NON KARY-UMKM NON PP.</p>
     <p class="mb-3 text-xs text-gray-500">Untuk tipe BP Jamsostek NON KARY-UMKM NON PP, JHT 2% (HUTANG) masuk ke Beban Non Kary. JKN &amp; BPJS.</p>
