@@ -97,7 +97,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $end = strpos($source, '        <div class="flex justify-end mt-16', $start);
             $template = substr($source, $start, $end - $start);
             $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
-            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80'] as $label) {
+            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000,00', '30.000,00'] as $label) {
                 $this->assertStringContainsString($label, $html);
             }
             $header->details->first()->rincian_bpjs = null;

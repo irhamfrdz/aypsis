@@ -1,7 +1,9 @@
 [data-allowance] { min-width: 220px; padding: 12px 16px !important; vertical-align: middle; border-left: 1px solid #ffedd5; }
 .bpjs-group-total-jkn { background: #e0e7ff; color: #3730a3; }
 .bpjs-group-total-ppu { background: #d1fae5; color: #065f46; }
-:is(.bpjs-group-total-jkn, .bpjs-group-total-ppu) { border-left: 1px solid #cbd5e1; }
+.bpjs-group-total-bpu_crew { background: #e0f2fe; color: #075985; }
+.bpjs-group-total-bpu_noncrew { background: #f3e8ff; color: #6b21a8; }
+:is(.bpjs-group-total-jkn, .bpjs-group-total-ppu, .bpjs-group-total-bpu_crew, .bpjs-group-total-bpu_noncrew) { border-left: 1px solid #cbd5e1; }
 .bpjs-allowance-editor { width: 100%; min-width: 180px; font-family: inherit; }
 .bpjs-allowance-money { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 12px; border: 1px solid #e2e8f0; border-radius: 9px; background: #fff; box-shadow: 0 1px 2px rgb(15 23 42 / 3%); transition: border-color .15s, box-shadow .15s; }
 .bpjs-allowance-money:hover { border-color: #a5b4fc; }

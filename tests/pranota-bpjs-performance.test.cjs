@@ -4,13 +4,13 @@ require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
-test('JKN and PPU totals add their components once without BPU or allowance summaries', () => {
+test('group totals sum each membership separately and exclude allowance summaries', () => {
     const amounts = { bpjs_kesehatan: 229195.20, bpjs_ketenagakerjaan: 57298.80,
         jht_biaya: 100000.80, jht_hutang: 20000, jkk_tunjangan: 1000,
         jkm_tunjangan: 2000, jp_biaya: 10000, jp_hutang: 11000,
         noncrew_jht_biaya: 50000, bpu_jkk_tunjangan: 15000, allowance_pt: 99999 };
-    assert.deepEqual(BpjsPerformance.groupTotals(amounts), { jkn: 286494, ppu: 144000.8 });
-    assert.deepEqual(BpjsPerformance.groupTotals({}), { jkn: 0, ppu: 0 });
+    assert.deepEqual(BpjsPerformance.groupTotals(amounts), { jkn: 286494, ppu: 144000.8, bpu_crew: 15000, bpu_noncrew: 50000 });
+    assert.deepEqual(BpjsPerformance.groupTotals({}), { jkn: 0, ppu: 0, bpu_crew: 0, bpu_noncrew: 0 });
 });
 
 test('displayed group totals refresh on edits and never become submitted input fields', () => {
@@ -18,15 +18,26 @@ test('displayed group totals refresh on edits and never become submitted input f
         ['.input-kes', { value: '229195.20' }], ['.input-ket', { value: '57298.80' }],
         ['.input-jht-biaya', { value: '100000.80' }], ['.input-jp-biaya', { value: '11000' }],
         ['.row-total-jkn', {}], ['.row-total-ppu', {}],
+        ['.input-jkk-hutang', { value: '19000.25' }], ['.input-bpu-jkk', { value: '9000' }],
+        ['.input-bpu-jkm', { value: '6800' }], ['.row-total-bpu_crew', {}],
+        ['.input-noncrew-jht-biaya', { value: '19000.25' }], ['.input-noncrew-jht-hutang', { value: '10000' }],
+        ['.input-noncrew-jkk', { value: '9500.5' }], ['.input-noncrew-jkm', { value: '6800' }],
+        ['.row-total-bpu_noncrew', {}],
     ]);
     const row = { querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     BpjsPerformance.updateGroupTotals(row, parse, value => value.toFixed(2));
     assert.equal(fields.get('.row-total-jkn').textContent, 'Rp 286494.00');
     assert.equal(fields.get('.row-total-ppu').textContent, 'Rp 111000.80');
+    assert.equal(fields.get('.row-total-bpu_crew').textContent, 'Rp 34800.25');
+    assert.equal(fields.get('.row-total-bpu_noncrew').textContent, 'Rp 45300.75');
     fields.get('.input-jp-biaya').value = '15000.25';
+    fields.get('.input-noncrew-jkm').value = '7000';
     BpjsPerformance.updateGroupTotals(row, parse, value => value.toFixed(2));
     assert.equal(fields.get('.row-total-ppu').textContent, 'Rp 115001.05');
+    assert.equal(fields.get('.row-total-bpu_noncrew').textContent, 'Rp 45500.75');
+    assert.equal(fields.get('.row-total-bpu_crew').name, undefined);
+    assert.equal(fields.get('.row-total-bpu_noncrew').name, undefined);
     assert.equal(fields.get('.row-total-ppu').name, undefined);
 });
 

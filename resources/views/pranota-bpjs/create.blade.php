@@ -286,10 +286,10 @@
                             <th id="th-group-ppu" colspan="7" class="px-3 py-2 text-center border-r border-emerald-200 bg-emerald-50 text-emerald-900 col-group-ppu">
                                 <i class="fas fa-building text-emerald-600 mr-1"></i> BP Jamsostek (PPU)
                             </th>
-                            <th id="th-group-bpu-crew" colspan="3" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900 col-group-bpu-crew">
+                            <th id="th-group-bpu-crew" colspan="4" class="px-3 py-2 text-center border-r border-sky-200 bg-sky-50 text-sky-900 col-group-bpu-crew">
                                 <i class="fas fa-ship text-sky-600 mr-1"></i> BP Jamsostek (BPU-CREW)
                             </th>
-                            <th id="th-group-bpu-noncrew" colspan="4" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900 col-group-bpu-noncrew">
+                            <th id="th-group-bpu-noncrew" colspan="5" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900 col-group-bpu-noncrew">
                                 <i class="fas fa-user-tag text-purple-600 mr-1"></i> BP Jamsostek (Non BPU-CREW)
                             </th>
                             <th colspan="8" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan</th>
@@ -324,16 +324,18 @@
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 col-group-ppu" style="min-width:90px" title="Jaminan Pensiun Biaya Perusahaan 2%">PPU JP 2%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-emerald-700 bg-emerald-50/30 border-r border-emerald-100 col-group-ppu" style="min-width:90px" title="Jaminan Pensiun Hutang Karyawan 1%">PPU JP 1%</th>
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-ppu col-group-ppu" style="min-width:130px">TOTAL PPU</th>
-                            {{-- BPU-CREW (3) --}}
+                            {{-- BPU-CREW (4) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-rose-600 bg-rose-50/30 col-group-bpu-crew" style="min-width:115px" title="BPU JHT Karyawan (Hutang Potongan)">BPU JHT (Kary)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 col-group-bpu-crew" style="min-width:110px" title="BPU JKK 1% (Tunjangan)">BPU JKK 1%</th>
                             <th class="px-3 py-2.5 text-right font-bold text-sky-700 bg-sky-50/30 border-r border-sky-100 col-group-bpu-crew" style="min-width:100px" title="BPU JKM Biaya">BPU JKM</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-bpu_crew col-group-bpu-crew" style="min-width:150px">TOTAL BPU-CREW</th>
                             
-                            {{-- Non BPU-CREW (4) --}}
+                            {{-- Non BPU-CREW (5) --}}
                             <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:100px" title="JHT 2% Biaya Perusahaan">JHT 2% (Biaya)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:100px" title="JHT 2% Hutang Karyawan Tabel DPP">JHT 2% (Hutang)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 col-group-bpu-noncrew" style="min-width:95px" title="JKK 1% Tunjangan">JKK 1% (Tunj)</th>
                             <th class="px-3 py-2.5 text-right font-bold text-purple-700 bg-purple-50/30 border-r border-purple-100 col-group-bpu-noncrew" style="min-width:95px" title="JKM Tunjangan Nominal (Rp)">JKM (Rp)</th>
+                            <th class="px-3 py-3 text-right font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" style="min-width:150px">TOTAL NON BPU-CREW</th>
 
 <th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                         </tr>
@@ -365,12 +367,14 @@
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50 col-group-bpu-crew" id="total_jkk_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew" id="total_bpu_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew" id="total_bpu_jkm">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_crew col-group-bpu-crew" id="total_group_bpu_crew">Rp 0,00</td>
                             
                             {{-- Non BPU-CREW --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jht_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jht_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew" id="total_noncrew_jkm">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" id="total_group_bpu_noncrew">Rp 0,00</td>
 
                             
                             {{-- Grand Total --}}
@@ -753,6 +757,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_group_bpu_crew').textContent = 'Rp ' + formatNumber(sumBpuJht + sumBpuJkk + sumBpuJkm);
+        document.getElementById('total_group_bpu_noncrew').textContent = 'Rp ' + formatNumber(sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm);
         document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
         document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(visibleGrandTotal);
 
@@ -895,7 +901,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right font-mono text-xs input-jp-hutang font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
             <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>
-            {{-- BPU-CREW (3) --}}
+            {{-- BPU-CREW (4) --}}
             <td class="px-1.5 py-2 align-middle bg-rose-50/10 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][jkk_hutang]" class="w-full text-right font-mono text-xs input-jkk-hutang font-semibold text-rose-600 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -905,8 +911,9 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-sky-50/10 border-r border-sky-100 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][bpu_jkm]" class="w-full text-right font-mono text-xs input-bpu-jkm font-semibold text-sky-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-sky-400 focus:ring-1 focus:ring-sky-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_crew col-group-bpu-crew row-total-bpu_crew">Rp 0,00</td>
 
-            {{-- Non BPU-CREW (4) --}}
+            {{-- Non BPU-CREW (5) --}}
             <td class="px-1.5 py-2 align-middle bg-purple-50/10 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jht_biaya]" class="w-full text-right font-mono text-xs input-noncrew-jht-biaya font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
@@ -919,6 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-purple-50/10 border-r border-purple-100 col-group-bpu-noncrew">
                 <input type="text" name="details[${rowCount}][noncrew_jkm_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkm font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_noncrew col-group-bpu-noncrew row-total-bpu_noncrew">Rp 0,00</td>
             
             
             {{-- Subtotal & Action --}}

@@ -53,6 +53,9 @@
             jkn: n('bpjs_kesehatan') + n('bpjs_ketenagakerjaan'),
             ppu: n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
                 + n('jkm_tunjangan') + n('jp_biaya') + n('jp_hutang'),
+            bpu_crew: n('jkk_hutang') + n('bpu_jkk_tunjangan') + n('bpu_jkm'),
+            bpu_noncrew: n('noncrew_jht_biaya') + n('noncrew_jht_hutang')
+                + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan'),
         };
     }
 
@@ -61,7 +64,10 @@
         for (const [key, selector] of Object.entries({ bpjs_kesehatan: '.input-kes',
             bpjs_ketenagakerjaan: '.input-ket', jht_biaya: '.input-jht-biaya',
             jht_hutang: '.input-jht-hutang', jkk_tunjangan: '.input-jkk',
-            jkm_tunjangan: '.input-jkm', jp_biaya: '.input-jp-biaya', jp_hutang: '.input-jp-hutang' })) {
+            jkm_tunjangan: '.input-jkm', jp_biaya: '.input-jp-biaya', jp_hutang: '.input-jp-hutang',
+            jkk_hutang: '.input-jkk-hutang', bpu_jkk_tunjangan: '.input-bpu-jkk', bpu_jkm: '.input-bpu-jkm',
+            noncrew_jht_biaya: '.input-noncrew-jht-biaya', noncrew_jht_hutang: '.input-noncrew-jht-hutang',
+            noncrew_jkk_tunjangan: '.input-noncrew-jkk', noncrew_jkm_tunjangan: '.input-noncrew-jkm' })) {
             values[key] = readNumber(row, selector, parseAmount);
         }
         const totals = groupTotals(values);
