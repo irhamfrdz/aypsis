@@ -7,6 +7,8 @@
         .replace(/[\s_-]+/g, '') === 'NONKARY';
     const isPtExcluded = values => String(values.group_jkn || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'JKNKIS';
+    const isPpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
+        .replace(/[\s_-]+/g, '') === 'NONKARY';
 
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
@@ -26,7 +28,7 @@
         const ppuTotal = n('jht_biaya') + n('jht_hutang') + n('jkk_tunjangan')
             + n('jkm_tunjangan') + n('jp_biaya') + n('jp_hutang');
         return {
-            ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
+            ppu: isPpu && !isPpuExcluded(values) ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
             bpu: isUmkmNonPp ? 0 : (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
                 + (Number(values.noncrew_jkk_tunjangan) || 0) + (Number(values.noncrew_jkm_tunjangan) || 0),
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
@@ -99,6 +101,7 @@
         const index = select('.karyawan-hidden-input')?.name.match(/^details\[([^\]]+)\]/)?.[1];
         const excludedBpu = isBpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek });
         const excludedKeys = [];
+        if (isPpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('ppu');
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');

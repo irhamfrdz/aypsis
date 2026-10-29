@@ -56,6 +56,10 @@ class PranotaBpjsDetail extends Model
 
     public function getTunjanganPpuAttribute(): float
     {
+        $type = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
+        if ($type === 'NONKARY') {
+            return 0;
+        }
         if (isset($this->tunjangan_manual['ppu'])) {
             return (float) $this->tunjangan_manual['ppu'];
         }

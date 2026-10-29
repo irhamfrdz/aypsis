@@ -103,12 +103,12 @@
                 if ($field === 'total_jkn') return (float) $detail->bpjs_kesehatan + (float) $detail->bpjs_ketenagakerjaan;
                 if (isset($totalGroups[$field])) return collect($componentFields[$totalGroups[$field]])->sum(fn ($key) => (float) data_get($detail->rincian_bpjs, $key, 0));
                 if ($field === 'allowance_bpu') return $detail->tunjangan_bpu;
+                if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if ($field === 'allowance_jkn') return $detail->tunjangan_jkn;
                 if ($field === 'allowance_kary_jht') return $detail->summaryBurden('kary_jht');
                 if ($field === 'allowance_pt') return $detail->summaryBurden('pt');
                 if (str_starts_with($field, 'allowance_') && isset($detail->tunjangan_manual[substr($field, 10)])) return (float) $detail->tunjangan_manual[substr($field, 10)];
                 if (in_array($field, ['allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary'])) return $detail->summaryBurden(substr($field, 10));
-                if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if (in_array($field, ['allowance_ppu', 'allowance_bpu'])) {
                     $fields = $field === 'allowance_ppu' ? ['jkk_tunjangan', 'jkm_tunjangan']
                         : ['bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'];

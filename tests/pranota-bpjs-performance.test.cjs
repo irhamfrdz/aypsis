@@ -5,6 +5,33 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('NON KARY PPU allowance displays zero and omits a saved manual amount on submit', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { activeElement: null };
+    const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
+    const status = {}, editor = { dataset: {} }, reset = {};
+    const fields = new Map([
+        ['.input-jkk', { value: '13752' }], ['.input-jkm', { value: '17190' }],
+        ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
+        ['[data-allowance="ppu"]', { querySelector: selector => ({ input,
+            '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
+    ]);
+    const row = { dataset: { groupJamsostek: 'PPU', tipeJamsostek: 'NON KARY' }, allowanceOverrides: { ppu: 30942 },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    try {
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).ppu, 0);
+        assert.equal(input.value, '0');
+        assert.equal(input.disabled, true);
+        assert.equal(input.name, undefined);
+        assert.equal(status.textContent, 'Tidak dihitung');
+        row.dataset.tipeJamsostek = 'NON KARY-UMKM';
+        delete row.allowanceOverrides.ppu;
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).ppu, 30942);
+        assert.equal(input.disabled, false);
+    } finally { globalThis.document = previousDocument; }
+});
+
 test('JKN-KIS employer burden displays zero and cannot submit a manual amount', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };

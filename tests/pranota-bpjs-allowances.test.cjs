@@ -2,6 +2,20 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('PPU JKK and JKM allowance excludes exact NON KARY Jamsostek type only', () => {
+    const values = { group_bp_jamsostek: 'PPU', jkk_tunjangan: 13752, jkm_tunjangan: 17190 };
+    for (const type of ['NON KARY', ' non kary ', 'NON_KARY']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
+        assert.equal(result.ppu, 0);
+        assert.equal(BpjsAllowances.effective(result, { ppu: 30942 }, ['ppu']).ppu, 0);
+    }
+    for (const type of ['KARYAWAN', 'NON KARY-UMKM', 'NON KARY-UMKM NON PP', '']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type }).ppu, 30942);
+    }
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY' }).ppu, 30942);
+    assert.equal(values.jkk_tunjangan + values.jkm_tunjangan, 30942);
+});
+
 test('JKN-KIS group excludes the entire employer burden regardless of insurance type', () => {
     const values = { jht_biaya: 192400, jp_biaya: 104000, group_bp_jamsostek: 'PPU',
         kis_tunjangan: 229195.20 };

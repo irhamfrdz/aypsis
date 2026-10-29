@@ -8,6 +8,25 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_ppu_allowance_excludes_exact_non_kary_even_with_saved_manual_amount(): void
+    {
+        $employee = new Karyawan(['group_bp_jamsostek' => 'PPU']);
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['jkk_tunjangan' => 13752, 'jkm_tunjangan' => 17190]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY', ' non kary ', 'NON_KARY'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(0.0, $detail->tunjangan_ppu);
+        }
+        $detail->tunjangan_manual = ['ppu' => 30942];
+        $this->assertSame(0.0, $detail->tunjangan_ppu);
+        $detail->tunjangan_manual = null;
+        foreach (['KARYAWAN', 'NON KARY-UMKM', 'NON KARY-UMKM NON PP'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(30942.0, $detail->tunjangan_ppu);
+        }
+    }
+
     public function test_jkn_kis_group_has_no_employer_burden_even_with_manual_amount(): void
     {
         $employee = new Karyawan;
