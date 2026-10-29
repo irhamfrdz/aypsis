@@ -80,10 +80,9 @@
         @php
             $componentGroups = [
                 'JKN' => ['kis_tunjangan' => 'KIS 4% (TUNJ)', 'kis_biaya' => 'KIS 4% (BIAY)', 'bpjs_ketenagakerjaan' => 'KIS 1% (Hutang)'],
-                'PPU' => ['jht_biaya' => 'PPU JHT 3.7%', 'jht_hutang' => 'PPU JHT 2%', 'jkk_tunjangan' => 'PPU JKK 0.24%', 'jkm_tunjangan' => 'PPU JKM 0.3%'],
+                'PPU' => ['jht_biaya' => 'PPU JHT 3.7%', 'jht_hutang' => 'PPU JHT 2%', 'jkk_tunjangan' => 'PPU JKK 0.24%', 'jkm_tunjangan' => 'PPU JKM 0.3%', 'jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
                 'BPU Crew' => ['jkk_hutang' => 'BPU JHT (Kary)', 'bpu_jkk_tunjangan' => 'BPU JKK 1%', 'bpu_jkm' => 'BPU JKM'],
                 'BPU Non Crew' => ['noncrew_jht_biaya' => 'JHT 2% (Biaya)', 'noncrew_jht_hutang' => 'JHT 2% (Hutang)', 'noncrew_jkk_tunjangan' => 'JKK 1% (Tunj)', 'noncrew_jkm_tunjangan' => 'JKM (Rp)'],
-                'Jaminan Pensiun' => ['jp_biaya' => 'PPU JP 2%', 'jp_hutang' => 'PPU JP 1%'],
             ];
             $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
             $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%', 'allowance_kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'allowance_kary_jkn' => 'Beban KARY. JKN 1%', 'allowance_pt' => 'Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)', 'allowance_non_kary' => 'Beban NON KARY. JKN & BPJS', 'no_voucher' => 'No Voucher'];
@@ -106,7 +105,7 @@
             $groupTotal = fn ($fields) => $pranota_bpj->details->sum(fn ($detail) => collect($fields)->sum(fn ($field) => $amount($detail, $field)));
         @endphp
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-            @foreach(['Total Karyawan' => $pranota_bpj->total_karyawan . ' Orang', 'Total JKN' => 'Rp ' . number_format($pranota_bpj->total_bpjs_kesehatan, 2, ',', '.'), 'Total PPU' => 'Rp ' . number_format($groupTotal(array_merge(array_keys($componentGroups['PPU']), array_keys($componentGroups['Jaminan Pensiun']))), 2, ',', '.'), 'Total BPU' => 'Rp ' . number_format($groupTotal(array_merge(array_keys($componentGroups['BPU Crew']), array_keys($componentGroups['BPU Non Crew']))), 2, ',', '.'), 'Grand Total' => 'Rp ' . number_format($pranota_bpj->grand_total, 2, ',', '.')] as $label => $value)
+            @foreach(['Total Karyawan' => $pranota_bpj->total_karyawan . ' Orang', 'Total JKN' => 'Rp ' . number_format($pranota_bpj->total_bpjs_kesehatan, 2, ',', '.'), 'Total PPU' => 'Rp ' . number_format($groupTotal(array_keys($componentGroups['PPU'])), 2, ',', '.'), 'Total BPU' => 'Rp ' . number_format($groupTotal(array_merge(array_keys($componentGroups['BPU Crew']), array_keys($componentGroups['BPU Non Crew']))), 2, ',', '.'), 'Grand Total' => 'Rp ' . number_format($pranota_bpj->grand_total, 2, ',', '.')] as $label => $value)
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4"><p class="text-xs font-semibold uppercase text-gray-500">{{ $label }}</p><p class="mt-2 font-bold text-teal-800">{{ $value }}</p></div>
             @endforeach
         </div>

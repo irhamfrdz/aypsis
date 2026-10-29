@@ -126,8 +126,8 @@
                             <th class="px-4 py-3 text-right" style="min-width:90px">JHT 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKK 0.24%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
-                            <th class="px-4 py-3 text-right" style="min-width:90px">JP 2%</th>
-                            <th class="px-4 py-3 text-right" style="min-width:90px">JP 1%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 2%</th>
+                            <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 1%</th>
 <th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>

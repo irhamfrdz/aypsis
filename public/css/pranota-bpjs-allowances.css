@@ -48,7 +48,6 @@ td.bpjs-allowance-green[data-allowance] { background: #f0fdf466; border-left-col
 .bpjs-hide-col-group-ppu .col-group-ppu,
 .bpjs-hide-col-group-bpu-crew .col-group-bpu-crew,
 .bpjs-hide-col-group-bpu-noncrew .col-group-bpu-noncrew,
-.bpjs-hide-col-group-jp .col-group-jp,
 .bpjs-hide-col-info-tipe-jkn .col-info-tipe-jkn,
 .bpjs-hide-col-info-tipe-jam .col-info-tipe-jam { display: none; }
 
