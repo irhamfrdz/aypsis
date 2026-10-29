@@ -8,6 +8,28 @@ use PHPUnit\Framework\TestCase;
 
 class PranotaBpjsAllowanceTest extends TestCase
 {
+    public function test_umkm_non_pp_has_no_bpu_allowance_even_with_saved_manual_amount(): void
+    {
+        $employee = new Karyawan;
+        $detail = new PranotaBpjsDetail;
+        $detail->setRawAttributes(['rincian_bpjs' => json_encode([
+            'noncrew_jht_biaya' => 19000, 'noncrew_jkk_tunjangan' => 22250,
+            'noncrew_jkm_tunjangan' => 3400,
+        ])]);
+        $detail->setRelation('karyawan', $employee);
+        foreach (['NON KARY-UMKM non PP', ' non kary - umkm NON pp ', 'NON_KARY_UMKM_NON_PP'] as $type) {
+            $employee->tipe_bp_jamsostek = $type;
+            $this->assertSame(0.0, $detail->tunjangan_bpu);
+            $this->assertSame(44650.0, $detail->summaryBurden('pt'));
+        }
+        $detail->tunjangan_manual = ['bpu' => 25650];
+        $this->assertSame(0.0, $detail->tunjangan_bpu);
+        $employee->tipe_bp_jamsostek = 'CREW';
+        $this->assertSame(25650.0, $detail->tunjangan_bpu);
+        $detail->tunjangan_manual = null;
+        $this->assertSame(25650.0, $detail->tunjangan_bpu);
+    }
+
     public function test_terminated_special_case_crew_retains_normal_employee_burdens(): void
     {
         foreach ([Karyawan::class, \App\Models\KaryawanTidakTetap::class] as $type) {

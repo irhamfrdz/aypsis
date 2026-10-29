@@ -5,6 +5,35 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('excluded BPU allowance shows zero, disables manual editing and omits its submitted name', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { activeElement: null };
+    const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
+    const status = {}, editor = { dataset: {} }, reset = {};
+    const fields = new Map([
+        ['.input-bpu-jkk', { value: '22250' }], ['.input-bpu-jkm', { value: '3400' }],
+        ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
+        ['[data-allowance="bpu"]', { querySelector: selector => ({ input,
+            '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
+    ]);
+    const row = { dataset: { tipeJamsostek: 'NON KARY-UMKM non PP' }, allowanceOverrides: { bpu: 99999 },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    try {
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).bpu, 0);
+        assert.equal(input.value, '0');
+        assert.equal(input.disabled, true);
+        assert.equal(input.name, undefined);
+        assert.equal(status.textContent, 'Tidak dihitung');
+        row.dataset.tipeJamsostek = 'CREW';
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).bpu, 99999);
+        assert.equal(input.disabled, false);
+        assert.equal(input.name, 'details[1][allowance_bpu]');
+    } finally {
+        globalThis.document = previousDocument;
+    }
+});
+
 test('Special Case crew displays employee JHT from the row and remains correct after refresh', () => {
     const fields = new Map([
         ['.input-bpu-jkk', { value: '16530' }], ['.input-jkk-hutang', { value: '5720' }],

@@ -54,6 +54,21 @@ class PranotaBpjsDetail extends Model
             + (float) ($this->rincian_bpjs['jkm_tunjangan'] ?? $this->jkm_tunjangan);
     }
 
+    public function getTunjanganBpuAttribute(): float
+    {
+        $type = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
+        if ($type === 'NONKARYUMKMNONPP') {
+            return 0;
+        }
+        if (isset($this->tunjangan_manual['bpu'])) {
+            return (float) $this->tunjangan_manual['bpu'];
+        }
+
+        return array_sum(array_map(fn ($field) => (float) ($this->rincian_bpjs[$field] ?? 0), [
+            'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan',
+        ]));
+    }
+
     public function karyawan()
     {
         return $this->morphTo('karyawan', 'tipe_karyawan', 'karyawan_id');

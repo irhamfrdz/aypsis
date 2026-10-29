@@ -2,6 +2,21 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('NON KARY-UMKM non PP is excluded from BPU allowance without changing contributions or employer burden', () => {
+    const values = { noncrew_jht_biaya: 19000, noncrew_jkk_tunjangan: 22250,
+        noncrew_jkm_tunjangan: 3400, bpu_jkk_tunjangan: 16530, bpu_jkm: 3400 };
+    for (const type of ['NON KARY-UMKM non PP', ' non kary - umkm NON pp ', 'NON_KARY_UMKM_NON_PP']) {
+        const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
+        assert.equal(result.bpu, 0);
+        assert.equal(result.pt, 44650);
+        assert.equal(values.noncrew_jkk_tunjangan, 22250);
+        assert.equal(BpjsAllowances.effective(result, { bpu: 25650 }, ['bpu']).bpu, 0);
+    }
+    for (const type of ['CREW', 'NON KARY', 'NON KARY-UMKM', '']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type }).bpu, 45580);
+    }
+});
+
 test('terminated CREW with Special Case retains employee JHT and JKN debt like an active employee', () => {
     const values = { group_bp_jamsostek: 'BPU-ALEXINDO PLUIT', tipe_bp_jamsostek: 'CREW',
         tipe_jkn: 'KARYAWAN', jkk_hutang: 5720, bpu_jkk_tunjangan: 16530,

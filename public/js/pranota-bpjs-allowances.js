@@ -1,4 +1,7 @@
 (function (root) {
+    const isBpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
+        .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
+
     function calculate(values) {
         const isPpu = String(values.group_bp_jamsostek || '').trim().toUpperCase().includes('PPU');
         const n = key => Number(values[key]) || 0;
@@ -7,8 +10,7 @@
         const nonJamsostek = nonEmployee(values.tipe_bp_jamsostek);
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
-        const isUmkmNonPp = String(values.tipe_bp_jamsostek || '').toUpperCase()
-            .replace(/[\s_-]+/g, '') === 'NONKARYUMKMNONPP';
+        const isUmkmNonPp = isBpuExcluded(values);
         const umkmCost = values.aggregate_jamsostek
             ? n('jht_biaya') + n('jkk_tunjangan') + n('jkm_tunjangan')
             : n('noncrew_jht_biaya') + n('noncrew_jkk_tunjangan') + n('noncrew_jkm_tunjangan');
@@ -20,7 +22,7 @@
                 + n('jkm_tunjangan') + n('jp_biaya') + n('jp_hutang') : 0);
         return {
             ppu: isPpu ? (Number(values.jkk_tunjangan) || 0) + (Number(values.jkm_tunjangan) || 0) : 0,
-            bpu: (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
+            bpu: isUmkmNonPp ? 0 : (Number(values.bpu_jkk_tunjangan) || 0) + (Number(values.bpu_jkm) || 0)
                 + (Number(values.noncrew_jkk_tunjangan) || 0) + (Number(values.noncrew_jkm_tunjangan) || 0),
             jkn: Number(values.kis_tunjangan) || 0,
             kary_jht: nonJamsostek ? 0 : employeeDebt,
@@ -33,9 +35,9 @@
         };
     }
 
-    function effective(amounts, overrides = {}) {
+    function effective(amounts, overrides = {}, excludedKeys = []) {
         return Object.fromEntries(Object.entries(amounts).map(([key, value]) =>
-            [key, Object.hasOwn(overrides, key) ? Number(overrides[key]) : value]));
+            [key, excludedKeys.includes(key) ? 0 : (Object.hasOwn(overrides, key) ? Number(overrides[key]) : value)]));
     }
 
     const rowStates = new WeakMap();
@@ -90,10 +92,11 @@
             aggregate_jamsostek: aggregateJamsostek,
             bpjs_ketenagakerjaan: read('.input-ket') });
         const index = select('.karyawan-hidden-input')?.name.match(/^details\[([^\]]+)\]/)?.[1];
-        const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index]);
+        const excludedBpu = isBpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek });
+        const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedBpu]);
         const cached = rowStates.get(row);
         if (cached?.signature === signature) return cached.amounts;
-        const amounts = effective(automaticAmounts, row.allowanceOverrides);
+        const amounts = effective(automaticAmounts, row.allowanceOverrides, excludedBpu ? ['bpu'] : []);
         Object.entries(amounts).forEach(([key, amount]) => {
             const cell = select(`[data-allowance="${key}"]`);
             if (cell) {
@@ -151,13 +154,16 @@
                     });
                 }
                 input.dataset.automaticAmount = automaticAmounts[key];
-                if (Object.hasOwn(row.allowanceOverrides, key) && index) input.name = `details[${index}][allowance_${key}]`;
+                const excluded = key === 'bpu' && excludedBpu;
+                const manual = !excluded && Object.hasOwn(row.allowanceOverrides, key);
+                input.disabled = excluded;
+                if (manual && index) input.name = `details[${index}][allowance_${key}]`;
                 else input.removeAttribute('name');
                 if (document.activeElement !== input) input.value = formatNumber(amount);
-                input.title = Object.hasOwn(row.allowanceOverrides, key) ? 'Nominal manual' : 'Nominal otomatis sesuai rumus';
-                const manual = Object.hasOwn(row.allowanceOverrides, key);
+                input.title = excluded ? 'Tidak dihitung untuk tipe NON KARY-UMKM non PP'
+                    : (manual ? 'Nominal manual' : 'Nominal otomatis sesuai rumus');
                 cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);
-                cell.querySelector('.bpjs-allowance-status').textContent = manual ? 'Diubah manual' : 'Sesuai rumus';
+                cell.querySelector('.bpjs-allowance-status').textContent = excluded ? 'Tidak dihitung' : (manual ? 'Diubah manual' : 'Sesuai rumus');
                 cell.querySelector('.bpjs-allowance-reset').disabled = !manual;
             }
 

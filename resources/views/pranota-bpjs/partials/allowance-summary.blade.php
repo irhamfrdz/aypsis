@@ -2,6 +2,7 @@
     <h3 class="font-semibold text-gray-800">Ringkasan Tunjangan</h3>
     <p class="mt-1 mb-3 text-xs text-gray-500">Nominal per karyawan dapat diubah pada kolom Ringkasan Tunjangan di form. Pilih Auto untuk kembali ke rumus. Perubahan ringkasan tidak mengubah komponen iuran atau Grand Total.</p>
     <p class="mb-3 text-xs text-gray-500">Khusus tipe BP Jamsostek NON KARY-UMKM Non PP, Beban PT = JHT 2% (BIAYA) + JKK 1% (TUNJ) + JKM (Rp).</p>
+    <p class="mb-3 text-xs text-gray-500">Tipe NON KARY-UMKM non PP tidak dihitung pada Tunjangan BPU JKK 1% + JKM.</p>
     <p class="mb-3 text-xs text-gray-500">Untuk tipe NON KARY, Beban PT mengambil TOTAL JKN pada group JKN-KIS dan TOTAL PPU pada group PPU. Jika kedua keanggotaan memenuhi syarat, kedua total dijumlahkan.</p>
     <table class="w-full text-sm">
         <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
