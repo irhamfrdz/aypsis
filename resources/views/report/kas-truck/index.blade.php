@@ -186,7 +186,7 @@
                                                                 Rp {{ number_format($rincian['nominal'], 0, ',', '.') }}
                                                             </span>
                                                         </div>
-                                                        @if(!empty($rincian['memo']))<p class="mt-1 break-words text-xs leading-5 text-gray-500">{{ $rincian['memo'] }}</p>@endif
+                                                        @if(!empty($rincian['memo']))<p class="mt-1 break-words text-xs leading-5 text-gray-500">Memo: {{ $rincian['memo'] }}</p>@endif
                                                     </div>
                                                 @endforeach
                                             </div>

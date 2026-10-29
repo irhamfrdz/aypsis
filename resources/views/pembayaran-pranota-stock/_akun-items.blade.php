@@ -42,7 +42,7 @@
                 <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-nominal w-full rounded border-gray-300 text-sm p-2 text-right" min="0.01" step="0.01" value="{{ $line['nominal'] ?? '' }}" required>
             </div>
             <div class="md:col-span-4">
-                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan / Notes</label>
+                <label class="block text-xs font-medium text-gray-700 mb-1">Memo</label>
                 <input type="text" name="akun_items[{{ $index }}][keterangan]" class="w-full rounded border-gray-300 text-sm p-2" maxlength="255" value="{{ $line['keterangan'] ?? '' }}" placeholder="Contoh: Parkir Motor B.4192 BNP">
             </div>
             <div class="md:col-span-1">
@@ -73,7 +73,7 @@
             <input type="number" name="akun_items[__INDEX__][nominal]" class="akun-nominal w-full rounded border-gray-300 text-sm p-2 text-right" min="0.01" step="0.01" required>
         </div>
         <div class="md:col-span-4">
-            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan / Notes</label>
+            <label class="block text-xs font-medium text-gray-700 mb-1">Memo</label>
             <input type="text" name="akun_items[__INDEX__][keterangan]" class="w-full rounded border-gray-300 text-sm p-2" maxlength="255" placeholder="Contoh: Parkir Motor B.4192 BNP">
         </div>
         <div class="md:col-span-1">

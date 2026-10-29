@@ -248,11 +248,12 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
         $transaction = $transactions->first();
         $this->assertEquals(100, $transaction->kredit);
         $this->assertSame([
-            ['nama_akun' => 'Biaya A', 'nominal' => 60],
-            ['nama_akun' => 'Biaya B', 'nominal' => 40],
+            ['nama_akun' => 'Biaya A', 'nominal' => 60, 'memo' => 'Bagian A'],
+            ['nama_akun' => 'Biaya B', 'nominal' => 40, 'memo' => 'Bagian B'],
         ], array_map(fn ($line) => [
             'nama_akun' => $line['nama_akun'],
             'nominal' => (int) $line['nominal'],
+            'memo' => $line['memo'],
         ], $transaction->rincian_akun_pembayaran));
     }
 

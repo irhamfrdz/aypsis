@@ -241,12 +241,13 @@ class KasTruckController extends Controller
                     ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
                     ->whereNull('pembayaran.deleted_at')
                     ->orderBy('rincian.id')
-                    ->get(['pembayaran.nomor_pembayaran', 'akun.nama_akun', 'rincian.nominal']);
+                    ->get(['pembayaran.nomor_pembayaran', 'akun.nama_akun', 'rincian.nominal', 'rincian.keterangan']);
 
                 foreach ($rincianAkunStock as $rincian) {
                     $rincianAkunStockMap[$rincian->nomor_pembayaran][] = [
                         'nama_akun' => $rincian->nama_akun,
                         'nominal' => $rincian->nominal,
+                        'memo' => $rincian->keterangan,
                     ];
                 }
             }
