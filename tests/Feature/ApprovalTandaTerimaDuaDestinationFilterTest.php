@@ -20,6 +20,12 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->string('no_surat_jalan')->nullable();
+            $table->string('pengirim')->nullable();
+            $table->string('no_kontainer')->nullable();
+            $table->string('jenis_barang')->nullable();
+            $table->json('nama_barang')->nullable();
+            $table->json('dimensi_items')->nullable();
+            $table->json('dimensi_details')->nullable();
             $table->date('tanggal_surat_jalan')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
@@ -28,6 +34,10 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->id();
             $table->string('no_tanda_terima')->nullable();
             $table->string('nomor_tanda_terima')->nullable();
+            $table->string('pengirim')->nullable();
+            $table->string('no_kontainer')->nullable();
+            $table->string('nama_barang')->nullable();
+            $table->string('jenis_barang')->nullable();
             $table->date('tanggal_tanda_terima')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
@@ -39,6 +49,8 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         Schema::create('tanda_terimas_lcl', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_tanda_terima')->nullable();
+            $table->string('nama_pengirim')->nullable();
+            $table->string('nomor_kontainer')->nullable();
             $table->date('tanggal_tanda_terima')->nullable();
             $table->unsignedBigInteger('tujuan_pengiriman_id')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
@@ -52,10 +64,13 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         Schema::create('tanda_terima_lcl_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanda_terima_lcl_id');
+            $table->string('nama_barang')->nullable();
         });
         Schema::create('tanda_terima_dimensi_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanda_terima_tanpa_surat_jalan_id');
+            $table->string('nama_barang')->nullable();
+            $table->unsignedInteger('item_order')->nullable();
         });
         Schema::create('approval_tanda_terima_2_goods', function (Blueprint $table) {
             $table->id();
@@ -120,6 +135,45 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
                 ? $items->first()->tujuanPengiriman->nama_tujuan
                 : $items->first()->tujuan_pengiriman;
             $this->assertSame($expected, $actual);
+        }
+    }
+
+    public function test_search_finds_goods_names_from_each_source_and_approval_details(): void
+    {
+        $fclId = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'SJ-FCL',
+            'dimensi_items' => json_encode([['nama_barang' => 'Mesin Keramik']]),
+        ]);
+        $approvalId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-APPROVAL']);
+        DB::table('approval_tanda_terima_2_goods')->insert([
+            'source_type' => 'fcl', 'source_id' => $approvalId,
+            'goods' => json_encode([['nama_barang' => 'Komponen Turbin']]),
+        ]);
+        $lclId = DB::table('tanda_terimas_lcl')->insertGetId(['nomor_tanda_terima' => 'TT-LCL']);
+        DB::table('tanda_terima_lcl_items')->insert([
+            'tanda_terima_lcl_id' => $lclId, 'nama_barang' => 'Besi LCL',
+        ]);
+        $ttsjId = DB::table('tanda_terima_tanpa_surat_jalan')->insertGetId([
+            'no_tanda_terima' => 'TT-TTSJ', 'nama_barang' => 'Kayu TTSJ',
+        ]);
+        $ttsjDetailId = DB::table('tanda_terima_tanpa_surat_jalan')->insertGetId(['no_tanda_terima' => 'TT-DETAIL']);
+        DB::table('tanda_terima_dimensi_items')->insert([
+            'tanda_terima_tanpa_surat_jalan_id' => $ttsjDetailId, 'nama_barang' => 'Kain TTSJ',
+        ]);
+
+        $controller = new ApprovalTandaTerimaDuaController;
+        foreach ([
+            ['fcl', 'Keramik', $fclId],
+            ['fcl', 'Turbin', $approvalId],
+            ['lcl', 'Besi', $lclId],
+            ['ttsj', 'Kayu', $ttsjId],
+            ['ttsj', 'Kain', $ttsjDetailId],
+        ] as [$type, $search, $expectedId]) {
+            $items = $controller->index(Request::create('/', 'GET', [
+                'type' => $type, 'destination' => '', 'search' => $search,
+            ]))->getData()['items'];
+
+            $this->assertSame([$expectedId], $items->pluck('id')->all());
         }
     }
 

@@ -81,15 +81,15 @@
             </span>
             <div>
                 <h2 class="font-semibold text-gray-900">Cari Tanda Terima</h2>
-                <p class="text-xs text-gray-500">Cari berdasarkan nomor tanda terima, nomor kontainer, atau pengirim, lalu pilih filter yang dibutuhkan.</p>
+                <p class="text-xs text-gray-500">Cari berdasarkan nomor tanda terima, nomor kontainer, pengirim, atau nama barang, lalu pilih filter yang dibutuhkan.</p>
             </div>
         </div>
         <div class="space-y-5 px-5 py-5 sm:px-6">
             <div>
-                <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima, nomor kontainer, atau pengirim</label>
+                <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima, nomor kontainer, pengirim, atau nama barang</label>
                 <div class="relative">
                     <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor tanda terima, kontainer, atau pengirim...">
+                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor, kontainer, pengirim, atau nama barang...">
                 </div>
             </div>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -154,7 +154,7 @@
             </div>
         </div>
         <div class="overflow-x-auto">
-            <table class="min-w-[1000px] w-full divide-y divide-gray-200 text-sm">
+            <table class="min-w-[1100px] w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         @can('approval-tanda-terima-2-approve')
@@ -163,6 +163,7 @@
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
+                        <th scope="col" class="px-5 py-3">Nama Barang</th>
                         <th scope="col" class="px-5 py-3">Shipper Perincian</th>
                         <th scope="col" class="px-5 py-3">Shipper Manifest JB</th>
                         <th scope="col" class="px-5 py-3 text-right">Aksi</th>
@@ -194,6 +195,8 @@
                                     'keterangan_barang' => $item->keterangan_barang,
                                 ]]);
                             }
+                            $firstGood = $goods->first();
+                            $goodsName = is_scalar($firstGood) ? $firstGood : data_get($firstGood, 'nama_barang');
                             $perincianGoods = $goods->isEmpty() && auth()->user()?->can('approval-tanda-terima-2-approve')
                                 ? collect([[]])
                                 : $goods->take(1)->values();
@@ -206,6 +209,7 @@
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td class="px-5 py-4 font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
+                            <td class="max-w-xs px-5 py-4 text-gray-700">{{ is_scalar($goodsName) && filled($goodsName) ? $goodsName : '-' }}</td>
                             <td class="max-w-xs px-5 py-4 text-gray-700">{{ $sender ?: '-' }}</td>
                             <td class="px-5 py-4">
                                 @if($item->shipperJb)
@@ -347,7 +351,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 7 : 6 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 8 : 7 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>

@@ -105,15 +105,32 @@ class ApprovalTandaTerimaDuaController extends Controller
             $numberColumn = $this->numberColumn($type);
             $senderColumn = $type === 'lcl' ? 'nama_pengirim' : 'pengirim';
             $containerColumn = $type === 'lcl' ? 'nomor_kontainer' : 'no_kontainer';
-            $query->where(function ($query) use ($search, $numberColumn, $senderColumn, $containerColumn, $type) {
+            $query->where(function ($query) use ($search, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
                 $query->where($numberColumn, 'like', "%{$search}%")
                     ->orWhere($senderColumn, 'like', "%{$search}%")
                     ->orWhere($containerColumn, 'like', "%{$search}%");
+                $query->orWhereExists(function ($goodsQuery) use ($type, $sourceTable, $search) {
+                    $goodsQuery->selectRaw('1')
+                        ->from('approval_tanda_terima_2_goods')
+                        ->where('source_type', $type)
+                        ->whereColumn('source_id', "{$sourceTable}.id")
+                        ->where('goods', 'like', "%{$search}%");
+                });
                 if ($numberColumn === 'no_tanda_terima') {
                     $query->orWhere('nomor_tanda_terima', 'like', "%{$search}%");
                 }
-                if ($type === 'lcl') {
+                if ($type === 'fcl') {
+                    $query->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhere('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('dimensi_items', 'like', "%{$search}%")
+                        ->orWhere('dimensi_details', 'like', "%{$search}%");
+                } elseif ($type === 'lcl') {
                     $query->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
+                    $query->orWhereHas('items', fn ($items) => $items->where('nama_barang', 'like', "%{$search}%"));
+                } else {
+                    $query->orWhere('nama_barang', 'like', "%{$search}%")
+                        ->orWhere('jenis_barang', 'like', "%{$search}%")
+                        ->orWhereHas('dimensiItems', fn ($items) => $items->where('nama_barang', 'like', "%{$search}%"));
                 }
             });
         }
