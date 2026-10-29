@@ -159,6 +159,15 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $first]);
             $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $last]);
             $this->assertDatabaseMissing('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $unused]);
+
+            app(ApprovalTandaTerimaDuaController::class)->clearExportBulk(
+                Request::create('/approval-tanda-terima-2/fcl/export-bulk', 'DELETE', ['ids' => [$last]]), 'fcl'
+            );
+            $this->assertDatabaseMissing('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $last]);
+            $this->assertDatabaseHas('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $first]);
+
+            app(ApprovalTandaTerimaDuaController::class)->clearExport('fcl', $first);
+            $this->assertDatabaseMissing('approval_tanda_terima_2_exports', ['source_type' => 'fcl', 'source_id' => $first]);
         } finally {
             @unlink($file);
         }

@@ -141,6 +141,13 @@
                             <i class="fas fa-file-excel" aria-hidden="true"></i><span>Export Pilihan (0)</span>
                         </button>
                     </form>
+                    <form id="approval-bulk-clear-form" method="POST" action="{{ route('approval-tanda-terima-2.clear-export-bulk', ['sourceType' => $type]) }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                            <i class="fas fa-rotate-left" aria-hidden="true"></i><span>Lepas Tanda Export (0)</span>
+                        </button>
+                    </form>
                 @endcan
                 <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->total() }} data</span>
             </div>
@@ -193,7 +200,7 @@
                         @endphp
                         <tr class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
                             @can('approval-tanda-terima-2-approve')
-                                <td class="px-5 py-4"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
+                                <td class="px-5 py-4"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
                             @endcan
                             <td class="px-5 py-4 font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td class="whitespace-nowrap px-5 py-4 text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
@@ -216,6 +223,13 @@
                                         @csrf
                                         <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 {{ $isExported ? 'border-green-500 bg-green-300 text-green-950 hover:bg-green-400' : 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' }}">
                                             <i class="fas fa-file-excel" aria-hidden="true"></i><span>{{ $isExported ? 'Export Lagi' : 'Export Excel' }}</span>
+                                        </button>
+                                    </form>
+                                    <form method="POST" action="{{ route('approval-tanda-terima-2.clear-export', ['sourceType' => $type, 'id' => $item->id]) }}" class="approval-export-reset-form mr-2 {{ $isExported ? 'inline-block' : 'hidden' }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
+                                            <i class="fas fa-rotate-left" aria-hidden="true"></i>Lepas Tanda Export
                                         </button>
                                     </form>
                                     <form method="POST" action="{{ route('approval-tanda-terima-2.set-incomplete', ['sourceType' => $type, 'id' => $item->id]) }}" class="mr-2 inline-block">

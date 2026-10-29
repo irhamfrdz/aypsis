@@ -126,13 +126,17 @@
     'use strict';
 
     const bulkForm = document.getElementById('approval-bulk-export-form');
+    const bulkClearForm = document.getElementById('approval-bulk-clear-form');
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
     function updateBulkSelection() {
         if (!bulkForm) return;
         const count = bulkCheckboxes.filter(checkbox => checkbox.checked).length;
+        const exportedCount = bulkCheckboxes.filter(checkbox => checkbox.checked && checkbox.dataset.exported === 'true').length;
         bulkForm.querySelector('button').disabled = count === 0;
         bulkForm.querySelector('button span').textContent = `Export Pilihan (${count})`;
+        bulkClearForm.querySelector('button').disabled = exportedCount === 0;
+        bulkClearForm.querySelector('button span').textContent = `Lepas Tanda Export (${exportedCount})`;
         if (selectAll) {
             selectAll.checked = bulkCheckboxes.length > 0 && count === bulkCheckboxes.length;
             selectAll.indeterminate = count > 0 && count < bulkCheckboxes.length;
@@ -143,6 +147,21 @@
         updateBulkSelection();
     });
     bulkCheckboxes.forEach(checkbox => checkbox.addEventListener('change', updateBulkSelection));
+    bulkClearForm?.addEventListener('submit', event => {
+        bulkClearForm.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
+        const selected = bulkCheckboxes.filter(checkbox => checkbox.checked && checkbox.dataset.exported === 'true');
+        if (selected.length === 0) {
+            event.preventDefault();
+            return;
+        }
+        selected.forEach(checkbox => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = checkbox.value;
+            bulkClearForm.append(input);
+        });
+    });
     updateBulkSelection();
 
     document.querySelectorAll('.approval-export-form').forEach(form => {
@@ -189,8 +208,13 @@
                         rowButton.classList.remove('border-emerald-300', 'bg-emerald-50', 'text-emerald-800', 'hover:bg-emerald-100');
                         rowButton.classList.add('border-green-500', 'bg-green-300', 'text-green-950', 'hover:bg-green-400');
                     }
+                    const resetForm = row.querySelector('.approval-export-reset-form');
+                    resetForm?.classList.remove('hidden');
+                    resetForm?.classList.add('inline-block');
+                    const checkbox = row.querySelector('.approval-bulk-checkbox');
+                    if (checkbox) checkbox.dataset.exported = 'true';
                 });
-                if (form === bulkForm) updateBulkSelection();
+                updateBulkSelection();
             } catch (error) {
                 label.textContent = previousLabel;
                 alert(error.message || 'Export Excel gagal. Coba lagi.');

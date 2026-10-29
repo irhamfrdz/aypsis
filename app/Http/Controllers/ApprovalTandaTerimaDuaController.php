@@ -252,6 +252,35 @@ class ApprovalTandaTerimaDuaController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    public function clearExport(string $sourceType, int $id): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        self::SOURCES[$sourceType]::findOrFail($id);
+        DB::table('approval_tanda_terima_2_exports')
+            ->where('source_type', $sourceType)
+            ->where('source_id', $id)
+            ->delete();
+
+        return back()->with('success', 'Tanda sudah diexport berhasil dilepas.');
+    }
+
+    public function clearExportBulk(Request $request, string $sourceType): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+        ]);
+        $ids = array_map('intval', $validated['ids']);
+        abort_if(self::SOURCES[$sourceType]::whereKey($ids)->count() !== count($ids), 404);
+        DB::table('approval_tanda_terima_2_exports')
+            ->where('source_type', $sourceType)
+            ->whereIn('source_id', $ids)
+            ->delete();
+
+        return back()->with('success', 'Tanda sudah diexport pada pilihan berhasil dilepas.');
+    }
+
     public function setIncomplete(Request $request, string $sourceType, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
