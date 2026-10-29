@@ -32,7 +32,7 @@ test('NON KARY PPU allowance displays zero and omits a saved manual amount on su
     } finally { globalThis.document = previousDocument; }
 });
 
-test('JKN-KIS employer burden displays zero and cannot submit a manual amount', () => {
+test('JKN-KIS employer burden supports manual amounts and automatic Jamsostek costs', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };
     const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
@@ -47,11 +47,11 @@ test('JKN-KIS employer burden displays zero and cannot submit a manual amount', 
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     try {
-        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 0);
-        assert.equal(input.value, '0');
-        assert.equal(input.disabled, true);
-        assert.equal(input.name, undefined);
-        assert.equal(status.textContent, 'Tidak dihitung');
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 99999);
+        assert.equal(input.value, '99999');
+        assert.equal(input.disabled, false);
+        assert.equal(input.name, 'details[1][allowance_pt]');
+        assert.equal(status.textContent, 'Diubah manual');
         row.dataset.groupJamsostek = 'PPU';
         row.dataset.tipeJamsostek = 'NON KARY';
         delete row.allowanceOverrides.pt;
@@ -59,8 +59,8 @@ test('JKN-KIS employer burden displays zero and cannot submit a manual amount', 
         assert.equal(input.disabled, false);
         assert.equal(status.textContent, 'Sesuai rumus');
         row.dataset.tipeJamsostek = 'KARYAWAN';
-        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 0);
-        assert.equal(input.disabled, true);
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 296400);
+        assert.equal(input.disabled, false);
         row.dataset.groupJkn = 'LAIN';
         delete row.allowanceOverrides.pt;
         assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 296400);
@@ -207,7 +207,7 @@ test('changing membership data invalidates the cached NON KARY employer burden',
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
-    assert.equal(calculate(), 0);
+    assert.equal(calculate(), 100000);
     row.dataset.groupJamsostek = 'PPU';
     row.dataset.tipeJamsostek = 'NON KARY';
     assert.equal(calculate(), 120000);

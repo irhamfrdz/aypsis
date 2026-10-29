@@ -93,13 +93,9 @@ class PranotaBpjsDetail extends Model
 
     public function summaryBurden(string $key): float
     {
-        $jknGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_jkn));
         $jamsostekGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_bp_jamsostek));
         $jamsostekType = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
         $useTotalPpu = $jamsostekGroup === 'PPU' && $jamsostekType === 'NONKARY';
-        if ($key === 'pt' && $jknGroup === 'JKNKIS' && ! $useTotalPpu) {
-            return 0;
-        }
         if ($key === 'kary_jht' && in_array($jamsostekType, ['NONKARY', 'NONKARYUMKMNONPP'], true)) {
             return 0;
         }

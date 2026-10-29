@@ -8,8 +8,6 @@
     const usesNonKaryPpuTotal = values => String(values.group_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'PPU'
         && String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
-    const isPtExcluded = values => !usesNonKaryPpuTotal(values) && String(values.group_jkn || '').toUpperCase()
-        .replace(/[\s_-]+/g, '') === 'JKNKIS';
     const isPpuExcluded = values => String(values.tipe_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARY';
 
@@ -36,7 +34,7 @@
             jkn: isJknExcluded(values) ? 0 : (Number(values.kis_tunjangan) || 0),
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
-            pt: isPtExcluded(values) ? 0 : (useTotalPpu ? ppuTotal : (isUmkmNonPp ? umkmCost : employerCost)),
+            pt: useTotalPpu ? ppuTotal : (isUmkmNonPp ? umkmCost : employerCost),
             non_kary: (nonJkn ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0)
                 + (isUmkmNonPp ? umkmDebt : (nonJamsostek ? employeeDebt + employerCost
                 + n('jkk_tunjangan') + n('jkm_tunjangan') + n('bpu_jkk_tunjangan') + n('bpu_jkm')
@@ -107,8 +105,6 @@
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');
-        if (isPtExcluded({ group_jkn: row.dataset.groupJkn, group_bp_jamsostek: row.dataset.groupJamsostek,
-            tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('pt');
         const signature = JSON.stringify([automaticAmounts, row.allowanceOverrides, index, excludedKeys]);
         const cached = rowStates.get(row);
         if (cached?.signature === signature) return cached.amounts;
@@ -176,8 +172,7 @@
                 if (manual && index) input.name = `details[${index}][allowance_${key}]`;
                 else input.removeAttribute('name');
                 if (document.activeElement !== input) input.value = formatNumber(amount);
-                input.title = excluded ? (key === 'pt' ? 'Tidak dihitung untuk group JKN-KIS'
-                    : key === 'jkn' ? 'Tidak dihitung untuk tipe JKN ' + row.dataset.tipeJkn
+                input.title = excluded ? (key === 'jkn' ? 'Tidak dihitung untuk tipe JKN ' + row.dataset.tipeJkn
                     : 'Tidak dihitung untuk tipe BP Jamsostek ' + row.dataset.tipeJamsostek)
                     : (manual ? 'Nominal manual' : 'Nominal otomatis sesuai rumus');
                 cell.querySelector('.bpjs-allowance-editor').dataset.manual = String(manual);
