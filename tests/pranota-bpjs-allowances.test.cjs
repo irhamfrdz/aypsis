@@ -55,7 +55,7 @@ test('JKN allowance excludes exact NON KARY JKN type while preserving the contri
 });
 
 test('UMKM NON PP non employee burden takes only noncrew JHT debt for its Jamsostek membership', () => {
-    const values = { noncrew_jht_hutang: 70000.25, noncrew_jht_biaya: 19000,
+    const values = { group_bp_jamsostek: 'CILANDAK-HL', noncrew_jht_hutang: 70000.25, noncrew_jht_biaya: 19000,
         noncrew_jkk_tunjangan: 9500, noncrew_jkm_tunjangan: 6800,
         jht_hutang: 99999, jp_hutang: 2000, kis_tunjangan: 200000, bpjs_ketenagakerjaan: 50000 };
     for (const type of ['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP']) {
@@ -71,7 +71,7 @@ test('UMKM NON PP non employee burden takes only noncrew JHT debt for its Jamsos
 });
 
 test('NON KARY-UMKM NON PP is excluded from employee JHT while regular UMKM is still counted', () => {
-    const values = { noncrew_jht_hutang: 70000, jp_hutang: 2000, bpjs_ketenagakerjaan: 50000 };
+    const values = { group_bp_jamsostek: 'CILANDAK-HL', noncrew_jht_hutang: 70000, jp_hutang: 2000, bpjs_ketenagakerjaan: 50000 };
     for (const type of ['NON KARY-UMKM NON PP', ' non kary - umkm non pp ', 'NON_KARY_UMKM_NON_PP']) {
         const result = BpjsAllowances.calculate({ ...values, tipe_bp_jamsostek: type });
         assert.equal(result.kary_jht, 0);
@@ -95,7 +95,7 @@ test('NON KARY-UMKM retains employee debt and is distinct from exact NON KARY', 
         const result = BpjsAllowances.calculate({ ...values, tipe_jkn: type, tipe_bp_jamsostek: type });
         assert.equal(result.kary_jht, 0);
         assert.equal(result.kary_jkn, 0);
-        assert.equal(result.non_kary, 88000.25);
+        assert.equal(result.non_kary, 0);
     }
 });
 
@@ -128,7 +128,7 @@ test('terminated CREW with Special Case retains employee JHT and JKN debt like a
     }
     const nonEmployee = BpjsAllowances.calculate({ ...values, is_special_case: true, tipe_bp_jamsostek: 'NON KARY' });
     assert.equal(nonEmployee.kary_jht, 0);
-    assert.equal(nonEmployee.non_kary, 25650);
+    assert.equal(nonEmployee.non_kary, 0);
 });
 
 test('employer burden uses Jamsostek costs and NON KARY PPU totals regardless of JKN group', () => {
@@ -215,7 +215,7 @@ test('burdens sum the contribution amounts and route non employee memberships se
     assert.equal(nonJkn.kary_jht, 180000);
     assert.equal(nonJkn.kary_jkn, 0);
     assert.equal(nonJkn.pt, 285000.25);
-    assert.equal(nonJkn.non_kary, 250000);
+    assert.equal(nonJkn.non_kary, 0);
     const special = BpjsAllowances.calculate({ ...values, is_special_case: '1' });
     assert.equal(special.kary_jht, 180000);
     assert.equal(special.kary_jkn, 50000);
@@ -230,7 +230,7 @@ test('BPU-SUPIR UMKM Non PP adds JHT biaya, JKK and JKM for create and aggregate
             noncrew_jkk_tunjangan: 22250, noncrew_jkm_tunjangan: 3400 };
         const result = BpjsAllowances.calculate(values);
         assert.equal(result.pt, 44650);
-        assert.equal(result.non_kary, 81000);
+        assert.equal(result.non_kary, ['BPUSUPIRJKTPLUIT', 'CILANDAKHL'].includes(group.toUpperCase().replace(/[\s_-]+/g, '')) ? 81000 : 0);
         assert.equal(result.bpu, 0);
         assert.equal(result.kary_jht, 0);
         assert.equal(BpjsAllowances.calculate({ ...values, aggregate_jamsostek: true,
@@ -244,13 +244,30 @@ test('JKN-KIS NON KARY moves only KIS biaya to employer burden', () => {
     for (const group of ['JKN-KIS', ' jkn - kis ', 'JKN_KIS']) {
         const result = BpjsAllowances.calculate({ ...values, group_jkn: group });
         assert.equal(result.pt, 229195.2);
-        assert.equal(result.non_kary, 57298.8);
+        assert.equal(result.non_kary, 0);
         assert.equal(result.jkn, 0);
     }
     assert.equal(BpjsAllowances.calculate({ ...values, noncrew_jht_biaya: 8000 }).pt, 237195.2);
     const active = BpjsAllowances.calculate({ ...values, kis_biaya: 0, kis_tunjangan: 229195.2 });
     assert.equal(active.pt, 0);
-    assert.equal(active.non_kary, 286494);
+    assert.equal(active.non_kary, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).pt, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'KARYAWAN' }).pt, 0);
+});
+
+test('non employee burden takes only JHT debt for the two eligible groups and exact UMKM Non PP type', () => {
+    const values = { noncrew_jht_hutang: 70000.25, jht_hutang: 99999, jp_hutang: 2000,
+        noncrew_jht_biaya: 19000, noncrew_jkk_tunjangan: 22250, noncrew_jkm_tunjangan: 3400,
+        kis_tunjangan: 200000, kis_biaya: 50000, bpjs_ketenagakerjaan: 50000, tipe_jkn: 'NON KARY' };
+    for (const group of ['CILANDAK-HL', ' cilandak - hl ', 'BPU-SUPIR JKT PLUIT', ' bpu_supir jkt pluit ']) {
+        for (const type of ['NON KARY-UMKM non PP', 'NON_KARY_UMKM_NON_PP']) {
+            const result = BpjsAllowances.calculate({ ...values, group_bp_jamsostek: group, tipe_bp_jamsostek: type });
+            assert.equal(result.non_kary, 70000.25);
+        }
+        assert.equal(BpjsAllowances.calculate({ ...values, group_bp_jamsostek: group, tipe_bp_jamsostek: 'HARIAN' }).non_kary, 0);
+    }
+    for (const group of ['', 'PPU', 'BPU-SUPIR', 'BPU-CREW', 'LAIN']) {
+        assert.equal(BpjsAllowances.calculate({ ...values, group_bp_jamsostek: group,
+            tipe_bp_jamsostek: 'NON KARY-UMKM NON PP' }).non_kary, 0);
+    }
 });

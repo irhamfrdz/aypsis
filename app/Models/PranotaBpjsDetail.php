@@ -99,6 +99,11 @@ class PranotaBpjsDetail extends Model
         if ($key === 'kary_jht' && in_array($jamsostekType, ['NONKARY', 'NONKARYUMKMNONPP'], true)) {
             return 0;
         }
+        $useNonEmployeeDebt = in_array($jamsostekGroup, ['CILANDAKHL', 'BPUSUPIRJKTPLUIT'], true)
+            && $jamsostekType === 'NONKARYUMKMNONPP';
+        if ($key === 'non_kary' && ! $useNonEmployeeDebt) {
+            return 0;
+        }
         if (isset($this->tunjangan_manual[$key])) {
             return (float) $this->tunjangan_manual[$key];
         }
@@ -125,9 +130,7 @@ class PranotaBpjsDetail extends Model
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
             'pt' => $jknEmployerCost + ($useTotalPpu ? $ppuTotal : ($useNoncrewCost ? $noncrewCost : $cost)),
-            'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya - $jknEmployerCost + (float) $this->bpjs_ketenagakerjaan : 0)
-                + ($isUmkmNonPp ? $umkmDebt : ($nonJamsostek ? $debt + $cost
-                + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0)),
+            'non_kary' => $umkmDebt,
             default => 0,
         };
     }

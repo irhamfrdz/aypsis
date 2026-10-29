@@ -99,7 +99,7 @@ test('UMKM NON PP JHT debt updates the non employee burden on saved and edited r
         ['.input-jht-hutang', { value: '70000.25' }], ['.select-tipe-jkn', { value: 'manual' }],
         ['input[name$="[rincian_bpjs]"]', { value: JSON.stringify({ noncrew_jht_hutang: 70000.25 }) }],
     ]);
-    const row = { dataset: { tipeJamsostek: 'NON KARY-UMKM NON PP' },
+    const row = { dataset: { groupJamsostek: 'CILANDAK-HL', tipeJamsostek: 'NON KARY-UMKM NON PP' },
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).non_kary;
@@ -448,12 +448,41 @@ test('ERWIN special case row includes KIS biaya and recalculates on status chang
         querySelector: selector => fields.get(selector) || null };
     let result = BpjsAllowances.updateRow(row, {}, Number, String);
     assert.equal(result.pt, 229195.2);
-    assert.equal(result.non_kary, 57298.8);
+    assert.equal(result.non_kary, 0);
     fields.get('.input-kes').value = '230000.25';
     result = BpjsAllowances.updateRow(row, {}, Number, String);
     assert.equal(result.pt, 230000.25);
     row.dataset.isSpecialCase = '0';
     result = BpjsAllowances.updateRow(row, {}, Number, String);
     assert.equal(result.pt, 0);
-    assert.equal(result.non_kary, 287299.05);
+    assert.equal(result.non_kary, 0);
+});
+
+test('non employee burden drops excluded saved manual amounts and updates eligibility after refresh', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { activeElement: null };
+    const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
+    const status = {}, editor = { dataset: {} }, reset = {};
+    const fields = new Map([
+        ['.input-bpu-jkk', { value: '0' }], ['.input-noncrew-jht-hutang', { value: '70000' }],
+        ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
+        ['[data-allowance="non_kary"]', { querySelector: selector => ({ input,
+            '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
+    ]);
+    const row = { dataset: { groupJamsostek: 'BPU-SUPIR JKT PLUIT', tipeJamsostek: 'HARIAN' },
+        allowanceOverrides: { non_kary: 99999 }, querySelector: selector => fields.get(selector) || null };
+    try {
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 0);
+        assert.equal(input.disabled, true);
+        assert.equal(input.name, undefined);
+        assert.equal(status.textContent, 'Tidak dihitung');
+        delete row.allowanceOverrides.non_kary;
+        row.dataset.tipeJamsostek = 'NON KARY-UMKM non PP';
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 70000);
+        assert.equal(input.disabled, false);
+        row.dataset.groupJamsostek = 'CILANDAK-HL';
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 70000);
+        row.dataset.groupJamsostek = 'LAIN';
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 0);
+    } finally { globalThis.document = previousDocument; }
 });
