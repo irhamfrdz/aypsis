@@ -5,6 +5,33 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('JKN-KIS employer burden displays zero and cannot submit a manual amount', () => {
+    const previousDocument = globalThis.document;
+    globalThis.document = { activeElement: null };
+    const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
+    const status = {}, editor = { dataset: {} }, reset = {};
+    const fields = new Map([
+        ['.input-jht-biaya', { value: '192400' }], ['.input-jp-biaya', { value: '104000' }],
+        ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
+        ['[data-allowance="pt"]', { querySelector: selector => ({ input,
+            '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
+    ]);
+    const row = { dataset: { groupJkn: 'JKN-KIS' }, allowanceOverrides: { pt: 99999 },
+        querySelector: selector => fields.get(selector) || null };
+    const parse = value => Number(value) || 0;
+    try {
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 0);
+        assert.equal(input.value, '0');
+        assert.equal(input.disabled, true);
+        assert.equal(input.name, undefined);
+        assert.equal(status.textContent, 'Tidak dihitung');
+        row.dataset.groupJkn = 'LAIN';
+        delete row.allowanceOverrides.pt;
+        assert.equal(BpjsAllowances.updateRow(row, {}, parse, String).pt, 296400);
+        assert.equal(input.disabled, false);
+    } finally { globalThis.document = previousDocument; }
+});
+
 test('NON KARY JKN allowance shows zero and cannot submit a manual amount', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };
@@ -144,10 +171,12 @@ test('changing membership data invalidates the cached NON KARY employer burden',
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
-    assert.equal(calculate(), 250000.25);
+    assert.equal(calculate(), 0);
     row.dataset.groupJamsostek = 'PPU';
     row.dataset.tipeJamsostek = 'NON KARY';
-    assert.equal(calculate(), 370000.25);
+    assert.equal(calculate(), 0);
+    row.dataset.groupJkn = 'LAIN';
+    assert.equal(calculate(), 120000);
     row.dataset.tipeJkn = 'KARYAWAN';
     assert.equal(calculate(), 120000);
     row.dataset.tipeJamsostek = 'KARYAWAN';

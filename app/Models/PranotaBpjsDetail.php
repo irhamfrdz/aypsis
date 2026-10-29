@@ -89,6 +89,10 @@ class PranotaBpjsDetail extends Model
 
     public function summaryBurden(string $key): float
     {
+        $jknGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->group_jkn));
+        if ($key === 'pt' && $jknGroup === 'JKNKIS') {
+            return 0;
+        }
         $jamsostekType = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan?->tipe_bp_jamsostek));
         if ($key === 'kary_jht' && in_array($jamsostekType, ['NONKARY', 'NONKARYUMKMNONPP'], true)) {
             return 0;
@@ -111,15 +115,13 @@ class PranotaBpjsDetail extends Model
             ? (float) ($values['noncrew_jht_hutang'] ?? 0)
             : (float) $this->jht_hutang;
         $compact = fn ($value) => preg_replace('/[\s_-]+/', '', strtoupper((string) $value));
-        $useTotalJkn = $compact($this->karyawan?->group_jkn) === 'JKNKIS' && $compact($this->karyawan?->tipe_jkn) === 'NONKARY';
         $useTotalPpu = $compact($this->karyawan?->group_bp_jamsostek) === 'PPU' && $compact($this->karyawan?->tipe_bp_jamsostek) === 'NONKARY';
-        $nonKaryTotal = ($useTotalJkn ? (float) $this->bpjs_kesehatan + (float) $this->bpjs_ketenagakerjaan : 0)
-            + ($useTotalPpu ? $sum(['jht_biaya', 'jht_hutang', 'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang']) : 0);
+        $ppuTotal = $sum(['jht_biaya', 'jht_hutang', 'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang']);
 
         return match ($key) {
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
-            'pt' => $useTotalJkn || $useTotalPpu ? $nonKaryTotal : ($isUmkmNonPp ? $umkmCost : $cost),
+            'pt' => $useTotalPpu ? $ppuTotal : ($isUmkmNonPp ? $umkmCost : $cost),
             'non_kary' => ($nonJkn ? $this->kis_tunjangan + $this->kis_biaya + (float) $this->bpjs_ketenagakerjaan : 0)
                 + ($isUmkmNonPp ? $umkmDebt : ($nonJamsostek ? $debt + $cost
                 + $sum(['jkk_tunjangan', 'jkm_tunjangan', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan']) : 0)),
