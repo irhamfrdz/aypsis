@@ -74,6 +74,11 @@ class PembayaranPranotaOngkosTruk extends Model
         return $this->hasMany(PembayaranPranotaOngkosTrukItem::class, 'pembayaran_pranota_ongkos_truk_id');
     }
 
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaOngkosTrukAkunItem::class, 'pembayaran_pranota_ongkos_truk_id');
+    }
+
     /**
      * Relationship with User (created_by)
      */

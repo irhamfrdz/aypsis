@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranPranotaOngkosTrukController extends Controller
 {
@@ -169,7 +170,7 @@ class PembayaranPranotaOngkosTrukController extends Controller
 
     public function edit($id)
     {
-        $item = PembayaranPranotaOngkosTruk::with('pranotaOngkosTruks')->findOrFail($id);
+        $item = PembayaranPranotaOngkosTruk::with(['pranotaOngkosTruks', 'akunItems'])->findOrFail($id);
 
         if ($item->isCancelled()) {
             return redirect()->route('pembayaran-pranota-ongkos-truk.index')
@@ -192,7 +193,10 @@ class PembayaranPranotaOngkosTrukController extends Controller
             ->orderBy('nama_akun')
             ->get();
 
-        return view('pembayaran-pranota-ongkos-truk.edit', compact('item', 'pranotaOngkosTruks', 'akunCoa', 'selectedPranotaIds'));
+        $akunBiaya = Coa::orderBy('nomor_akun')->get();
+        $akunTruckingId = Coa::where('nama_akun', 'Biaya Trucking')->value('id');
+
+        return view('pembayaran-pranota-ongkos-truk.edit', compact('item', 'pranotaOngkosTruks', 'akunCoa', 'akunBiaya', 'akunTruckingId', 'selectedPranotaIds'));
     }
 
     public function update(Request $request, $id)
@@ -217,7 +221,24 @@ class PembayaranPranotaOngkosTrukController extends Controller
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'akun_items' => ['required', 'array', 'min:1'],
+            'akun_items.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id'],
+            'akun_items.*.nominal' => ['required', 'numeric', 'gt:0'],
+            'akun_items.*.memo' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $accountTotal = collect($validated['akun_items'])->sum(fn ($line) => (int) round((float) $line['nominal'] * 100));
+        $paymentTotal = (int) round((float) $validated['total_tagihan_setelah_penyesuaian'] * 100);
+        if ($accountTotal !== $paymentTotal) {
+            throw ValidationException::withMessages(['akun_items' => 'Total biaya seluruh akun harus sama dengan total akhir pembayaran.']);
+        }
+        $bankAccount = Coa::where('nama_akun', $validated['bank'])->first();
+        if (! $bankAccount) {
+            throw ValidationException::withMessages(['bank' => 'Akun Bank/Kas tidak ditemukan.']);
+        }
+        if (collect($validated['akun_items'])->contains(fn ($line) => (int) $line['akun_coa_id'] === $bankAccount->id)) {
+            throw ValidationException::withMessages(['akun_items' => 'Akun biaya harus berbeda dari akun Bank/Kas.']);
+        }
 
         DB::beginTransaction();
 
@@ -231,11 +252,13 @@ class PembayaranPranotaOngkosTrukController extends Controller
             }
 
             // Revert accounting
-            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            if (! $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal lama gagal dibatalkan.');
+            }
 
             // Update main record
             $paymentData = $validated;
-            unset($paymentData['pranota_ongkos_truk_ids']);
+            unset($paymentData['pranota_ongkos_truk_ids'], $paymentData['akun_items']);
             $paymentData['updated_by'] = Auth::id();
 
             $pembayaran->update($paymentData);
@@ -258,31 +281,10 @@ class PembayaranPranotaOngkosTrukController extends Controller
 
             $pembayaran->pranotaOngkosTruks()->sync($syncData);
 
-            // Accounting Entry (Double Book)
-            $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
-            $bankName = $validated['bank'];
-            $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = 'Update Pembayaran Pranota Ongkos Truk - '.$pembayaran->nomor_pembayaran;
+            $pembayaran->akunItems()->delete();
+            $pembayaran->akunItems()->createMany(array_values($validated['akun_items']));
 
-            if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            }
+            $this->recordAccountEntries($pembayaran);
 
             DB::commit();
 
@@ -299,7 +301,7 @@ class PembayaranPranotaOngkosTrukController extends Controller
 
     public function show($id)
     {
-        $item = PembayaranPranotaOngkosTruk::with(['pranotaOngkosTruks.creator', 'createdBy'])->findOrFail($id);
+        $item = PembayaranPranotaOngkosTruk::with(['pranotaOngkosTruks.creator', 'createdBy', 'akunItems.akunCoa'])->findOrFail($id);
 
         return view('pembayaran-pranota-ongkos-truk.show', compact('item'));
     }
@@ -319,7 +321,9 @@ class PembayaranPranotaOngkosTrukController extends Controller
             }
 
             // Delete accounting entries
-            $this->coaTransactionService->deleteTransactionByReference($item->nomor_pembayaran);
+            if (! $this->coaTransactionService->deleteTransactionByReference($item->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal pembayaran gagal dihapus.');
+            }
 
             $item->delete();
             DB::commit();
@@ -362,33 +366,12 @@ class PembayaranPranotaOngkosTrukController extends Controller
             // Check if transaction already exists in COA
             $existing = \App\Models\CoaTransaction::where('nomor_referensi', $pembayaran->nomor_pembayaran)->first();
             if ($existing) {
+                DB::rollBack();
+
                 return back()->with('error', 'Data ini sudah ada di jurnal COA.');
             }
 
-            $totalFinal = $pembayaran->total_tagihan_setelah_penyesuaian;
-            $bankName = $pembayaran->bank;
-            $jenisTransaksi = $pembayaran->jenis_transaksi;
-            $desc = 'Pembayaran Pranota Ongkos Truk - '.$pembayaran->nomor_pembayaran.' (Synced)';
-
-            if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    $pembayaran->tanggal_pembayaran,
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $pembayaran->tanggal_pembayaran,
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            }
+            $this->recordAccountEntries($pembayaran);
 
             DB::commit();
 
@@ -398,6 +381,61 @@ class PembayaranPranotaOngkosTrukController extends Controller
             Log::error('Error syncToCoa POT: '.$e->getMessage());
 
             return back()->with('error', 'Gagal sinkronisasi: '.$e->getMessage());
+        }
+    }
+
+    private function recordAccountEntries(PembayaranPranotaOngkosTruk $pembayaran): void
+    {
+        $bank = Coa::where('nama_akun', $pembayaran->bank)->firstOrFail();
+        $lines = $pembayaran->akunItems()->with('akunCoa')->get();
+        if ($lines->isEmpty()) {
+            $lines = collect([(object) [
+                'akunCoa' => Coa::where('nama_akun', 'Biaya Trucking')->firstOrFail(),
+                'nominal' => $pembayaran->total_tagihan_setelah_penyesuaian,
+                'memo' => null,
+            ]]);
+        }
+
+        $bankDebit = $pembayaran->jenis_transaksi === 'Debit';
+        $tanggal = $pembayaran->tanggal_pembayaran->format('Y-m-d');
+        $reference = $pembayaran->nomor_pembayaran;
+        $type = 'Pembayaran Pranota Ongkos Truk';
+        $description = $type.' - '.$reference;
+
+        foreach ($lines as $line) {
+            $account = $line->akunCoa;
+            if (! $account || $account->id === $bank->id) {
+                throw new \RuntimeException('Akun biaya tidak valid atau sama dengan akun Bank/Kas.');
+            }
+            $amount = (float) $line->nominal;
+            $memo = trim((string) ($line->memo ?? ''));
+            $lineDescription = $memo === '' ? $description : $description.' - '.$memo;
+            if (! $this->coaTransactionService->recordTransaction(
+                $account->nama_akun,
+                $bankDebit ? 0 : $amount,
+                $bankDebit ? $amount : 0,
+                $tanggal,
+                $reference,
+                $type,
+                $lineDescription,
+                $account->id
+            )) {
+                throw new \RuntimeException('Jurnal akun biaya gagal dicatat.');
+            }
+        }
+
+        $amount = (float) $pembayaran->total_tagihan_setelah_penyesuaian;
+        if (! $this->coaTransactionService->recordTransaction(
+            $bank->nama_akun,
+            $bankDebit ? $amount : 0,
+            $bankDebit ? 0 : $amount,
+            $tanggal,
+            $reference,
+            $type,
+            $description,
+            $bank->id
+        )) {
+            throw new \RuntimeException('Jurnal Bank/Kas gagal dicatat.');
         }
     }
 }

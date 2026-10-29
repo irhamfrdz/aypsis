@@ -65,6 +65,23 @@
                 </div>
             </div>
 
+            @if($item->akunItems->isNotEmpty())
+                <div class="mb-8">
+                    <h4 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Rincian Akun Biaya</h4>
+                    <div class="divide-y divide-gray-200 rounded border border-gray-200">
+                        @foreach($item->akunItems as $line)
+                            <div class="flex justify-between gap-4 px-4 py-3 text-sm">
+                                <div>
+                                    <div class="font-medium">{{ $line->akunCoa?->nomor_akun }} - {{ $line->akunCoa?->nama_akun ?? 'Akun dihapus' }}</div>
+                                    @if($line->memo)<p class="text-xs text-gray-500 mt-1">Memo: {{ $line->memo }}</p>@endif
+                                </div>
+                                <strong class="whitespace-nowrap">Rp {{ number_format($line->nominal, 0, ',', '.') }}</strong>
+                            </div>
+                        @endforeach
+                    </div>
+                </div>
+            @endif
+
             <!-- Daftar Pranota Terkait -->
             <div>
                 <h4 class="text-sm font-bold text-gray-800 mb-3 uppercase tracking-wider">Pranota yang Dibayar</h4>
