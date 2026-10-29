@@ -183,6 +183,7 @@
 
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-performance.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-performance.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
@@ -198,6 +199,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let rowCount = 0;
     let isGenerating = false;
     let rowTarget = container;
+    const pendingUpdate = BpjsPerformance.scheduler(() => calculateTotals());
     const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     function formatNumber(num) {
@@ -218,28 +220,33 @@ document.addEventListener('DOMContentLoaded', async function() {
         let sumKes = 0, sumKesBiaya = 0, sumKet = 0;
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
-        document.querySelectorAll('.input-kes').forEach(i => sumKes += parseIdNumber(i.value));
-        document.querySelectorAll('[data-jkn-biaya] .input-kes').forEach(i => sumKesBiaya += parseIdNumber(i.value));
-        document.querySelectorAll('.input-ket').forEach(i => sumKet += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jht-biaya').forEach(i => sumJhtB += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jht-hutang').forEach(i => sumJhtH += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jkk').forEach(i => sumJkk += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jkm').forEach(i => sumJkm += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jp-biaya').forEach(i => sumJpB += parseIdNumber(i.value));
-        document.querySelectorAll('.input-jp-hutang').forEach(i => sumJpH += parseIdNumber(i.value));
+        container.querySelectorAll('tr.detail-row').forEach(row => {
+            const read = selector => BpjsPerformance.readNumber(row, selector, parseIdNumber);
+            const kes = read('.input-kes');
+            sumKes += kes;
+            sumKesBiaya += BpjsJknColumns.split(kes,
+                BpjsPerformance.field(row, '.tipe-karyawan-hidden-input')?.value, row.dataset.isSpecialCase).biaya;
+            sumKet += read('.input-ket');
+            sumJhtB += read('.input-jht-biaya');
+            sumJhtH += read('.input-jht-hutang');
+            sumJkk += read('.input-jkk');
+            sumJkm += read('.input-jkm');
+            sumJpB += read('.input-jp-biaya');
+            sumJpH += read('.input-jp-hutang');
+        });
 
-        document.getElementById('total_kes').innerText = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').innerText = 'Rp ' + formatNumber(sumKesBiaya);
-        document.getElementById('total_ket').innerText = 'Rp ' + formatNumber(sumKet);
-        document.getElementById('total_jht_biaya').innerText = 'Rp ' + formatNumber(sumJhtB);
-        document.getElementById('total_jht_hutang').innerText = 'Rp ' + formatNumber(sumJhtH);
-        document.getElementById('total_jkk').innerText = 'Rp ' + formatNumber(sumJkk);
-        document.getElementById('total_jkm').innerText = 'Rp ' + formatNumber(sumJkm);
-        document.getElementById('total_jp_biaya').innerText = 'Rp ' + formatNumber(sumJpB);
-        document.getElementById('total_jp_hutang').innerText = 'Rp ' + formatNumber(sumJpH);
+        document.getElementById('total_kes').textContent = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
+        document.getElementById('total_ket').textContent = 'Rp ' + formatNumber(sumKet);
+        document.getElementById('total_jht_biaya').textContent = 'Rp ' + formatNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').textContent = 'Rp ' + formatNumber(sumJhtH);
+        document.getElementById('total_jkk').textContent = 'Rp ' + formatNumber(sumJkk);
+        document.getElementById('total_jkm').textContent = 'Rp ' + formatNumber(sumJkm);
+        document.getElementById('total_jp_biaya').textContent = 'Rp ' + formatNumber(sumJpB);
+        document.getElementById('total_jp_hutang').textContent = 'Rp ' + formatNumber(sumJpH);
         
         const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
-        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(grandTotal);
+        document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(grandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
@@ -415,8 +422,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             const jkm = parseIdNumber(inputJkm.value);
             const jpB = parseIdNumber(inputJpBiaya.value);
             const jpH = parseIdNumber(inputJpHutang.value);
-            subtotalText.innerText = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + jpB + jpH);
-            calculateTotals();
+            subtotalText.textContent = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + jpB + jpH);
+            if (!isGenerating) pendingUpdate.schedule();
         };
 
         const inputs = [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
@@ -628,12 +635,14 @@ document.addEventListener('DOMContentLoaded', async function() {
 
     document.getElementById('pranota-form').addEventListener('submit', function(event) {
         if (isGenerating) { event.preventDefault(); return; }
+        pendingUpdate.flush();
+        BpjsAllowances.flush(container);
         prepareBpjsSubmission(this, parseIdNumber);
     });
 
     function updateRowNumbers() {
         document.querySelectorAll('.row-number').forEach((td, index) => {
-            td.innerText = index + 1;
+            td.textContent = index + 1;
         });
     }
 
@@ -652,7 +661,11 @@ document.addEventListener('DOMContentLoaded', async function() {
         rowTarget = fragment;
         rowCount = 0;
         try {
-            await processBpjsBatch(items, createRow, (done, total) => {
+            await processBpjsBatch(items, item => {
+                createRow(item);
+                const row = rowTarget.lastElementChild;
+                if (row) BpjsAllowances.updateRow(row, container, parseIdNumber, formatNumber);
+            }, (done, total) => {
                 if (button) button.textContent = `Menghitung ${done}/${total} karyawan...`;
             });
             if (rowCount === 0) addRow(null);

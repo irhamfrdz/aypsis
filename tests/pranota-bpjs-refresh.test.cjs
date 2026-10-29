@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+require('../public/js/pranota-bpjs-batch.js');
 require('../public/js/pranota-bpjs-refresh.js');
 
 test('refresh adds eligible new employees once without rebuilding existing rows', async () => {

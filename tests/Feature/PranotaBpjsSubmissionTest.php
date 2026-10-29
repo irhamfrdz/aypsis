@@ -58,13 +58,17 @@ class PranotaBpjsSubmissionTest extends TestCase
         $data = ['tanggal_pranota' => '2026-10-28', 'periode_bulan' => 10, 'periode_tahun' => 2026,
             'details_json' => json_encode($details)];
         $controller = new PranotaBpjsController;
+        DB::enableQueryLog();
         $controller->store(Request::create('/', 'POST', $data));
         $header = PranotaBpjsHeader::firstOrFail();
         foreach (['create', 'update'] as $action) {
             if ($action === 'update') {
+                DB::flushQueryLog();
                 $controller->update(Request::create('/', 'PUT', $data), $header);
                 $header->refresh();
             }
+            $insertCount = collect(DB::getQueryLog())->filter(fn ($entry) => preg_match('/^insert into ["`]?pranota_bpjs_details/i', $entry['query']))->count();
+            $this->assertSame(7, $insertCount, '264 detail rows should use seven batch inserts on '.$action);
             $this->assertEquals(264, $header->total_karyawan);
             $this->assertSame(264, $header->details()->count());
             $this->assertSame('229195.20', $header->details()->firstOrFail()->bpjs_kesehatan);
@@ -101,6 +105,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertStringContainsString('Jamsostek Gabungan', $legacyHtml);
             $this->assertStringContainsString('data lama tanpa rincian PPU/BPU terpisah', $legacyHtml);
         }
+        DB::disableQueryLog();
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('name');

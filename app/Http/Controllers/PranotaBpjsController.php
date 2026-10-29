@@ -41,8 +41,9 @@ class PranotaBpjsController extends Controller
             $query->where('status', $request->status);
         }
 
-        $totalNominal = (clone $query)->sum('grand_total');
-        $draftCount = (clone $query)->where('status', 'draft')->count();
+        $summary = (clone $query)->selectRaw("COALESCE(SUM(grand_total), 0) AS total_nominal, COALESCE(SUM(CASE WHEN status = 'draft' THEN 1 ELSE 0 END), 0) AS draft_count")->first();
+        $totalNominal = $summary->total_nominal;
+        $draftCount = (int) $summary->draft_count;
         $statuses = PranotaBpjsHeader::query()->distinct()->orderBy('status')->pluck('status');
         $isHistory = $request->routeIs('pranota-bpjs.history');
 
@@ -161,6 +162,8 @@ class PranotaBpjsController extends Controller
             $totalKes = 0;
             $totalKet = 0;
             $totalKaryawan = 0;
+            $detailRows = [];
+            $timestamp = now();
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
@@ -188,7 +191,7 @@ class PranotaBpjsController extends Controller
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
                         $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
-                        PranotaBpjsDetail::create([
+                        $detailRows[] = (new PranotaBpjsDetail([
                             'pranota_bpjs_header_id' => $header->id,
                             'tipe_karyawan' => $tipeKaryawan,
                             'karyawan_id' => $detail['karyawan_id'],
@@ -204,13 +207,20 @@ class PranotaBpjsController extends Controller
                             'rincian_bpjs' => $this->componentBreakdown($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
                             'no_voucher' => $detail['no_voucher'] ?? null,
-                        ]);
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ]))->getAttributes();
 
                         $totalKes += $jknTotal;
                         $totalKet += $jamsostekTotal;
                         $totalKaryawan++;
                     }
                 }
+            }
+
+            // Keep each statement below SQLite's parameter limit as well as MySQL's.
+            foreach (array_chunk($detailRows, 40) as $chunk) {
+                PranotaBpjsDetail::query()->insert($chunk);
             }
 
             $header->update([
@@ -249,7 +259,7 @@ class PranotaBpjsController extends Controller
 
         $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get()
+            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti', 'tanggal_lahir'])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
@@ -260,7 +270,7 @@ class PranotaBpjsController extends Controller
 
         $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get()
+            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti'])
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
@@ -334,6 +344,8 @@ class PranotaBpjsController extends Controller
             $totalKes = 0;
             $totalKet = 0;
             $totalKaryawan = 0;
+            $detailRows = [];
+            $timestamp = now();
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
@@ -361,7 +373,7 @@ class PranotaBpjsController extends Controller
 
                     if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
                         $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
-                        PranotaBpjsDetail::create([
+                        $detailRows[] = (new PranotaBpjsDetail([
                             'pranota_bpjs_header_id' => $pranota_bpj->id,
                             'tipe_karyawan' => $tipeKaryawan,
                             'karyawan_id' => $detail['karyawan_id'],
@@ -377,13 +389,20 @@ class PranotaBpjsController extends Controller
                             'rincian_bpjs' => $this->componentBreakdown($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
                             'no_voucher' => $detail['no_voucher'] ?? null,
-                        ]);
+                            'created_at' => $timestamp,
+                            'updated_at' => $timestamp,
+                        ]))->getAttributes();
 
                         $totalKes += $jknTotal;
                         $totalKet += $jamsostekTotal;
                         $totalKaryawan++;
                     }
                 }
+            }
+
+            // Keep each statement below SQLite's parameter limit as well as MySQL's.
+            foreach (array_chunk($detailRows, 40) as $chunk) {
+                PranotaBpjsDetail::query()->insert($chunk);
             }
 
             $pranota_bpj->update([

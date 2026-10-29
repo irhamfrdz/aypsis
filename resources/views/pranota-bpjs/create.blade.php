@@ -437,6 +437,7 @@
 </div>
 
 <script src="{{ asset('js/pranota-bpjs-jkn.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jkn.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-performance.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-performance.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-allowances.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-allowances.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
@@ -468,6 +469,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let rowTarget = container;
     const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     let isRefreshing = false;
+    const pendingUpdate = BpjsPerformance.scheduler(() => applyFilter());
+    const pendingSearch = BpjsPerformance.scheduler(() => applyFilter(), 150);
 
     function formatNumber(num) {
         return amountFormatter.format(num || 0);
@@ -484,13 +487,8 @@ document.addEventListener('DOMContentLoaded', function() {
      * Helper to toggle class hidden on selectors
      */
     function toggleElements(selector, show) {
-        document.querySelectorAll(selector).forEach(el => {
-            if (show) {
-                el.classList.remove('hidden');
-            } else {
-                el.classList.add('hidden');
-            }
-        });
+        const table = document.getElementById('tabel-detail');
+        table.classList.toggle('bpjs-hide-' + selector.slice(1), !show);
     }
 
     /**
@@ -599,7 +597,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 visibleRows++;
                 const rowNumEl = tr.querySelector('.row-number');
                 if (rowNumEl) {
-                    rowNumEl.innerText = visibleRows;
+                    if (rowNumEl.textContent !== String(visibleRows)) rowNumEl.textContent = visibleRows;
                 }
             } else {
                 tr.classList.add('hidden');
@@ -624,10 +622,10 @@ document.addEventListener('DOMContentLoaded', function() {
         if (filterStatusBadge && filterCountText) {
             if (isFiltered) {
                 filterStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 shadow-2xs';
-                filterCountText.innerText = `Menampilkan ${visibleRows} dari ${totalRows} Karyawan`;
+                filterCountText.textContent = `Menampilkan ${visibleRows} dari ${totalRows} Karyawan`;
             } else {
                 filterStatusBadge.className = 'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600';
-                filterCountText.innerText = `${totalRows} Karyawan`;
+                filterCountText.textContent = `${totalRows} Karyawan`;
             }
         }
 
@@ -666,21 +664,21 @@ document.addEventListener('DOMContentLoaded', function() {
         allRows.forEach(tr => {
             const isVisible = !tr.classList.contains('hidden');
 
-            const valKes   = parseIdNumber(tr.querySelector('.input-kes')?.value);
-            const valKet   = parseIdNumber(tr.querySelector('.input-ket')?.value);
-            const valJhtB  = parseIdNumber(tr.querySelector('.input-jht-biaya')?.value);
-            const valJhtH  = parseIdNumber(tr.querySelector('.input-jht-hutang')?.value);
-            const valJkk   = parseIdNumber(tr.querySelector('.input-jkk')?.value);
-            const valJkm   = parseIdNumber(tr.querySelector('.input-jkm')?.value);
-            const valBpuJht = parseIdNumber(tr.querySelector('.input-jkk-hutang')?.value);
-            const valBpuJkk = parseIdNumber(tr.querySelector('.input-bpu-jkk')?.value);
-            const valBpuJkm = parseIdNumber(tr.querySelector('.input-bpu-jkm')?.value);
-            const valNcJhtB = parseIdNumber(tr.querySelector('.input-noncrew-jht-biaya')?.value);
-            const valNcJhtH = parseIdNumber(tr.querySelector('.input-noncrew-jht-hutang')?.value);
-            const valNcJkk = parseIdNumber(tr.querySelector('.input-noncrew-jkk')?.value);
-            const valNcJkm = parseIdNumber(tr.querySelector('.input-noncrew-jkm')?.value);
-            const valJpB   = parseIdNumber(tr.querySelector('.input-jp-biaya')?.value);
-            const valJpH   = parseIdNumber(tr.querySelector('.input-jp-hutang')?.value);
+            const valKes   = BpjsPerformance.readNumber(tr, '.input-kes', parseIdNumber);
+            const valKet   = BpjsPerformance.readNumber(tr, '.input-ket', parseIdNumber);
+            const valJhtB  = BpjsPerformance.readNumber(tr, '.input-jht-biaya', parseIdNumber);
+            const valJhtH  = BpjsPerformance.readNumber(tr, '.input-jht-hutang', parseIdNumber);
+            const valJkk   = BpjsPerformance.readNumber(tr, '.input-jkk', parseIdNumber);
+            const valJkm   = BpjsPerformance.readNumber(tr, '.input-jkm', parseIdNumber);
+            const valBpuJht = BpjsPerformance.readNumber(tr, '.input-jkk-hutang', parseIdNumber);
+            const valBpuJkk = BpjsPerformance.readNumber(tr, '.input-bpu-jkk', parseIdNumber);
+            const valBpuJkm = BpjsPerformance.readNumber(tr, '.input-bpu-jkm', parseIdNumber);
+            const valNcJhtB = BpjsPerformance.readNumber(tr, '.input-noncrew-jht-biaya', parseIdNumber);
+            const valNcJhtH = BpjsPerformance.readNumber(tr, '.input-noncrew-jht-hutang', parseIdNumber);
+            const valNcJkk = BpjsPerformance.readNumber(tr, '.input-noncrew-jkk', parseIdNumber);
+            const valNcJkm = BpjsPerformance.readNumber(tr, '.input-noncrew-jkm', parseIdNumber);
+            const valJpB   = BpjsPerformance.readNumber(tr, '.input-jp-biaya', parseIdNumber);
+            const valJpH   = BpjsPerformance.readNumber(tr, '.input-jp-hutang', parseIdNumber);
 
             // Update row subtotal based on active group
             const rowSubtotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
@@ -691,7 +689,8 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const rowSubtotalEl = tr.querySelector('.subtotal-text');
             if (rowSubtotalEl) {
-                rowSubtotalEl.innerText = 'Rp ' + formatNumber(rowSubtotal);
+                const text = 'Rp ' + formatNumber(rowSubtotal);
+                if (rowSubtotalEl.textContent !== text) rowSubtotalEl.textContent = text;
             }
 
             // Global accumulator
@@ -733,22 +732,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Update footer table cells
-        document.getElementById('total_kes').innerText                 = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').innerText = 'Rp ' + formatNumber(sumKesBiaya);
-        document.getElementById('total_ket').innerText                 = 'Rp ' + formatNumber(sumKet);
-        document.getElementById('total_jht_biaya').innerText           = 'Rp ' + formatNumber(sumJhtB);
-        document.getElementById('total_jht_hutang').innerText          = 'Rp ' + formatNumber(sumJhtH);
-        document.getElementById('total_jkk').innerText                 = 'Rp ' + formatNumber(sumJkk);
-        document.getElementById('total_jkm').innerText                 = 'Rp ' + formatNumber(sumJkm);
-        document.getElementById('total_jkk_hutang').innerText          = 'Rp ' + formatNumber(sumBpuJht);
-        document.getElementById('total_bpu_jkk').innerText             = 'Rp ' + formatNumber(sumBpuJkk);
-        document.getElementById('total_bpu_jkm').innerText             = 'Rp ' + formatNumber(sumBpuJkm);
-        document.getElementById('total_noncrew_jht_biaya').innerText   = 'Rp ' + formatNumber(sumNcJhtB);
-        document.getElementById('total_noncrew_jht_hutang').innerText  = 'Rp ' + formatNumber(sumNcJhtH);
-        document.getElementById('total_noncrew_jkk').innerText         = 'Rp ' + formatNumber(sumNcJkk);
-        document.getElementById('total_noncrew_jkm').innerText         = 'Rp ' + formatNumber(sumNcJkm);
-        document.getElementById('total_jp_biaya').innerText            = 'Rp ' + formatNumber(sumJpB);
-        document.getElementById('total_jp_hutang').innerText           = 'Rp ' + formatNumber(sumJpH);
+        document.getElementById('total_kes').textContent                 = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
+        document.getElementById('total_ket').textContent                 = 'Rp ' + formatNumber(sumKet);
+        document.getElementById('total_jht_biaya').textContent           = 'Rp ' + formatNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').textContent          = 'Rp ' + formatNumber(sumJhtH);
+        document.getElementById('total_jkk').textContent                 = 'Rp ' + formatNumber(sumJkk);
+        document.getElementById('total_jkm').textContent                 = 'Rp ' + formatNumber(sumJkm);
+        document.getElementById('total_jkk_hutang').textContent          = 'Rp ' + formatNumber(sumBpuJht);
+        document.getElementById('total_bpu_jkk').textContent             = 'Rp ' + formatNumber(sumBpuJkk);
+        document.getElementById('total_bpu_jkm').textContent             = 'Rp ' + formatNumber(sumBpuJkm);
+        document.getElementById('total_noncrew_jht_biaya').textContent   = 'Rp ' + formatNumber(sumNcJhtB);
+        document.getElementById('total_noncrew_jht_hutang').textContent  = 'Rp ' + formatNumber(sumNcJhtH);
+        document.getElementById('total_noncrew_jkk').textContent         = 'Rp ' + formatNumber(sumNcJkk);
+        document.getElementById('total_noncrew_jkm').textContent         = 'Rp ' + formatNumber(sumNcJkm);
+        document.getElementById('total_jp_biaya').textContent            = 'Rp ' + formatNumber(sumJpB);
+        document.getElementById('total_jp_hutang').textContent           = 'Rp ' + formatNumber(sumJpH);
         
         const visibleGrandTotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
             jkn: sumKes + sumKet,
@@ -757,7 +756,7 @@ document.addEventListener('DOMContentLoaded', function() {
             bpu_non_crew: sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm
         });
         
-        document.getElementById('grand_total').innerText = 'Rp ' + formatNumber(visibleGrandTotal);
+        document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(visibleGrandTotal);
 
         // Update Footer Label
         const footerLabel = document.getElementById('footer-total-label');
@@ -769,7 +768,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 const filterText = filterLabels.length > 0 ? filterLabels.join(' — ') : 'Filter';
                 footerLabel.innerHTML = `<div class="flex items-center justify-end gap-1.5 text-amber-800 font-bold"><i class="fas fa-filter text-xs text-amber-600"></i> <span>Total ${filterText} (${visibleCount} Karyawan):</span></div>`;
             } else {
-                footerLabel.innerText = 'Total Keseluruhan:';
+                footerLabel.textContent = 'Total Keseluruhan:';
             }
         }
 
@@ -779,11 +778,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const globalTotalBpu = globalBpuJht + globalBpuJkk + globalBpuJkm + globalNcJhtB + globalNcJhtH + globalNcJkk + globalNcJkm;
         const globalGrandTotal = globalTotalJkn + globalTotalPpu + globalTotalBpu;
 
-        document.getElementById('card_total_karyawan').innerText = allRows.length + ' Orang';
-        document.getElementById('card_total_jkn').innerText = 'Rp ' + formatNumber(globalTotalJkn);
-        document.getElementById('card_total_ppu').innerText = 'Rp ' + formatNumber(globalTotalPpu);
-        document.getElementById('card_total_bpu').innerText = 'Rp ' + formatNumber(globalTotalBpu);
-        document.getElementById('card_grand_total').innerText = 'Rp ' + formatNumber(globalGrandTotal);
+        document.getElementById('card_total_karyawan').textContent = allRows.length + ' Orang';
+        document.getElementById('card_total_jkn').textContent = 'Rp ' + formatNumber(globalTotalJkn);
+        document.getElementById('card_total_ppu').textContent = 'Rp ' + formatNumber(globalTotalPpu);
+        document.getElementById('card_total_bpu').textContent = 'Rp ' + formatNumber(globalTotalBpu);
+        document.getElementById('card_grand_total').textContent = 'Rp ' + formatNumber(globalGrandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
@@ -991,8 +990,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 bpu_non_crew: ncJhtB + ncJhtH + ncJkk + ncJkm
             });
 
-            subtotalText.innerText = 'Rp ' + formatNumber(rowTotal);
-            applyFilter();
+            subtotalText.textContent = 'Rp ' + formatNumber(rowTotal);
+            if (!isGenerating && !isRefreshing) pendingUpdate.schedule();
         };
 
         // Format saat kehilangan fokus atau nilai berubah (oleh sistem / user)
@@ -1352,7 +1351,7 @@ document.addEventListener('DOMContentLoaded', function() {
         filterCabangSelect.addEventListener('change', applyFilter);
     }
     if (searchKaryawanInput) {
-        searchKaryawanInput.addEventListener('input', applyFilter);
+        searchKaryawanInput.addEventListener('input', pendingSearch.schedule);
     }
     if (btnClearSearch) {
         btnClearSearch.addEventListener('click', () => {
@@ -1391,7 +1390,11 @@ document.addEventListener('DOMContentLoaded', function() {
         rowTarget = fragment;
         rowCount = 0;
         try {
-            await processBpjsBatch(items, createRow, (done, total) => {
+            await processBpjsBatch(items, item => {
+                createRow(item);
+                const row = rowTarget.lastElementChild;
+                if (row) BpjsAllowances.updateRow(row, container, parseIdNumber, formatNumber);
+            }, (done, total) => {
                 if (button) button.textContent = `Menghitung ${done}/${total} karyawan...`;
             });
             if (rowCount === 0) addRow(null);
@@ -1414,7 +1417,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Bersihkan format angka Indonesia sebelum submit
     document.getElementById('pranota-form').addEventListener('submit', function(event) {
-        if (isGenerating) { event.preventDefault(); return; }
+        if (isGenerating || isRefreshing) { event.preventDefault(); return; }
+        pendingSearch.flush();
+        pendingUpdate.flush();
+        BpjsAllowances.flush(container);
         prepareBpjsSubmission(this, parseIdNumber);
     });
     
@@ -1429,6 +1435,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const label = button.querySelector('span');
         const status = document.getElementById('bpjs-refresh-status');
         isRefreshing = true;
+        container.inert = true;
         button.disabled = true;
         button.setAttribute('aria-busy', 'true');
         label.textContent = 'Memperbarui...';
@@ -1463,6 +1470,7 @@ document.addEventListener('DOMContentLoaded', function() {
             status.textContent = error.message || 'Refresh gagal. Silakan coba lagi.';
         } finally {
             isRefreshing = false;
+            container.inert = false;
             button.disabled = false;
             button.removeAttribute('aria-busy');
             label.textContent = 'Refresh Data';
@@ -1472,6 +1480,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Export to Excel function using ExcelJS
     async function exportToExcel() {
+        if (isGenerating || isRefreshing) return;
         const rows = container.querySelectorAll('tr.detail-row');
         if (rows.length === 0) {
             alert('Belum ada data karyawan di tabel untuk diekspor!');
