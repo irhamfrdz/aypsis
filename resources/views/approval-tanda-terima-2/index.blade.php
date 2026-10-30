@@ -44,6 +44,7 @@
     .approval-goods-dialog input:focus, .approval-goods-dialog textarea:focus { outline: none; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
     .approval-receipts-table { width: 100%; table-layout: fixed; }
     .approval-receipts-table > thead > tr > th, .approval-receipts-table > tbody > tr > td { padding: 12px 8px; overflow-wrap: anywhere; }
+    .approval-goods-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; max-height: 4.2em; line-height: 1.4; overflow: hidden; overflow-wrap: anywhere; }
     .approval-receipts-table .approval-actions-cell { white-space: normal; text-align: left; }
     .approval-actions-cell > form, .approval-actions-cell > button { margin: 0 6px 6px 0; vertical-align: top; }
     @media (max-width: 1279px) {
@@ -232,7 +233,17 @@
                             <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
-                            <td data-label="Nama Barang" class="approval-receipt-wide text-gray-700">{{ is_scalar($goodsName) && filled($goodsName) ? $goodsName : '-' }}</td>
+                            <td data-label="Nama Barang" class="approval-receipt-wide text-gray-700">
+                                @if(is_scalar($goodsName) && filled($goodsName))
+                                    <div class="approval-goods-preview">{{ $goodsName }}</div>
+                                    @if(\Illuminate\Support\Str::length((string) $goodsName) > 60 || substr_count((string) $goodsName, "\n") > 1)
+                                        <button type="button" class="approval-goods-open mt-1 text-left text-xs font-semibold text-indigo-700 hover:text-indigo-900 hover:underline focus:outline-none focus:underline"
+                                            data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">Lihat selengkapnya</button>
+                                    @endif
+                                @else
+                                    -
+                                @endif
+                            </td>
                             <td data-label="Shipper Perincian" class="text-gray-700">{{ $sender ?: '-' }}</td>
                             <td data-label="Shipper Manifest JB">
                                 @if($item->shipperJb)

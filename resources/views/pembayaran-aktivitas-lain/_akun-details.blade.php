@@ -98,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
         field.classList.toggle('hidden', !active);
         document.getElementById('akun_details_total_label').textContent = isVehicle() ? 'Total biaya' : 'Bank/Kas';
         document.getElementById('akun_details_help').textContent = isVehicle()
-            ? 'Jumlah pembayaran dihitung dari total biaya per akun. Untuk KIR, total ini harus sama dengan total nominal kendaraan.'
+            ? 'Jumlah pembayaran dihitung dari total biaya per akun. Untuk KIR dan Lain Lain, total ini harus sama dengan total biaya kendaraan.'
             : isPerAccount() ? 'Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.'
             : bankDirectionMode ? 'Arah akun biaya mengikuti sisi berlawanan dari Bank/Kas.'
                 : 'Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.';

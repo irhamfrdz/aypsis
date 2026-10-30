@@ -123,6 +123,42 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(0, DB::table('coa_transactions')->count());
     }
 
+    public function test_other_vehicle_payment_stores_and_updates_cost_for_each_vehicle(): void
+    {
+        $this->withoutMiddleware();
+
+        DB::table('mobils')->insert([
+            ['nomor_polisi' => 'BP 1234 AA'],
+            ['nomor_polisi' => 'BP 5678 BB'],
+        ]);
+        $payload = $this->vehiclePayload('batam');
+        $payload['sub_jenis_kendaraan'] = 'Lain Lain';
+        $payload['nomor_polisi_list'] = ['BP 1234 AA', 'BP 5678 BB'];
+        $payload['kendaraan_details'] = [
+            ['nomor_polisi' => 'BP 1234 AA', 'nominal' => 100],
+            ['nomor_polisi' => 'BP 5678 BB', 'nominal' => 250],
+        ];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(350, $payment->jumlah);
+        $this->assertSame($payload['nomor_polisi_list'], $payment->nomor_polisi_list);
+        $this->assertSame($payload['kendaraan_details'], $payment->kendaraan_details);
+
+        $payload['kendaraan_details'][1]['nominal'] = 300;
+        $response = app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment
+        );
+        $this->assertSame(route('pembayaran-aktivitas-lain.show', $payment), $response->getTargetUrl());
+
+        $payment->refresh();
+        $this->assertSame(400, $payment->jumlah);
+        $this->assertSame($payload['kendaraan_details'], $payment->kendaraan_details);
+    }
+
     public function test_jakarta_vehicle_payment_still_creates_double_book_journal(): void
     {
         $this->withoutMiddleware();

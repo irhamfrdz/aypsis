@@ -390,9 +390,9 @@ class PembayaranAktivitasLainController extends Controller
             && $request->boolean('gunakan_debit_kredit_per_akun');
         $hasAkunDetails = $request->input('jenis_aktivitas') === 'Pembayaran Lain Lain'
             || ($isVehiclePayment && $request->filled('akun_details'));
-        $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
-            && $request->input('sub_jenis_kendaraan') === 'KIR';
-        if ($isKirPayment) {
+        $hasVehicleDetails = $isVehiclePayment
+            && in_array($request->input('sub_jenis_kendaraan'), ['KIR', 'Lain Lain']);
+        if ($hasVehicleDetails) {
             $request->merge([
                 'jumlah' => collect($request->input('kendaraan_details', []))->sum('nominal'),
             ]);
@@ -419,9 +419,9 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
-            'nomor_polisi_list' => [Rule::requiredIf($request->input('sub_jenis_kendaraan') === 'Lain Lain' || $isKirPayment), 'nullable', 'array', 'min:1'],
+            'nomor_polisi_list' => [Rule::requiredIf($hasVehicleDetails), 'nullable', 'array', 'min:1'],
             'nomor_polisi_list.*' => 'required|string|max:255|distinct',
-            'kendaraan_details' => [Rule::requiredIf($isKirPayment), 'nullable', 'array', 'min:1'],
+            'kendaraan_details' => [Rule::requiredIf($hasVehicleDetails), 'nullable', 'array', 'min:1'],
             'kendaraan_details.*.nomor_polisi' => ['required', 'string', 'max:255', 'distinct', Rule::in($validVehicleNumbers)],
             'kendaraan_details.*.nominal' => 'required|integer|min:1',
             'nomor_voyage' => 'nullable|string|max:255',
@@ -482,12 +482,12 @@ class PembayaranAktivitasLainController extends Controller
         } else {
             $validated['akun_details'] = null;
         }
-        $validated['kendaraan_details'] = $isKirPayment
+        $validated['kendaraan_details'] = $hasVehicleDetails
             ? array_values($validated['kendaraan_details'])
             : null;
-        if ($isKirPayment) {
+        if ($hasVehicleDetails) {
             if ($hasAkunDetails && $validated['jumlah'] !== array_sum(array_column($validated['kendaraan_details'], 'nominal'))) {
-                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total nominal kendaraan KIR.']);
+                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total biaya kendaraan.']);
             }
             $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
             $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
@@ -951,9 +951,9 @@ class PembayaranAktivitasLainController extends Controller
             || ($isVehiclePayment && $request->filled('akun_details'));
         $hasLineDirections = $usePerAccountDirection || ($isVehiclePayment && collect($request->input('akun_details', []))
             ->every(fn ($detail) => is_array($detail) && filled($detail['debit_kredit'] ?? null)));
-        $isKirPayment = $request->input('jenis_aktivitas') === 'Pembayaran Kendaraan'
-            && $request->input('sub_jenis_kendaraan') === 'KIR';
-        if ($isKirPayment) {
+        $hasVehicleDetails = $isVehiclePayment
+            && in_array($request->input('sub_jenis_kendaraan'), ['KIR', 'Lain Lain']);
+        if ($hasVehicleDetails) {
             $request->merge([
                 'jumlah' => collect($request->input('kendaraan_details', []))->sum('nominal'),
             ]);
@@ -980,9 +980,9 @@ class PembayaranAktivitasLainController extends Controller
             'tipe_penyesuaian_detail.*.nominal' => 'required|integer|min:0',
             'sub_jenis_kendaraan' => 'nullable|string|max:255',
             'nomor_polisi' => 'nullable|string|max:255',
-            'nomor_polisi_list' => [Rule::requiredIf($request->input('sub_jenis_kendaraan') === 'Lain Lain' || $isKirPayment), 'nullable', 'array', 'min:1'],
+            'nomor_polisi_list' => [Rule::requiredIf($hasVehicleDetails), 'nullable', 'array', 'min:1'],
             'nomor_polisi_list.*' => 'required|string|max:255|distinct',
-            'kendaraan_details' => [Rule::requiredIf($isKirPayment), 'nullable', 'array', 'min:1'],
+            'kendaraan_details' => [Rule::requiredIf($hasVehicleDetails), 'nullable', 'array', 'min:1'],
             'kendaraan_details.*.nomor_polisi' => ['required', 'string', 'max:255', 'distinct', Rule::in($validVehicleNumbers)],
             'kendaraan_details.*.nominal' => 'required|integer|min:1',
             'nomor_voyage' => 'nullable|string|max:255',
@@ -1046,12 +1046,12 @@ class PembayaranAktivitasLainController extends Controller
         } else {
             $validated['akun_details'] = null;
         }
-        $validated['kendaraan_details'] = $isKirPayment
+        $validated['kendaraan_details'] = $hasVehicleDetails
             ? array_values($validated['kendaraan_details'])
             : null;
-        if ($isKirPayment) {
+        if ($hasVehicleDetails) {
             if ($hasAkunDetails && $validated['jumlah'] !== array_sum(array_column($validated['kendaraan_details'], 'nominal'))) {
-                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total nominal kendaraan KIR.']);
+                throw ValidationException::withMessages(['akun_details' => 'Total rincian akun harus sama dengan total biaya kendaraan.']);
             }
             $validated['nomor_polisi_list'] = array_column($validated['kendaraan_details'], 'nomor_polisi');
             $validated['jumlah'] = array_sum(array_column($validated['kendaraan_details'], 'nominal'));
@@ -1133,8 +1133,8 @@ class PembayaranAktivitasLainController extends Controller
             return redirect()->back()->with('error', 'Tidak dapat mengubah jumlah untuk pembayaran yang sudah status Paid');
         }
 
-        if ($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details) {
-            return redirect()->back()->with('error', 'Jumlah pembayaran KIR harus diubah melalui rincian nominal setiap kendaraan.');
+        if ($pembayaranAktivitasLain->kendaraan_details) {
+            return redirect()->back()->with('error', 'Jumlah pembayaran harus diubah melalui rincian biaya setiap kendaraan.');
         }
         if ($pembayaranAktivitasLain->jenis_aktivitas === 'Pembayaran Lain Lain') {
             return redirect()->back()->with('error', 'Ubah nominal melalui rincian akun pada halaman edit pembayaran.');

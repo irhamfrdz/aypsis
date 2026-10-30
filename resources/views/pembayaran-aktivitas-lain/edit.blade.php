@@ -298,7 +298,7 @@
                 </div>
 
                 <div id="kendaraan_kir_details_field" class="hidden md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Nominal KIR per Kendaraan <span class="text-red-500">*</span></label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Biaya per Kendaraan <span class="text-red-500">*</span></label>
                     <div id="kendaraan_kir_details_container" class="space-y-2"></div>
                     <p class="text-xs text-gray-500 mt-1">Jumlah pembayaran dihitung otomatis dari seluruh nominal kendaraan.</p>
                     @error('kendaraan_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
@@ -713,6 +713,12 @@ function initializeSelect2() {
     const kendaraanKirDetailsField = document.getElementById('kendaraan_kir_details_field');
     const kendaraanKirDetailsContainer = document.getElementById('kendaraan_kir_details_container');
     const initialKirDetails = new Map(@json(old('kendaraan_details', $pembayaranAktivitasLain->kendaraan_details ?: [])).map(item => [item.nomor_polisi, item.nominal]));
+    // Pembayaran lama dengan satu kendaraan belum memiliki rincian biaya.
+    @if($pembayaranAktivitasLain->sub_jenis_kendaraan === 'Lain Lain' && empty($pembayaranAktivitasLain->kendaraan_details) && count((array) $selectedNomorPolisiList) === 1)
+    if (!initialKirDetails.has(@json($selectedNomorPolisiList[0]))) {
+        initialKirDetails.set(@json($selectedNomorPolisiList[0]), @json($pembayaranAktivitasLain->jumlah));
+    }
+    @endif
     const nomorVoyageField = document.getElementById('nomor_voyage_field');
     const nomorVoyageSelect = nomorVoyageField.querySelector('select');
     
@@ -929,7 +935,7 @@ function initializeSelect2() {
     }
 
     function calculateKirTotal() {
-        if (jenisAktivitas.value !== 'Pembayaran Kendaraan' || subJenisSelect.value !== 'KIR') return;
+        if (jenisAktivitas.value !== 'Pembayaran Kendaraan' || !['KIR', 'Lain Lain'].includes(subJenisSelect.value)) return;
 
         const total = Array.from(kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal'))
             .reduce((sum, input) => sum + (Number(input.value) || 0), 0);
@@ -941,7 +947,7 @@ function initializeSelect2() {
     }
 
     function renderKirDetails() {
-        const isKir = jenisAktivitas.value === 'Pembayaran Kendaraan' && subJenisSelect.value === 'KIR';
+        const isKir = jenisAktivitas.value === 'Pembayaran Kendaraan' && ['KIR', 'Lain Lain'].includes(subJenisSelect.value);
         kendaraanKirDetailsField.classList.toggle('hidden', !isKir);
         if (!isKir) {
             kendaraanKirDetailsContainer.innerHTML = '';
@@ -978,7 +984,7 @@ function initializeSelect2() {
             amount.min = '1';
             amount.step = '1';
             amount.required = true;
-            amount.placeholder = 'Nominal KIR';
+            amount.placeholder = 'Biaya kendaraan';
             amount.value = initialKirDetails.get(option.value) || '';
             amount.dataset.nomorPolisi = option.value;
             amount.className = 'kir-nominal w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right';
@@ -1200,7 +1206,7 @@ function initializeSelect2() {
             return;
         }
 
-        if (jenisAktivitasVal === 'Pembayaran Kendaraan' && subJenisSelect.value === 'KIR') {
+        if (jenisAktivitasVal === 'Pembayaran Kendaraan' && ['KIR', 'Lain Lain'].includes(subJenisSelect.value)) {
             calculateKirTotal();
             return;
         }
@@ -1458,10 +1464,10 @@ function initializeSelect2() {
             if (subJenis === 'Lain Lain' || subJenis === 'KIR') {
                 requiredFields.push({ id: 'nomor_polisi_list_select', name: 'Kendaraan' });
             }
-            if (subJenis === 'KIR') {
+            if (subJenis === 'KIR' || subJenis === 'Lain Lain') {
                 const kirNominals = kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal');
                 if (!kirNominals.length || Array.from(kirNominals).some(input => !Number.isInteger(Number(input.value)) || Number(input.value) <= 0)) {
-                    showErrorMessage('Nominal setiap kendaraan KIR harus berupa angka bulat positif!');
+                    showErrorMessage('Biaya setiap kendaraan harus berupa angka bulat positif!');
                     return false;
                 }
             }

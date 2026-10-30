@@ -126,9 +126,9 @@
                             @endphp
                             <p class="mt-1 text-base text-gray-900">{{ $nomorPolisiList ? implode(', ', $nomorPolisiList) : '-' }}</p>
                         </div>
-                        @if($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details)
+                        @if(in_array($pembayaranAktivitasLain->sub_jenis_kendaraan, ['KIR', 'Lain Lain']) && $pembayaranAktivitasLain->kendaraan_details)
                             <div class="md:col-span-2">
-                                <label class="block text-sm font-medium text-gray-500">Rincian Nominal KIR</label>
+                                <label class="block text-sm font-medium text-gray-500">Rincian Biaya Kendaraan</label>
                                 <div class="mt-2 overflow-hidden rounded-lg border border-gray-200">
                                     @foreach($pembayaranAktivitasLain->kendaraan_details as $detail)
                                         <div class="flex justify-between gap-4 px-3 py-2 text-sm {{ !$loop->last ? 'border-b border-gray-200' : '' }}">
@@ -146,7 +146,7 @@
                         <div class="flex items-center gap-2 mt-1">
                             <p id="jumlah-display" class="text-lg font-bold text-blue-600">Rp {{ number_format($pembayaranAktivitasLain->jumlah, 0, ',', '.') }}</p>
                             @can('pembayaran-aktivitas-lain-update')
-                                @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
+                                @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !$pembayaranAktivitasLain->kendaraan_details)
                                 <button onclick="toggleEditJumlah()" class="text-gray-400 hover:text-blue-600 transition" title="Edit Jumlah">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -157,7 +157,7 @@
                         </div>
 
                         @can('pembayaran-aktivitas-lain-update')
-                            @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !($pembayaranAktivitasLain->sub_jenis_kendaraan === 'KIR' && $pembayaranAktivitasLain->kendaraan_details))
+                            @if($pembayaranAktivitasLain->status != 'paid' && $pembayaranAktivitasLain->jenis_aktivitas !== 'Pembayaran Lain Lain' && !$pembayaranAktivitasLain->kendaraan_details)
                             <form id="edit-jumlah-form" action="{{ route('pembayaran-aktivitas-lain.update-jumlah', $pembayaranAktivitasLain) }}" method="POST" class="hidden mt-2 flex items-center gap-2">
                                 @csrf
                                 @method('PATCH')
