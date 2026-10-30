@@ -333,6 +333,8 @@
             field.textContent = name === 'status' && value !== null && value !== undefined
                 ? (String(value) === '1' || value === true ? 'Aktif' : 'Tidak aktif')
                 : (value === null || value === undefined || value === '' ? '-' : String(value));
+            field.classList.toggle('approval-shipper-name-highlight',
+                (name === 'shipper' || name === 'consignee') && value !== null && value !== undefined && String(value).trim() !== '');
         });
     }
 
