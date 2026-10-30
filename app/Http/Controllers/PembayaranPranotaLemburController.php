@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class PembayaranPranotaLemburController extends Controller
 {
@@ -236,7 +237,7 @@ class PembayaranPranotaLemburController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PembayaranPranotaLembur $pembayaranPranotaLembur)
+    public function edit(Request $request, PembayaranPranotaLembur $pembayaranPranotaLembur)
     {
         if ($pembayaranPranotaLembur->isCancelled()) {
             return redirect()->route('pembayaran-pranota-lembur.index')
@@ -244,6 +245,22 @@ class PembayaranPranotaLemburController extends Controller
         }
 
         $pembayaranPranotaLembur->load(['pranotaLemburs.suratJalans', 'pranotaLemburs.suratJalanBongkarans']);
+
+        $currentIds = $pembayaranPranotaLembur->pranotaLemburs->pluck('id')->all();
+        $pranotaLemburQuery = PranotaLembur::where(function ($query) use ($currentIds) {
+            $query->whereIn('id', $currentIds)
+                ->orWhere(function ($available) {
+                    $available->where('status', '!=', PranotaLembur::STATUS_CANCELLED)
+                        ->whereDoesntHave('pembayaranPranotaLemburs');
+                });
+        });
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $pranotaLemburQuery->where(function ($query) use ($request, $currentIds) {
+                $query->whereIn('id', $currentIds)
+                    ->orWhereBetween('tanggal_pranota', [$request->start_date, $request->end_date]);
+            });
+        }
+        $pranotaLemburs = $pranotaLemburQuery->orderBy('tanggal_pranota', 'desc')->get();
 
         $akunCoa = Coa::where(function ($q) {
             $q->where('tipe_akun', 'LIKE', '%bank%')
@@ -253,7 +270,7 @@ class PembayaranPranotaLemburController extends Controller
             ->orderBy('nama_akun')
             ->get();
 
-        return view('pembayaran-pranota-lembur.edit', compact('pembayaranPranotaLembur', 'akunCoa'));
+        return view('pembayaran-pranota-lembur.edit', compact('pembayaranPranotaLembur', 'pranotaLemburs', 'akunCoa'));
     }
 
     /**
@@ -266,22 +283,104 @@ class PembayaranPranotaLemburController extends Controller
                 ->with('error', 'Pembayaran yang dibatalkan tidak dapat diubah.');
         }
 
-        $request->validate([
+        $validated = $request->validate([
+            'pranota_lembur_ids' => ['required', 'array', 'min:1'],
+            'pranota_lembur_ids.*' => ['required', 'integer', 'distinct', 'exists:pranota_lemburs,id'],
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
+            'bank' => ['required', 'string', 'max:255', Rule::exists('akun_coa', 'nama_akun')],
+            'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
+            'total_tagihan_penyesuaian' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
 
         try {
-            $pembayaranPranotaLembur->update([
-                'nomor_accurate' => $request->nomor_accurate,
-                'tanggal_pembayaran' => $request->tanggal_pembayaran,
-                'keterangan' => $request->keterangan,
-                'updated_by' => Auth::id(),
-            ]);
+            DB::transaction(function () use ($validated, $pembayaranPranotaLembur) {
+                $oldPranotas = $pembayaranPranotaLembur->pranotaLemburs()->get();
+                $oldIds = $oldPranotas->pluck('id')->all();
+                $newIds = array_map('intval', $validated['pranota_lembur_ids']);
+                $selectedPranotas = PranotaLembur::with('pembayaranPranotaLemburs')
+                    ->whereIn('id', $newIds)->lockForUpdate()->get();
+                if ($selectedPranotas->count() !== count($newIds)) {
+                    throw ValidationException::withMessages([
+                        'pranota_lembur_ids' => 'Salah satu pranota tidak ditemukan.',
+                    ]);
+                }
+
+                foreach ($selectedPranotas as $pranota) {
+                    if (! in_array($pranota->id, $oldIds)
+                        && ($pranota->status === PranotaLembur::STATUS_CANCELLED
+                            || $pranota->pembayaranPranotaLemburs->isNotEmpty())) {
+                        throw ValidationException::withMessages([
+                            'pranota_lembur_ids' => 'Salah satu pranota sudah dibayar atau dibatalkan.',
+                        ]);
+                    }
+                }
+
+                $total = round((float) $selectedPranotas->sum('total_setelah_adjustment'), 2);
+                $adjustment = (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+                $finalTotal = round($total + $adjustment, 2);
+                if ($finalTotal < 0) {
+                    throw ValidationException::withMessages([
+                        'total_tagihan_penyesuaian' => 'Total akhir pembayaran tidak boleh negatif.',
+                    ]);
+                }
+
+                if (! $this->coaTransactionService->deleteTransactionByReference($pembayaranPranotaLembur->nomor_pembayaran)) {
+                    throw new \RuntimeException('Jurnal lama gagal dibatalkan.');
+                }
+
+                $pembayaranPranotaLembur->update([
+                    'nomor_accurate' => $validated['nomor_accurate'] ?? null,
+                    'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
+                    'bank' => $validated['bank'],
+                    'jenis_transaksi' => $validated['jenis_transaksi'],
+                    'total_pembayaran' => $total,
+                    'total_tagihan_penyesuaian' => $adjustment,
+                    'total_tagihan_setelah_penyesuaian' => $finalTotal,
+                    'keterangan' => $validated['keterangan'] ?? null,
+                    'updated_by' => Auth::id(),
+                ]);
+
+                $pivotData = $selectedPranotas->mapWithKeys(fn ($pranota) => [
+                    $pranota->id => ['subtotal' => $pranota->total_setelah_adjustment],
+                ])->all();
+                $pembayaranPranotaLembur->pranotaLemburs()->sync($pivotData);
+                foreach ($oldPranotas as $pranota) {
+                    if (! in_array($pranota->id, $newIds)) {
+                        $pranota->update(['status' => PranotaLembur::STATUS_APPROVED, 'updated_by' => Auth::id()]);
+                    }
+                }
+                foreach ($selectedPranotas as $pranota) {
+                    $pranota->update(['status' => PranotaLembur::STATUS_PAID, 'updated_by' => Auth::id()]);
+                }
+
+                $biayaAccount = Coa::where('nama_akun', 'Biaya Lembur Jakarta')->first()
+                    ?? Coa::where('nama_akun', 'LIKE', 'Biaya Lembur%')->first();
+                if (! $biayaAccount) {
+                    throw new \RuntimeException('Akun biaya lembur tidak ditemukan.');
+                }
+
+                $bankAccount = ['nama_akun' => $validated['bank'], 'jumlah' => $finalTotal];
+                $expenseAccount = ['nama_akun' => $biayaAccount->nama_akun, 'jumlah' => $finalTotal];
+                $debit = $validated['jenis_transaksi'] === 'Debit' ? $bankAccount : $expenseAccount;
+                $credit = $validated['jenis_transaksi'] === 'Debit' ? $expenseAccount : $bankAccount;
+                if (! $this->coaTransactionService->recordDoubleEntry(
+                    $debit,
+                    $credit,
+                    $validated['tanggal_pembayaran'],
+                    $pembayaranPranotaLembur->nomor_pembayaran,
+                    'Pembayaran Pranota Lembur',
+                    'Pembayaran Pranota Lembur - '.$pembayaranPranotaLembur->nomor_pembayaran
+                )) {
+                    throw new \RuntimeException('Jurnal baru gagal dicatat.');
+                }
+            });
 
             return redirect()->route('pembayaran-pranota-lembur.index')
                 ->with('success', 'Pembayaran berhasil diperbarui.');
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             Log::error('Error updating Pembayaran Pranota Lembur: '.$e->getMessage());
 
