@@ -333,6 +333,8 @@
                 : (value === null || value === undefined || value === '' ? '-' : String(value));
             field.classList.toggle('approval-shipper-name-highlight',
                 (name === 'shipper' || name === 'consignee') && value !== null && value !== undefined && String(value).trim() !== '');
+            field.classList.toggle('approval-shipper-document-highlight',
+                name === 'document_ppftz_03' && value !== null && value !== undefined && String(value).trim() !== '');
         });
     }
 

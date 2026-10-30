@@ -101,6 +101,11 @@ class ApprovalTandaTerimaDuaExcelService
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFFFFF00');
         }
+        if (filled($shipper?->document_ppftz_03)) {
+            $sheet->getStyle('AA'.$row)->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFFCA5A5');
+        }
         $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
 
         foreach (['F' => 1, 'I' => data_get($manifestGood, 'jumlah'), 'L' => data_get($perincianGood, 'jumlah')] as $column => $value) {
