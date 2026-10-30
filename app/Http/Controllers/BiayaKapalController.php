@@ -3498,6 +3498,7 @@ class BiayaKapalController extends Controller
                     'kontainer' => $manifest->nomor_kontainer,
                     'seal' => $manifest->no_seal,
                     'size' => $manifest->size_kontainer,
+                    'type' => $manifest->tipe_kontainer,
                 ]);
             }
 
@@ -3549,30 +3550,43 @@ class BiayaKapalController extends Controller
             }
         }
 
-        // Prepare a transparent count x pricelist breakdown for the print view.
+        // Match the rates used when saving, including LCL and per-container adjustments.
         $truckingBreakdowns = [];
         foreach ($biayaKapal->truckingDetails as $detail) {
             $selectedIds = collect($detail->no_bl ?? [])->map(fn ($id) => (string) $id);
-            $counts = ['20' => 0, '40' => 0];
-            foreach ($selectedIds as $id) {
-                $container = $blDetails->get(is_numeric($id) ? (int) $id : $id);
-                $size = preg_replace('/\D/', '', (string) ($container->size ?? ''));
-                if (isset($counts[$size])) {
-                    $counts[$size]++;
-                }
-            }
-
             $prices = \App\Models\MasterPricelistBiayaTrucking::query()
                 ->where('status', 'aktif')
                 ->where('nama_vendor', $detail->nama_vendor)
                 ->get()
-                ->keyBy(fn ($price) => preg_replace('/\D/', '', (string) $price->size));
+                ->keyBy(fn ($price) => $this->truckingTariffKey($price->size));
+
+            $rateLines = collect();
+            foreach ($selectedIds as $id) {
+                $container = $blDetails->get(is_numeric($id) ? (int) $id : $id);
+                if (! $container) {
+                    continue;
+                }
+
+                $size = preg_replace('/\D/', '', (string) ($container->size ?? ''));
+                $tariffKey = $this->truckingTariffKey($container->size ?? null, $container->type ?? null);
+                $baseRate = isset($prices[$tariffKey])
+                    ? (float) $prices[$tariffKey]->biaya
+                    : ($tariffKey === 'lcl' ? 500000 : 0);
+                $adjustment = (float) ($detail->container_adjustments[$id] ?? 0);
+                $rate = max(0, $baseRate + $adjustment);
+                $label = ($tariffKey === 'lcl' ? 'LCL ' : '').($size ? $size.'ft' : 'Kontainer');
+                $groupKey = $label.'|'.$rate;
+
+                if (! $rateLines->has($groupKey)) {
+                    $rateLines->put($groupKey, ['label' => $label, 'count' => 0, 'price' => $rate]);
+                }
+                $line = $rateLines->get($groupKey);
+                $line['count']++;
+                $rateLines->put($groupKey, $line);
+            }
 
             $truckingBreakdowns[$detail->id] = [
-                'count20' => $counts['20'],
-                'count40' => $counts['40'],
-                'price20' => (float) ($prices['20']->biaya ?? 0),
-                'price40' => (float) ($prices['40']->biaya ?? 0),
+                'rateLines' => $rateLines->values()->all(),
             ];
         }
 

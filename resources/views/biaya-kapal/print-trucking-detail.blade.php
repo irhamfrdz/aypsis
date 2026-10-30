@@ -45,7 +45,7 @@
             @endphp
             @foreach($shipDetails as $detail)
                 @php
-                    $breakdown = $truckingBreakdowns[$detail->id] ?? ['count20' => 0, 'count40' => 0];
+                    $breakdown = $truckingBreakdowns[$detail->id] ?? ['rateLines' => []];
                 @endphp
                 <tr>
                     <td class="center">{{ $loop->first ? $shipNumber : '' }}</td>
@@ -64,8 +64,11 @@
                                 Biaya Cargo manual
                             @endif
                         @else
-                            20ft: {{ $breakdown['count20'] }}@if(!empty($breakdown['price20'])) × Rp {{ number_format($breakdown['price20'], 0, ',', '.') }}@endif<br>
-                            40ft: {{ $breakdown['count40'] }}@if(!empty($breakdown['price40'])) × Rp {{ number_format($breakdown['price40'], 0, ',', '.') }}@endif
+                            @forelse($breakdown['rateLines'] as $rateLine)
+                                {{ $rateLine['label'] }}: {{ $rateLine['count'] }} × Rp {{ number_format($rateLine['price'], 0, ',', '.') }}@if(! $loop->last)<br>@endif
+                            @empty
+                                -
+                            @endforelse
                         @endif
                     </td>
                 </tr>
