@@ -2,6 +2,25 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
+test('JKN-KIS NON KARY includes its JKN total minus the portion already charged to PT', () => {
+    const values = { group_jkn: 'JKN-KIS', tipe_jkn: 'NON KARY', group_bp_jamsostek: 'PPU',
+        tipe_bp_jamsostek: 'KARYAWAN', kis_tunjangan: 229195.2, kis_biaya: 0,
+        bpjs_ketenagakerjaan: 57298.8, jht_biaya: 100000.8, noncrew_jht_hutang: 70000 };
+    for (const [group, type] of [['JKN-KIS', 'NON KARY'], [' jkn - kis ', ' non kary '], ['JKN_KIS', 'NON_KARY']]) {
+        const result = BpjsAllowances.calculate({ ...values, group_jkn: group, tipe_jkn: type });
+        assert.equal(result.non_kary, 286494);
+        assert.equal(result.pt, 100000.8);
+        assert.equal(result.kary_jkn, 0);
+    }
+    const special = BpjsAllowances.calculate({ ...values, kis_biaya: 229195.2, kis_tunjangan: 0 });
+    assert.equal(special.non_kary, 57298.8);
+    assert.equal(special.pt, 329196);
+    assert.equal(BpjsAllowances.calculate({ ...values, group_bp_jamsostek: 'CILANDAK-HL',
+        tipe_bp_jamsostek: 'NON KARY-UMKM NON PP' }).non_kary, 356494);
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY-UMKM' }).non_kary, 0);
+    assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).non_kary, 0);
+});
+
 test('NON KARY PPU uses its total regardless of JKN group without including JKN or BPU components', () => {
     const values = { group_jkn: 'JKN-KIS', kis_tunjangan: 229195.2, bpjs_ketenagakerjaan: 57298.8,
         jht_biaya: 100000.8, jht_hutang: 20000, jkk_tunjangan: 1000, jkm_tunjangan: 2000,
@@ -244,13 +263,13 @@ test('JKN-KIS NON KARY moves only KIS biaya to employer burden', () => {
     for (const group of ['JKN-KIS', ' jkn - kis ', 'JKN_KIS']) {
         const result = BpjsAllowances.calculate({ ...values, group_jkn: group });
         assert.equal(result.pt, 229195.2);
-        assert.equal(result.non_kary, 0);
+        assert.equal(result.non_kary, 57298.8);
         assert.equal(result.jkn, 0);
     }
     assert.equal(BpjsAllowances.calculate({ ...values, noncrew_jht_biaya: 8000 }).pt, 237195.2);
     const active = BpjsAllowances.calculate({ ...values, kis_biaya: 0, kis_tunjangan: 229195.2 });
     assert.equal(active.pt, 0);
-    assert.equal(active.non_kary, 0);
+    assert.equal(active.non_kary, 286494);
     assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).pt, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'KARYAWAN' }).pt, 0);
 });

@@ -9,6 +9,8 @@
         || String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
     const isJknExcluded = values => String(values.tipe_jkn || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'NONKARY';
+    const usesNonEmployeeJkn = values => isJknExcluded(values)
+        && String(values.group_jkn || '').toUpperCase().replace(/[\s_-]+/g, '') === 'JKNKIS';
     const usesNonKaryPpuTotal = values => String(values.group_bp_jamsostek || '').toUpperCase()
         .replace(/[\s_-]+/g, '') === 'PPU'
         && String(values.tipe_bp_jamsostek || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
@@ -42,7 +44,8 @@
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
             pt: jknEmployerCost + (useTotalPpu ? ppuTotal : (useNoncrewCost ? noncrewCost : employerCost)),
-            non_kary: usesNonEmployeeDebt(values) ? umkmDebt : 0,
+            non_kary: (usesNonEmployeeJkn(values) ? n('kis_tunjangan') + n('bpjs_ketenagakerjaan') : 0)
+                + (usesNonEmployeeDebt(values) ? umkmDebt : 0),
         };
     }
 
@@ -107,7 +110,8 @@
         const excludedKeys = [];
         if (isPpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('ppu');
         if (!usesNonEmployeeDebt({ group_bp_jamsostek: row.dataset.groupJamsostek,
-            tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('non_kary');
+            tipe_bp_jamsostek: row.dataset.tipeJamsostek })
+            && !usesNonEmployeeJkn({ group_jkn: row.dataset.groupJkn, tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('non_kary');
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');

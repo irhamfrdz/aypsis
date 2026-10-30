@@ -314,6 +314,7 @@ class PranotaBpjsAllowanceTest extends TestCase
         $employee->group_bp_jamsostek = 'BPU-CREW';
         $this->assertSame(0.0, $detail->tunjangan_ppu);
     }
+
     public function test_bpu_supir_umkm_non_pp_sums_jht_jkk_and_jkm_with_or_without_saved_breakdown(): void
     {
         $employee = new Karyawan(['group_jkn' => 'JKN-KIS', 'tipe_bp_jamsostek' => 'Non Kary-UMKM non PP']);
@@ -348,14 +349,14 @@ class PranotaBpjsAllowanceTest extends TestCase
                 'bpjs_ketenagakerjaan' => 57298.8]);
             $detail->setRelation('karyawan', $employee);
             $this->assertSame(229195.2, $detail->summaryBurden('pt'));
-            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(57298.8, $detail->summaryBurden('non_kary'));
             $this->assertSame(0.0, $detail->tunjangan_jkn);
             $detail->jht_biaya = 8000;
             $this->assertSame(237195.2, $detail->summaryBurden('pt'));
             $detail->jht_biaya = 0;
             $employee->is_special_case = false;
             $this->assertSame(0.0, $detail->summaryBurden('pt'));
-            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
         }
     }
 
@@ -381,4 +382,30 @@ class PranotaBpjsAllowanceTest extends TestCase
         }
     }
 
+    public function test_warilia_non_kary_jkn_is_counted_without_duplicating_employer_costs(): void
+    {
+        foreach ([Karyawan::class, \App\Models\KaryawanTidakTetap::class] as $model) {
+            $employee = new $model(['nama_lengkap' => 'WARILIA KOSIM', 'nik' => 'P0035',
+                'group_jkn' => ' jkn - kis ', 'tipe_jkn' => 'NON_KARY',
+                'group_bp_jamsostek' => 'PPU', 'tipe_bp_jamsostek' => 'KARYAWAN', 'is_special_case' => false]);
+            $detail = new PranotaBpjsDetail;
+            $detail->setRawAttributes(['tipe_karyawan' => $model, 'bpjs_kesehatan' => 229195.2,
+                'bpjs_ketenagakerjaan' => 57298.8, 'jht_biaya' => 100000.8,
+                'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 70000])]);
+            $detail->setRelation('karyawan', $employee);
+            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(100000.8, $detail->summaryBurden('pt'));
+            $this->assertSame(0.0, $detail->summaryBurden('kary_jkn'));
+            $employee->is_special_case = true;
+            $this->assertSame(57298.8, $detail->summaryBurden('non_kary'));
+            $this->assertSame(329196.0, $detail->summaryBurden('pt'));
+            $employee->group_bp_jamsostek = 'CILANDAK-HL';
+            $employee->tipe_bp_jamsostek = 'NON KARY-UMKM NON PP';
+            $this->assertSame(127298.8, $detail->summaryBurden('non_kary'));
+            $detail->tunjangan_manual = ['non_kary' => 0];
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $detail->snapshot_bpjs = ['ringkasan' => ['non_kary' => 286494]];
+            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
+        }
+    }
 }
