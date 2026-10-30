@@ -217,17 +217,17 @@ class PranotaBpjsAllowanceTest extends TestCase
         $detail->setRelation('karyawan', $employee);
         $employee->group_jkn = ' jkn - kis ';
         $employee->tipe_jkn = ' non kary ';
-        $this->assertSame(116000.8, $detail->summaryBurden('pt'));
+        $this->assertSame(402494.8, $detail->summaryBurden('pt'));
         $employee->group_bp_jamsostek = 'ppu';
         $employee->tipe_bp_jamsostek = 'NON_KARY';
-        $this->assertSame(144000.8, $detail->summaryBurden('pt'));
+        $this->assertSame(430494.8, $detail->summaryBurden('pt'));
         $employee->group_jkn = 'LAIN';
         $this->assertSame(144000.8, $detail->summaryBurden('pt'));
         $employee->tipe_bp_jamsostek = 'KARYAWAN';
         $this->assertSame(116000.8, $detail->summaryBurden('pt'));
         $employee->group_jkn = 'JKN-KIS';
         $employee->is_special_case = true;
-        $this->assertSame(116000.8, $detail->summaryBurden('pt'));
+        $this->assertSame(402494.8, $detail->summaryBurden('pt'));
         $detail->tunjangan_manual = ['pt' => 0];
         $this->assertSame(0.0, $detail->summaryBurden('pt'));
     }
@@ -348,15 +348,15 @@ class PranotaBpjsAllowanceTest extends TestCase
             $detail->setRawAttributes(['tipe_karyawan' => $model, 'bpjs_kesehatan' => 229195.2,
                 'bpjs_ketenagakerjaan' => 57298.8]);
             $detail->setRelation('karyawan', $employee);
-            $this->assertSame(229195.2, $detail->summaryBurden('pt'));
-            $this->assertSame(57298.8, $detail->summaryBurden('non_kary'));
+            $this->assertSame(286494.0, $detail->summaryBurden('pt'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
             $this->assertSame(0.0, $detail->tunjangan_jkn);
             $detail->jht_biaya = 8000;
-            $this->assertSame(237195.2, $detail->summaryBurden('pt'));
+            $this->assertSame(294494.0, $detail->summaryBurden('pt'));
             $detail->jht_biaya = 0;
             $employee->is_special_case = false;
-            $this->assertSame(0.0, $detail->summaryBurden('pt'));
-            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(286494.0, $detail->summaryBurden('pt'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
         }
     }
 
@@ -390,22 +390,22 @@ class PranotaBpjsAllowanceTest extends TestCase
                 'group_bp_jamsostek' => 'PPU', 'tipe_bp_jamsostek' => 'KARYAWAN', 'is_special_case' => false]);
             $detail = new PranotaBpjsDetail;
             $detail->setRawAttributes(['tipe_karyawan' => $model, 'bpjs_kesehatan' => 229195.2,
-                'bpjs_ketenagakerjaan' => 57298.8, 'jht_biaya' => 100000.8,
+                'bpjs_ketenagakerjaan' => 57298.8, 'jht_biaya' => 357552,
                 'rincian_bpjs' => json_encode(['noncrew_jht_hutang' => 70000])]);
             $detail->setRelation('karyawan', $employee);
-            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
-            $this->assertSame(100000.8, $detail->summaryBurden('pt'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(644046.0, $detail->summaryBurden('pt'));
             $this->assertSame(0.0, $detail->summaryBurden('kary_jkn'));
             $employee->is_special_case = true;
-            $this->assertSame(57298.8, $detail->summaryBurden('non_kary'));
-            $this->assertSame(329196.0, $detail->summaryBurden('pt'));
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
+            $this->assertSame(644046.0, $detail->summaryBurden('pt'));
             $employee->group_bp_jamsostek = 'CILANDAK-HL';
             $employee->tipe_bp_jamsostek = 'NON KARY-UMKM NON PP';
-            $this->assertSame(127298.8, $detail->summaryBurden('non_kary'));
+            $this->assertSame(70000.0, $detail->summaryBurden('non_kary'));
             $detail->tunjangan_manual = ['non_kary' => 0];
             $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
-            $detail->snapshot_bpjs = ['ringkasan' => ['non_kary' => 286494]];
-            $this->assertSame(286494.0, $detail->summaryBurden('non_kary'));
+            $detail->snapshot_bpjs = ['ringkasan' => ['pt' => 644046, 'non_kary' => 0]];
+            $this->assertSame(0.0, $detail->summaryBurden('non_kary'));
         }
     }
 }

@@ -5,41 +5,41 @@ require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 require('../public/js/pranota-bpjs-allowances.js');
 
-test('WARILIA JKN NON KARY enables non employee burden and updates auto, manual zero and refreshed eligibility', () => {
+test('WARILIA JKN NON KARY adds JKN to the existing employer burden and updates auto, manual zero and refreshed eligibility', () => {
     const previousDocument = globalThis.document;
     globalThis.document = { activeElement: null };
     const input = { dataset: {}, removeAttribute(name) { delete this[name]; } };
     const status = {}, editor = { dataset: {} }, reset = {};
     const fields = new Map([
         ['.input-kes', { value: '286494' }], ['.input-ket', { value: '0' }],
-        ['.input-bpu-jkk', { value: '0' }],
+        ['.input-bpu-jkk', { value: '0' }], ['.input-jht-biaya', { value: '357552' }],
         ['.tipe-karyawan-hidden-input', { value: 'App\\Models\\KaryawanTidakTetap' }],
         ['.karyawan-hidden-input', { name: 'details[1][karyawan_id]' }],
-        ['[data-allowance="non_kary"]', { querySelector: selector => ({ input,
+        ['[data-allowance="pt"]', { querySelector: selector => ({ input,
             '.bpjs-allowance-status': status, '.bpjs-allowance-editor': editor, '.bpjs-allowance-reset': reset })[selector] }],
     ]);
     const row = { dataset: { groupJkn: 'JKN-KIS', tipeJkn: 'NON KARY', groupJamsostek: 'PPU',
         tipeJamsostek: 'KARYAWAN', isSpecialCase: '0' }, querySelector: selector => fields.get(selector) || null };
     try {
-        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 286494);
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).pt, 644046);
         assert.equal(input.disabled, false);
         assert.equal(status.textContent, 'Sesuai rumus');
         fields.get('.input-kes').value = '300000.25';
-        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 300000.25);
-        row.allowanceOverrides.non_kary = 0;
-        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 0);
-        assert.equal(input.name, 'details[1][allowance_non_kary]');
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).pt, 657552.25);
+        row.allowanceOverrides.pt = 0;
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).pt, 0);
+        assert.equal(input.name, 'details[1][allowance_pt]');
         assert.equal(status.textContent, 'Diubah manual');
-        delete row.allowanceOverrides.non_kary;
+        delete row.allowanceOverrides.pt;
         row.dataset.isSpecialCase = '1';
         const special = BpjsAllowances.updateRow(row, {}, Number, String);
         assert.equal(special.non_kary, 0);
-        assert.equal(special.pt, 300000.25);
+        assert.equal(special.pt, 657552.25);
         row.dataset.isSpecialCase = '0';
         row.dataset.tipeJkn = 'KARYAWAN';
-        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).non_kary, 0);
-        assert.equal(input.disabled, true);
-        assert.equal(status.textContent, 'Tidak dihitung');
+        assert.equal(BpjsAllowances.updateRow(row, {}, Number, String).pt, 357552);
+        assert.equal(input.disabled, false);
+        assert.equal(status.textContent, 'Sesuai rumus');
     } finally { globalThis.document = previousDocument; }
 });
 
@@ -245,10 +245,10 @@ test('changing membership data invalidates the cached NON KARY employer burden',
         querySelector: selector => fields.get(selector) || null };
     const parse = value => Number(value) || 0;
     const calculate = () => BpjsAllowances.updateRow(row, {}, parse, String).pt;
-    assert.equal(calculate(), 100000);
+    assert.equal(calculate(), 350000.25);
     row.dataset.groupJamsostek = 'PPU';
     row.dataset.tipeJamsostek = 'NON KARY';
-    assert.equal(calculate(), 120000);
+    assert.equal(calculate(), 370000.25);
     row.dataset.groupJkn = 'LAIN';
     assert.equal(calculate(), 120000);
     row.dataset.tipeJkn = 'KARYAWAN';
@@ -485,15 +485,15 @@ test('ERWIN special case row includes KIS biaya and recalculates on status chang
     const row = { dataset: { groupJkn: 'JKN-KIS', tipeJkn: 'NON KARY', isSpecialCase: '1' },
         querySelector: selector => fields.get(selector) || null };
     let result = BpjsAllowances.updateRow(row, {}, Number, String);
-    assert.equal(result.pt, 229195.2);
-    assert.equal(result.non_kary, 57298.8);
+    assert.equal(result.pt, 286494);
+    assert.equal(result.non_kary, 0);
     fields.get('.input-kes').value = '230000.25';
     result = BpjsAllowances.updateRow(row, {}, Number, String);
-    assert.equal(result.pt, 230000.25);
+    assert.equal(result.pt, 287299.05);
     row.dataset.isSpecialCase = '0';
     result = BpjsAllowances.updateRow(row, {}, Number, String);
-    assert.equal(result.pt, 0);
-    assert.equal(result.non_kary, 287299.05);
+    assert.equal(result.pt, 287299.05);
+    assert.equal(result.non_kary, 0);
 });
 
 test('non employee burden drops excluded saved manual amounts and updates eligibility after refresh', () => {

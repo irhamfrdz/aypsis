@@ -22,8 +22,8 @@
         const n = key => Number(values[key]) || 0;
         const nonEmployee = type => String(type || '').toUpperCase().replace(/[\s_-]+/g, '') === 'NONKARY';
         const nonJkn = nonEmployee(values.tipe_jkn);
-        const jknEmployerCost = nonJkn && String(values.group_jkn || '').toUpperCase()
-            .replace(/[\s_-]+/g, '') === 'JKNKIS' ? n('kis_biaya') : 0;
+        const jknEmployerCost = usesNonEmployeeJkn(values)
+            ? n('kis_tunjangan') + n('kis_biaya') + n('bpjs_ketenagakerjaan') : 0;
         const employeeDebt = n('jht_hutang') + n('jkk_hutang') + n('noncrew_jht_hutang') + n('jp_hutang');
         const employerCost = n('jht_biaya') + n('noncrew_jht_biaya') + n('jp_biaya');
         const isUmkmNonPp = isBpuExcluded(values);
@@ -44,8 +44,7 @@
             kary_jht: isEmployeeJhtExcluded(values) ? 0 : employeeDebt,
             kary_jkn: nonJkn ? 0 : n('bpjs_ketenagakerjaan'),
             pt: jknEmployerCost + (useTotalPpu ? ppuTotal : (useNoncrewCost ? noncrewCost : employerCost)),
-            non_kary: (usesNonEmployeeJkn(values) ? n('kis_tunjangan') + n('bpjs_ketenagakerjaan') : 0)
-                + (usesNonEmployeeDebt(values) ? umkmDebt : 0),
+            non_kary: usesNonEmployeeDebt(values) ? umkmDebt : 0,
         };
     }
 
@@ -110,8 +109,7 @@
         const excludedKeys = [];
         if (isPpuExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('ppu');
         if (!usesNonEmployeeDebt({ group_bp_jamsostek: row.dataset.groupJamsostek,
-            tipe_bp_jamsostek: row.dataset.tipeJamsostek })
-            && !usesNonEmployeeJkn({ group_jkn: row.dataset.groupJkn, tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('non_kary');
+            tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('non_kary');
         if (excludedBpu) excludedKeys.push('bpu');
         if (isEmployeeJhtExcluded({ tipe_bp_jamsostek: row.dataset.tipeJamsostek })) excludedKeys.push('kary_jht');
         if (isJknExcluded({ tipe_jkn: row.dataset.tipeJkn })) excludedKeys.push('jkn');

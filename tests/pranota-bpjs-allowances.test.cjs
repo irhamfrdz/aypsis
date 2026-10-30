@@ -2,23 +2,23 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-allowances.js');
 
-test('JKN-KIS NON KARY includes its JKN total minus the portion already charged to PT', () => {
+test('WARILIA NON KARY JKN adds 286494 to the existing PT burden of 357552', () => {
     const values = { group_jkn: 'JKN-KIS', tipe_jkn: 'NON KARY', group_bp_jamsostek: 'PPU',
         tipe_bp_jamsostek: 'KARYAWAN', kis_tunjangan: 229195.2, kis_biaya: 0,
-        bpjs_ketenagakerjaan: 57298.8, jht_biaya: 100000.8, noncrew_jht_hutang: 70000 };
+        bpjs_ketenagakerjaan: 57298.8, jht_biaya: 357552, noncrew_jht_hutang: 70000 };
     for (const [group, type] of [['JKN-KIS', 'NON KARY'], [' jkn - kis ', ' non kary '], ['JKN_KIS', 'NON_KARY']]) {
         const result = BpjsAllowances.calculate({ ...values, group_jkn: group, tipe_jkn: type });
-        assert.equal(result.non_kary, 286494);
-        assert.equal(result.pt, 100000.8);
+        assert.equal(result.non_kary, 0);
+        assert.equal(result.pt, 644046);
         assert.equal(result.kary_jkn, 0);
     }
     const special = BpjsAllowances.calculate({ ...values, kis_biaya: 229195.2, kis_tunjangan: 0 });
-    assert.equal(special.non_kary, 57298.8);
-    assert.equal(special.pt, 329196);
+    assert.equal(special.non_kary, 0);
+    assert.equal(special.pt, 644046);
     assert.equal(BpjsAllowances.calculate({ ...values, group_bp_jamsostek: 'CILANDAK-HL',
-        tipe_bp_jamsostek: 'NON KARY-UMKM NON PP' }).non_kary, 356494);
-    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY-UMKM' }).non_kary, 0);
-    assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).non_kary, 0);
+        tipe_bp_jamsostek: 'NON KARY-UMKM NON PP' }).non_kary, 70000);
+    assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'NON KARY-UMKM' }).pt, 357552);
+    assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).pt, 357552);
 });
 
 test('NON KARY PPU uses its total regardless of JKN group without including JKN or BPU components', () => {
@@ -64,7 +64,7 @@ test('JKN allowance excludes exact NON KARY JKN type while preserving the contri
     for (const type of ['NON KARY', ' non kary ', 'NON_KARY']) {
         const result = BpjsAllowances.calculate({ ...values, tipe_jkn: type });
         assert.equal(result.jkn, 0);
-        assert.equal(result.pt, 0);
+        assert.equal(result.pt, 286494);
         assert.equal(BpjsAllowances.effective(result, { jkn: 99999 }, ['jkn']).jkn, 0);
     }
     for (const type of ['KARYAWAN', 'NON KARY-UMKM', 'NON KARY-UMKM NON PP', '']) {
@@ -156,10 +156,10 @@ test('employer burden uses Jamsostek costs and NON KARY PPU totals regardless of
         jkm_tunjangan: 2000, jp_biaya: 10000, jp_hutang: 11000, noncrew_jht_biaya: 6000 };
     const jkn = { group_jkn: ' jkn - kis ', tipe_jkn: ' non kary ' };
     const ppu = { group_bp_jamsostek: 'ppu', tipe_bp_jamsostek: 'NON_KARY' };
-    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn }).pt, 116000.8);
+    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn }).pt, 402494.8);
     assert.equal(BpjsAllowances.calculate({ ...values, ...ppu }).pt, 144000.8);
-    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, ...ppu }).pt, 144000.8);
-    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, kis_tunjangan: 0, kis_biaya: 229195.2 }).pt, 345196);
+    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, ...ppu }).pt, 430494.8);
+    assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, kis_tunjangan: 0, kis_biaya: 229195.2 }).pt, 402494.8);
     assert.equal(BpjsAllowances.calculate({ ...jkn, ...ppu }).pt, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, ...jkn, group_jkn: 'LAIN' }).pt, 116000.8);
     assert.equal(BpjsAllowances.calculate({ ...values, ...ppu, tipe_bp_jamsostek: 'KARYAWAN' }).pt, 116000.8);
@@ -257,19 +257,19 @@ test('BPU-SUPIR UMKM Non PP adds JHT biaya, JKK and JKM for create and aggregate
     }
 });
 
-test('JKN-KIS NON KARY moves only KIS biaya to employer burden', () => {
+test('JKN-KIS NON KARY adds the entire JKN total to employer burden', () => {
     const values = { group_jkn: 'JKN-KIS', tipe_jkn: 'NON KARY', kis_biaya: 229195.2,
         kis_tunjangan: 0, bpjs_ketenagakerjaan: 57298.8 };
     for (const group of ['JKN-KIS', ' jkn - kis ', 'JKN_KIS']) {
         const result = BpjsAllowances.calculate({ ...values, group_jkn: group });
-        assert.equal(result.pt, 229195.2);
-        assert.equal(result.non_kary, 57298.8);
+        assert.equal(result.pt, 286494);
+        assert.equal(result.non_kary, 0);
         assert.equal(result.jkn, 0);
     }
-    assert.equal(BpjsAllowances.calculate({ ...values, noncrew_jht_biaya: 8000 }).pt, 237195.2);
+    assert.equal(BpjsAllowances.calculate({ ...values, noncrew_jht_biaya: 8000 }).pt, 294494);
     const active = BpjsAllowances.calculate({ ...values, kis_biaya: 0, kis_tunjangan: 229195.2 });
-    assert.equal(active.pt, 0);
-    assert.equal(active.non_kary, 286494);
+    assert.equal(active.pt, 286494);
+    assert.equal(active.non_kary, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, group_jkn: 'LAIN' }).pt, 0);
     assert.equal(BpjsAllowances.calculate({ ...values, tipe_jkn: 'KARYAWAN' }).pt, 0);
 });

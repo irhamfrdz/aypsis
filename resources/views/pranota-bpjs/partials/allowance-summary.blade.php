@@ -6,9 +6,9 @@
     <p class="mb-3 text-xs text-gray-500">Untuk group BPU-SUPIR, BPU-SUPIR JKT PLUIT, dan CILANDAK-HL dengan tipe NON KARY-UMKM NON PP, Beban PT = JHT 2% (Biaya) + JKK 1% (Tunj) + JKM (Rp). Group dan tipe lainnya mengikuti rumus yang berlaku.</p>
     <p class="mb-3 text-xs text-gray-500">Tipe NON KARY-UMKM non PP tidak dihitung pada Tunjangan BPU JKK 1% + JKM.</p>
     <p class="mb-3 text-xs text-gray-500">Beban Karyawan JHT 2%, JP 1% &amp; BPU JHT tidak menghitung tipe BP Jamsostek NON KARY dan NON KARY-UMKM NON PP.</p>
-    <p class="mb-3 text-xs text-gray-500">Beban Non Kary. JKN &amp; BPJS menghitung total JKN yang belum masuk Beban PT untuk group JKN-KIS bertipe JKN NON KARY, ditambah JHT 2% (Hutang) untuk group CILANDAK-HL dan BPU-SUPIR JKT PLUIT bertipe NON KARY-UMKM NON PP.</p>
+    <p class="mb-3 text-xs text-gray-500">Beban Non Kary. JKN &amp; BPJS menghitung JHT 2% (Hutang) untuk group CILANDAK-HL dan BPU-SUPIR JKT PLUIT bertipe NON KARY-UMKM NON PP.</p>
     <p class="mb-3 text-xs text-gray-500">Beban PT dihitung dari komponen BP Jamsostek yang berlaku, termasuk untuk Group JKN JKN-KIS. Untuk Group BP Jamsostek PPU dan Tipe NON KARY, Beban PT menggunakan TOTAL PPU.</p>
-    <p class="mb-3 text-xs text-gray-500">Untuk Group JKN-KIS dengan tipe JKN NON KARY, KIS 4% (BIAY) masuk ke Beban PT dan tidak dihitung lagi pada Beban Non Kary.</p>
+    <p class="mb-3 text-xs text-gray-500">Untuk Group JKN-KIS dengan tipe JKN NON KARY, seluruh total JKN ditambahkan ke Beban PT yang berasal dari BP Jamsostek. Nominal JKN ini tidak masuk ke Beban Non Kary dan tidak mengubah Grand Total.</p>
     <table class="w-full text-sm">
         <thead><tr class="border-b border-orange-200 text-gray-600"><th class="py-2 text-left">Komponen</th><th class="py-2 text-right">Total (Rp)</th></tr></thead>
         <tbody>

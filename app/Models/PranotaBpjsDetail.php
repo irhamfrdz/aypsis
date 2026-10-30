@@ -137,8 +137,7 @@ class PranotaBpjsDetail extends Model
         $nonEmployee = fn ($type) => preg_replace('/[\s_-]+/', '', strtoupper((string) $type)) === 'NONKARY';
         $nonJkn = $nonEmployee($this->karyawan_pranota?->tipe_jkn);
         $jknGroup = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan_pranota?->group_jkn));
-        $useNonEmployeeJkn = $nonJkn && $jknGroup === 'JKNKIS';
-        if ($key === 'non_kary' && ! $useNonEmployeeDebt && ! $useNonEmployeeJkn) {
+        if ($key === 'non_kary' && ! $useNonEmployeeDebt) {
             return 0;
         }
         if (isset($this->tunjangan_manual[$key])) {
@@ -148,7 +147,8 @@ class PranotaBpjsDetail extends Model
         $sum = fn (array $fields) => array_sum(array_map(fn ($field) => (float) ($values[$field] ?? $this->getAttribute($field) ?? 0), $fields));
         $debt = $sum(['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang', 'jp_hutang']);
         $cost = $sum(['jht_biaya', 'noncrew_jht_biaya', 'jp_biaya']);
-        $jknEmployerCost = $nonJkn && $jknGroup === 'JKNKIS' ? $this->kis_biaya : 0;
+        $jknEmployerCost = $nonJkn && $jknGroup === 'JKNKIS'
+            ? (float) $this->bpjs_kesehatan + (float) $this->bpjs_ketenagakerjaan : 0;
         $nonJamsostek = $nonEmployee($this->karyawan_pranota?->tipe_bp_jamsostek);
         $isUmkmNonPp = preg_replace('/[\s_-]+/', '', strtoupper((string) $this->karyawan_pranota?->tipe_bp_jamsostek)) === 'NONKARYUMKMNONPP';
         $useNoncrewCost = $isUmkmNonPp && in_array($jamsostekGroup, ['BPUSUPIR', 'BPUSUPIRJKTPLUIT', 'CILANDAKHL'], true);
@@ -164,8 +164,7 @@ class PranotaBpjsDetail extends Model
             'kary_jht' => $nonJamsostek ? 0 : $debt,
             'kary_jkn' => $nonJkn ? 0 : (float) $this->bpjs_ketenagakerjaan,
             'pt' => $jknEmployerCost + ($useTotalPpu ? $ppuTotal : ($useNoncrewCost ? $noncrewCost : $cost)),
-            'non_kary' => ($useNonEmployeeJkn ? $this->kis_tunjangan + (float) $this->bpjs_ketenagakerjaan : 0)
-                + ($useNonEmployeeDebt ? $umkmDebt : 0),
+            'non_kary' => $umkmDebt,
             default => 0,
         };
     }
