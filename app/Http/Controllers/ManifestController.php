@@ -362,10 +362,14 @@ class ManifestController extends Controller
 
         $manifest->update($validated);
 
-        return redirect()->route('report.manifests.index', [
+        $listQuery = array_intersect_key($request->query(), array_flip([
+            'nama_kapal', 'no_voyage', 'page', 'search', 'tipe_kontainer', 'size_kontainer', 'tanpa_size',
+        ]));
+
+        return redirect()->route('report.manifests.index', array_merge([
             'nama_kapal' => $manifest->nama_kapal,
             'no_voyage' => $manifest->no_voyage,
-        ])->with('success', 'Manifest berhasil diperbarui');
+        ], $listQuery))->with('success', 'Manifest berhasil diperbarui');
     }
 
     /** Update the shipper section from the manifest list without requiring unrelated fields. */

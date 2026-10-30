@@ -4,12 +4,19 @@
 @section('page_title', 'Edit Manifest')
 
 @section('content')
+@php
+    $listQuery = array_intersect_key(request()->query(), array_flip(['nama_kapal', 'no_voyage', 'page', 'search', 'tipe_kontainer', 'size_kontainer', 'tanpa_size']));
+    $indexUrl = route('report.manifests.index', array_merge([
+        'nama_kapal' => $manifest->nama_kapal,
+        'no_voyage' => $manifest->no_voyage,
+    ], $listQuery));
+@endphp
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <!-- Header -->
         <div class="mb-6">
-            <a href="{{ route('report.manifests.index') }}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
+            <a href="{{ $indexUrl }}" class="inline-flex items-center text-sm text-gray-600 hover:text-gray-900">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
                 </svg>
@@ -18,7 +25,7 @@
             <h1 class="mt-2 text-3xl font-bold text-gray-900">Edit Manifest</h1>
         </div>
 
-        <form action="{{ route('report.manifests.update', $manifest->id) }}" method="POST">
+        <form action="{{ route('report.manifests.update', array_merge(['manifest' => $manifest->id], $listQuery)) }}" method="POST">
             @csrf
             @method('PUT')
             
@@ -326,7 +333,7 @@
 
             <!-- Action Buttons -->
             <div class="flex justify-end gap-3">
-                <a href="{{ route('report.manifests.index') }}"
+                <a href="{{ $indexUrl }}"
                    class="px-6 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-lg hover:bg-gray-200 transition-colors duration-200">
                     Batal
                 </a>
