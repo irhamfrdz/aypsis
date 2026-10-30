@@ -121,16 +121,16 @@
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jkn" style="min-width:150px">DPP JKN</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe BP JAMSOSTEK</th>
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jam" style="min-width:150px">DPP BP Jamsostek</th>
-                            <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (TUNJ)</th>
-                            <th class="px-4 py-3 text-right" style="min-width:110px">KIS 4% (BIAY)</th>
-                            <th class="px-4 py-3 text-right" style="min-width:110px">BPJS-KIS 1%</th>
+                            <th class="px-4 py-3 text-right bpjs-jkn-contribution" style="min-width:110px">KIS 4% (TUNJ)</th>
+                            <th class="px-4 py-3 text-right bpjs-jkn-contribution" style="min-width:110px">KIS 4% (BIAY)</th>
+                            <th class="px-4 py-3 text-right bpjs-jkn-debt" style="min-width:110px">BPJS-KIS 1%</th>
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-jkn col-group-jkn" style="min-width:130px">TOTAL JKN</th>
-                            <th class="px-4 py-3 text-right" style="min-width:100px">JHT 3.7%</th>
-                            <th class="px-4 py-3 text-right" style="min-width:90px">JHT 2%</th>
+                            <th class="px-4 py-3 text-right bpjs-ppu-cost" style="min-width:100px">JHT 3.7%</th>
+                            <th class="px-4 py-3 text-right bpjs-ppu-debt" style="min-width:90px">JHT 2%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKK 0.24%</th>
                             <th class="px-4 py-3 text-right" style="min-width:100px">JKM 0.3%</th>
-                            <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 2%</th>
-                            <th class="px-4 py-3 text-right" style="min-width:90px">PPU JP 1%</th>
+                            <th class="px-4 py-3 text-right bpjs-ppu-cost" style="min-width:90px">PPU JP 2%</th>
+                            <th class="px-4 py-3 text-right bpjs-ppu-debt" style="min-width:90px">PPU JP 1%</th>
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-ppu col-group-ppu" style="min-width:130px">TOTAL PPU</th>
 <th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
@@ -143,16 +143,16 @@
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 shadow-sm">
                         <tr>
                             <td colspan="7" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
-                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_kes_biaya">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm" id="total_ket">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes_biaya">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-debt" id="total_ket">Rp 0</td>
                             <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0,00</td>
-                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_biaya">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jht_hutang">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-cost" id="total_jht_biaya">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-debt" id="total_jht_hutang">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkk">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_biaya">Rp 0</td>
-                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jp_hutang">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-cost" id="total_jp_biaya">Rp 0</td>
+                            <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-debt" id="total_jp_hutang">Rp 0</td>
                             <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0,00</td>
                             <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
 <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
@@ -167,7 +167,6 @@
                         </tr>
                     </tfoot>
                 </table>
-                @include('pranota-bpjs.partials.allowance-summary')
             </div>
         </div>
 
@@ -354,18 +353,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <input type="hidden" class="select-tipe-bp-jamsostek" name="details[${rowCount}][tipe_bp_jamsostek]" value="total">
             </td>
             <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
-            <td class="px-4 py-3 align-middle" data-jkn-tunjangan>
+            <td class="px-4 py-3 align-middle bpjs-jkn-contribution" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKes)}" autocomplete="off">
             </td>
-            <td class="px-4 py-3 align-middle" data-jkn-biaya></td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle bpjs-jkn-contribution" data-jkn-biaya></td>
+            <td class="px-4 py-3 align-middle bpjs-jkn-debt">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKet)}" autocomplete="off">
             </td>
             <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle bpjs-ppu-cost">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtB)}" autocomplete="off">
             </td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle bpjs-ppu-debt">
                 <input type="text" name="details[${rowCount}][jht_hutang]" class="w-full text-right text-sm input-jht-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtH)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle">
@@ -374,10 +373,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle">
                 <input type="text" name="details[${rowCount}][jkm_tunjangan]" class="w-full text-right text-sm input-jkm font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jkmT)}" autocomplete="off">
             </td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle bpjs-ppu-cost">
                 <input type="text" name="details[${rowCount}][jp_biaya]" class="w-full text-right text-sm input-jp-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpB)}" autocomplete="off">
             </td>
-            <td class="px-4 py-3 align-middle">
+            <td class="px-4 py-3 align-middle bpjs-ppu-debt">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
             <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>

@@ -96,6 +96,7 @@
             $componentGroups['BPU Non Crew']['total_bpu_noncrew'] = 'TOTAL NON BPU-CREW';
             $totalGroups = ['total_ppu' => 'PPU', 'total_bpu_crew' => 'BPU Crew', 'total_bpu_noncrew' => 'BPU Non Crew'];
             $totalClasses = ['total_jkn' => 'bpjs-group-total-jkn', 'total_ppu' => 'bpjs-group-total-ppu', 'total_bpu_crew' => 'bpjs-group-total-bpu_crew', 'total_bpu_noncrew' => 'bpjs-group-total-bpu_noncrew'];
+            $componentClasses = ['kis_tunjangan' => 'bpjs-jkn-contribution', 'kis_biaya' => 'bpjs-jkn-contribution', 'bpjs_ketenagakerjaan' => 'bpjs-jkn-debt', 'jht_biaya' => 'bpjs-ppu-cost', 'jht_hutang' => 'bpjs-ppu-debt', 'jp_biaya' => 'bpjs-ppu-cost', 'jp_hutang' => 'bpjs-ppu-debt', 'bpu_jkk_tunjangan' => 'bpjs-bpu-allowance', 'bpu_jkm' => 'bpjs-bpu-allowance', 'noncrew_jht_biaya' => 'bpjs-bpu-jht', 'noncrew_jht_hutang' => 'bpjs-bpu-jht', 'noncrew_jkk_tunjangan' => 'bpjs-bpu-allowance', 'noncrew_jkm_tunjangan' => 'bpjs-bpu-allowance'];
             $hasLegacy = $pranota_bpj->details->contains(fn ($detail) => $detail->rincian_bpjs === null);
             $componentGroups['Ringkasan Tunjangan'] = ['allowance_ppu' => 'Tunjangan JKK 0,24% + JKM 0,3%', 'allowance_bpu' => 'Tunjangan BPU JKK 1% + JKM', 'allowance_jkn' => 'Tunjangan JKN 4%', 'allowance_kary_jht' => 'Beban KARY. JHT 2%, JP 1% & BPU JHT', 'allowance_kary_jkn' => 'Beban KARY. JKN 1%', 'allowance_pt' => 'Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)', 'allowance_non_kary' => 'Beban NON KARY. JKN & BPJS', 'no_voucher' => 'No Voucher'];
             if ($hasLegacy) $componentGroups['Data Lama'] = ['legacy_jamsostek' => 'Jamsostek Gabungan'];
@@ -148,7 +149,7 @@
                                 <th class="border border-gray-200 p-3 text-left">{{ $label }}</th>
                             @endforeach
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<th class="border border-gray-200 p-3 text-right {{ $totalClasses[$field] ?? '' }}">{{ $label }}</th>@endforeach
+                                @foreach($columns as $field => $label)<th class="border border-gray-200 p-3 text-right {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $label }}</th>@endforeach
                             @endforeach
                         </tr>
                     </thead>
@@ -176,7 +177,7 @@
                                         @if($field === 'no_voucher')
                                             <td class="border border-gray-200 p-3">{{ $detail->no_voucher ?: '-' }}</td>
                                         @else
-                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : '' }}">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
                                         @endif
                                     @endforeach
                                 @endforeach
@@ -188,7 +189,7 @@
                         <tr>
                             <td colspan="7" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
                             @endforeach
                             <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
                         </tr>

@@ -1,5 +1,17 @@
 [data-allowance] { min-width: 220px; padding: 12px 16px !important; vertical-align: middle; border-left: 1px solid #ffedd5; }
 .bpjs-group-total-jkn { background: #e0e7ff; color: #3730a3; }
+:is(th, td).bpjs-jkn-contribution { background: #f0fdf4; color: #166534; }
+:is(th, td).bpjs-jkn-debt { background: #fefce8; color: #854d0e; }
+.bpjs-jkn-contribution :is(input, .jkn-zero) { color: #166534; }
+.bpjs-jkn-debt input { color: #854d0e; }
+:is(th, td).bpjs-ppu-cost { background: #eff6ff; color: #1e40af; }
+:is(th, td).bpjs-ppu-debt { background: #fef2f2; color: #991b1b; }
+.bpjs-ppu-cost input { color: #1e40af; }
+.bpjs-ppu-debt input { color: #991b1b; }
+:is(th, td).bpjs-bpu-allowance { background: #f0fdf4; color: #166534; }
+:is(th, td).bpjs-bpu-jht { background: #eff6ff; color: #1e40af; }
+.bpjs-bpu-allowance input { color: #166534; }
+.bpjs-bpu-jht input { color: #1e40af; }
 .bpjs-group-total-ppu { background: #d1fae5; color: #065f46; }
 .bpjs-group-total-bpu_crew { background: #e0f2fe; color: #075985; }
 .bpjs-group-total-bpu_noncrew { background: #f3e8ff; color: #6b21a8; }
