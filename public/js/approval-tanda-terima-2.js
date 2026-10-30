@@ -130,10 +130,8 @@
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
     const clearSelection = document.getElementById('approval-clear-selection');
-    const filters = new URLSearchParams(window.location.search);
-    filters.delete('page');
-    filters.sort();
-    const selectionKey = `approval-tt2-selection:${window.location.pathname}?${filters}`;
+    const receiptType = document.getElementById('type')?.value || 'fcl';
+    const selectionKey = `approval-tt2-selection:${window.location.pathname}:${receiptType}`;
     let selected = {};
     try {
         selected = JSON.parse(sessionStorage.getItem(selectionKey) || '{}');

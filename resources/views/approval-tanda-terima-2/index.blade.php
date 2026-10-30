@@ -100,7 +100,7 @@
             </span>
             <div>
                 <h2 class="font-semibold text-gray-900">Cari Tanda Terima</h2>
-                <p class="text-xs text-gray-500">Cari berdasarkan nomor tanda terima, nomor kontainer, pengirim, atau nama barang, lalu pilih filter yang dibutuhkan.</p>
+                <p class="text-xs text-gray-500">Cari beberapa data sekaligus, pilih hasilnya, lalu export dalam satu Excel.</p>
             </div>
         </div>
         <div class="space-y-5 px-5 py-5 sm:px-6">
@@ -108,8 +108,9 @@
                 <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima, nomor kontainer, pengirim, atau nama barang</label>
                 <div class="relative">
                     <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Ketik nomor, kontainer, pengirim, atau nama barang...">
+                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Contoh: JB1001, JB1002, JB1003">
                 </div>
+                <p class="mt-2 text-xs text-gray-500">Pisahkan beberapa kata kunci dengan koma. Pilihan export tetap tersimpan saat Anda mencari lagi atau pindah halaman pada jenis tanda terima yang sama.</p>
             </div>
             <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 <div>

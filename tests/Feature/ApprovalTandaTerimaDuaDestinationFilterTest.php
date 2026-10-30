@@ -177,6 +177,19 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         }
     }
 
+    public function test_search_accepts_multiple_receipt_numbers(): void
+    {
+        $first = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-1001']);
+        $second = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-1002']);
+        DB::table('tanda_terimas')->insert(['no_surat_jalan' => 'SJ-9999']);
+
+        $items = (new ApprovalTandaTerimaDuaController)->index(Request::create('/', 'GET', [
+            'type' => 'fcl', 'destination' => '', 'search' => 'SJ-1001, SJ-1002',
+        ]))->getData()['items'];
+
+        $this->assertEqualsCanonicalizing([$first, $second], $items->pluck('id')->all());
+    }
+
     public function test_index_includes_incomplete_marks_for_visible_receipts(): void
     {
         $id = DB::table('tanda_terimas')->insertGetId(['tujuan_pengiriman' => 'Batam']);
