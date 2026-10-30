@@ -31,6 +31,7 @@ class PranotaBpjsRefreshTest extends TestCase
             $table->string('jenis');
             $table->string('group_name');
             $table->string('nilai');
+            $table->json('diskon_pengecualian')->nullable();
             $table->softDeletes();
         });
         DB::table('karyawans')->insert([
@@ -39,17 +40,19 @@ class PranotaBpjsRefreshTest extends TestCase
         ]);
         DB::table('karyawan_tidak_tetaps')->insert(['id' => 1, 'nama_lengkap' => 'Tidak Tetap']);
         DB::table('master_rumus_bpjs')->insert(['jenis' => 'jamsostek', 'group_name' => 'BPU-HARIAN', 'nilai' => '7991']);
+        DB::table('master_rumus_bpjs')->update(['diskon_pengecualian' => json_encode(['Karyawan_1'])]);
         $request = Request::create('/pranota-bpjs/create', 'GET', [], [], [], ['HTTP_ACCEPT' => 'application/json']);
         $controller = new PranotaBpjsController;
         $before = $controller->create($request)->getData(true);
         $this->assertCount(2, $before['karyawans']);
+        $this->assertSame(['Karyawan_1'], $before['rumusBpjs'][0]['diskon_pengecualian']);
         $this->assertSame('KANTOR', $before['karyawans'][0]['tipe_jkn']);
         $this->assertSame('CREW', $before['karyawans'][0]['tipe_bp_jamsostek']);
         $this->assertSame(['Karyawan_1', 'KaryawanTidakTetap_1'], array_column($before['karyawans'], 'unique_id'));
 
         DB::table('karyawans')->where('id', 1)->update(['dpp_bp_jamsostek' => '2000000', 'cabang_bpjs' => 'CILANDAK-HL', 'is_special_case' => true]);
         DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['is_special_case' => true, 'tipe_jkn' => 'HARIAN', 'tipe_bp_jamsostek' => 'CREW']);
-        DB::table('master_rumus_bpjs')->update(['nilai' => '8000']);
+        DB::table('master_rumus_bpjs')->update(['nilai' => '8000', 'diskon_pengecualian' => json_encode(['KaryawanTidakTetap_1'])]);
         $response = $controller->create($request);
         $after = $response->getData(true);
         $this->assertStringContainsString('no-store', $response->headers->get('Cache-Control'));
@@ -60,6 +63,7 @@ class PranotaBpjsRefreshTest extends TestCase
         $this->assertSame('HARIAN', $after['karyawans'][1]['tipe_jkn']);
         $this->assertSame('CREW', $after['karyawans'][1]['tipe_bp_jamsostek']);
         $this->assertSame('8000', $after['rumusBpjs'][0]['nilai']);
+        $this->assertSame(['KaryawanTidakTetap_1'], $after['rumusBpjs'][0]['diskon_pengecualian']);
         // Special Case keeps terminated employees of either type eligible.
         DB::table('karyawans')->where('id', 2)->update(['is_special_case' => true]);
         DB::table('karyawan_tidak_tetaps')->where('id', 1)->update(['tanggal_berhenti' => '2026-01-01']);

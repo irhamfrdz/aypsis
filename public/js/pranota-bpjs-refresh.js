@@ -1,5 +1,5 @@
 (function (root) {
-    root.refreshBpjsData = async function ({ url, rows, applyData, addEmployee, fetchData = root.fetch.bind(root) }) {
+    root.loadBpjsData = async function ({ url, fetchData = root.fetch.bind(root) }) {
         const response = await fetchData(url, {
             headers: { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
             credentials: 'same-origin',
@@ -10,6 +10,10 @@
         if (!Array.isArray(data.karyawans) || !Array.isArray(data.rumusBpjs)) {
             throw new Error('Respons data tidak sesuai. Silakan muat ulang setelah menyimpan pekerjaan Anda.');
         }
+        return data;
+    };
+    root.refreshBpjsData = async function ({ url, rows, applyData, addEmployee, fetchData = root.fetch.bind(root) }) {
+        const data = await root.loadBpjsData({ url, fetchData });
         applyData(data);
         let updated = 0, skipped = 0, removed = 0;
         const availableIds = new Set(data.karyawans.map(employee => employee.unique_id));

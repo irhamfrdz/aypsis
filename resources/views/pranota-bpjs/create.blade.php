@@ -1338,6 +1338,10 @@ document.addEventListener('DOMContentLoaded', function() {
         rowTarget = fragment;
         rowCount = 0;
         try {
+            if (typeof items === 'function') {
+                if (button) button.textContent = 'Memeriksa data dan pengecualian diskon terbaru...';
+                items = await items();
+            }
             await processBpjsBatch(items, item => {
                 createRow(item);
                 const row = rowTarget.lastElementChild;
@@ -1347,10 +1351,12 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             if (rowCount === 0) addRow(null);
             container.replaceChildren(fragment);
+            return true;
         } catch (error) {
             rowCount = previousCount;
             console.error(error);
             alert('Perhitungan gagal. Data sebelumnya tetap tersedia. Silakan coba kembali.');
+            return false;
         } finally {
             rowTarget = container;
             isGenerating = false;
@@ -1373,8 +1379,30 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     document.getElementById('btn-generate-all').addEventListener('click', async () => {
-        const eligible = karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
-        await generateRows(eligible, k => addRow(k.unique_id, true));
+        if (isGenerating || isRefreshing) return;
+        const previousEmployees = karyawans;
+        const previousFormulas = rumusBpjs;
+        const status = document.getElementById('bpjs-refresh-status');
+        status.hidden = false;
+        status.textContent = 'Memeriksa daftar karyawan tanpa diskon terbaru...';
+        const generated = await generateRows(async () => {
+            const data = await loadBpjsData({
+                url: @json(route('pranota-bpjs.create')),
+            });
+            karyawans = data.karyawans;
+            rumusBpjs = data.rumusBpjs;
+            return karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
+        }, k => addRow(k.unique_id, true));
+        if (generated) {
+            populateGroupFilterOptions();
+            populateCabangFilterOptions();
+            status.textContent = 'Perhitungan selesai menggunakan daftar pengecualian diskon terbaru. Karyawan dalam daftar dihitung tanpa diskon JKK/JKM.';
+        } else {
+            karyawans = previousEmployees;
+            rumusBpjs = previousFormulas;
+            status.textContent = 'Perhitungan gagal. Data sebelumnya tetap tersedia. Coba kembali setelah koneksi pulih.';
+        }
+        applyFilter();
     });
 
     document.getElementById('btn-refresh-bpjs').addEventListener('click', async function () {
