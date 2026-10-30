@@ -1913,6 +1913,16 @@ function initializeSelect2() {
 // Start loading scripts when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, starting script initialization...');
+    const activity = document.getElementById('jenis_aktivitas');
+    const pphField = document.getElementById('pph_kendaraan_field');
+    const pphSelect = document.getElementById('pph_kendaraan_select');
+    const syncPphField = () => {
+        const isVehicle = activity.value === 'Pembayaran Kendaraan';
+        pphField.classList.toggle('hidden', !isVehicle);
+        pphSelect.required = isVehicle;
+    };
+    activity.addEventListener('change', syncPphField);
+    syncPphField();
     loadScripts();
 });
 

@@ -1569,7 +1569,19 @@ function initializeSelect2() {
     updateJournalPreview();
 }
 
-document.addEventListener('DOMContentLoaded', loadScripts);
+document.addEventListener('DOMContentLoaded', function() {
+    const activity = document.getElementById('jenis_aktivitas');
+    const pphField = document.getElementById('pph_kendaraan_field');
+    const pphSelect = document.getElementById('pph_kendaraan_select');
+    const syncPphField = () => {
+        const isVehicle = activity.value === 'Pembayaran Kendaraan';
+        pphField.classList.toggle('hidden', !isVehicle);
+        pphSelect.required = isVehicle;
+    };
+    activity.addEventListener('change', syncPphField);
+    syncPphField();
+    loadScripts();
+});
 </script>
 @endpush
 @endsection

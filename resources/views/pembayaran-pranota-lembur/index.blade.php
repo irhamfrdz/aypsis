@@ -63,11 +63,22 @@
                                 <span class="text-gray-400">-</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                            @if($pranota->pembayaranPranotaLemburs->count() == 0)
-                                <a href="{{ route('pembayaran-pranota-lembur.create', ['pranota_id' => $pranota->id]) }}" class="text-indigo-600 hover:text-indigo-900 mr-3">Bayar</a>
-                            @endif
-                            <a href="{{ route('pranota-lembur.show', $pranota->id) }}" class="text-gray-600 hover:text-gray-900">Detail</a>
+                        <td class="px-6 py-4 text-center text-sm font-medium">
+                            <div class="flex flex-wrap items-center justify-center gap-2">
+                                @if($pranota->pembayaranPranotaLemburs->isEmpty())
+                                    <a href="{{ route('pembayaran-pranota-lembur.create', ['pranota_id' => $pranota->id]) }}" class="text-indigo-600 hover:text-indigo-900">Bayar</a>
+                                @endif
+                                @can('pembayaran-pranota-lembur-edit')
+                                    @foreach($pranota->pembayaranPranotaLemburs as $pembayaran)
+                                        @unless($pembayaran->isCancelled())
+                                            <a href="{{ route('pembayaran-pranota-lembur.edit', $pembayaran->id) }}" class="inline-flex items-center rounded-md border border-indigo-200 bg-indigo-50 px-2 py-1 text-indigo-700 hover:bg-indigo-100" aria-label="Edit pembayaran {{ $pembayaran->nomor_pembayaran }}">
+                                                Edit {{ $pembayaran->nomor_pembayaran }}
+                                            </a>
+                                        @endunless
+                                    @endforeach
+                                @endcan
+                                <a href="{{ route('pranota-lembur.show', $pranota->id) }}" class="text-gray-600 hover:text-gray-900">Detail</a>
+                            </div>
                         </td>
                     </tr>
                 @empty
