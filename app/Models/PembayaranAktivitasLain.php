@@ -71,7 +71,8 @@ class PembayaranAktivitasLain extends Model
                 (int) $payment->jumlah,
                 $payment->jenis_aktivitas,
                 $payment->pph_persen === null ? null : (float) $payment->pph_persen,
-                $manual ? (int) $payment->pph_nominal : null
+                $manual ? (int) $payment->pph_nominal : null,
+                (float) $payment->pph_persen === 2.5 ? self::serviceMemoAmount($payment->akun_details ?? []) : null
             );
 
             $payment->pph_nominal = $totals['pph_nominal'];
@@ -79,10 +80,17 @@ class PembayaranAktivitasLain extends Model
         });
     }
 
-    public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen, ?int $manualPphNominal = null): array
+    public static function serviceMemoAmount(array $akunDetails): int
+    {
+        return (int) collect($akunDetails)
+            ->filter(fn ($detail) => preg_match('/\bjasa\b/iu', (string) ($detail['memo'] ?? '')) === 1)
+            ->sum('nominal');
+    }
+
+    public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen, ?int $manualPphNominal = null, ?int $taxableAmount = null): array
     {
         $pphNominal = $jenisAktivitas === 'Pembayaran Kendaraan'
-            ? ($manualPphNominal ?? (int) round($jumlah * ($pphPersen ?? 0) / 100))
+            ? ($manualPphNominal ?? (int) round(($taxableAmount ?? $jumlah) * ($pphPersen ?? 0) / 100))
             : 0;
 
         if ($pphNominal < 0 || $pphNominal > $jumlah) {

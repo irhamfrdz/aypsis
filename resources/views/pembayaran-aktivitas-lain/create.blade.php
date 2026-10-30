@@ -333,7 +333,7 @@
                         <button type="button" id="pph_auto_button" class="whitespace-nowrap px-3 py-2 rounded-md bg-white border border-blue-300 text-blue-700">Hitung otomatis</button>
                     </div>
                     <input type="hidden" name="pph_manual" id="pph_manual_input" value="{{ old('pph_manual', '0') }}">
-                    <p class="text-xs text-gray-600 mt-1">Nominal terisi otomatis dari persentase PPh dan dapat diubah manual.</p>
+                    <p class="text-xs text-gray-600 mt-1">Untuk PPh 2,5%, nominal otomatis dihitung hanya dari rincian akun dengan memo berisi kata "jasa". Nominal dapat diubah manual.</p>
                     @error('pph_nominal')
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
@@ -744,9 +744,14 @@ function initializeSelect2() {
         }
 
         const jumlah = Number(jumlahDisplay.value.replace(/[^\d]/g, '')) || 0;
+        const taxableAmount = Number(pphSelect.value) === 2.5
+            ? Array.from(document.querySelectorAll('#akun_details_rows .akun-detail-row'))
+                .reduce((sum, row) => /\bjasa\b/i.test(row.querySelector('.akun-detail-memo')?.value || '')
+                    ? sum + (Number(row.querySelector('.akun-detail-nominal')?.value) || 0) : sum, 0)
+            : jumlah;
         pphInput.max = String(jumlah);
-        if (recalculate || !canEdit || (pphManualInput.value !== '1' && pphInput.value === '')) {
-            pphInput.value = Math.round(jumlah * Number(pphSelect.value) / 100);
+        if (recalculate || !canEdit || pphManualInput.value !== '1') {
+            pphInput.value = Math.round(taxableAmount * Number(pphSelect.value) / 100);
             pphManualInput.value = '0';
         }
         if (pphInput.value === '') {
@@ -765,7 +770,7 @@ function initializeSelect2() {
         document.getElementById('pph_account_amount').textContent = 'Rp ' + pphNominal.toLocaleString('id-ID');
         document.getElementById('grand_total_display').textContent = 'Rp ' + (jumlah - pphNominal).toLocaleString('id-ID');
     }
-    jumlahDisplay.addEventListener('input', () => updatePphSummary(true));
+    jumlahDisplay.addEventListener('input', () => updatePphSummary());
     pphSelect.addEventListener('change', () => updatePphSummary(true));
     jenisAktivitas.addEventListener('change', () => updatePphSummary(true));
     pphInput.addEventListener('input', () => {

@@ -522,6 +522,43 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(0, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
     }
 
+    public function test_vehicle_pph_two_point_five_percent_uses_only_service_memos_and_allows_manual_amount(): void
+    {
+        $this->withoutMiddleware();
+
+        $serviceAccount = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $otherAccount = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $payload = $this->vehiclePayload('batam');
+        $payload['pph_persen'] = '2.5';
+        $payload['akun_details'] = [
+            ['akun_coa_id' => $serviceAccount, 'debit_kredit' => 'debit', 'nominal' => 1000, 'memo' => 'Biaya Jasa administrasi'],
+            ['akun_coa_id' => $otherAccount, 'debit_kredit' => 'debit', 'nominal' => 500, 'memo' => 'Biaya material'],
+        ];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(1500, $payment->jumlah);
+        $this->assertSame(25, $payment->pph_nominal);
+        $this->assertSame(1475, $payment->grand_total);
+
+        $payload['akun_details'][0]['memo'] = 'Biaya administrasi';
+        app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment
+        );
+        $this->assertSame(0, $payment->fresh()->pph_nominal);
+
+        $payload['pph_manual'] = '1';
+        $payload['pph_nominal'] = 37;
+        app(PembayaranAktivitasLainController::class)->update(
+            Request::create('/pembayaran-aktivitas-lain/'.$payment->id, 'PUT', $payload),
+            $payment->fresh()
+        );
+        $this->assertSame(37, $payment->fresh()->pph_nominal);
+        $this->assertSame(1463, $payment->fresh()->grand_total);
+    }
+
     private function vehiclePayload(string $lokasi): array
     {
         return [
