@@ -126,7 +126,7 @@
                                     <option value="">-- Pilih Bank --</option>
                                     @foreach($akunCoa as $akun)
                                         <option value="{{ $akun->nama_akun }}" {{ old('bank', $isEdit ? $pembayaranPranotaLembur->bank : '') == $akun->nama_akun ? 'selected' : '' }}>
-                                            {{ $akun->nama_akun }}
+                                            {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -229,6 +229,17 @@
         </form>
     </div>
 
+<style>
+    #bank + .select2-container,
+    #akun_coa_id + .select2-container { margin-top: 0.25rem; }
+    #bank + .select2-container .select2-selection--single,
+    #akun_coa_id + .select2-container .select2-selection--single { height: 38px; border-color: #d1d5db; border-radius: 0.375rem; }
+    #bank + .select2-container .select2-selection__rendered,
+    #akun_coa_id + .select2-container .select2-selection__rendered { line-height: 36px; padding-left: 0.75rem; }
+    #bank + .select2-container .select2-selection__arrow,
+    #akun_coa_id + .select2-container .select2-selection__arrow { height: 36px; }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.getElementById('select-all');
@@ -237,6 +248,13 @@
         const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
         const searchInput = document.getElementById('searchPranota');
+
+        if (window.jQuery?.fn?.select2) {
+            window.jQuery('#bank, #akun_coa_id').select2({
+                width: '100%',
+                minimumResultsForSearch: 0
+            });
+        }
 
         function updateTotal() {
             let total = 0;
