@@ -23,8 +23,11 @@ class ApprovalTandaTerimaDuaExcelService
         $template = resource_path('templates/approval_tanda_terima_2.xlsx');
         $workbook = IOFactory::load($template);
         $sheet = $workbook->getSheet(0);
+        $sheet->removeRow(1, 2);
+        $sheet->getSheetView()->setZoomScale(70);
+        $sheet->freezePane('A2');
         foreach ($entries as $index => $entry) {
-            $this->fillRow($sheet, 9 + $index, $sourceType, $entry['receipt'], $entry['override'] ?? null);
+            $this->fillRow($sheet, 7 + $index, $sourceType, $entry['receipt'], $entry['override'] ?? null);
         }
         while ($workbook->getSheetCount() > 1) {
             $workbook->removeSheetByIndex(1);
