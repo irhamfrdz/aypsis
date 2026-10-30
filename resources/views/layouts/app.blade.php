@@ -1926,7 +1926,7 @@
 
 {{-- Report Dropdown --}}
 @php
-    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.biaya-perijinan.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
+    $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pembayaran.*') || Request::routeIs('report.rit.*') || Request::routeIs('report.lembur.*') || Request::routeIs('report.ongkos-truk.*') || Request::routeIs('report.biaya-bensin.*') || Request::routeIs('report.biaya-perijinan.*') || Request::routeIs('report.manifests.*') || Request::routeIs('report.perincians.*') || Request::routeIs('report.kas-truck.*') || Request::routeIs('laporan-harian-kas-truck.*') || Request::routeIs('report-history-cuti.*');
     // Menu Report dapat diakses oleh semua user yang login
     $hasReportPermission = (bool) $user;
 @endphp
@@ -1980,6 +1980,12 @@
         <a href="{{ route('report.ongkos-truk.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.ongkos-truk.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             Report Ongkos Truk
         </a>
+
+        @if($user && ($isAdmin || $user->can('biaya-bensin-view')))
+        <a href="{{ route('report.biaya-bensin.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.biaya-bensin.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+            Report Biaya Bensin
+        </a>
+        @endif
 
         @if($user && ($isAdmin || $user->can('pembayaran-aktivitas-lain-view')))
         <a href="{{ route('report.biaya-perijinan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.biaya-perijinan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">

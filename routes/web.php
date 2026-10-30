@@ -6767,6 +6767,9 @@ Route::prefix('realisasi-uang-muka')->name('realisasi-uang-muka.')->middleware([
 
 // Report Routes
 Route::middleware(['auth'])->prefix('report')->name('report.')->group(function () {
+    Route::get('/biaya-bensin', [App\Http\Controllers\ReportBiayaBensinController::class, 'index'])
+        ->name('biaya-bensin.index')
+        ->middleware('can:biaya-bensin-view');
     Route::get('/biaya-perijinan', [App\Http\Controllers\ReportBiayaPerijinanController::class, 'index'])
         ->name('biaya-perijinan.index')
         ->middleware('can:pembayaran-aktivitas-lain-view');
