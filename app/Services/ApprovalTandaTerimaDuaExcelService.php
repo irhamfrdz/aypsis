@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ApprovalTandaTerimaDuaExcelService
@@ -91,6 +92,11 @@ class ApprovalTandaTerimaDuaExcelService
             if (filled($value)) {
                 $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
             }
+        }
+        foreach (['Q', 'T'] as $column) {
+            $sheet->getStyle($column.$row)->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFFFFF00');
         }
         $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
 

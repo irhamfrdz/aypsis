@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Tests\TestCase;
 
 class ApprovalTandaTerimaDuaExcelTest extends TestCase
@@ -103,6 +104,19 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertNull($sheet->getCell('AE9')->getValue());
             $this->assertNull($sheet->getCell('AF9')->getValue());
             $this->assertSame('PT Pengirim', $sheet->getCell('Q9')->getValue());
+            $this->assertSame('PT Penerima', $sheet->getCell('T9')->getValue());
+            foreach (['Q', 'T'] as $column) {
+                $this->assertSame(Fill::FILL_SOLID, $sheet->getStyle($column.'9')->getFill()->getFillType());
+                $this->assertSame('FFFFFF00', $sheet->getStyle($column.'9')->getFill()->getStartColor()->getARGB());
+                $this->assertSame(
+                    $template->getSheet(0)->getStyle($column.'8')->getFill()->getFillType(),
+                    $sheet->getStyle($column.'8')->getFill()->getFillType()
+                );
+                $this->assertSame(
+                    $template->getSheet(0)->getStyle($column.'8')->getFill()->getStartColor()->getARGB(),
+                    $sheet->getStyle($column.'8')->getFill()->getStartColor()->getARGB()
+                );
+            }
             $this->assertSame('0012345', $sheet->getCell('S9')->getValue());
             $this->assertSame('JB10036397', $sheet->getCell('AC9')->getValue());
             $this->assertSame($template->getSheet(0)->getCell('P402')->getValue(), $sheet->getCell('P402')->getValue());
