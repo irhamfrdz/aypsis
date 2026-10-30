@@ -38,9 +38,11 @@ class MasterRumusBpjs extends Model
         'diskon_status',
         'diskon_tipe',
         'diskon_nilai',
+        'diskon_pengecualian',
     ];
 
     protected $casts = [
+        'diskon_pengecualian' => 'array',
         'hutang_tiers' => 'array',
         'jp_max_dpp' => 'decimal:2',
         'jp_max_age' => 'integer',

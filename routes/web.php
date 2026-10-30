@@ -371,6 +371,8 @@ Route::middleware([
     Route::resource('master-customer-buruh', \App\Http\Controllers\MasterCustomerBuruhController::class);
     Route::resource('master-group-bp-jamsostek', \App\Http\Controllers\MasterGroupBpJamsostekController::class);
 
+    Route::get('master-rumus-bpjs/{id}/discount-employees', [\App\Http\Controllers\MasterRumusBpjsController::class, 'discountEmployees'])->name('master-rumus-bpjs.discount-employees');
+    Route::put('master-rumus-bpjs/{id}/discount-exclusions', [\App\Http\Controllers\MasterRumusBpjsController::class, 'saveDiscountExclusions'])->name('master-rumus-bpjs.discount-exclusions');
     Route::resource('master-rumus-bpjs', \App\Http\Controllers\MasterRumusBpjsController::class)->except(['create', 'show', 'edit']);
 
     // The old routes and resource controller were deleted to allow a full rewrite.

@@ -1140,7 +1140,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             nominalKet += (hutangPersen / 100) * dppJamsostek;
                         }
 
-                        const crewAmounts = BpjsJamsostek.calculateCrew(rumus, karyawan.dpp_bp_jamsostek);
+                        const crewAmounts = BpjsJamsostek.calculateCrew(rumus, karyawan.dpp_bp_jamsostek, karyawan);
                         bpuJhtVal = crewAmounts.jht;
                         bpuJkkTunjVal = crewAmounts.jkk;
                         bpuJkmVal = crewAmounts.jkm;
@@ -1148,54 +1148,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     } else {
                         // ── Non BPU-CREW ─────────────────────────────────────────
                         // 1. JHT 2% Hutang / Potongan (Rp) dari Tabel DPP Tier atau Persen
-                        let tiers = rumus.hutang_tiers;
-                        if (typeof tiers === 'string') {
-                            try { tiers = JSON.parse(tiers); } catch(e) { tiers = []; }
-                        }
-                        if (Array.isArray(tiers) && tiers.length > 0) {
-                            const matchedTier = BpjsJamsostek.findDppTier(tiers, dppJamsostek);
-                            if (matchedTier) {
-                                ncJhtHutangVal = parseIdNumber(matchedTier.potongan);
-                            } else {
-                                const jhtHutangPersen = parseFloat(rumus.jht_hutang || rumus.hutang_persen || 0);
-                                ncJhtHutangVal = (jhtHutangPersen / 100) * dppJamsostek;
-                            }
-                        } else {
-                            const jhtHutangPersen = parseFloat(rumus.jht_hutang || rumus.hutang_persen || 0);
-                            ncJhtHutangVal = (jhtHutangPersen / 100) * dppJamsostek;
-                        }
-
-                        // 2. JHT 2% Biaya: (DPP * JHT 2% Biaya Master Rumus) - Potongan JHT 2% (Tunjangan/Hutang Karyawan)
-                        const jhtBiayaPersen = parseFloat(rumus.jht_biaya || 0);
-                        const baseJhtBiaya = (jhtBiayaPersen / 100) * dppJamsostek;
-                        ncJhtBiayaVal = Math.max(0, baseJhtBiaya - ncJhtHutangVal);
-
-                        // 3. JKK 1% Tunjangan (%)
-                        const jkkPersen = parseFloat(rumus.jkk_tunjangan || rumus.tunjangan_persen || 0);
-                        let baseJkk = (jkkPersen / 100) * dppJamsostek;
-                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
-                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
-                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
-                            if (diskonTipe === 'persen') {
-                                baseJkk = baseJkk * (diskonNilai / 100);
-                            } else {
-                                baseJkk = baseJkk * diskonNilai;
-                            }
-                        }
-                        ncJkkTunjVal = baseJkk;
-
-                        // 4. JKM Tunjangan (Nominal Rp)
-                        let baseJkm = parseFloat(rumus.jkm_tunjangan || rumus.biaya_persen || 0);
-                        if (rumus.diskon_status === 'ada' && parseFloat(rumus.diskon_nilai || 0) > 0) {
-                            const diskonNilai = parseFloat(rumus.diskon_nilai || 0);
-                            const diskonTipe  = (rumus.diskon_tipe || 'persen').toLowerCase();
-                            if (diskonTipe === 'persen') {
-                                baseJkm = baseJkm * (diskonNilai / 100);
-                            } else {
-                                baseJkm = baseJkm * diskonNilai;
-                            }
-                        }
-                        ncJkmTunjVal = baseJkm;
+                        const amounts = BpjsJamsostek.calculateNonCrew(rumus, karyawan.dpp_bp_jamsostek, karyawan);
+                        ncJhtHutangVal = amounts.jhtHutang;
+                        ncJhtBiayaVal = amounts.jhtBiaya;
+                        ncJkkTunjVal = amounts.jkk;
+                        ncJkmTunjVal = amounts.jkm;
                     }
                     
                     inputJhtBiaya.value     = formatNumber(jhtBiaya);

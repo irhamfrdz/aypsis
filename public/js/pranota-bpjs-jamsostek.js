@@ -8,7 +8,24 @@
         return Number(text.replace(/\./g, '').replace(',', '.')) || 0;
     };
 
+    const isDiscountExcluded = (record, employee) => {
+        if (!employee) return false;
+        const key = employee.unique_id || (employee.id ? (String(employee.tipe_karyawan || '').endsWith('KaryawanTidakTetap')
+            ? 'KaryawanTidakTetap_' : 'Karyawan_') + employee.id : '');
+        let excluded = record.diskon_pengecualian || [];
+        if (typeof excluded === 'string') {
+            try { excluded = JSON.parse(excluded); } catch (_) { excluded = []; }
+        }
+        return Array.isArray(excluded) && excluded.includes(key);
+    };
+    const applyDiscount = (record, amount, employee) => {
+        const value = parseFloat(record.diskon_nilai || 0);
+        if (record.diskon_status !== 'ada' || value <= 0 || isDiscountExcluded(record, employee)) return amount;
+        return amount * ((record.diskon_tipe || 'persen').toLowerCase() === 'persen' ? value / 100 : value);
+    };
     root.BpjsJamsostek = {
+        isDiscountExcluded,
+        applyDiscount,
         parseAmount,
         findDppTier(tiers, dppValue) {
             if (typeof tiers === 'string') {
@@ -42,7 +59,18 @@
             if (general.length) return general.length === 1 ? general[0] : null;
             return !branch && candidates.length === 1 ? candidates[0] : null;
         },
-        calculateCrew(record, dppValue) {
+        calculateNonCrew(record, dppValue, employee = null) {
+            const dpp = parseAmount(dppValue);
+            const tier = this.findDppTier(record.hutang_tiers, dpp);
+            const jhtHutang = tier ? parseAmount(tier.potongan) : parseFloat(record.jht_hutang || record.hutang_persen || 0) / 100 * dpp;
+            return {
+                jhtHutang,
+                jhtBiaya: Math.max(0, parseFloat(record.jht_biaya || 0) / 100 * dpp - jhtHutang),
+                jkk: applyDiscount(record, parseFloat(record.jkk_tunjangan || record.tunjangan_persen || 0) / 100 * dpp, employee),
+                jkm: applyDiscount(record, parseFloat(record.jkm_tunjangan || record.biaya_persen || 0), employee),
+            };
+        },
+        calculateCrew(record, dppValue, employee = null) {
             const dpp = parseAmount(dppValue);
             let tiers = record.hutang_tiers;
             if (typeof tiers === 'string') {
@@ -50,11 +78,7 @@
             }
             const tier = Array.isArray(tiers) ? tiers.find(item => parseAmount(item.dpp) === dpp) : null;
             const jht = tier ? parseAmount(tier.potongan) : 0;
-            const discount = amount => {
-                const value = parseFloat(record.diskon_nilai || 0);
-                if (record.diskon_status !== 'ada' || value <= 0) return amount;
-                return amount * ((record.diskon_tipe || 'persen').toLowerCase() === 'persen' ? value / 100 : value);
-            };
+            const discount = amount => applyDiscount(record, amount, employee);
             return {
                 jht,
                 jkk: Math.max(0, discount(parseFloat(record.tunjangan_persen || 0) / 100 * dpp) - jht),

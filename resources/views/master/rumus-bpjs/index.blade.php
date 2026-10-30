@@ -246,6 +246,16 @@
                                             <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
                                         </select>
                                     </div>
+                                    @can('master-rumus-bpjs-update')
+                                    <div class="discount-exclusions-control {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? '' : 'hidden' }}">
+                                        <button type="button" class="bpjs-discount-exclusions-button mt-2 text-xs text-indigo-700 underline"
+                                                data-ids="{{ $allIds }}"
+                                                data-load-url="{{ route('master-rumus-bpjs.discount-employees', $item->id) }}"
+                                                data-save-url="{{ route('master-rumus-bpjs.discount-exclusions', $item->id) }}">
+                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $groupItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
+                                        </button>
+                                    </div>
+                                    @endcan
                                     <span class="save-status-msg text-[10px] text-emerald-600 hidden font-semibold">✓ Tersimpan</span>
                                 </div>
                             </td>
@@ -386,6 +396,16 @@
                                             <option value="nominal" {{ ($item->diskon_tipe ?? 'persen') === 'nominal' ? 'selected' : '' }}>Rp</option>
                                         </select>
                                     </div>
+                                    @can('master-rumus-bpjs-update')
+                                    <div class="discount-exclusions-control {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? '' : 'hidden' }}">
+                                        <button type="button" class="bpjs-discount-exclusions-button mt-2 text-xs text-indigo-700 underline"
+                                                data-ids="{{ $allIds }}"
+                                                data-load-url="{{ route('master-rumus-bpjs.discount-employees', $item->id) }}"
+                                                data-save-url="{{ route('master-rumus-bpjs.discount-exclusions', $item->id) }}">
+                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $groupItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
+                                        </button>
+                                    </div>
+                                    @endcan
                                     <span class="save-status-msg text-[10px] text-emerald-600 hidden font-semibold">✓ Tersimpan</span>
                                 </div>
                             </td>
@@ -1130,6 +1150,8 @@
     </div>
 </div>
 
+@include('master.rumus-bpjs.discount-exclusions')
+<script src="{{ asset('js/master-rumus-bpjs-discounts.js') }}?v={{ filemtime(public_path('js/master-rumus-bpjs-discounts.js')) }}"></script>
 <script>
     function handleEditClick(btn) {
         try {
@@ -1613,6 +1635,7 @@
         const primaryId = String(ids).split(',')[0].trim();
         const cell = document.getElementById('diskon-cell-' + primaryId);
         const inputsDiv = cell.querySelector('.diskon-inputs');
+        cell.querySelector('.discount-exclusions-control')?.classList.toggle('hidden', selectEl.value !== 'ada');
         if (selectEl.value === 'ada') {
             inputsDiv.classList.remove('hidden');
             selectEl.classList.add('bg-amber-50', 'text-amber-900', 'border-amber-300', 'font-semibold');

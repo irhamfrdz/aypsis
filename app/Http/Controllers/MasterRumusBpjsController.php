@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Karyawan;
+use App\Models\KaryawanTidakTetap;
 use App\Models\MasterRumusBpjs;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class MasterRumusBpjsController extends Controller
 {
@@ -12,7 +16,7 @@ class MasterRumusBpjsController extends Controller
         $this->middleware('auth');
         $this->middleware('permission:master-rumus-bpjs-view')->only(['index']);
         $this->middleware('permission:master-rumus-bpjs-create')->only(['store']);
-        $this->middleware('permission:master-rumus-bpjs-update')->only(['update']);
+        $this->middleware('permission:master-rumus-bpjs-update')->only(['update', 'discountEmployees', 'saveDiscountExclusions']);
         $this->middleware('permission:master-rumus-bpjs-delete')->only(['destroy']);
     }
 
@@ -22,6 +26,98 @@ class MasterRumusBpjsController extends Controller
         $rumusJamsostek = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
 
         return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek'));
+    }
+
+    private function discountRecords(Request $request, $id)
+    {
+        $request->validate(['existing_ids' => ['nullable', 'string', 'regex:/^\d+(,\d+)*$/']]);
+        $primary = MasterRumusBpjs::findOrFail($id);
+        $ids = array_unique(explode(',', $request->input('existing_ids') ?: (string) $id));
+        $records = MasterRumusBpjs::whereIn('id', $ids)->get();
+        $key = fn ($record) => [$record->jenis, $record->jamsostekCategory(),
+            strtoupper(trim($record->tipe ?? '')), strtoupper(trim($record->cabang_bpjs ?? ''))];
+        if (! in_array((string) $id, $ids, true) || count($ids) !== $records->count()
+            || $primary->jenis !== 'jamsostek' || $primary->jamsostekCategory() === 'ppu'
+            || $records->contains(fn ($record) => $key($record) !== $key($primary))
+            || (count($ids) > 1 && empty($primary->cabang_bpjs))) {
+            throw ValidationException::withMessages(['existing_ids' => 'Group rumus diskon tidak valid. Muat ulang halaman.']);
+        }
+
+        return $records;
+    }
+
+    private function discountCandidates($records)
+    {
+        $compact = fn ($value) => preg_replace('/[\s_-]+/', '', strtoupper((string) $value));
+        $normalize = fn ($value) => preg_replace('/\s+/', ' ', strtoupper(trim((string) $value)));
+        $allRules = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
+        $targetIds = $records->pluck('id')->all();
+        $employees = collect();
+        foreach ([Karyawan::class => 'Tetap', KaryawanTidakTetap::class => 'Tidak Tetap'] as $class => $label) {
+            $rows = $class::query()->get(['id', 'nik', 'nama_lengkap', 'group_bp_jamsostek', 'tipe_bp_jamsostek', 'cabang_bpjs']);
+            foreach ($rows as $employee) {
+                // Resolve the same formula as the pranota calculator before offering a checkbox.
+                $group = $compact($employee->group_bp_jamsostek);
+                $type = $normalize($employee->tipe_bp_jamsostek);
+                $branch = $normalize($employee->cabang_bpjs);
+                $candidates = $allRules->filter(fn ($record) => $compact($record->group_name) === $group);
+                if ($type !== '') {
+                    $typed = $candidates->filter(fn ($record) => $normalize($record->tipe) === $type);
+                    $category = in_array($type, ['CREW', 'BPU-CREW'], true) ? 'bpu_crew' : (str_contains($group, 'PPU') ? 'ppu' : 'bpu_non_crew');
+                    $candidates = $typed->isNotEmpty() ? $typed : $candidates->filter(fn ($record) => ! $record->tipe && $record->jamsostekCategory() === $category);
+                } elseif ($candidates->map(fn ($record) => $normalize($record->tipe))->unique()->count() > 1) {
+                    continue;
+                }
+                $exact = $branch !== '' ? $candidates->filter(fn ($record) => $normalize($record->cabang_bpjs) === $branch) : collect();
+                $general = $candidates->filter(fn ($record) => ! $record->cabang_bpjs);
+                $resolved = $exact->isNotEmpty() ? $exact : ($general->isNotEmpty() ? $general : ($branch === '' ? $candidates : collect()));
+                if ($resolved->count() !== 1 || ! in_array($resolved->first()->id, $targetIds, true)) {
+                    continue;
+                }
+                $matching = $resolved;
+                $employees->push([
+                    'unique_id' => class_basename($class).'_'.$employee->id,
+                    'nik' => $employee->nik, 'nama_lengkap' => $employee->nama_lengkap, 'tipe_label' => $label,
+                    'group' => $employee->group_bp_jamsostek, 'cabang' => $employee->cabang_bpjs,
+                    'formula_ids' => $matching->pluck('id')->all(),
+                ]);
+            }
+        }
+
+        return $employees->sortBy('nama_lengkap')->values();
+    }
+
+    public function discountEmployees(Request $request, $id)
+    {
+        $records = $this->discountRecords($request, $id);
+
+        return response()->json([
+            'employees' => $this->discountCandidates($records),
+            'selected' => $records->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->values(),
+            'groups' => $records->pluck('group_name')->unique()->values(),
+        ])->header('Cache-Control', 'no-store');
+    }
+
+    public function saveDiscountExclusions(Request $request, $id)
+    {
+        $request->validate([
+            'diskon_pengecualian' => 'present|array|max:5000',
+            'diskon_pengecualian.*' => ['required', 'string', 'distinct', 'regex:/^Karyawan(TidakTetap)?_[1-9][0-9]*$/'],
+        ]);
+        $records = $this->discountRecords($request, $id);
+        $employees = $this->discountCandidates($records);
+        $selected = $request->input('diskon_pengecualian');
+        if (array_diff($selected, $employees->pluck('unique_id')->all())) {
+            throw ValidationException::withMessages(['diskon_pengecualian' => 'Karyawan harus sesuai group, tipe, dan cabang rumus.']);
+        }
+        DB::transaction(function () use ($records, $employees, $selected) {
+            foreach ($records as $record) {
+                $eligible = $employees->filter(fn ($employee) => in_array($record->id, $employee['formula_ids'], true))->pluck('unique_id')->all();
+                $record->update(['diskon_pengecualian' => array_values(array_intersect($selected, $eligible))]);
+            }
+        });
+
+        return response()->json(['success' => true, 'count' => count($selected)]);
     }
 
     public function store(Request $request)

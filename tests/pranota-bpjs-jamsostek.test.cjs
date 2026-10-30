@@ -16,6 +16,53 @@ const employee = {
     tipe_bp_jamsostek: 'Crew', cabang_bpjs: 'ALEXINDO PLUIT', dpp_bp_jamsostek: '2.200.000,00',
 };
 
+test('discount exemptions distinguish permanent and temporary IDs and leave JHT unchanged', () => {
+    const rule = { ...crew, diskon_pengecualian: ['KaryawanTidakTetap_1'] };
+    const temporary = { ...employee, unique_id: 'KaryawanTidakTetap_1', tipe_karyawan: 'App\\Models\\KaryawanTidakTetap' };
+    assert.deepEqual(calculator.calculateCrew(rule, 2200000, employee), { jht: 5720, jkk: 5280, jkm: 3400 });
+    assert.deepEqual(calculator.calculateCrew(rule, 2200000, temporary), { jht: 5720, jkk: 16280, jkm: 6800 });
+    const nonCrew = { ...rule, jht_biaya: 2, jkk_tunjangan: 1, jkm_tunjangan: 6800,
+        hutang_tiers: [{ dpp: 2200000, potongan: 36000 }] };
+    assert.deepEqual(calculator.calculateNonCrew(nonCrew, 2200000, employee),
+        { jhtHutang: 36000, jhtBiaya: 8000, jkk: 11000, jkm: 3400 });
+    assert.deepEqual(calculator.calculateNonCrew(nonCrew, 2200000, temporary),
+        { jhtHutang: 36000, jhtBiaya: 8000, jkk: 22000, jkm: 6800 });
+    assert.equal(calculator.applyDiscount({ ...rule, diskon_status: 'tidak_ada' }, 6800, employee), 6800);
+    assert.equal(calculator.isDiscountExcluded({ ...rule, diskon_pengecualian: JSON.stringify(rule.diskon_pengecualian) }, temporary), true);
+});
+
+test('create and edit row calculations both honor saved exemptions for crew and noncrew', () => {
+    const inputNames = ['inputKes', 'inputKet', 'inputJhtBiaya', 'inputJhtHutang', 'inputJkk', 'inputJkm',
+        'inputBpuJht', 'inputBpuJkk', 'inputBpuJkm', 'inputNcJhtBiaya', 'inputNcJhtHutang',
+        'inputNcJkk', 'inputNcJkm', 'inputJpBiaya', 'inputJpHutang'];
+    for (const type of ['CREW', 'TUNAI']) {
+        const person = { ...employee, tipe_bp_jamsostek: type };
+        const rule = { ...crew, tipe: type, diskon_pengecualian: [person.unique_id],
+            jht_biaya: 2, jkk_tunjangan: 1, jkm_tunjangan: 6800 };
+        for (const page of ['create', 'edit']) {
+            const view = fs.readFileSync('resources/views/pranota-bpjs/' + page + '.blade.php', 'utf8');
+            const start = view.indexOf('        function calculateBpjsForKaryawan(');
+            const end = view.indexOf('        const handleKaryawanChange', start);
+            const inputs = Object.fromEntries(inputNames.map(name => [name, { value: '0' }]));
+            const load = new Function('karyawans', 'findKaryawan', 'updateInfoBadgeJkn', 'rumusBpjs',
+                'parseIdNumber', 'formatNumber', 'document', 'updateSubtotal', ...inputNames,
+                view.slice(start, end) + '; return calculateBpjsForKaryawan;');
+            const run = load([person], () => person, () => {}, [rule], calculator.parseAmount, String,
+                { getElementById: () => null }, () => {}, ...Object.values(inputs));
+            run(person.unique_id, 'tunjangan_hutang');
+            const jkk = page === 'edit' ? 'inputJkk' : (type === 'CREW' ? 'inputBpuJkk' : 'inputNcJkk');
+            const jkm = page === 'edit' ? 'inputJkm' : (type === 'CREW' ? 'inputBpuJkm' : 'inputNcJkm');
+            assert.equal(Number(inputs[jkk].value), type === 'CREW' ? 16280 : 22000, page + ' ' + type);
+            assert.equal(Number(inputs[jkm].value), 6800, page + ' ' + type);
+            rule.diskon_pengecualian = [];
+            run(person.unique_id, 'tunjangan_hutang');
+            assert.equal(Number(inputs[jkk].value), type === 'CREW' ? 5280 : 11000);
+            assert.equal(Number(inputs[jkm].value), 3400);
+            rule.diskon_pengecualian = [person.unique_id];
+        }
+    }
+});
+
 test('formula selection uses group, type, and branch without selecting another group or type', () => {
     const nonCrew = { ...crew, tipe: 'NON KARY' };
     assert.equal(calculator.findFormula([nonCrew, crew], employee), crew);
