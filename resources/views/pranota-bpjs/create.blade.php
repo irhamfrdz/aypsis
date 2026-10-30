@@ -183,11 +183,11 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-export-excel"
+                    <button type="button" id="btn-export-excel" title="Export seluruh baris dan kolom, termasuk data yang tersembunyi oleh filter"
                         style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 text-white text-xs font-bold rounded-lg shadow-sm hover:opacity-90 transition-all cursor-pointer">
                         <i class="fas fa-file-excel text-sm text-white"></i>
-                        <span>Export Excel (BPU)</span>
+                        <span>Export Excel Lengkap</span>
                     </button>
                     <button type="button" id="btn-refresh-bpjs" title="Ambil data BPJS terbaru, hitung ulang tabel, dan tambahkan karyawan baru"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-lg transition-all">
@@ -258,11 +258,11 @@
 
                 {{-- Counter / Status Badge & Action --}}
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-export-excel-2"
+                    <button type="button" id="btn-export-excel-2" title="Export seluruh baris dan kolom, termasuk data yang tersembunyi oleh filter"
                         style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
                         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg shadow-xs hover:opacity-90 transition-all cursor-pointer">
                         <i class="fas fa-file-excel text-xs text-white"></i>
-                        <span>Export Excel</span>
+                        <span>Export Excel Lengkap</span>
                     </button>
                     <span id="filter-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600">
                         <i class="fas fa-users text-xs"></i>
@@ -449,6 +449,7 @@
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-export.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-export.js')) }}"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
@@ -1412,7 +1413,7 @@ document.addEventListener('DOMContentLoaded', function() {
         pendingSearch.flush();
         pendingUpdate.flush();
         BpjsAllowances.flush(container);
-        prepareBpjsSubmission(this, parseIdNumber);
+        prepareBpjsSubmission(this, parseIdNumber, rumusBpjs);
     });
     
     document.getElementById('btn-generate-all').addEventListener('click', async () => {
@@ -1469,195 +1470,58 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Export to Excel function using ExcelJS
     async function exportToExcel() {
         if (isGenerating || isRefreshing) return;
-        const rows = container.querySelectorAll('tr.detail-row');
-        if (rows.length === 0) {
-            alert('Belum ada data karyawan di tabel untuk diekspor!');
-            return;
-        }
-
-        const visibleRows = Array.from(rows).filter(tr => !tr.classList.contains('hidden'));
-        const exportRows = visibleRows.length > 0 ? visibleRows : Array.from(rows);
-
         if (typeof ExcelJS === 'undefined') {
             alert('Library ExcelJS sedang dimuat, silakan coba beberapa saat lagi.');
             return;
         }
-
-        const workbook = new ExcelJS.Workbook();
-        workbook.creator = 'AYPSIS';
-        workbook.created = new Date();
-
-        const worksheet = workbook.addWorksheet('BPU', {
-            views: [{ showGridLines: true }]
-        });
-
-        // Define columns
-        worksheet.columns = [
-            { header: 'NIK. KAR', key: 'nik_kar', width: 14 },
-            { header: 'NAMA KARYAWAN', key: 'nama_karyawan', width: 34 },
-            { header: 'No. BPJS', key: 'no_bpjs', width: 20 },
-            { header: 'NIK KTI', key: 'nik_ktp', width: 22 },
-            { header: 'Group', key: 'group', width: 14 },
-            { header: 'Tipe', key: 'tipe', width: 28 },
-            { header: 'Lokasi', key: 'lokasi', width: 12 },
-            { header: 'x', key: 'x', width: 6 },
-            { header: 'DASAR UPAH', key: 'dasar_upah', width: 18 },
-            { header: 'BPU JHT Kary', key: 'bpu_jht', width: 16 },
-            { header: 'BPU JKK 1%', key: 'bpu_jkk', width: 16 },
-            { header: 'BPU JKM', key: 'bpu_jkm', width: 14 },
-            { header: 'TOTAL BPU', key: 'total_bpu', width: 18 }
-        ];
-
-        // Format header row
-        const headerRow = worksheet.getRow(1);
-        headerRow.height = 26;
-
-        headerRow.eachCell((cell, colNumber) => {
-            cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF000000' } };
-            cell.alignment = { vertical: 'middle', horizontal: 'center' };
-            cell.border = {
-                top: { style: 'thin', color: { argb: 'FF808080' } },
-                left: { style: 'thin', color: { argb: 'FF808080' } },
-                bottom: { style: 'thin', color: { argb: 'FF808080' } },
-                right: { style: 'thin', color: { argb: 'FF808080' } }
-            };
-
-            // Colors based on template image
-            if (colNumber === 10) { // Column J: BPU JHT Kary (Red background, white bold font)
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFFF0000' }
-                };
-                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
-            } else if (colNumber === 11) { // Column K: BPU JKK 1% (Light Green background, black bold font)
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF92D050' }
-                };
-                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FF000000' } };
-            } else if (colNumber === 12) { // Column L: BPU JKM (Green background, white bold font)
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FF70AD47' }
-                };
-                cell.font = { name: 'Calibri', size: 10, bold: true, color: { argb: 'FFFFFFFF' } };
+        pendingSearch.flush();
+        pendingUpdate.flush();
+        BpjsAllowances.update(container, parseIdNumber, formatNumber);
+        const records = BpjsExcelExport.collectRows(container.querySelectorAll('tr.detail-row'), parseIdNumber);
+        if (!records.length) {
+            alert('Belum ada karyawan yang dipilih untuk diekspor.');
+            return;
+        }
+        const buttons = [document.getElementById('btn-export-excel'), document.getElementById('btn-export-excel-2')];
+        buttons.forEach(button => { if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); } });
+        try {
+            const tanggal = document.getElementById('tanggal_pranota').value;
+            const bulan = document.getElementById('periode_bulan').value;
+            const tahun = document.getElementById('periode_tahun').value;
+            const workbook = BpjsExcelExport.buildWorkbook(ExcelJS, records, {
+                'Tanggal Pranota': tanggal,
+                'Periode Bulan': bulan,
+                'Periode Tahun': tahun,
+                'Keterangan': document.getElementById('keterangan').value,
+                'Filter Group di Layar': filterGroupSelect?.value || 'all',
+                'Filter Tipe di Layar': filterCabangSelect?.value || 'all',
+                'Pencarian di Layar': searchKaryawanInput?.value || '',
+                'Waktu Export': new Date().toLocaleString('id-ID'),
+                'Sumber Data': 'Nilai terkini pada form pranota BPJS',
+                'Cakupan Rumus': 'Seluruh master rumus yang dimuat pada form',
+            }, rumusBpjs);
+            const buffer = await workbook.xlsx.writeBuffer();
+            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+            const filename = `Pranota_BPJS_Lengkap_${tahun}_${bulan}_${tanggal}.xlsx`;
+            if (typeof saveAs !== 'undefined') {
+                saveAs(blob, filename);
             } else {
-                cell.fill = {
-                    type: 'pattern',
-                    pattern: 'solid',
-                    fgColor: { argb: 'FFF2F2F2' }
-                };
+                const url = window.URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                link.remove();
+                setTimeout(() => window.URL.revokeObjectURL(url), 1000);
             }
-        });
-
-        // Add data rows
-        exportRows.forEach((tr, index) => {
-            const kId = tr.dataset.karyawanId || tr.dataset.uniqueId;
-            const k = karyawans.find(item => item.unique_id == kId || item.id == kId) || {};
-
-            const nikKar = k.nik || tr.dataset.nik || '';
-            const namaKaryawan = (k.nama_lengkap || tr.dataset.namaKaryawan || '').toUpperCase();
-            const noBpjs = k.no_bpjs || tr.dataset.noBpjs || '';
-            const nikKtp = k.nik_ktp || tr.dataset.nikKtp || '';
-            const groupVal = k.group_posisi || tr.dataset.groupPosisi || 'Crew';
-            
-            let tipeVal = k.group_bp_jamsostek || tr.dataset.groupJamsostek || '';
-            if (!tipeVal) {
-                tipeVal = k.cabang_bpjs || tr.dataset.cabang || 'HL ALEXINDO CREW';
-            }
-            
-            const lokasiVal = k.lokasi || tr.dataset.lokasi || 'JKT';
-
-            // Dasar Upah: ambil dari DPP Jamsostek atau DPP JKN karyawan
-            let dasarUpah = parseIdNumber(k.dpp_bp_jamsostek || tr.dataset.dppJamsostek || k.dpp_jkn || tr.dataset.dppJkn || 0);
-
-            // BPU Values
-            const bpuJhtVal = parseIdNumber(tr.querySelector('.input-jkk-hutang')?.value || tr.querySelector('.input-noncrew-jht-hutang')?.value || tr.querySelector('.input-jht-hutang')?.value || 0);
-            const bpuJkkVal = parseIdNumber(tr.querySelector('.input-bpu-jkk')?.value || tr.querySelector('.input-noncrew-jkk')?.value || tr.querySelector('.input-jkk')?.value || 0);
-            const bpuJkmVal = parseIdNumber(tr.querySelector('.input-bpu-jkm')?.value || tr.querySelector('.input-noncrew-jkm')?.value || tr.querySelector('.input-jkm')?.value || 0);
-            const totalBpuVal = bpuJhtVal + bpuJkkVal + bpuJkmVal;
-
-            const rowNum = index + 2; // Data starts on Excel row 2
-
-            const row = worksheet.addRow({
-                nik_kar: String(nikKar),
-                nama_karyawan: namaKaryawan,
-                no_bpjs: String(noBpjs),
-                nik_ktp: String(nikKtp),
-                group: groupVal,
-                tipe: tipeVal,
-                lokasi: lokasiVal,
-                x: '',
-                dasar_upah: dasarUpah,
-                bpu_jht: bpuJhtVal,
-                bpu_jkk: bpuJkkVal,
-                bpu_jkm: bpuJkmVal,
-                total_bpu: { formula: `J${rowNum}+K${rowNum}+L${rowNum}`, result: totalBpuVal }
-            });
-
-            row.height = 20;
-
-            const thinBorder = {
-                top: { style: 'thin', color: { argb: 'FFD3D3D3' } },
-                left: { style: 'thin', color: { argb: 'FFD3D3D3' } },
-                bottom: { style: 'thin', color: { argb: 'FFD3D3D3' } },
-                right: { style: 'thin', color: { argb: 'FFD3D3D3' } }
-            };
-
-            row.eachCell({ includeEmpty: true }, (cell, colNumber) => {
-                cell.font = { name: 'Calibri', size: 10 };
-                cell.border = thinBorder;
-
-                if (colNumber === 1) { // NIK KAR
-                    cell.numFmt = '@';
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                } else if (colNumber === 2) { // NAMA KARYAWAN
-                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
-                } else if (colNumber === 3 || colNumber === 4) { // No BPJS, NIK KTP
-                    cell.numFmt = '@';
-                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
-                } else if (colNumber === 5 || colNumber === 7 || colNumber === 8) { // Group, Lokasi, x
-                    cell.alignment = { vertical: 'middle', horizontal: 'center' };
-                } else if (colNumber === 6) { // Tipe
-                    cell.alignment = { vertical: 'middle', horizontal: 'left' };
-                } else if (colNumber >= 9 && colNumber <= 13) { // DASAR UPAH, BPU JHT, BPU JKK, BPU JKM, TOTAL BPU
-                    cell.numFmt = '#,##0.00';
-                    cell.alignment = { vertical: 'middle', horizontal: 'right' };
-                }
-            });
-        });
-
-        // Set auto filter on header row
-        worksheet.autoFilter = {
-            from: { row: 1, column: 1 },
-            to: { row: 1, column: 13 }
-        };
-
-        const bulanInput = document.querySelector('select[name="periode_bulan"]')?.value || (new Date().getMonth() + 1);
-        const tahunInput = document.querySelector('input[name="periode_tahun"]')?.value || new Date().getFullYear();
-        const tglInput = document.querySelector('input[name="tanggal_pranota"]')?.value || new Date().toISOString().split('T')[0];
-        
-        const buffer = await workbook.xlsx.writeBuffer();
-        const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-        const filename = `Pranota_BPJS_BPU_Periode_${bulanInput}_${tahunInput}_${tglInput}.xlsx`;
-        
-        if (typeof saveAs !== 'undefined') {
-            saveAs(blob, filename);
-        } else {
-            const url = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = filename;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            window.URL.revokeObjectURL(url);
+        } catch (error) {
+            console.error('Export pranota BPJS gagal', error);
+            alert('Export Excel gagal. Silakan coba kembali.');
+        } finally {
+            buttons.forEach(button => { if (button) { button.disabled = false; button.removeAttribute('aria-busy'); } });
         }
     }
 

@@ -56,6 +56,7 @@
     }
 
     function syncEmploymentStatus(row, employee) {
+        row.bpjsEmployeeSnapshot = employee ? { ...employee } : null;
         const badge = row.querySelector('.employee-termination-badge');
         if (!badge) return;
         const terminated = Boolean(employee?.tanggal_berhenti);

@@ -116,8 +116,21 @@ class PranotaBpjsController extends Controller
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
-            'details.*.karyawan_id' => 'required',
-            'details.*.tipe_karyawan' => 'nullable|string',
+            'details.*.karyawan_id' => 'required|integer|min:1',
+            'details.*.snapshot_karyawan' => 'required|array',
+            'details.*.snapshot_karyawan.nama_lengkap' => 'required|string',
+            'details.*.snapshot_karyawan.unique_id' => 'required|string',
+            'details.*.ringkasan_bpjs' => 'required|array:ppu,bpu,jkn,kary_jht,kary_jkn,pt,non_kary',
+            'details.*.ringkasan_bpjs.ppu' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.bpu' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.jkn' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.kary_jht' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.kary_jkn' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.pt' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.non_kary' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.*' => 'numeric|min:0',
+            'snapshot_rumus_json' => 'required|json',
+            'details.*.tipe_karyawan' => ['required', \Illuminate\Validation\Rule::in([Karyawan::class, KaryawanTidakTetap::class])],
             'details.*.bpjs_kesehatan' => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
             'details.*.jht_biaya' => 'nullable',
@@ -157,6 +170,7 @@ class PranotaBpjsController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'draft',
                 'created_by' => auth()->id(),
+                'snapshot_rumus' => json_decode($request->input('snapshot_rumus_json', 'null'), true),
             ]);
 
             $totalKes = 0;
@@ -189,7 +203,7 @@ class PranotaBpjsController extends Controller
 
                     $total = $jknTotal + $jamsostekTotal;
 
-                    if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
+                    if (! empty($detail['karyawan_id'])) {
                         $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
                         $detailRows[] = (new PranotaBpjsDetail([
                             'pranota_bpjs_header_id' => $header->id,
@@ -205,6 +219,7 @@ class PranotaBpjsController extends Controller
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
+                            'snapshot_bpjs' => $this->detailSnapshot($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
                             'no_voucher' => $detail['no_voucher'] ?? null,
                             'created_at' => $timestamp,
@@ -282,7 +297,11 @@ class PranotaBpjsController extends Controller
 
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
 
-        $rumusBpjs = \App\Models\MasterRumusBpjs::all();
+        $rumusBpjs = $pranota_bpj->snapshot_rumus ?? \App\Models\MasterRumusBpjs::all();
+
+        // Keep saved employees available even if they have left or were removed from the master.
+        $savedEmployees = $pranota_bpj->details->map(fn ($detail) => $detail->snapshot_bpjs['karyawan'] ?? null)->filter();
+        $karyawans = $savedEmployees->concat($karyawans)->unique('unique_id')->values();
 
         return view('pranota-bpjs.edit', compact('pranota_bpj', 'karyawans', 'rumusBpjs'));
     }
@@ -299,8 +318,21 @@ class PranotaBpjsController extends Controller
             'periode_bulan' => 'required|integer|min:1|max:12',
             'periode_tahun' => 'required|integer|min:2000',
             'details' => 'nullable|array',
-            'details.*.karyawan_id' => 'required',
-            'details.*.tipe_karyawan' => 'nullable|string',
+            'details.*.karyawan_id' => 'required|integer|min:1',
+            'details.*.snapshot_karyawan' => 'required|array',
+            'details.*.snapshot_karyawan.nama_lengkap' => 'required|string',
+            'details.*.snapshot_karyawan.unique_id' => 'required|string',
+            'details.*.ringkasan_bpjs' => 'required|array:ppu,bpu,jkn,kary_jht,kary_jkn,pt,non_kary',
+            'details.*.ringkasan_bpjs.ppu' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.bpu' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.jkn' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.kary_jht' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.kary_jkn' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.pt' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.non_kary' => 'required|numeric|min:0',
+            'details.*.ringkasan_bpjs.*' => 'numeric|min:0',
+            'snapshot_rumus_json' => 'required|json',
+            'details.*.tipe_karyawan' => ['required', \Illuminate\Validation\Rule::in([Karyawan::class, KaryawanTidakTetap::class])],
             'details.*.bpjs_kesehatan' => 'nullable',
             'details.*.bpjs_ketenagakerjaan' => 'nullable',
             'details.*.jht_biaya' => 'nullable',
@@ -336,6 +368,7 @@ class PranotaBpjsController extends Controller
                 'periode_tahun' => $request->periode_tahun,
                 'keterangan' => $request->keterangan,
                 'updated_by' => auth()->id(),
+                'snapshot_rumus' => $pranota_bpj->snapshot_rumus ?? json_decode($request->input('snapshot_rumus_json', 'null'), true),
             ]);
 
             // Hapus detail lama
@@ -371,7 +404,7 @@ class PranotaBpjsController extends Controller
 
                     $total = $jknTotal + $jamsostekTotal;
 
-                    if ($total > 0 || $jknTotal > 0 || $jamsostekTotal > 0) {
+                    if (! empty($detail['karyawan_id'])) {
                         $tipeKaryawan = $detail['tipe_karyawan'] ?? 'App\\Models\\Karyawan';
                         $detailRows[] = (new PranotaBpjsDetail([
                             'pranota_bpjs_header_id' => $pranota_bpj->id,
@@ -387,6 +420,7 @@ class PranotaBpjsController extends Controller
                             'jp_hutang' => $jpHutang,
                             'total' => $total,
                             'rincian_bpjs' => $this->componentBreakdown($detail),
+                            'snapshot_bpjs' => $this->detailSnapshot($detail),
                             'tunjangan_manual' => $this->manualAllowances($detail),
                             'no_voucher' => $detail['no_voucher'] ?? null,
                             'created_at' => $timestamp,
@@ -453,6 +487,26 @@ class PranotaBpjsController extends Controller
      *         "5.200.000,50" → 5200000.5
      *         5200000        → 5200000.0  (sudah number)
      */
+    private function detailSnapshot(array $detail): ?array
+    {
+        $employee = $detail['snapshot_karyawan'];
+        $employee['id'] = (int) $detail['karyawan_id'];
+        $employee['tipe_karyawan'] = $detail['tipe_karyawan'] ?? Karyawan::class;
+        $employee['unique_id'] = class_basename($employee['tipe_karyawan']).'_'.$employee['id'];
+        $employee['tipe_label'] = $employee['tipe_karyawan'] === KaryawanTidakTetap::class ? 'Tidak Tetap' : 'Tetap';
+        $kes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
+        $biaya = ! empty($employee['is_special_case']) ? $kes : 0;
+
+        return [
+            'version' => 1,
+            'karyawan' => $employee,
+            'input' => array_diff_key($detail, array_flip(['snapshot_karyawan', 'ringkasan_bpjs'])),
+            'ringkasan' => array_map(fn ($amount) => (float) $amount, $detail['ringkasan_bpjs'] ?? []),
+            'kis_biaya' => $biaya,
+            'kis_tunjangan' => $kes - $biaya,
+        ];
+    }
+
     private function manualAllowances(array $detail): ?array
     {
         $values = [];
@@ -472,7 +526,9 @@ class PranotaBpjsController extends Controller
         // only while those totals still match, rather than assigning BPU amounts to PPU.
         if (($detail['tipe_jkn'] ?? null) === 'manual') {
             $snapshot = json_decode($detail['rincian_bpjs'] ?? 'null', true);
-            if (! is_array($snapshot)) return null;
+            if (! is_array($snapshot)) {
+                return null;
+            }
             $groups = [
                 'jht_biaya' => ['jht_biaya', 'noncrew_jht_biaya'],
                 'jht_hutang' => ['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang'],
@@ -482,7 +538,9 @@ class PranotaBpjsController extends Controller
             ];
             foreach ($groups as $aggregate => $fields) {
                 $sum = collect($fields)->sum(fn ($field) => $this->parseIndonesianNumber($snapshot[$field] ?? 0));
-                if (abs($sum - $this->parseIndonesianNumber($detail[$aggregate] ?? 0)) > 0.005) return null;
+                if (abs($sum - $this->parseIndonesianNumber($detail[$aggregate] ?? 0)) > 0.005) {
+                    return null;
+                }
             }
 
             return $snapshot;
@@ -500,6 +558,13 @@ class PranotaBpjsController extends Controller
 
     private function decodeDetails(Request $request): void
     {
+        $request->validate(['snapshot_rumus_json' => ['required', 'string', 'json']]);
+        $formulas = json_decode($request->input('snapshot_rumus_json'), true);
+        if (! is_array($formulas) || ! array_is_list($formulas)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'snapshot_rumus_json' => 'Snapshot rumus BPJS tidak valid. Silakan muat ulang form.',
+            ]);
+        }
         if (! $request->has('details_json')) {
             return;
         }

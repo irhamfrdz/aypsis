@@ -80,6 +80,7 @@
     }
 
     function updateEmployeeInfo(row, employee, parseAmount, formatNumber) {
+        row.bpjsEmployeeSnapshot = employee ? { ...employee } : null;
         const set = (selector, value) => {
             const element = field(row, selector);
             if (element) element.textContent = value;

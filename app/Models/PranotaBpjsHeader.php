@@ -13,6 +13,7 @@ class PranotaBpjsHeader extends Model
     protected $guarded = ['id'];
 
     protected $casts = [
+        'snapshot_rumus' => 'array',
         'tanggal_pranota' => 'date',
         'approved_at' => 'datetime',
         'total_bpjs_kesehatan' => 'decimal:2',

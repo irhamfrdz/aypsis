@@ -102,6 +102,7 @@
             $amount = function ($detail, $field) use ($componentFields, $totalGroups) {
                 if ($field === 'total_jkn') return (float) $detail->bpjs_kesehatan + (float) $detail->bpjs_ketenagakerjaan;
                 if (isset($totalGroups[$field])) return collect($componentFields[$totalGroups[$field]])->sum(fn ($key) => (float) data_get($detail->rincian_bpjs, $key, 0));
+                if (str_starts_with($field, 'allowance_') && isset($detail->snapshot_bpjs['ringkasan'][substr($field, 10)])) return (float) $detail->snapshot_bpjs['ringkasan'][substr($field, 10)];
                 if ($field === 'allowance_bpu') return $detail->tunjangan_bpu;
                 if ($field === 'allowance_ppu') return $detail->tunjangan_ppu;
                 if ($field === 'allowance_jkn') return $detail->tunjangan_jkn;
@@ -156,20 +157,20 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
                                 <td class="border border-gray-200 p-3" style="min-width:220px">
-                                    <span class="font-semibold">{{ $detail->karyawan->nama_lengkap ?? '-' }}</span>
-                                    @if($detail->karyawan?->tanggal_berhenti)<span class="ml-1 rounded bg-red-100 px-2 py-1 text-red-800">Sudah Berhenti</span>@endif
+                                    <span class="font-semibold">{{ $detail->karyawan_pranota->nama_lengkap ?? '-' }}</span>
+                                    @if($detail->karyawan_pranota?->tanggal_berhenti)<span class="ml-1 rounded bg-red-100 px-2 py-1 text-red-800">Sudah Berhenti</span>@endif
                                     @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')<span class="ml-1 rounded bg-amber-100 px-2 py-1 text-amber-800">Tidak Tetap</span>@endif
-                                    <div class="mt-1 text-gray-500">NIK: {{ $detail->karyawan?->nik ?? '-' }}</div>
+                                    <div class="mt-1 text-gray-500">NIK: {{ $detail->karyawan_pranota?->nik ?? '-' }}</div>
                                 </td>
                                 <td class="border border-gray-200 p-3">
-                                    @if($detail->karyawan?->group_jkn)<div>JKN: {{ $detail->karyawan->group_jkn }}</div>@endif
-                                    @if($detail->karyawan?->group_bp_jamsostek)<div>BP Jamsostek: {{ $detail->karyawan->group_bp_jamsostek }}</div>@endif
-                                    @if(!$detail->karyawan?->group_jkn && !$detail->karyawan?->group_bp_jamsostek)-@endif
+                                    @if($detail->karyawan_pranota?->group_jkn)<div>JKN: {{ $detail->karyawan_pranota->group_jkn }}</div>@endif
+                                    @if($detail->karyawan_pranota?->group_bp_jamsostek)<div>BP Jamsostek: {{ $detail->karyawan_pranota->group_bp_jamsostek }}</div>@endif
+                                    @if(!$detail->karyawan_pranota?->group_jkn && !$detail->karyawan_pranota?->group_bp_jamsostek)-@endif
                                 </td>
-                                <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_jkn ?: '-' }}</td>
-                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan?->dpp_jkn) }}</td>
-                                <td class="border border-gray-200 p-3">{{ $detail->karyawan?->tipe_bp_jamsostek ?: '-' }}</td>
-                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan?->dpp_bp_jamsostek) }}</td>
+                                <td class="border border-gray-200 p-3">{{ $detail->karyawan_pranota?->tipe_jkn ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan_pranota?->dpp_jkn) }}</td>
+                                <td class="border border-gray-200 p-3">{{ $detail->karyawan_pranota?->tipe_bp_jamsostek ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan_pranota?->dpp_bp_jamsostek) }}</td>
                                 @foreach($componentGroups as $columns)
                                     @foreach($columns as $field => $label)
                                         @if($field === 'no_voucher')

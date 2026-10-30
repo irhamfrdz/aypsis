@@ -630,7 +630,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         if (isGenerating) { event.preventDefault(); return; }
         pendingUpdate.flush();
         BpjsAllowances.flush(container);
-        prepareBpjsSubmission(this, parseIdNumber);
+        prepareBpjsSubmission(this, parseIdNumber, rumusBpjs);
     });
 
     function updateRowNumbers() {
