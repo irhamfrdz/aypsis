@@ -4,19 +4,15 @@
 <!-- Ensure CSRF token is available -->
 <meta name="csrf-token" content="{{ csrf_token() }}">
 
-<div class="container-fluid px-4 py-6">
-    <div class="bg-white rounded-lg shadow-sm">
-        <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+<div class="payment-create min-h-screen bg-slate-50 px-3 py-5 sm:px-6 lg:py-8">
+    <div class="mx-auto max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+        <div class="flex flex-col gap-4 bg-gradient-to-r from-indigo-700 to-indigo-600 px-5 py-6 text-white sm:flex-row sm:items-center sm:justify-between sm:px-8">
             <div>
-                <h1 class="text-xl font-semibold text-gray-800">Tambah Pembayaran Aktivitas Lain</h1>
-                <p class="text-sm text-blue-600 mt-1">
-                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        📊 Double Book Accounting
-                    </span>
-                    Otomatis jurnal akuntansi dengan sistem pembukuan ganda
-                </p>
+                <p class="mb-1 text-xs font-semibold uppercase tracking-widest text-indigo-200">Pembayaran aktivitas lain</p>
+                <h1 class="text-2xl font-bold tracking-tight sm:text-3xl">Tambah Pembayaran</h1>
+                <p class="mt-2 text-sm text-indigo-100">Isi transaksi, pilih akun, lalu periksa jumlah sebelum menyimpan.</p>
             </div>
-            <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white font-medium text-xs rounded-md transition duration-150 ease-in-out">
+            <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="inline-flex shrink-0 items-center justify-center rounded-lg border border-white/30 bg-white/10 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-white/20">
                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                 </svg>
@@ -24,7 +20,7 @@
             </a>
         </div>
 
-        <form action="{{ route('pembayaran-aktivitas-lain.store') }}" method="POST" class="p-6" id="pembayaran_form">
+        <form action="{{ route('pembayaran-aktivitas-lain.store') }}" method="POST" class="space-y-6 px-4 py-5 sm:p-7" id="pembayaran_form">
             @csrf
             
             <!-- Display Laravel validation errors -->
@@ -75,8 +71,10 @@
                 </div>
             @endif
             
-            <!-- Double Book Accounting Info -->
-            <div class="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <!-- Penjelasan jurnal dapat dibuka saat diperlukan -->
+            <details class="rounded-xl border border-indigo-100 bg-indigo-50/70">
+                <summary class="cursor-pointer px-5 py-3 text-sm font-semibold text-indigo-900">Cara kerja jurnal otomatis <span class="ml-1 font-normal text-indigo-700">(lihat penjelasan)</span></summary>
+                <div class="border-t border-indigo-100 p-4">
                 <div class="flex items-start">
                     <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
@@ -101,9 +99,15 @@
                         </div>
                     </div>
                 </div>
-            </div>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                </div>
+            </details>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-700">01</span>
+                    <div><h2 class="font-semibold text-slate-900">Informasi transaksi</h2><p class="mt-0.5 text-xs text-slate-500">Pilih jenis aktivitas untuk menampilkan input yang sesuai.</p></div>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <!-- Nomor -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Nomor</label>
@@ -208,7 +212,7 @@
                 </div>
 
                 <!-- Tipe Penyesuaian (Hidden by default) -->
-                <div id="tipe_penyesuaian_field" class="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'hidden' }}" style="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'display:none' }}">
+                <div id="tipe_penyesuaian_field" class="md:col-span-2 {{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'hidden' }}" style="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Adjusment Uang Jalan', 'Pembayaran Adjustment Uang Jalan']) ? '' : 'display:none' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Penyesuaian <span class="text-red-500">*</span></label>
 
                     <!-- Container untuk input dinamis -->
@@ -273,7 +277,7 @@
                     @enderror
                 </div>
 
-                <div id="nomor_polisi_list_field" class="hidden">
+                <div id="nomor_polisi_list_field" class="hidden md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Kendaraan <span class="text-red-500">*</span></label>
                     <select name="nomor_polisi_list[]" id="nomor_polisi_list_select" multiple class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('nomor_polisi_list') border-red-500 @enderror">
                         @foreach($mobils as $mobil)
@@ -316,6 +320,15 @@
                     @enderror
                 </div>
 
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-700">02</span>
+                    <div><h2 class="font-semibold text-slate-900">Nilai pembayaran & pajak</h2><p class="mt-0.5 text-xs text-slate-500">Masukkan jumlah dan periksa nominal PPh bila berlaku.</p></div>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <!-- Jumlah -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jumlah (Rp) <span class="text-red-500">*</span></label>
@@ -326,11 +339,11 @@
                     @enderror
                 </div>
 
-                <div id="pph_summary_field" class="rounded-md border border-blue-200 bg-blue-50 p-3 text-sm {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                <div id="pph_summary_field" class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm md:col-span-2 {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
                     <label for="pph_nominal_input" class="block text-gray-700 mb-2">Nominal PPh (Rp)</label>
-                    <div class="flex gap-2">
+                    <div class="flex flex-col gap-2 sm:flex-row">
                         <input type="number" name="pph_nominal" id="pph_nominal_input" min="0" step="1" value="{{ old('pph_nominal') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right @error('pph_nominal') border-red-500 @enderror">
-                        <button type="button" id="pph_auto_button" class="whitespace-nowrap px-3 py-2 rounded-md bg-white border border-blue-300 text-blue-700">Hitung otomatis</button>
+                        <button type="button" id="pph_auto_button" class="min-h-11 whitespace-nowrap rounded-lg border border-blue-300 bg-white px-4 py-2 font-medium text-blue-700 transition hover:bg-blue-100">Hitung otomatis</button>
                     </div>
                     <input type="hidden" name="pph_manual" id="pph_manual_input" value="{{ old('pph_manual', '0') }}">
                     <p class="text-xs text-gray-600 mt-1">Untuk PPh 2,5%, nominal otomatis dihitung hanya dari rincian akun dengan memo berisi kata "jasa". Nominal dapat diubah manual.</p>
@@ -353,6 +366,15 @@
                     <div class="mt-2 flex justify-between border-t border-blue-200 pt-2 font-semibold text-blue-900"><span>Grand Total</span><span id="grand_total_display">-</span></div>
                 </div>
 
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-700">03</span>
+                    <div><h2 class="font-semibold text-slate-900">Akun & jurnal</h2><p class="mt-0.5 text-xs text-slate-500">Pilih akun biaya, Bank/Kas, dan arah transaksi.</p></div>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <!-- Akun Biaya -->
                 <div id="akun_coa_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && old('lokasi') === 'batam' ? 'hidden' : '' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Akun Biaya <span class="text-red-500">*</span></label>
@@ -411,10 +433,19 @@
                     </div>
                 </div>
 
+                </div>
+            </section>
+
+            <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                <div class="mb-5 flex items-start gap-3 border-b border-slate-100 pb-4">
+                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-sm font-bold text-indigo-700">04</span>
+                    <div><h2 class="font-semibold text-slate-900">Penerima & catatan</h2><p class="mt-0.5 text-xs text-slate-500">Pilih karyawan atau ketik nama penerima, lalu isi keterangan.</p></div>
+                </div>
+                <div class="grid grid-cols-1 gap-5 md:grid-cols-2">
                 <!-- Penerima -->
-                <div>
+                <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Penerima <span class="text-red-500">*</span></label>
-                    <div class="space-y-2">
+                    <div class="grid grid-cols-1 gap-2 md:grid-cols-2">
                         <select id="penerima_dropdown" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm">
                             <option value="">Pilih dari Karyawan</option>
                             @foreach($karyawans as $karyawan)
@@ -436,10 +467,11 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
+                </div>
+            </section>
 
             <!-- Action Buttons -->
-            <div class="mt-6 flex justify-end gap-3">
+            <div class="sticky bottom-0 z-20 -mx-4 flex flex-wrap items-center justify-end gap-3 border-t border-slate-200 bg-white/95 px-4 py-4 shadow-[0_-8px_24px_rgba(15,23,42,0.06)] backdrop-blur sm:-mx-7 sm:px-7">
                 <!-- Debug button untuk test error (hanya untuk development) -->
                 @if(config('app.debug'))
                     <button type="button" onclick="showErrorMessage('Test error message untuk memastikan error handling berfungsi dengan baik.')" class="px-4 py-2 bg-yellow-500 hover:bg-yellow-600 text-white font-medium text-sm rounded-md transition">
@@ -447,10 +479,10 @@
                     </button>
                 @endif
                 
-                <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium text-sm rounded-md transition">
+                <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="inline-flex min-h-11 items-center rounded-lg border border-slate-300 bg-white px-5 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">
                     Batal
                 </a>
-                <button type="submit" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium text-sm rounded-md transition" id="submit_btn">
+                <button type="submit" class="inline-flex min-h-11 items-center rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2" id="submit_btn">
                     <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
@@ -534,32 +566,60 @@
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
+.payment-create #pembayaran_form input:not([type="hidden"]):not([type="checkbox"]),
+.payment-create #pembayaran_form select,
+.payment-create #pembayaran_form textarea {
+    min-height: 44px;
+    border-radius: 8px;
+}
+.payment-create #pembayaran_form textarea {
+    min-height: 112px;
+}
+.payment-create #pembayaran_form input:not([type="hidden"]):not([type="checkbox"]):focus,
+.payment-create #pembayaran_form select:focus,
+.payment-create #pembayaran_form textarea:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14);
+    outline: none;
+}
+.payment-create #pembayaran_form input[readonly] {
+    color: #475569;
+}
 .select2-container {
     width: 100% !important;
 }
 .select2-container .select2-selection--single {
-    height: 38px !important;
-    padding: 6px 12px !important;
+    height: 44px !important;
+    padding: 9px 12px !important;
     border: 1px solid #d1d5db !important;
-    border-radius: 6px !important;
+    border-radius: 8px !important;
     font-size: 14px !important;
 }
 .select2-container .select2-selection--single .select2-selection__rendered {
     line-height: 24px !important;
 }
 .select2-container .select2-selection--single .select2-selection__arrow {
-    height: 36px !important;
+    height: 42px !important;
     right: 6px !important;
 }
+.select2-container .select2-selection--multiple {
+    min-height: 44px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 8px !important;
+}
 .select2-dropdown {
-    border-radius: 6px !important;
+    border-radius: 8px !important;
 }
 .select2-container--open .select2-selection--single {
-    border-color: #3b82f6 !important;
-    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2) !important;
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14) !important;
+}
+.select2-container--focus .select2-selection--multiple {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.14) !important;
 }
 .select2-results__option--highlighted {
-    background-color: #3b82f6 !important;
+    background-color: #4f46e5 !important;
 }
 </style>
 @endpush
