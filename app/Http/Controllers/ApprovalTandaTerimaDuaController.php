@@ -60,7 +60,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         $filters = $request->validate([
             'type' => 'nullable|in:fcl,lcl,ttsj',
             'search' => 'nullable|string|max:100',
-            'status' => 'nullable|in:belum,sudah',
+            'status' => 'nullable|in:belum,sudah,belum_lengkap',
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
         ]);
         $type = $filters['type'] ?? 'fcl';
@@ -139,6 +139,13 @@ class ApprovalTandaTerimaDuaController extends Controller
             $query->whereNull('shipper_jb_id');
         } elseif ($request->input('status') === 'sudah') {
             $query->whereNotNull('shipper_jb_id');
+        } elseif ($request->input('status') === 'belum_lengkap') {
+            $query->whereExists(function ($markQuery) use ($type, $sourceTable) {
+                $markQuery->selectRaw('1')
+                    ->from('approval_tanda_terima_2_incomplete_marks')
+                    ->where('source_type', $type)
+                    ->whereColumn('source_id', "{$sourceTable}.id");
+            });
         }
 
         if ($destination !== '') {

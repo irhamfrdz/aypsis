@@ -195,6 +195,31 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         $this->assertTrue($data['exportedMarks']->has($id));
     }
 
+    public function test_incomplete_status_filter_only_shows_marked_receipts_of_selected_type(): void
+    {
+        $controller = new ApprovalTandaTerimaDuaController;
+        foreach ([
+            'fcl' => ['tanda_terimas', 'no_surat_jalan'],
+            'lcl' => ['tanda_terimas_lcl', 'nomor_tanda_terima'],
+            'ttsj' => ['tanda_terima_tanpa_surat_jalan', 'nomor_tanda_terima'],
+        ] as $type => [$table, $numberColumn]) {
+            $markedId = DB::table($table)->insertGetId([$numberColumn => strtoupper($type).'-MARKED']);
+            DB::table($table)->insert([$numberColumn => strtoupper($type).'-UNMARKED']);
+            DB::table('approval_tanda_terima_2_incomplete_marks')->insert([
+                'source_type' => $type,
+                'source_id' => $markedId,
+            ]);
+
+            $items = $controller->index(Request::create('/', 'GET', [
+                'type' => $type,
+                'destination' => '',
+                'status' => 'belum_lengkap',
+            ]))->getData()['items'];
+
+            $this->assertSame([$markedId], $items->pluck('id')->all());
+        }
+    }
+
     public function test_receipts_already_used_in_a_manifest_are_hidden(): void
     {
         $visibleFclId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'SJ-VISIBLE']);

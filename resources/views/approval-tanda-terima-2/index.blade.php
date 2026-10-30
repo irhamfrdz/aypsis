@@ -134,6 +134,7 @@
                         <option value="">Semua status</option>
                         <option value="belum" @selected(request('status') === 'belum')>Belum dipilih</option>
                         <option value="sudah" @selected(request('status') === 'sudah')>Sudah dipilih</option>
+                        <option value="belum_lengkap" @selected(request('status') === 'belum_lengkap')>Belum lengkap</option>
                     </select>
                 </div>
             </div>
