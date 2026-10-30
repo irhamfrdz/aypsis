@@ -26,8 +26,14 @@ class ApprovalTandaTerimaDuaExcelService
         $sheet->removeRow(1, 2);
         $sheet->getSheetView()->setZoomScale(70);
         $sheet->freezePane('A7');
-        foreach ($entries as $index => $entry) {
-            $this->fillRow($sheet, 7 + $index, $sourceType, $entry['receipt'], $entry['override'] ?? null);
+        $row = 7;
+        foreach ($entries as $entry) {
+            $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], $entry['override'] ?? null);
+            if ($sourceType === 'fcl' && $entry['receipt']->relationLoaded('fclShipperDetails')) {
+                foreach ($entry['receipt']->fclShipperDetails as $detail) {
+                    $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], null, $detail);
+                }
+            }
         }
         while ($workbook->getSheetCount() > 1) {
             $workbook->removeSheetByIndex(1);
@@ -46,14 +52,14 @@ class ApprovalTandaTerimaDuaExcelService
         return $path;
     }
 
-    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override): void
+    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override, ?\App\Models\ApprovalTandaTerimaDuaFclShipper $detail = null): void
     {
         $sourceGood = $this->sourceGood($sourceType, $receipt);
-        $manifestGood = $override?->manifest_goods[0] ?? $sourceGood;
-        $perincianGood = $override?->goods[0] ?? $sourceGood;
+        $manifestGood = $detail?->manifest_goods ?? $override?->manifest_goods[0] ?? $sourceGood;
+        $perincianGood = $detail?->goods ?? $override?->goods[0] ?? $sourceGood;
         $hsCodes = data_get($manifestGood, 'hs_codes');
         $hsCodes = is_array($hsCodes) ? $hsCodes : (filled(data_get($manifestGood, 'hs_code')) ? [data_get($manifestGood, 'hs_code')] : []);
-        $shipper = $receipt->shipperJb;
+        $shipper = $detail?->shipperJb ?? $receipt->shipperJb;
         $number = match ($sourceType) {
             'fcl' => $receipt->no_surat_jalan,
             'lcl' => $receipt->nomor_tanda_terima,

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ApprovalTandaTerimaDuaGoods;
+use App\Models\ApprovalTandaTerimaDuaFclShipper;
 use App\Models\Manifest;
 use App\Models\ShipperConsignee;
 use App\Models\TandaTerima;
@@ -68,6 +69,8 @@ class ApprovalTandaTerimaDuaController extends Controller
         $query = self::SOURCES[$type]::query()->with('shipperJb');
         if ($type === 'lcl') {
             $query->with(['kontainerPivot', 'items']);
+        } elseif ($type === 'fcl') {
+            $query->with('fclShipperDetails.shipperJb');
         } elseif ($type === 'ttsj') {
             $query->with('dimensiItems');
         }
@@ -205,6 +208,10 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $item = self::SOURCES[$sourceType]::with('shipperJb')->findOrFail($id);
+        if ($sourceType === 'fcl') {
+            $item->load('fclShipperDetails.shipperJb');
+            $this->ensureFclDetailsComplete($item);
+        }
         if ($sourceType === 'lcl') {
             $item->load('items', 'kontainerPivot');
         }
@@ -249,11 +256,16 @@ class ApprovalTandaTerimaDuaController extends Controller
         $query = self::SOURCES[$sourceType]::with('shipperJb')->whereKey($ids);
         if ($sourceType === 'lcl') {
             $query->with('items', 'kontainerPivot');
+        } elseif ($sourceType === 'fcl') {
+            $query->with('fclShipperDetails.shipperJb');
         } elseif ($sourceType === 'ttsj') {
             $query->with('dimensiItems');
         }
         $receipts = $query->get()->keyBy('id');
         abort_if($receipts->count() !== count($ids), 404);
+        if ($sourceType === 'fcl') {
+            $receipts->each(fn ($receipt) => $this->ensureFclDetailsComplete($receipt));
+        }
         $overrides = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)
             ->whereIn('source_id', $ids)->get()->keyBy('source_id');
         $entries = array_map(fn ($id) => [
@@ -341,6 +353,9 @@ class ApprovalTandaTerimaDuaController extends Controller
         ]);
         $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
         abort_unless(filled($shipper->shipper), 422, 'Nama shipper belum diisi pada master.');
+        if ($sourceType === 'fcl') {
+            abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
+        }
 
         DB::transaction(function () use ($item, $sourceType, $shipper) {
             $item->update(['shipper_jb_id' => $shipper->id]);
@@ -371,6 +386,79 @@ class ApprovalTandaTerimaDuaController extends Controller
         });
 
         return back()->with('success', 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
+    }
+
+    public function addFclShipper(Request $request, int $id): RedirectResponse
+    {
+        $item = TandaTerima::findOrFail($id);
+        abort_unless($item->shipper_jb_id, 422, 'Pilih shipper utama terlebih dahulu.');
+        $validated = $request->validate([
+            'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
+        ]);
+        abort_if((int) $item->shipper_jb_id === (int) $validated['shipper_jb_id'], 422, 'Shipper ini sudah menjadi shipper utama.');
+        $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
+        abort_unless(filled($shipper->shipper), 422, 'Nama shipper belum diisi pada master.');
+
+        ApprovalTandaTerimaDuaFclShipper::firstOrCreate(
+            ['tanda_terima_id' => $item->id, 'shipper_jb_id' => $shipper->id],
+            ['updated_by' => auth()->id()]
+        );
+
+        return back()->with('success', 'Shipper tambahan ditambahkan. Lengkapi rincian barangnya sebelum ekspor.');
+    }
+
+    public function updateFclShipperGoods(Request $request, int $id, int $detailId): RedirectResponse
+    {
+        $detail = ApprovalTandaTerimaDuaFclShipper::where('tanda_terima_id', $id)->findOrFail($detailId);
+        $validated = $request->validate([
+            'manifest_goods.nama_barang' => 'required|string',
+            'manifest_goods.hs_codes' => 'nullable|string|max:4000',
+            'manifest_goods.jumlah' => 'nullable|integer|min:0',
+            'manifest_goods.satuan' => 'nullable|string|max:100',
+            'manifest_goods.ukuran' => 'nullable|string|max:255',
+            'manifest_goods.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
+            'manifest_goods.meter_kubik' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
+            'manifest_goods.keterangan_barang' => 'nullable|string|max:2000',
+            'goods.nama_barang' => 'required|string',
+            'goods.jumlah' => 'nullable|integer|min:0',
+            'goods.satuan' => 'nullable|string|max:100',
+            'goods.ukuran' => 'nullable|string|max:255',
+            'goods.keterangan_barang' => 'nullable|string|max:2000',
+        ]);
+        $manifest = $validated['manifest_goods'];
+        $manifest['hs_codes'] = collect(preg_split('/\R/u', $manifest['hs_codes'] ?? ''))
+            ->map(fn ($code) => trim($code))->filter()->values()->all();
+        $manifest['hs_code'] = $manifest['hs_codes'][0] ?? null;
+        foreach (['tonase', 'meter_kubik'] as $field) {
+            if (filled($manifest[$field] ?? null)) {
+                $manifest[$field] = $this->formatManifestNumber($manifest[$field]);
+            }
+        }
+        $detail->update([
+            'manifest_goods' => $manifest,
+            'goods' => $validated['goods'],
+            'updated_by' => auth()->id(),
+        ]);
+
+        return back()->with('success', 'Rincian barang shipper berhasil disimpan.');
+    }
+
+    public function removeFclShipper(int $id, int $detailId): RedirectResponse
+    {
+        ApprovalTandaTerimaDuaFclShipper::where('tanda_terima_id', $id)->findOrFail($detailId)->delete();
+
+        return back()->with('success', 'Shipper tambahan dihapus.');
+    }
+
+    private function ensureFclDetailsComplete(TandaTerima $item): void
+    {
+        foreach ($item->fclShipperDetails as $detail) {
+            abort_unless(
+                filled(data_get($detail->manifest_goods, 'nama_barang')) && filled(data_get($detail->goods, 'nama_barang')),
+                422,
+                'Lengkapi barang manifest dan perincian untuk semua shipper tambahan pada tanda terima '.$item->no_surat_jalan.'.'
+            );
+        }
     }
 
     public function updateGoods(Request $request, string $sourceType, int $id): RedirectResponse
@@ -462,6 +550,9 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $item = self::SOURCES[$sourceType]::findOrFail($id);
+        if ($sourceType === 'fcl') {
+            abort_if($item->fclShipperDetails()->exists(), 422, 'Hapus shipper tambahan sebelum melepas shipper utama.');
+        }
         $shipperId = $item->shipper_jb_id;
 
         if (! $shipperId) {

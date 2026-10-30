@@ -35,6 +35,15 @@ class ApprovalTandaTerimaDuaTest extends TestCase
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
             $table->timestamps();
         });
+        Schema::create('approval_tanda_terima_2_fcl_shippers', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_id');
+            $table->unsignedBigInteger('shipper_jb_id');
+            $table->json('manifest_goods')->nullable();
+            $table->json('goods')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
         Schema::create('tanda_terimas_lcl', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_tanda_terima')->nullable();
@@ -144,6 +153,32 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $this->assertEquals('Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
         $this->assertEquals('Penerima Asli', DB::table('manifests')->where('id', $jbId)->value('penerima'));
         $this->assertEquals('Notify Asli', DB::table('manifests')->where('id', $jbId)->value('notify_party'));
+    }
+
+    public function test_fcl_can_add_shipper_with_its_own_goods_and_remove_it(): void
+    {
+        $primaryId = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Pengirim A', 'consignee' => 'Penerima A']);
+        $additionalId = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Pengirim B', 'consignee' => 'Penerima B']);
+        $receiptId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'FCL-1', 'shipper_jb_id' => $primaryId]);
+        $controller = new ApprovalTandaTerimaDuaController;
+
+        $controller->addFclShipper(Request::create('/', 'PUT', ['shipper_jb_id' => $additionalId]), $receiptId);
+        $detailId = DB::table('approval_tanda_terima_2_fcl_shippers')->where('tanda_terima_id', $receiptId)->value('id');
+        $this->assertNotNull($detailId);
+
+        $controller->updateFclShipperGoods(Request::create('/', 'PUT', [
+            'manifest_goods' => ['nama_barang' => 'Barang Manifest B', 'jumlah' => 3, 'hs_codes' => "1234\n5678"],
+            'goods' => ['nama_barang' => 'Barang Perincian B', 'jumlah' => 4],
+        ]), $receiptId, $detailId);
+
+        $detail = \App\Models\ApprovalTandaTerimaDuaFclShipper::findOrFail($detailId);
+        $this->assertSame('Barang Manifest B', $detail->manifest_goods['nama_barang']);
+        $this->assertSame(['1234', '5678'], $detail->manifest_goods['hs_codes']);
+        $this->assertSame('Barang Perincian B', $detail->goods['nama_barang']);
+        $this->assertEquals($primaryId, DB::table('tanda_terimas')->where('id', $receiptId)->value('shipper_jb_id'));
+
+        $controller->removeFclShipper($receiptId, $detailId);
+        $this->assertDatabaseMissing('approval_tanda_terima_2_fcl_shippers', ['id' => $detailId]);
     }
 
     public function test_lcl_selection_matches_its_receipt_and_an_unnumbered_receipt_cannot_update_unrelated_manifests(): void

@@ -447,6 +447,7 @@
             stopDetails();
             opener = button;
             form.action = button.dataset.updateUrl;
+            save.textContent = button.dataset.additional === 'true' ? 'Tambah Shipper' : 'Simpan Shipper';
             selectedId.value = '';
             save.disabled = true;
             search.value = button.dataset.shipper || '';

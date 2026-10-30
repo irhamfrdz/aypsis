@@ -53,6 +53,15 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
+        Schema::create('approval_tanda_terima_2_fcl_shippers', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_id');
+            $table->unsignedBigInteger('shipper_jb_id');
+            $table->json('manifest_goods')->nullable();
+            $table->json('goods')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
         (require base_path('database/migrations/2026_10_29_130000_create_approval_tanda_terima_2_exports_table.php'))->up();
     }
 
@@ -139,6 +148,37 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
             $this->assertSame(1, $sheet->getCell('F9')->getValue());
             $this->assertSame('Unit', $sheet->getCell('G9')->getValue());
             $this->assertSame('Container 40 feet HC stc :', $sheet->getCell('H9')->getValue());
+        } finally {
+            @unlink($file);
+        }
+    }
+
+    public function test_fcl_export_writes_one_row_per_shipper_with_separate_goods(): void
+    {
+        $firstShipper = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Shipper A', 'consignee' => 'Consignee A']);
+        $secondShipper = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Shipper B', 'consignee' => 'Consignee B']);
+        $receiptId = DB::table('tanda_terimas')->insertGetId([
+            'shipper_jb_id' => $firstShipper, 'no_surat_jalan' => 'FCL-MULTI', 'no_kontainer' => 'CONTAINER-1',
+            'dimensi_items' => json_encode([['nama_barang' => 'Barang A', 'jumlah' => 2]]),
+        ]);
+        DB::table('approval_tanda_terima_2_fcl_shippers')->insert([
+            'tanda_terima_id' => $receiptId, 'shipper_jb_id' => $secondShipper,
+            'manifest_goods' => json_encode(['nama_barang' => 'Barang B Manifest', 'jumlah' => 4]),
+            'goods' => json_encode(['nama_barang' => 'Barang B Perincian', 'jumlah' => 5]),
+        ]);
+
+        $response = app(ApprovalTandaTerimaDuaController::class)->export('fcl', $receiptId, app(ApprovalTandaTerimaDuaExcelService::class));
+        $file = $response->getFile()->getPathname();
+        try {
+            $sheet = IOFactory::load($file)->getSheet(0);
+            $this->assertSame('CONTAINER-1', $sheet->getCell('D7')->getValue());
+            $this->assertSame('CONTAINER-1', $sheet->getCell('D8')->getValue());
+            $this->assertSame('Shipper A', $sheet->getCell('Q7')->getValue());
+            $this->assertSame('Shipper B', $sheet->getCell('Q8')->getValue());
+            $this->assertSame('Consignee B', $sheet->getCell('T8')->getValue());
+            $this->assertSame('Barang A', $sheet->getCell('K7')->getValue());
+            $this->assertSame('Barang B Manifest', $sheet->getCell('K8')->getValue());
+            $this->assertSame('Barang B Perincian', $sheet->getCell('N8')->getValue());
         } finally {
             @unlink($file);
         }

@@ -252,10 +252,17 @@
                             <td data-label="Shipper Perincian" class="text-gray-700">{{ $sender ?: '-' }}</td>
                             <td data-label="Shipper Manifest JB">
                                 @if($item->shipperJb)
-                                    <div class="font-medium text-gray-900">{{ $item->shipperJb->shipper }}</div>
+                                    <div class="font-medium text-gray-900">{{ $type === 'fcl' ? 'Utama: ' : '' }}{{ $item->shipperJb->shipper }}</div>
                                     @if($item->shipperJb->consignee)<div class="mt-0.5 text-xs text-gray-500">Consignee: {{ $item->shipperJb->consignee }}</div>@endif
                                 @else
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
+                                @endif
+                                @if($type === 'fcl' && $item->fclShipperDetails->isNotEmpty())
+                                    <div class="mt-2 space-y-1 border-t border-gray-200 pt-2 text-xs">
+                                        @foreach($item->fclShipperDetails as $detail)
+                                            <div class="font-medium text-indigo-800">{{ $loop->iteration + 1 }}. {{ $detail->shipperJb?->shipper }} <span class="font-normal text-gray-500">→ {{ $detail->shipperJb?->consignee ?: '-' }}</span></div>
+                                        @endforeach
+                                    </div>
                                 @endif
                             </td>
                             <td data-label="Aksi" class="approval-actions-cell {{ $isExported ? 'bg-green-200' : ($isIncomplete ? 'bg-yellow-200' : '') }}">
@@ -287,7 +294,7 @@
                                 @endcan
                                 <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                     data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
-                                    <i class="fas fa-box-open" aria-hidden="true"></i>Detail Barang
+                                    <i class="fas fa-box-open" aria-hidden="true"></i>{{ $type === 'fcl' ? 'Barang Shipper Utama' : 'Detail Barang' }}
                                 </button>
                                 @can('approval-tanda-terima-2-approve')
                                     <button type="button" class="approval-shipper-open inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
@@ -297,6 +304,13 @@
                                         data-shipper="{{ $item->shipperJb?->shipper }}">
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i>{{ $item->shipper_jb_id ? 'Ubah Shipper' : 'Pilih Shipper' }}
                                     </button>
+                                    @if($type === 'fcl' && $item->shipper_jb_id)
+                                        <button type="button" class="approval-shipper-open ml-2 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
+                                            data-update-url="{{ route('approval-tanda-terima-2.fcl-shippers.store', ['id' => $item->id]) }}"
+                                            data-number="{{ $number }}" data-sender="{{ $sender }}" data-additional="true">
+                                            <i class="fas fa-plus" aria-hidden="true"></i>Tambah Shipper
+                                        </button>
+                                    @endif
                                     @if($item->shipper_jb_id)
                                         <form method="POST" action="{{ route('approval-tanda-terima-2.destroy', ['sourceType' => $type, 'id' => $item->id]) }}" class="ml-2 inline-block" onsubmit="return confirm('Hapus shipper JB dari tanda terima ini dan manifest terkait?')">
                                             @csrf
@@ -305,10 +319,17 @@
                                         </form>
                                     @endif
                                 @endcan
+                                @if($type === 'fcl' && $item->fclShipperDetails->isNotEmpty())
+                                    <div class="mt-3 space-y-2 border-t border-gray-200 pt-3">
+                                        @foreach($item->fclShipperDetails as $detail)
+                                            @include('approval-tanda-terima-2._fcl-shipper-detail', ['detail' => $detail, 'item' => $item])
+                                        @endforeach
+                                    </div>
+                                @endif
                                 <dialog id="approval-goods-{{ $type }}-{{ $item->id }}" data-source-type="{{ $type }}" class="approval-goods-dialog whitespace-normal text-left shadow-2xl" aria-labelledby="approval-goods-title-{{ $type }}-{{ $item->id }}">
                                     <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4">
                                         <div>
-                                            <h2 id="approval-goods-title-{{ $type }}-{{ $item->id }}" class="text-lg font-semibold text-gray-900">Detail Barang</h2>
+                                            <h2 id="approval-goods-title-{{ $type }}-{{ $item->id }}" class="text-lg font-semibold text-gray-900">{{ $type === 'fcl' ? 'Barang Shipper Utama' : 'Detail Barang' }}</h2>
                                             <p class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
                                                 <span>Tanda terima: {{ $number ?: 'Tanpa nomor' }}</span>
                                                 <span>Nomor kontainer: {{ $containerNumber ?: '-' }}</span>

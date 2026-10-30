@@ -7526,6 +7526,15 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::put('approval-tanda-terima-2/{sourceType}/{id}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'update'])
         ->name('approval-tanda-terima-2.update')
         ->middleware('can:approval-tanda-terima-2-approve');
+    Route::put('approval-tanda-terima-2/fcl/{id}/shippers', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'addFclShipper'])
+        ->name('approval-tanda-terima-2.fcl-shippers.store')
+        ->middleware('can:approval-tanda-terima-2-approve');
+    Route::put('approval-tanda-terima-2/fcl/{id}/shippers/{detailId}/goods', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'updateFclShipperGoods'])
+        ->name('approval-tanda-terima-2.fcl-shippers.goods')
+        ->middleware('can:approval-tanda-terima-2-approve');
+    Route::delete('approval-tanda-terima-2/fcl/{id}/shippers/{detailId}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'removeFclShipper'])
+        ->name('approval-tanda-terima-2.fcl-shippers.destroy')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::put('approval-tanda-terima-2/{sourceType}/{id}/goods', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'updateGoods'])
         ->name('approval-tanda-terima-2.update-goods')
         ->middleware('can:approval-tanda-terima-2-approve');

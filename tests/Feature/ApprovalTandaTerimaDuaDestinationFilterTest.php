@@ -78,6 +78,11 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
         });
+        Schema::create('approval_tanda_terima_2_fcl_shippers', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tanda_terima_id');
+            $table->unsignedBigInteger('shipper_jb_id');
+        });
         Schema::create('approval_tanda_terima_2_incomplete_marks', function (Blueprint $table) {
             $table->id();
             $table->string('source_type', 4);

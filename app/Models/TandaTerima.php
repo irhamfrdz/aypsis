@@ -159,6 +159,11 @@ class TandaTerima extends Model
         return $this->belongsTo(ShipperConsignee::class, 'shipper_jb_id');
     }
 
+    public function fclShipperDetails()
+    {
+        return $this->hasMany(ApprovalTandaTerimaDuaFclShipper::class)->orderBy('id');
+    }
+
     /**
      * Boot method untuk auto-linking
      */
