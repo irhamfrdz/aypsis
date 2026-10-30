@@ -33,6 +33,10 @@
                         <td class="py-1 font-medium text-gray-900">: {{ $pembayaranPranotaLembur->jenis_transaksi }}</td>
                     </tr>
                     <tr>
+                        <td class="py-1 text-gray-600">Akun Biaya</td>
+                        <td class="py-1 font-medium text-gray-900">: {{ $akunBiayaTampil?->nama_akun ?? 'Belum tercatat' }}</td>
+                    </tr>
+                    <tr>
                         <td class="py-1 text-gray-600">Nomor Accurate</td>
                         <td class="py-1 font-medium text-gray-900">: {{ $pembayaranPranotaLembur->nomor_accurate ?? '-' }}</td>
                     </tr>

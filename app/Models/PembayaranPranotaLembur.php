@@ -18,6 +18,7 @@ class PembayaranPranotaLembur extends Model
         'nomor_cetakan',
         'tanggal_pembayaran',
         'bank',
+        'akun_coa_id',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -63,6 +64,11 @@ class PembayaranPranotaLembur extends Model
     public function items()
     {
         return $this->hasMany(PembayaranPranotaLemburItem::class, 'pembayaran_pranota_lembur_id');
+    }
+
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
     /**

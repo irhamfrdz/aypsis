@@ -119,7 +119,7 @@
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book)</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
                                 <select name="bank" id="bank" class="{{ $inputClasses }}" required>
@@ -127,6 +127,17 @@
                                     @foreach($akunCoa as $akun)
                                         <option value="{{ $akun->nama_akun }}" {{ old('bank', $isEdit ? $pembayaranPranotaLembur->bank : '') == $akun->nama_akun ? 'selected' : '' }}>
                                             {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Akun Biaya --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" {{ old('akun_coa_id', $isEdit ? $selectedAkunCoaId : $defaultAkunCoaId) == $akun->id ? 'selected' : '' }}>
+                                            {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
                                         </option>
                                     @endforeach
                                 </select>

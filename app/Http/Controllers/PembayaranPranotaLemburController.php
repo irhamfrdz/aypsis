@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coa;
+use App\Models\CoaTransaction;
 use App\Models\NomorTerakhir;
 use App\Models\PembayaranPranotaLembur;
 use App\Models\PranotaLembur;
@@ -105,11 +106,14 @@ class PembayaranPranotaLemburController extends Controller
         })
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+        $defaultAkunCoaId = Coa::where('nama_akun', 'Biaya Lembur Jakarta')->value('id')
+            ?? Coa::where('nama_akun', 'LIKE', 'Biaya Lembur%')->value('id');
 
         // Generate nomor pembayaran using SIS modul
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-lembur.create', compact('pranotaLemburs', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-lembur.create', compact('pranotaLemburs', 'nomorPembayaran', 'akunCoa', 'akunBiaya', 'defaultAkunCoaId'));
     }
 
     /**
@@ -125,6 +129,7 @@ class PembayaranPranotaLemburController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
+            'akun_coa_id' => ['required', 'integer', Rule::exists('akun_coa', 'id')],
             'total_pembayaran' => 'required|numeric|min:0',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
@@ -132,6 +137,10 @@ class PembayaranPranotaLemburController extends Controller
             'keterangan' => 'nullable|string',
             'nomor_cetakan' => 'nullable|integer|min:1|max:9',
         ]);
+        $biayaAccount = Coa::findOrFail($validated['akun_coa_id']);
+        if ($biayaAccount->nama_akun === $validated['bank']) {
+            throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari akun bank.']);
+        }
 
         DB::beginTransaction();
 
@@ -181,20 +190,10 @@ class PembayaranPranotaLemburController extends Controller
             $jenisTransaksi = $validated['jenis_transaksi'];
             $keterangan = 'Pembayaran Pranota Lembur - '.$nomorPembayaran;
 
-            // Use Biaya Lembur Jakarta as default if not found
-            $biayaAccount = 'Biaya Lembur Jakarta';
-            if (! Coa::where('nama_akun', $biayaAccount)->exists()) {
-                // Fallback to searching any Biaya Lembur if Jakarta doesn't exist
-                $fallbackCoa = Coa::where('nama_akun', 'LIKE', 'Biaya Lembur%')->first();
-                if ($fallbackCoa) {
-                    $biayaAccount = $fallbackCoa->nama_akun;
-                }
-            }
-
             if ($jenisTransaksi == 'Debit') {
                 $doubleEntryResult = $this->coaTransactionService->recordDoubleEntry(
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
-                    ['nama_akun' => $biayaAccount, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $biayaAccount->nama_akun, 'coa_id' => $biayaAccount->id, 'jumlah' => $totalPembayaran],
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Lembur',
@@ -202,13 +201,16 @@ class PembayaranPranotaLemburController extends Controller
                 );
             } else {
                 $doubleEntryResult = $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $biayaAccount, 'jumlah' => $totalPembayaran],
+                    ['nama_akun' => $biayaAccount->nama_akun, 'coa_id' => $biayaAccount->id, 'jumlah' => $totalPembayaran],
                     ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran],
                     $validated['tanggal_pembayaran'],
                     $nomorPembayaran,
                     'Pembayaran Pranota Lembur',
                     $keterangan
                 );
+            }
+            if (! $doubleEntryResult) {
+                throw new \RuntimeException('Jurnal pembayaran gagal dicatat.');
             }
 
             DB::commit();
@@ -229,9 +231,11 @@ class PembayaranPranotaLemburController extends Controller
      */
     public function show(PembayaranPranotaLembur $pembayaranPranotaLembur)
     {
-        $pembayaranPranotaLembur->load(['pranotaLemburs', 'createdBy', 'updatedBy']);
+        $pembayaranPranotaLembur->load(['pranotaLemburs', 'akunCoa', 'createdBy', 'updatedBy']);
+        $akunBiayaTampil = $pembayaranPranotaLembur->akunCoa
+            ?? Coa::find($this->legacyExpenseAccountId($pembayaranPranotaLembur));
 
-        return view('pembayaran-pranota-lembur.show', compact('pembayaranPranotaLembur'));
+        return view('pembayaran-pranota-lembur.show', compact('pembayaranPranotaLembur', 'akunBiayaTampil'));
     }
 
     /**
@@ -269,8 +273,12 @@ class PembayaranPranotaLemburController extends Controller
         })
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+        $selectedAkunCoaId = $pembayaranPranotaLembur->akun_coa_id
+            ?? $this->legacyExpenseAccountId($pembayaranPranotaLembur)
+            ?? Coa::where('nama_akun', 'Biaya Lembur Jakarta')->value('id');
 
-        return view('pembayaran-pranota-lembur.edit', compact('pembayaranPranotaLembur', 'pranotaLemburs', 'akunCoa'));
+        return view('pembayaran-pranota-lembur.edit', compact('pembayaranPranotaLembur', 'pranotaLemburs', 'akunCoa', 'akunBiaya', 'selectedAkunCoaId'));
     }
 
     /**
@@ -289,13 +297,18 @@ class PembayaranPranotaLemburController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'bank' => ['required', 'string', 'max:255', Rule::exists('akun_coa', 'nama_akun')],
+            'akun_coa_id' => ['required', 'integer', Rule::exists('akun_coa', 'id')],
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'keterangan' => 'nullable|string',
         ]);
+        $biayaAccount = Coa::findOrFail($validated['akun_coa_id']);
+        if ($biayaAccount->nama_akun === $validated['bank']) {
+            throw ValidationException::withMessages(['akun_coa_id' => 'Akun biaya harus berbeda dari akun bank.']);
+        }
 
         try {
-            DB::transaction(function () use ($validated, $pembayaranPranotaLembur) {
+            DB::transaction(function () use ($validated, $pembayaranPranotaLembur, $biayaAccount) {
                 $oldPranotas = $pembayaranPranotaLembur->pranotaLemburs()->get();
                 $oldIds = $oldPranotas->pluck('id')->all();
                 $newIds = array_map('intval', $validated['pranota_lembur_ids']);
@@ -334,6 +347,7 @@ class PembayaranPranotaLemburController extends Controller
                     'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                     'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                     'bank' => $validated['bank'],
+                    'akun_coa_id' => $biayaAccount->id,
                     'jenis_transaksi' => $validated['jenis_transaksi'],
                     'total_pembayaran' => $total,
                     'total_tagihan_penyesuaian' => $adjustment,
@@ -355,14 +369,8 @@ class PembayaranPranotaLemburController extends Controller
                     $pranota->update(['status' => PranotaLembur::STATUS_PAID, 'updated_by' => Auth::id()]);
                 }
 
-                $biayaAccount = Coa::where('nama_akun', 'Biaya Lembur Jakarta')->first()
-                    ?? Coa::where('nama_akun', 'LIKE', 'Biaya Lembur%')->first();
-                if (! $biayaAccount) {
-                    throw new \RuntimeException('Akun biaya lembur tidak ditemukan.');
-                }
-
                 $bankAccount = ['nama_akun' => $validated['bank'], 'jumlah' => $finalTotal];
-                $expenseAccount = ['nama_akun' => $biayaAccount->nama_akun, 'jumlah' => $finalTotal];
+                $expenseAccount = ['nama_akun' => $biayaAccount->nama_akun, 'coa_id' => $biayaAccount->id, 'jumlah' => $finalTotal];
                 $debit = $validated['jenis_transaksi'] === 'Debit' ? $bankAccount : $expenseAccount;
                 $credit = $validated['jenis_transaksi'] === 'Debit' ? $expenseAccount : $bankAccount;
                 if (! $this->coaTransactionService->recordDoubleEntry(
@@ -443,6 +451,13 @@ class PembayaranPranotaLemburController extends Controller
         $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
 
         return "SIS-{$bulan}-{$tahun}-{$runningNumber}";
+    }
+
+    private function legacyExpenseAccountId(PembayaranPranotaLembur $payment): ?int
+    {
+        return CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)
+            ->whereHas('coa', fn ($query) => $query->where('nama_akun', 'LIKE', 'Biaya Lembur%'))
+            ->value('coa_id');
     }
 
     /**
