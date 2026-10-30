@@ -209,9 +209,34 @@
             no: index + 1, jenis: text(formula.jenis), group: text(formula.group_name), tipe: text(formula.tipe),
             cabang: text(formula.cabang_bpjs), variabel: key, nilai: typeof value === 'boolean' ? String(value) : value, jenis_nilai: type,
         }, formulaColumns)));
-        [detail, summary, variables, formulaSheet].forEach(sheet => {
+        const journal = root.BpjsJournal.calculate(records);
+        const journalSheet = workbook.addWorksheet('Jurnal');
+        const journalColumns = [['subgroup', 'Subgroup', 30], ['tunjangan', 'TUNJANGAN', 24],
+            ['biaya', 'BIAYA', 24], ['hutang', 'HUTANG', 24], ['account', 'Keterangan / Akun', 62]];
+        styleSheet(journalSheet, journalColumns);
+        journal.rows.forEach(row => addRow(journalSheet, { subgroup: row.label, tunjangan: row.tunjangan,
+            biaya: row.biaya, hutang: row.hutang, account: row.account }, journalColumns));
+        const journalTotal = addRow(journalSheet, { subgroup: 'TOTAL' }, journalColumns);
+        const journalColors = ['FF92D050', 'FF9DC3E6', 'FFFFFF00'];
+        ['tunjangan', 'biaya', 'hutang'].forEach((key, index) => {
+            const letter = journalSheet.getColumn(key).letter;
+            journalTotal.getCell(key).value = { formula: `SUM(${letter}2:${letter}${journalTotal.number - 1})`, result: journal.totals[key] };
+            journalTotal.getCell(key).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: journalColors[index] } };
+        });
+        journalTotal.getCell('account').value = { formula: `SUM(B${journalTotal.number}:D${journalTotal.number})`, result: journal.totals.grand_total };
+        journalTotal.getCell('account').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF92D050' } };
+        const debitRow = addRow(journalSheet, { subgroup: 'Total Tunjangan + Biaya' }, journalColumns);
+        debitRow.getCell('tunjangan').value = { formula: `B${journalTotal.number}+C${journalTotal.number}`, result: journal.totals.debit };
+        debitRow.getCell('tunjangan').fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF92D050' } };
+        journalSheet.eachRow((row, index) => {
+            if (index === 1) return;
+            [2, 3, 4].forEach(column => { row.getCell(column).numFmt = '#,##0.00;[Red](#,##0.00);"-"'; });
+        });
+        journalTotal.getCell('account').numFmt = '#,##0.00';
+        [detail, summary, variables, formulaSheet, journalSheet].forEach(sheet => {
             sheet.autoFilter = { from: { row: 1, column: 1 },
-                to: { row: sheet === detail ? Math.max(1, totalRow.number - 1) : sheet.rowCount, column: sheet.columnCount } };
+                to: { row: sheet === detail ? Math.max(1, totalRow.number - 1)
+                    : (sheet === journalSheet ? journalTotal.number - 1 : sheet.rowCount), column: sheet.columnCount } };
         });
         return workbook;
     }

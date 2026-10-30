@@ -96,6 +96,13 @@
         }
         const split = root.BpjsJknColumns.split(read('.input-kes'),
             select('.tipe-karyawan-hidden-input')?.value, row.dataset.isSpecialCase);
+        row.bpjsJournalRecord = {
+            employee: { group_jkn: row.dataset.groupJkn, tipe_jkn: row.dataset.tipeJkn,
+                group_bp_jamsostek: row.dataset.groupJamsostek, tipe_bp_jamsostek: row.dataset.tipeJamsostek },
+            amounts: { ...values, bpjs_kesehatan: read('.input-kes'), bpjs_ketenagakerjaan: read('.input-ket'),
+                kis_biaya: split.biaya, kis_tunjangan: split.tunjangan },
+            aggregate_jamsostek: aggregateJamsostek,
+        };
         row.allowanceOverrides ??= {};
         const automaticAmounts = calculate({ ...values, group_bp_jamsostek: row.dataset.groupJamsostek,
             group_jkn: row.dataset.groupJkn,
@@ -210,6 +217,7 @@
                 summary.textContent = 'Rp ' + formatNumber(amount);
             });
         });
+        root.BpjsJournal?.renderFromRows(container);
     }
 
     root.BpjsAllowances = { calculate, effective, update, updateRow,

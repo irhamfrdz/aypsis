@@ -198,6 +198,27 @@
             </div>
         </div>
 
+        @php
+            $journalRecords = $pranota_bpj->details->map(function ($detail) {
+                $employee = $detail->karyawan_pranota;
+                $fields = ['jht_biaya', 'jht_hutang', 'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang',
+                    'jkk_hutang', 'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jht_biaya', 'noncrew_jht_hutang',
+                    'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan'];
+                $amounts = [];
+                foreach ($fields as $field) {
+                    $amounts[$field] = (float) ($detail->rincian_bpjs !== null ? ($detail->rincian_bpjs[$field] ?? 0) : ($detail->$field ?? 0));
+                }
+                return [
+                    'employee' => ['group_jkn' => $employee?->group_jkn, 'tipe_jkn' => $employee?->tipe_jkn,
+                        'group_bp_jamsostek' => $employee?->group_bp_jamsostek, 'tipe_bp_jamsostek' => $employee?->tipe_bp_jamsostek],
+                    'amounts' => array_merge($amounts, ['bpjs_kesehatan' => (float) $detail->bpjs_kesehatan,
+                        'bpjs_ketenagakerjaan' => (float) $detail->bpjs_ketenagakerjaan, 'kis_biaya' => $detail->kis_biaya]),
+                    'aggregate_jamsostek' => $detail->rincian_bpjs === null,
+                ];
+            })->values();
+        @endphp
+        @include('pranota-bpjs.partials.journal')
+
         @include('pranota-bpjs.partials.allowance-summary', ['allowanceSummary' => ['ppu' => $groupTotal(['allowance_ppu']), 'bpu' => $groupTotal(['allowance_bpu']), 'jkn' => $groupTotal(['allowance_jkn']), 'kary_jht' => $groupTotal(['allowance_kary_jht']), 'kary_jkn' => $groupTotal(['allowance_kary_jkn']), 'pt' => $groupTotal(['allowance_pt']), 'non_kary' => $groupTotal(['allowance_non_kary'])]])
         <div class="flex justify-end mt-16 print:mt-10">
             <div class="text-center w-48">
@@ -236,4 +257,8 @@
     .print\:p-0 { padding: 0 !important; }
 }
 </style>
+<script src="{{ asset('js/pranota-bpjs-journal.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-journal.js')) }}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => BpjsJournal.render(@json($journalRecords)));
+</script>
 @endsection

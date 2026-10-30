@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
+require('../public/js/pranota-bpjs-journal.js');
 require('../public/js/pranota-bpjs-export.js');
 
 const parse = BpjsJamsostek.parseAmount;
@@ -81,7 +82,7 @@ test('zero iuran rows remain included and excluded summaries keep their displaye
 
 // Set EXCELJS_TEST_PATH to the browser's existing ExcelJS bundle for XLSX round-trip verification.
 const excelPath = process.env.EXCELJS_TEST_PATH;
-test('XLSX round trip preserves all four sheets, numeric amounts, identifiers, formula variables and totals',
+test('XLSX round trip preserves all five sheets, numeric amounts, identifiers, formula variables and journal totals',
     { skip: !excelPath }, async () => {
         const ExcelJS = require(excelPath);
         const records = BpjsExcelExport.collectRows([fixture(), fixture({ temporary: true, hidden: true })], parse);
@@ -97,7 +98,7 @@ test('XLSX round trip preserves all four sheets, numeric amounts, identifiers, f
         const loaded = new ExcelJS.Workbook();
         await loaded.xlsx.load(buffer);
         assert.deepEqual(loaded.worksheets.map(sheet => sheet.name),
-            ['Rincian BPJS', 'Ringkasan Pranota', 'Variabel Karyawan', 'Rumus BPJS']);
+            ['Rincian BPJS', 'Ringkasan Pranota', 'Variabel Karyawan', 'Rumus BPJS', 'Jurnal']);
         const sheet = loaded.getWorksheet('Rincian BPJS');
         const headers = sheet.getRow(1).values;
         const value = (header, row = 2) => sheet.getRow(row).getCell(headers.indexOf(header)).value;
@@ -119,6 +120,11 @@ test('XLSX round trip preserves all four sheets, numeric amounts, identifiers, f
         assert.equal(value('Total BPU').result, 42000);
         assert.equal(value('Grand Total').result, 472494.8);
         assert.equal(value('Grand Total', 4).result, 944989.6);
+        const journal = loaded.getWorksheet('Jurnal');
+        const journalFooter = [];
+        journal.eachRow(row => { if (row.getCell(1).value === 'TOTAL') journalFooter.push(row); });
+        assert.equal(journalFooter.length, 1);
+        assert.equal(journalFooter[0].getCell(5).value.result, 944989.6);
         assert.match(value('Grand Total', 4).formula, /^SUM\([A-Z]+2:[A-Z]+3\)$/);
         assert.equal(sheet.views[0].xSplit, 6);
         assert.equal(sheet.views[0].ySplit, 1);
