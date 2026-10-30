@@ -26,7 +26,7 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
             $this->assertSame('TEST-001', $sheet->getCell('AC7')->getValue());
             $this->assertSame('TEST-001', $sheet->getCell('AC8')->getValue());
             $this->assertSame(70, $sheet->getSheetView()->getZoomScale());
-            $this->assertSame('A2', $sheet->getFreezePane());
+            $this->assertSame('A7', $sheet->getFreezePane());
 
             $workbook->disconnectWorksheets();
         } finally {

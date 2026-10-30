@@ -25,7 +25,7 @@ class ApprovalTandaTerimaDuaExcelService
         $sheet = $workbook->getSheet(0);
         $sheet->removeRow(1, 2);
         $sheet->getSheetView()->setZoomScale(70);
-        $sheet->freezePane('A2');
+        $sheet->freezePane('A7');
         foreach ($entries as $index => $entry) {
             $this->fillRow($sheet, 7 + $index, $sourceType, $entry['receipt'], $entry['override'] ?? null);
         }
