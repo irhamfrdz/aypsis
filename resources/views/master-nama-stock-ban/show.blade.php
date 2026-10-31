@@ -41,7 +41,7 @@
                 </div>
 
                 <div>
-                    <h3 class="text-sm font-medium text-gray-500">Kuantitas</h3>
+                    <h3 class="text-sm font-medium text-gray-500">Qty</h3>
                     <p class="mt-1 text-lg font-semibold text-gray-900">{{ number_format($namaStockBan->kuantitas, 0, ',', '.') }}</p>
                 </div>
 
