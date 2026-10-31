@@ -37,12 +37,13 @@ class NamaStockBanController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
+            'kuantitas' => 'sometimes|required|integer|min:0|max:4294967295',
             'status' => 'required|in:active,inactive',
         ]);
 
-        NamaStockBan::create($request->all());
+        NamaStockBan::create($validated);
 
         return redirect()->route('master.nama-stock-ban.index')->with('success', 'Nama stock ban berhasil ditambahkan.');
     }
@@ -74,12 +75,13 @@ class NamaStockBanController extends Controller
     {
         $namaStockBan = NamaStockBan::findOrFail($id);
 
-        $request->validate([
+        $validated = $request->validate([
             'nama' => 'required|string|max:255',
+            'kuantitas' => 'sometimes|required|integer|min:0|max:4294967295',
             'status' => 'required|in:active,inactive',
         ]);
 
-        $namaStockBan->update($request->all());
+        $namaStockBan->update($validated);
 
         return redirect()->route('master.nama-stock-ban.index')->with('success', 'Nama stock ban berhasil diperbarui.');
     }

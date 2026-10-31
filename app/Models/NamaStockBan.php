@@ -13,6 +13,11 @@ class NamaStockBan extends Model
 
     protected $fillable = [
         'nama',
+        'kuantitas',
         'status',
+    ];
+
+    protected $casts = [
+        'kuantitas' => 'integer',
     ];
 }
