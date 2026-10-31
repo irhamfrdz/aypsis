@@ -126,7 +126,7 @@
                 <p class="font-semibold mb-1">Contoh surat jalan yang <strong>terhalang karena status pembayaran</strong> (bukan 'belum_dibayar'):</p>
                 <ul class="list-disc list-inside text-xs text-gray-600">
                     @foreach($excludedByPaymentExamples as $ex)
-                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit }}</li>
+                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit_kenek }}</li>
                     @endforeach
                 </ul>
             </div>
@@ -136,7 +136,7 @@
                 <p class="font-semibold mb-1">Contoh surat jalan yang <strong>memiliki Tanda Terima</strong> tetapi <strong>tidak tampil</strong> setelah filter:</p>
                 <ul class="list-disc list-inside text-xs text-gray-600">
                     @foreach($excludedByTandaTerimaExamples as $ex)
-                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - rit: {{ $ex->rit ?? '-' }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit ?? '-' }} - status: {{ $ex->status ?? '-' }}</li>
+                        <li>{{ $ex->no_surat_jalan }} - {{ $ex->Kenek }} - rit: {{ $ex->rit ?? '-' }} - status pembayaran: {{ $ex->status_pembayaran_uang_rit_kenek ?? '-' }} - status: {{ $ex->status ?? '-' }}</li>
                     @endforeach
                 </ul>
             </div>

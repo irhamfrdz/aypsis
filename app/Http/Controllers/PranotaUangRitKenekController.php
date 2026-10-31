@@ -7,6 +7,7 @@ use App\Models\PranotaUangRitKenek;
 use App\Models\PranotaUangRitKenekDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
+use App\Services\PranotaUangRitKenekStatus;
 use App\Services\RekapBlService;
 use App\Services\RekapUangRitService;
 use Illuminate\Http\Request;
@@ -287,7 +288,7 @@ class PranotaUangRitKenekController extends Controller
         $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint', 'tanggal_surat_jalan']);
-        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
+        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit_kenek', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit_kenek', 'tanggal_surat_jalan']);
 
         // Pass the start and end dates to the view so UI shows selected range explicitly
         $viewStartDate = $startDate;
@@ -327,7 +328,7 @@ class PranotaUangRitKenekController extends Controller
             ->whereHas('tandaTerima')
             ->whereNotIn('id', $suratJalanIncludedIds)
             ->take(10)
-            ->get(['id', 'no_surat_jalan', 'kenek', 'status', 'rit', 'status_pembayaran_uang_rit', 'tanggal_surat_jalan']);
+            ->get(['id', 'no_surat_jalan', 'kenek', 'status', 'rit', 'status_pembayaran_uang_rit_kenek', 'tanggal_surat_jalan']);
 
         // TAMBAHAN: Ambil juga data dari SuratJalanBongkaran yang sudah ada tanda terima
         $suratJalanBongkarans = collect();
@@ -382,7 +383,7 @@ class PranotaUangRitKenekController extends Controller
                         'id' => $suratJalanBongkarans->first()->id,
                         'nomor' => $suratJalanBongkarans->first()->nomor_surat_jalan,
                         'rit' => $suratJalanBongkarans->first()->rit,
-                        'status_pembayaran' => $suratJalanBongkarans->first()->status_pembayaran_uang_rit,
+                        'status_pembayaran' => $suratJalanBongkarans->first()->status_pembayaran_uang_rit_kenek,
                         'has_tanda_terima' => $suratJalanBongkarans->first()->tandaTerima ? 'yes' : 'no',
                         'tanggal_tt' => $suratJalanBongkarans->first()->tandaTerima ? $suratJalanBongkarans->first()->tandaTerima->tanggal_tanda_terima : null,
                     ],
@@ -412,7 +413,7 @@ class PranotaUangRitKenekController extends Controller
 
         // Clone base query for counting and further filtering
         $query = (clone $baseQuery)->where('rit', 'menggunakan_rit') // Filter only surat jalan yang menggunakan rit
-            ->where('status_pembayaran_uang_rit', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
+            ->where('status_pembayaran_uang_rit_kenek', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR) // Filter yang belum dibayar
             ->whereNotIn('id', function ($subQuery) {
                 $subQuery->select('surat_jalan_id')
                     ->from('pranota_uang_rit_keneks')
@@ -470,7 +471,7 @@ class PranotaUangRitKenekController extends Controller
         $excludedByPranotaExamples = (clone $baseQuery)->whereIn('id', function ($subQuery) {
             $subQuery->select('surat_jalan_id')->from('pranota_uang_rit_keneks')->whereNotNull('surat_jalan_id')->whereNotIn('status', ['cancelled']);
         })->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'tanggal_checkpoint']);
-        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit']);
+        $excludedByPaymentExamples = (clone $baseQuery)->where('status_pembayaran_uang_rit_kenek', '!=', SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR)->take(10)->get(['id', 'no_surat_jalan', 'kenek', 'status', 'status_pembayaran_uang_rit_kenek']);
 
         $suratJalans = $query->orderBy('created_at', 'desc')->paginate(20);
 
@@ -480,7 +481,7 @@ class PranotaUangRitKenekController extends Controller
             ->whereHas('tandaTerima')
             ->whereNotIn('id', $includedIds)
             ->take(10)
-            ->get(['id', 'no_surat_jalan', 'kenek', 'status', 'rit', 'status_pembayaran_uang_rit']);
+            ->get(['id', 'no_surat_jalan', 'kenek', 'status', 'rit', 'status_pembayaran_uang_rit_kenek']);
 
         return view('pranota-uang-rit-kenek.select-uang-jalan', compact('suratJalans', 'eligibleCount', 'pranotaUsedCount', 'finalFilteredCount', 'eligibleExamples', 'excludedByPranotaExamples', 'excludedByPaymentExamples', 'excludedByTandaTerimaExamples'));
     }
@@ -713,25 +714,7 @@ class PranotaUangRitKenekController extends Controller
 
             $createdPranota = [$pranotaUangRit];
 
-            // Update status pembayaran uang rit pada SEMUA surat jalan yang dipilih
-            foreach ($selectedData as $suratJalanId => $data) {
-                $suratJalan = SuratJalan::find($suratJalanId);
-                if ($suratJalan) {
-                    $suratJalan->update([
-                        'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA,
-                    ]);
-                }
-            }
-
-            // Update status pembayaran uang rit pada SEMUA surat jalan bongkaran yang dipilih
-            foreach ($selectedBongkaranData as $suratJalanBongkaranId => $data) {
-                $suratJalanBongkaran = SuratJalanBongkaran::find($suratJalanBongkaranId);
-                if ($suratJalanBongkaran) {
-                    $suratJalanBongkaran->update([
-                        'status_pembayaran_uang_rit' => 'lunas', // Gunakan nilai enum yang sesuai dengan tabel bongkaran
-                    ]);
-                }
-            }
+            app(PranotaUangRitKenekStatus::class)->sync($pranotaUangRit, SuratJalan::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA);
 
             // Simpan detail per kenek
             foreach ($kenekTotals as $kenekNama => $totals) {
@@ -1064,7 +1047,10 @@ class PranotaUangRitKenekController extends Controller
         }
 
         try {
-            $pranotaUangRitKenek->delete();
+            DB::transaction(function () use ($pranotaUangRitKenek) {
+                app(PranotaUangRitKenekStatus::class)->sync($pranotaUangRitKenek, SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR);
+                $pranotaUangRitKenek->delete();
+            });
 
             Log::info('Pranota Uang Rit Kenek deleted', [
                 'pranota_id' => $pranotaUangRitKenek->id,
@@ -1093,17 +1079,13 @@ class PranotaUangRitKenekController extends Controller
         }
 
         try {
-            $pranotaUangRitKenek->update([
-                'status' => PranotaUangRitKenek::STATUS_SUBMITTED,
-                'updated_by' => Auth::id(),
-            ]);
-
-            // Update status surat jalan
-            if ($pranotaUangRitKenek->suratJalan) {
-                $pranotaUangRitKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_SUBMITTED,
+            DB::transaction(function () use ($pranotaUangRitKenek) {
+                $pranotaUangRitKenek->update([
+                    'status' => PranotaUangRitKenek::STATUS_SUBMITTED,
+                    'updated_by' => Auth::id(),
                 ]);
-            }
+                app(PranotaUangRitKenekStatus::class)->sync($pranotaUangRitKenek, SuratJalan::STATUS_UANG_RIT_PRANOTA_SUBMITTED);
+            });
 
             Log::info('Pranota Uang Rit Kenek submitted', [
                 'pranota_id' => $pranotaUangRitKenek->id,
@@ -1132,19 +1114,15 @@ class PranotaUangRitKenekController extends Controller
         }
 
         try {
-            $pranotaUangRitKenek->update([
-                'status' => PranotaUangRitKenek::STATUS_APPROVED,
-                'approved_by' => Auth::id(),
-                'approved_at' => now(),
-                'updated_by' => Auth::id(),
-            ]);
-
-            // Update status surat jalan
-            if ($pranotaUangRitKenek->suratJalan) {
-                $pranotaUangRitKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_PRANOTA_APPROVED,
+            DB::transaction(function () use ($pranotaUangRitKenek) {
+                $pranotaUangRitKenek->update([
+                    'status' => PranotaUangRitKenek::STATUS_APPROVED,
+                    'approved_by' => Auth::id(),
+                    'approved_at' => now(),
+                    'updated_by' => Auth::id(),
                 ]);
-            }
+                app(PranotaUangRitKenekStatus::class)->sync($pranotaUangRitKenek, SuratJalan::STATUS_UANG_RIT_PRANOTA_APPROVED);
+            });
 
             Log::info('Pranota Uang Rit Kenek approved', [
                 'pranota_id' => $pranotaUangRitKenek->id,
@@ -1177,18 +1155,14 @@ class PranotaUangRitKenekController extends Controller
         ]);
 
         try {
-            $pranotaUangRitKenek->update([
-                'status' => PranotaUangRitKenek::STATUS_PAID,
-                'tanggal_bayar' => $request->tanggal_bayar,
-                'updated_by' => Auth::id(),
-            ]);
-
-            // Update status surat jalan menjadi dibayar
-            if ($pranotaUangRitKenek->suratJalan) {
-                $pranotaUangRitKenek->suratJalan->update([
-                    'status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_DIBAYAR,
+            DB::transaction(function () use ($request, $pranotaUangRitKenek) {
+                $pranotaUangRitKenek->update([
+                    'status' => PranotaUangRitKenek::STATUS_PAID,
+                    'tanggal_bayar' => $request->tanggal_bayar,
+                    'updated_by' => Auth::id(),
                 ]);
-            }
+                app(PranotaUangRitKenekStatus::class)->sync($pranotaUangRitKenek, SuratJalan::STATUS_UANG_RIT_DIBAYAR);
+            });
 
             Log::info('Pranota Uang Rit Kenek marked as paid', [
                 'pranota_id' => $pranotaUangRitKenek->id,
