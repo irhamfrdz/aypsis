@@ -198,18 +198,19 @@
                     <input type="date" name="tanggal_perolehan" value="{{ old('tanggal_perolehan', date('Y-m-d')) }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
 
+                <div>
+                    <label for="kuantitas" class="block text-xs font-semibold text-gray-700 mb-1">Kuantitas</label>
+                    <input type="number" name="kuantitas" id="kuantitas" min="0" step="0.01" value="{{ old('kuantitas') }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+                <div>
+                    <label for="satuan" class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
+                    <input type="text" name="satuan" id="satuan" maxlength="50" value="{{ old('satuan') }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                </div>
+
                 <div id="kapal-detail-fields" class="hidden md:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label for="spesifikasi" class="block text-xs font-semibold text-gray-700 mb-1">Spesifikasi</label>
                         <textarea name="spesifikasi" id="spesifikasi" rows="2" maxlength="2000" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">{{ old('spesifikasi') }}</textarea>
-                    </div>
-                    <div>
-                        <label for="kuantitas" class="block text-xs font-semibold text-gray-700 mb-1">Kuantitas</label>
-                        <input type="number" name="kuantitas" id="kuantitas" min="0" step="0.01" value="{{ old('kuantitas') }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                    </div>
-                    <div>
-                        <label for="satuan" class="block text-xs font-semibold text-gray-700 mb-1">Satuan</label>
-                        <input type="text" name="satuan" id="satuan" maxlength="50" value="{{ old('satuan') }}" class="w-full px-3 py-2 text-xs border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                     </div>
                     <div>
                         <label for="tanggal_kadaluarsa" class="block text-xs font-semibold text-gray-700 mb-1">Tanggal Kadaluwarsa</label>
