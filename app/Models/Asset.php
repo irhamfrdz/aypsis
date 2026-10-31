@@ -32,6 +32,7 @@ class Asset extends Model
         'karyawan_id',
         'tanggal_tanda_terima',
         'nomor_seri',
+        'nomor_seri_items',
         'lokasi',
         'lokasi_asset',
         'kapal_id',
@@ -45,10 +46,23 @@ class Asset extends Model
     ];
 
     protected $casts = [
+        'nomor_seri_items' => 'array',
         'tanggal_perolehan' => 'date',
         'tanggal_kadaluarsa' => 'date',
         'tanggal_tanda_terima' => 'date',
     ];
+
+    public function getDaftarNomorSeriAttribute(): array
+    {
+        return $this->nomor_seri_items ?? ($this->nomor_seri
+            ? [['nomor' => $this->nomor_seri, 'ukuran' => null]]
+            : []);
+    }
+
+    public function getNomorSeriDisplayAttribute(): string
+    {
+        return implode('; ', array_map(fn ($item) => $item['nomor'].(! empty($item['ukuran']) ? ' ('.$item['ukuran'].')' : ''), $this->daftar_nomor_seri));
+    }
 
     public const KATEGORI_OPTIONS = [
         'Elektronik',

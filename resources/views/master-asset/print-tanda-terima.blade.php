@@ -98,7 +98,13 @@
                         <div>Merk: {{ $asset->nama_merk ?: '........................' }}</div>
                         <div>Tipe: {{ $asset->kategori ?: '........................' }}</div>
                     </td>
-                    <td>{{ $asset->nomor_seri ?: '........................' }}</td>
+                    <td>
+                        @forelse($asset->daftar_nomor_seri as $serial)
+                            <div>{{ $serial['nomor'] }}@if(!empty($serial['ukuran'])) ({{ $serial['ukuran'] }})@endif</div>
+                        @empty
+                            ........................
+                        @endforelse
+                    </td>
                     <td>{{ $asset->kondisi ?: '........................' }}</td>
                 </tr>
             </tbody>

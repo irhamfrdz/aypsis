@@ -121,6 +121,10 @@ class AssetController extends Controller
             'karyawan_id' => 'nullable|required_if:lokasi,Di bawa oleh karyawan|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
+            'nomor_seri_items' => 'sometimes|array',
+            'nomor_seri_items.*' => 'array:nomor,ukuran',
+            'nomor_seri_items.*.nomor' => 'nullable|required_with:nomor_seri_items.*.ukuran|string|max:100',
+            'nomor_seri_items.*.ukuran' => 'nullable|string|max:100',
             'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
             'lokasi_asset' => 'nullable|in:'.implode(',', array_merge(Asset::LOKASI_ASSET_OPTIONS, Asset::LOKASI_ASSET_KAPAL_OPTIONS)),
             'kapal_id' => 'nullable|required_if:lokasi,Di kapal|exists:master_kapals,id',
@@ -130,6 +134,8 @@ class AssetController extends Controller
             'lampiran' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip,rar,doc,docx|max:10240',
             'keterangan' => 'nullable|string',
         ]);
+
+        $validated = $this->normalizeNomorSeri($validated);
 
         // Handle Foto upload
         if ($request->hasFile('foto')) {
@@ -213,6 +219,10 @@ class AssetController extends Controller
             'karyawan_id' => 'nullable|required_if:lokasi,Di bawa oleh karyawan|exists:karyawans,id',
             'tanggal_tanda_terima' => 'nullable|date',
             'nomor_seri' => 'nullable|string|max:100',
+            'nomor_seri_items' => 'sometimes|array',
+            'nomor_seri_items.*' => 'array:nomor,ukuran',
+            'nomor_seri_items.*.nomor' => 'nullable|required_with:nomor_seri_items.*.ukuran|string|max:100',
+            'nomor_seri_items.*.ukuran' => 'nullable|string|max:100',
             'lokasi' => 'nullable|in:'.implode(',', Asset::LOKASI_OPTIONS),
             'lokasi_asset' => 'nullable|in:'.implode(',', array_merge(Asset::LOKASI_ASSET_OPTIONS, Asset::LOKASI_ASSET_KAPAL_OPTIONS)),
             'kapal_id' => 'nullable|required_if:lokasi,Di kapal|exists:master_kapals,id',
@@ -222,6 +232,8 @@ class AssetController extends Controller
             'lampiran' => 'nullable|file|mimes:pdf,jpg,jpeg,png,zip,rar,doc,docx|max:10240',
             'keterangan' => 'nullable|string',
         ]);
+
+        $validated = $this->normalizeNomorSeri($validated);
 
         // Handle Foto upload & replacement
         if ($request->hasFile('foto')) {
@@ -261,6 +273,20 @@ class AssetController extends Controller
         $asset->update($validated);
 
         return redirect()->route('asset.index')->with('success', 'Data Asset berhasil diperbarui');
+    }
+
+    private function normalizeNomorSeri(array $validated): array
+    {
+        if (array_key_exists('nomor_seri_items', $validated)) {
+            $validated['nomor_seri_items'] = array_values(array_filter(array_map(fn ($item) => [
+                'nomor' => trim($item['nomor'] ?? ''),
+                'ukuran' => trim($item['ukuran'] ?? '') ?: null,
+            ], $validated['nomor_seri_items']), fn ($item) => $item['nomor'] !== ''));
+            // Keep the first number available to existing integrations.
+            $validated['nomor_seri'] = $validated['nomor_seri_items'][0]['nomor'] ?? null;
+        }
+
+        return $validated;
     }
 
     /**

@@ -92,7 +92,11 @@
 
                     <div>
                         <span class="text-gray-400 block font-medium">Nomor Seri / Nomor Mesin</span>
-                        <span class="font-semibold text-gray-800 mt-0.5 block">{{ $asset->nomor_seri ?: '-' }}</span>
+                        @forelse($asset->daftar_nomor_seri as $serial)
+                            <span class="font-semibold text-gray-800 mt-0.5 block">{{ $serial['nomor'] }}@if(!empty($serial['ukuran'])) — Ukuran: {{ $serial['ukuran'] }}@endif</span>
+                        @empty
+                            <span class="font-semibold text-gray-800 mt-0.5 block">-</span>
+                        @endforelse
                     </div>
 
                     <div>

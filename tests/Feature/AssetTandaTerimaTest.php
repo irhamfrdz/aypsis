@@ -54,6 +54,7 @@ class AssetTandaTerimaTest extends TestCase
         Schema::table('assets', fn (Blueprint $table) => $table->unsignedBigInteger('kapal_id')->nullable());
         (require database_path('migrations/2026_10_22_120000_create_tanda_terima_asset_table.php'))->up();
         (require database_path('migrations/2026_10_22_130000_add_foto_to_tanda_terima_asset_table.php'))->up();
+        (require database_path('migrations/2026_10_31_100000_add_nomor_seri_items_to_assets_table.php'))->up();
 
         DB::table('karyawans')->insert([
             'id' => 1, 'nama_lengkap' => 'Budi Santoso', 'nik' => '00123', 'departemen' => 'IT',
@@ -75,6 +76,52 @@ class AssetTandaTerimaTest extends TestCase
             'tanggal_tanda_terima' => '2026-10-22',
             'keterangan' => 'Lengkap dengan charger',
         ], $overrides);
+    }
+
+    public function test_multiple_serial_numbers_and_sizes_survive_creation_editing_and_clearing(): void
+    {
+        $controller = new AssetController;
+        $items = [
+            ['nomor' => '000123', 'ukuran' => '5 HP'],
+            ['nomor' => '000456', 'ukuran' => '10 HP'],
+        ];
+        $controller->store(Request::create('/master-asset', 'POST', $this->payload([
+            'nomor_seri_items' => [...$items, ['nomor' => '', 'ukuran' => '']],
+        ])));
+        $asset = Asset::firstOrFail();
+        $this->assertSame($items, $asset->daftar_nomor_seri);
+        $this->assertSame('000123', $asset->nomor_seri);
+        $this->assertSame('000123 (5 HP); 000456 (10 HP)', $asset->nomor_seri_display);
+
+        $items = [['nomor' => '000789', 'ukuran' => null]];
+        $controller->update(Request::create('/master-asset/1', 'PUT', $this->payload(['nomor_seri_items' => $items])), $asset);
+        $this->assertSame($items, $asset->fresh()->daftar_nomor_seri);
+        $this->assertSame('000789', $asset->fresh()->nomor_seri);
+
+        $controller->update(Request::create('/master-asset/1', 'PUT', $this->payload([
+            'nomor_seri_items' => [['nomor' => '', 'ukuran' => '']],
+        ])), $asset);
+        $this->assertSame([], $asset->fresh()->daftar_nomor_seri);
+        $this->assertNull($asset->fresh()->nomor_seri);
+    }
+
+    public function test_size_without_serial_number_is_rejected(): void
+    {
+        try {
+            (new AssetController)->store(Request::create('/master-asset', 'POST', $this->payload([
+                'nomor_seri_items' => [['nomor' => '', 'ukuran' => '10 HP']],
+            ])));
+            $this->fail('Size must belong to a serial number.');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('nomor_seri_items.0.nomor', $exception->errors());
+        }
+        $this->assertSame(0, Asset::count());
+    }
+
+    public function test_legacy_number_remains_available_in_the_new_form(): void
+    {
+        $asset = new Asset(['nomor_seri' => 'SN-OLD']);
+        $this->assertSame([['nomor' => 'SN-OLD', 'ukuran' => null]], $asset->daftar_nomor_seri);
     }
 
     public function test_form_creation_saves_initial_receipt_without_duplicating_it_on_edit(): void

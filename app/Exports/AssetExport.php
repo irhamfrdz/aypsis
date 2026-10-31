@@ -73,6 +73,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             'Vendor / Supplier',
             'No. Faktur',
             'Keterangan',
+            'Nomor Seri / Nomor Mesin (Ukuran)',
         ];
     }
 
@@ -98,6 +99,7 @@ class AssetExport implements FromCollection, ShouldAutoSize, WithHeadings, WithM
             $asset->vendor ?? '-',
             $asset->nomor_faktur ?? '-',
             $asset->keterangan ?? '-',
+            $asset->nomor_seri_display ?: '-',
         ];
     }
 
