@@ -21,4 +21,15 @@ class NamaStockBan extends Model
     protected $casts = [
         'kuantitas' => 'integer',
     ];
+
+    public function usesMasterStockDefaults(): bool
+    {
+        $name = strtoupper(preg_replace('/\s+/u', ' ', trim($this->nama ?? '')));
+
+        return in_array($name, [
+            'POMPA AIR ALKON BESAR',
+            'POMPA AIR ALKON KECIL',
+            'PULLEY CRANE',
+        ], true);
+    }
 }

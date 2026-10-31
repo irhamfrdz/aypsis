@@ -120,7 +120,7 @@
                         <select name="nama_stock_ban_id" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_stock_ban_id') border-red-500 @enderror" required>
                             <option value="">-- Pilih Nama Barang --</option>
                             @foreach($namaStockBans as $item)
-                                <option value="{{ $item->id }}" {{ old('nama_stock_ban_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
+                                <option value="{{ $item->id }}" data-master-stock="{{ $item->usesMasterStockDefaults() ? '1' : '0' }}" data-kuantitas="{{ $item->kuantitas ?? 0 }}" data-type="{{ $item->type ?? '' }}" {{ old('nama_stock_ban_id') == $item->id ? 'selected' : '' }}>{{ $item->nama }}</option>
                             @endforeach
                         </select>
                         @error('nama_stock_ban_id')
@@ -203,6 +203,9 @@
                             <option value="rusak" {{ old('kondisi') == 'rusak' ? 'selected' : '' }}>Rusak</option>
                         </select>
                         @error('kondisi')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                        @error('type')
                             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                         @enderror
                     </div>
@@ -989,17 +992,29 @@
             qtyWrapper.className = 'hidden';
             qtyWrapper.innerHTML = `
                 <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
-                <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0">
+                <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="1">
+                <p id="master-stock-hint" class="hidden text-xs text-gray-500 mt-1">Stock dan Type mengikuti Master Nama Stock Ban.</p>
             `;
             hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
         }
 
         // Store original options
         const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
+        let previousMasterStock = false;
 
         function checkItemType() {
                 const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
                 const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
+                const usesMasterStock = selectedOption?.dataset.masterStock === '1';
+                const qtyInput = qtyWrapper.querySelector('input[name="qty"]');
+                qtyInput.readOnly = usesMasterStock;
+                if (usesMasterStock) {
+                    qtyInput.value = selectedOption.dataset.kuantitas || '0';
+                } else if (previousMasterStock) {
+                    qtyInput.value = '0';
+                }
+                document.getElementById('master-stock-hint').classList.toggle('hidden', !usesMasterStock);
+                previousMasterStock = usesMasterStock;
                 
                 const isBanDalam = selectedText.includes('ban dalam');
                 const isBanPerut = selectedText.includes('ban perut');
@@ -1009,7 +1024,7 @@
                 const isCat = selectedText.includes('cat');
                 const isMajun = selectedText.includes('majun');
                 const isThinner = selectedText.includes('thinner');
-                const isBulk = isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner;
+                const isBulk = usesMasterStock || isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner;
                 const isBanLuar = selectedText.includes('ban luar');
                 const isBanLuarValmet = selectedText.includes('ban luar valmet');
                 const penerimaContainer = document.getElementById('penerima-container');
@@ -1080,7 +1095,7 @@
                     mobilContainer.classList.add('hidden');
                     
                     // Specific logic for Ban Dalam, Ban Perut, Cat, Majun, Thinner, Ring Velg, and Velg: User requested no brand label
-                    if (isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg) {
+                    if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg) {
                         merkContainer.classList.add('hidden');
                     } else {
                         merkContainer.classList.remove('hidden');
@@ -1106,7 +1121,7 @@
                         const label = ukuranContainer.querySelector('label');
                         const input = ukuranContainer.querySelector('input');
                         
-                        if (isBanDalam || isBanPerut || isCat || isMajun || isThinner) {
+                        if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner) {
                             ukuranContainer.classList.add('hidden');
                         } else {
                             ukuranContainer.classList.remove('hidden');
@@ -1120,7 +1135,10 @@
                         }
                     }
 
-                    if (isBanDalam || isBanPerut) {
+                    if (usesMasterStock) {
+                        const masterType = selectedOption.dataset.type.trim() || 'pcs';
+                        typeSelect.appendChild(new Option(masterType, masterType, true, true));
+                    } else if (isBanDalam || isBanPerut) {
                         // Ban Dalam & Ban Perut: Force Pcs
                         const opt = document.createElement('option');
                         opt.value = 'pcs';

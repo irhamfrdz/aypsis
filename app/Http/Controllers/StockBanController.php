@@ -143,6 +143,14 @@ class StockBanController extends Controller
     {
         // First check if it's Ban Dalam or Ban Perut or Lock Kontainer
         $namaStockBan = NamaStockBan::find($request->nama_stock_ban_id);
+        $usesMasterStock = $namaStockBan?->usesMasterStockDefaults() ?? false;
+        if ($usesMasterStock) {
+            $request->merge([
+                'qty' => $namaStockBan->kuantitas ?? 0,
+                'type' => trim($namaStockBan->type ?? '') ?: 'pcs',
+                'ukuran' => null,
+            ]);
+        }
 
         // Check for Ring Velg
         $isRingVelg = $namaStockBan && stripos($namaStockBan->nama, 'ring velg') !== false;
@@ -212,7 +220,7 @@ class StockBanController extends Controller
             return redirect()->route('stock-ban.index')->with('success', 'Data Stock Velg berhasil ditambahkan');
         }
 
-        $isBulkItem = $namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false || stripos($namaStockBan->nama, 'thinner') !== false);
+        $isBulkItem = $usesMasterStock || ($namaStockBan && (stripos($namaStockBan->nama, 'ban dalam') !== false || stripos($namaStockBan->nama, 'ban perut') !== false || stripos($namaStockBan->nama, 'lock kontainer') !== false || stripos($namaStockBan->nama, 'cat') !== false || stripos($namaStockBan->nama, 'majun') !== false || stripos($namaStockBan->nama, 'thinner') !== false));
 
         if ($isBulkItem) {
             $request->validate([
