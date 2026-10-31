@@ -1544,7 +1544,7 @@
                 });
             @endphp
  
-            @if($paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
+            @if($stockLainLains->isNotEmpty() || $paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1557,6 +1557,7 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+                @include('stock-ban.partials.other-stock-summary', ['stocks' => $stockLainLains])
                 @foreach($paintStats as $name => $data)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 {{ stripos($name, 'hijau') !== false ? 'border-b-green-500 hover:bg-green-50/30' : (stripos($name, 'abu') !== false ? 'border-b-gray-400 hover:bg-gray-50/30' : (stripos($name, 'merah') !== false ? 'border-b-red-500 hover:bg-red-50/30' : (stripos($name, 'biru') !== false ? 'border-b-blue-500 hover:bg-blue-50/30' : (stripos($name, 'kuning') !== false ? 'border-b-yellow-400 hover:bg-yellow-50/30' : (stripos($name, 'hitam') !== false ? 'border-b-black hover:bg-gray-100/30' : 'border-b-purple-500 hover:bg-purple-50/30'))))) }}"
                      onclick="filterBarangLainnya('{{ $name }}', this)">
