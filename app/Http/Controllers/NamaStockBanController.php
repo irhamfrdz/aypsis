@@ -39,6 +39,7 @@ class NamaStockBanController extends Controller
     {
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
+            'type' => 'nullable|string|max:100',
             'kuantitas' => 'sometimes|required|integer|min:0|max:4294967295',
             'status' => 'required|in:active,inactive',
         ]);
@@ -77,6 +78,7 @@ class NamaStockBanController extends Controller
 
         $validated = $request->validate([
             'nama' => 'required|string|max:255',
+            'type' => 'nullable|string|max:100',
             'kuantitas' => 'sometimes|required|integer|min:0|max:4294967295',
             'status' => 'required|in:active,inactive',
         ]);

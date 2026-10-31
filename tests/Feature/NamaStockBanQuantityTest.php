@@ -18,6 +18,7 @@ class NamaStockBanQuantityTest extends TestCase
         DB::purge('sqlite');
         (require database_path('migrations/2026_01_23_133500_create_nama_stock_bans_table.php'))->up();
         (require database_path('migrations/2026_10_31_110000_add_kuantitas_to_nama_stock_bans_table.php'))->up();
+        (require database_path('migrations/2026_10_31_120000_add_type_to_nama_stock_bans_table.php'))->up();
     }
 
     public function test_quantity_is_saved_updated_and_can_be_zero(): void
@@ -48,6 +49,38 @@ class NamaStockBanQuantityTest extends TestCase
             }
         }
         $this->assertSame(0, NamaStockBan::count());
+    }
+
+    public function test_type_is_saved_edited_and_cleared_independently_of_quantity(): void
+    {
+        NamaStockBan::withoutEvents(function () {
+            $controller = new NamaStockBanController;
+            $payload = ['nama' => 'Ban Luar', 'status' => 'active', 'kuantitas' => 12, 'type' => 'Radial'];
+            $controller->store(Request::create('/', 'POST', $payload));
+            $item = NamaStockBan::firstOrFail();
+            $this->assertSame('Radial', $item->type);
+
+            foreach (['Bias', null] as $type) {
+                $payload['type'] = $type;
+                $controller->update(Request::create('/', 'PUT', $payload), (string) $item->id);
+                $this->assertSame($type, $item->fresh()->type);
+                $this->assertSame(12, $item->fresh()->kuantitas);
+            }
+        });
+    }
+
+    public function test_type_rejects_arrays_and_text_over_100_characters(): void
+    {
+        foreach ([['Radial'], str_repeat('x', 101)] as $type) {
+            try {
+                (new NamaStockBanController)->store(Request::create('/', 'POST', [
+                    'nama' => 'Ban Luar', 'status' => 'active', 'type' => $type,
+                ]));
+                $this->fail('Invalid type accepted.');
+            } catch (ValidationException $exception) {
+                $this->assertArrayHasKey('type', $exception->errors());
+            }
+        }
     }
 
     public function test_migration_defaults_existing_records_to_zero_and_can_be_rolled_back(): void
