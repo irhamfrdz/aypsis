@@ -13,7 +13,7 @@
             <div>
                 <p class="text-xs font-semibold uppercase tracking-[0.2em] text-indigo-200">Pemantauan Armada</p>
                 <h1 class="mt-1 text-xl font-bold tracking-tight sm:text-3xl">Dashboard Perjalanan Kendaraan</h1>
-                <p class="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100">Pantau jarak tempuh GPS dan pekerjaan rit setiap kendaraan dalam periode yang Anda pilih.</p>
+                <p class="mt-2 max-w-2xl text-sm leading-relaxed text-indigo-100">Pantau jarak tempuh GPS, pekerjaan rit, dan pemakaian barang atau servis setiap kendaraan dalam periode yang Anda pilih.</p>
             </div>
         </div>
     </header>
@@ -95,12 +95,12 @@
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600"><i class="fas fa-truck" aria-hidden="true"></i></span>
                         <div>
                             <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900">Jarak Tempuh per Kendaraan</h3>
-                            <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit.</p>
+                            <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit dan pemakaian barang atau servis.</p>
                             <p class="mt-2 text-xs leading-relaxed text-slate-500">Pergantian ban mengikuti supir penerima pada Ban Luar dan Ban Luar Batam berstatus Terpakai, termasuk ban kendaraan lain yang diterima supir tersebut. Setiap ban dihitung satu kali, meskipun nomor buktinya sama. Periode mengikuti tanggal pemakaian (atau tanggal pasang jika belum diisi). Jika penerima atau supir belum tercatat, pencocokan menggunakan kendaraan.</p>
                         </div>
                     </div>
                     <div class="mt-5 overflow-x-auto rounded-xl border border-slate-100">
-                        <table class="min-w-[760px] w-full divide-y divide-slate-100 text-sm">
+                        <table class="min-w-[900px] w-full divide-y divide-slate-100 text-sm">
                             <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 <tr>
                                     <th class="px-4 py-3">Kendaraan</th>
@@ -108,6 +108,7 @@
                                     <th class="px-4 py-3 text-center">Hari Bergerak</th>
                                     <th class="px-4 py-3 text-center">Rit</th>
                                     <th class="px-4 py-3 text-center">Pergantian Ban Supir</th>
+                                    <th class="px-4 py-3 text-center">Barang/Servis</th>
                                     <th class="px-4 py-3 text-right">Jarak</th>
                                 </tr>
                             </thead>
@@ -144,10 +145,11 @@
                                             <span class="font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</span>
                                             <span class="mt-0.5 block text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} ban</span>
                                         </td>
+                                        <td class="px-4 py-3 text-center"><span class="inline-flex min-w-8 justify-center rounded-full bg-amber-50 px-2 py-1 text-xs font-bold text-amber-800">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</span></td>
                                         <td class="whitespace-nowrap px-4 py-3 text-right font-bold text-indigo-700">{{ number_format((float) $row->total_km, 2, ',', '.') }} km</td>
                                     </tr>
                                     <tr id="rit-details-{{ $row->mobil_id }}" class="hidden bg-indigo-50/60">
-                                        <td colspan="6" class="px-4 py-5">
+                                        <td colspan="7" class="px-4 py-5">
                                             <p class="mb-3 text-sm font-bold text-indigo-950">Detail Rit · {{ $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id }} <span class="ml-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-indigo-700">{{ number_format($row->rit_count, 0, ',', '.') }} rit</span></p>
                                             @if($row->rit_details->isEmpty())
                                                 <p class="text-xs text-gray-600">Tidak ada surat jalan rit untuk kendaraan ini pada periode yang dipilih.</p>
@@ -181,6 +183,42 @@
                                                     </table>
                                                 </div>
                                             @endif
+
+                                            <div class="mt-6 border-t border-indigo-100 pt-5">
+                                                <p class="mb-3 text-sm font-bold text-indigo-950">Barang/Servis Dipakai <span class="ml-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-indigo-700">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</span></p>
+                                                @if($row->amprahan_usages->isEmpty())
+                                                    <p class="text-xs text-gray-600">Tidak ada pemakaian barang atau servis untuk kendaraan ini pada periode yang dipilih.</p>
+                                                @else
+                                                    <div class="overflow-x-auto rounded-xl border border-indigo-100 bg-white shadow-sm">
+                                                        <table class="min-w-[760px] w-full divide-y divide-slate-100 text-xs">
+                                                            <thead class="bg-indigo-50/70 text-left font-semibold text-slate-600">
+                                                                <tr>
+                                                                    <th class="px-3 py-2">Tanggal Pakai</th>
+                                                                    <th class="px-3 py-2">Barang/Servis</th>
+                                                                    <th class="px-3 py-2">Tipe</th>
+                                                                    <th class="px-3 py-2">Jumlah</th>
+                                                                    <th class="px-3 py-2">Posisi</th>
+                                                                    <th class="px-3 py-2">No. Bukti</th>
+                                                                    <th class="px-3 py-2">Keterangan</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody class="divide-y divide-slate-100 text-slate-700">
+                                                                @foreach($row->amprahan_usages as $usage)
+                                                                    <tr>
+                                                                        <td class="whitespace-nowrap px-3 py-2">{{ \Carbon\Carbon::parse($usage['tanggal'])->format('d/m/Y') }}</td>
+                                                                        <td class="px-3 py-2 font-medium">{{ $usage['nama_barang'] }}</td>
+                                                                        <td class="px-3 py-2">{{ $usage['type_barang'] ?: '-' }}</td>
+                                                                        <td class="whitespace-nowrap px-3 py-2">{{ number_format((float) $usage['jumlah'], 2, ',', '.') }} {{ $usage['satuan'] }}</td>
+                                                                        <td class="px-3 py-2">{{ $usage['posisi'] }}</td>
+                                                                        <td class="px-3 py-2">{{ $usage['nomor_bukti'] ?: '-' }}</td>
+                                                                        <td class="px-3 py-2">{{ $usage['keterangan'] ?: '-' }}</td>
+                                                                    </tr>
+                                                                @endforeach
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @endforeach

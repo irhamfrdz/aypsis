@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GpsDailyDistance;
 use App\Services\RitSuratJalanService;
+use App\Services\VehicleAmprahanUsageService;
 use App\Services\VehicleTireReplacementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -42,6 +43,9 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->values();
 
             if ($vehicleStats->isNotEmpty()) {
+                $amprahanUsages = app(VehicleAmprahanUsageService::class)->forVehicles(
+                    $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai
+                );
                 $tireReplacements = app(VehicleTireReplacementService::class)->summarize(
                     $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai,
                     $vehicleStats->filter(fn ($row) => $row->mobil?->karyawan)
@@ -121,6 +125,7 @@ class DashboardPerjalananKendaraanController extends Controller
                 }
 
                 foreach ($vehicleStats as $row) {
+                    $row->amprahan_usages = $amprahanUsages->get($row->mobil_id, collect());
                     $tires = $tireReplacements->get($row->mobil_id, ['replacement_count' => 0, 'tire_count' => 0]);
                     $row->tire_replacement_count = $tires['replacement_count'];
                     $row->tire_count = $tires['tire_count'];
