@@ -3052,7 +3052,7 @@ class BlController extends Controller
     /**
      * Build the items collection for Rekap Bongkaran Perincian.
      * Non-container cargo with the same BL prefix (e.g. 02, 02-1, 02-2) is merged
-     * into a single row with satuan = 'Colly' and a summarised nama_barang.
+     * into a single row with a summarised nama_barang; car cargo uses Unit.
      */
     private function buildRekapBongkaranPerincianItems($bls): \Illuminate\Support\Collection
     {
@@ -3174,7 +3174,7 @@ class BlController extends Controller
 
             return [
                 'kuantitas' => $totalKuantitas,
-                'satuan' => 'Colly',
+                'satuan' => preg_match('/\bmobil\b/i', $namaBarang) ? 'Unit' : 'Colly',
                 'nama_barang' => $namaBarang,
                 'nomor_bl' => $nomorBl,
                 'amount' => $amount,
