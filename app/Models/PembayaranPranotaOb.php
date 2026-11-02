@@ -34,6 +34,7 @@ class PembayaranPranotaOb extends Model
         'total_biaya_pranota',
         'breakdown_supir',
         'akun_coa_id',
+        'akun_dp_id',
         'akun_bank_id',
         'created_by',
         'updated_by',
@@ -83,6 +84,16 @@ class PembayaranPranotaOb extends Model
     public function pembayaranOb()
     {
         return $this->belongsTo(PembayaranOb::class, 'pembayaran_ob_id');
+    }
+
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaObAkunItem::class);
+    }
+
+    public function akunDp()
+    {
+        return $this->belongsTo(Coa::class, 'akun_dp_id');
     }
 
     /**

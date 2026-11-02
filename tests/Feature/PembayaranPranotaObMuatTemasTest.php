@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Http\Controllers\PembayaranPranotaObController;
 use App\Models\PembayaranPranotaOb;
+use App\Models\CoaTransaction;
 use App\Models\PranotaObMuatTemas;
 use App\Models\User;
 use App\Services\CoaTransactionService;
@@ -76,7 +77,8 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->actingAs($user);
         Gate::define('pembayaran-pranota-ob-create', fn () => true);
         Gate::define('pembayaran-pranota-ob-delete', fn () => true);
-        DB::table('akun_coa')->insert([['id' => 1, 'nama_akun' => 'Biaya OB'], ['id' => 2, 'nama_akun' => 'Bank']]);
+        DB::table('akun_coa')->insert([['id' => 1, 'nama_akun' => 'Biaya OB'], ['id' => 2, 'nama_akun' => 'Bank'], ['id' => 3, 'nama_akun' => 'Biaya Tambahan'], ['id' => 4, 'nama_akun' => 'Uang Muka OB']]);
+        (require database_path('migrations/2026_11_02_000001_create_pembayaran_pranota_ob_akun_items_table.php'))->up();
         DB::table('pranota_obs')->insert([
             'id' => 1, 'nomor_pranota' => 'OB-001', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001',
             'items' => json_encode([['nomor_kontainer' => 'REGULAR', 'supir' => 'SUPIR UJI', 'biaya' => 100000]]),
@@ -96,7 +98,7 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
     {
         return Request::create('/pembayaran-pranota-ob', 'POST', [
             'nomor_pembayaran' => 'PY-OB-TEST', 'debit_kredit' => 'credit',
-            'akun_coa_id' => 1, 'akun_bank_id' => 2, 'tanggal_kas' => '2026-10-09',
+            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 360000]], 'akun_bank_id' => 2, 'tanggal_kas' => '2026-10-09',
             'kapal' => 'KAPAL UJI', 'voyage' => '001', 'pranota_ids' => $ids,
             'total_pembayaran' => 1,
         ]);
@@ -105,8 +107,8 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
     public function test_mixed_payment_keeps_same_numeric_ids_separate_and_uses_saved_cost(): void
     {
         $service = $this->mock(CoaTransactionService::class);
-        $service->shouldReceive('recordDoubleEntry')->once()->withArgs(fn ($debit, $credit) => $debit['jumlah'] === 360000.0 && $credit['jumlah'] === 360000.0)->andReturn(true);
-        $service->shouldReceive('deleteTransactionByReference')->once()->andReturn(true);
+        $service->shouldReceive('recordTransaction')->times(5)->andReturn(new CoaTransaction);
+        $service->shouldReceive('deleteTransactionByReference')->twice()->andReturn(true);
         $controller = new PembayaranPranotaObController($service);
         $response = $controller->store($this->paymentRequest(['1', 'muat_temas:1']));
         $this->assertEquals(route('pembayaran-pranota-ob.index'), $response->getTargetUrl());
@@ -118,7 +120,7 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->assertDatabaseHas('pranota_obs', ['id' => 1, 'status' => 'paid']);
         $this->assertDatabaseHas('pranota_ob_muat_temas', ['id' => 1, 'status' => 'paid']);
         $this->assertEquals('pembayaran-pranota-ob.print', $controller->print((string) $payment->id)->name());
-        $payment->update(['dp_amount' => 25000]);
+        $payment->update(['dp_amount' => 25000, 'akun_dp_id' => 4]);
         $controller->updateTotal($payment);
         $this->assertEquals(335000, $payment->fresh()->total_pembayaran);
         $this->assertEquals(360000, $payment->fresh()->total_biaya_pranota);
@@ -126,6 +128,49 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->assertDatabaseHas('pranota_obs', ['id' => 1, 'status' => 'unpaid']);
         $this->assertDatabaseHas('pranota_ob_muat_temas', ['id' => 1, 'status' => 'unpaid']);
         $this->assertDatabaseCount('pembayaran_pranota_obs', 0);
+    }
+
+    public function test_multiple_accounts_keep_gross_amounts_and_book_dp_separately(): void
+    {
+        DB::table('pembayaran_obs')->insert(['id' => 1, 'dp_amount' => 60000]);
+        $entries = [];
+        $service = $this->mock(CoaTransactionService::class);
+        $service->shouldReceive('recordTransaction')->times(4)
+            ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan, $coaId) use (&$entries) {
+                $entries[] = [$coaId, $debit, $kredit];
+                return new CoaTransaction;
+            });
+        $controller = new PembayaranPranotaObController($service);
+        $request = $this->paymentRequest(['1', 'muat_temas:1']);
+        $request->merge([
+            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 100000], ['akun_coa_id' => 3, 'nominal' => 260000]],
+            'dp_ids' => [1], 'akun_dp_id' => 4,
+        ]);
+
+        $controller->store($request);
+        $payment = PembayaranPranotaOb::firstOrFail();
+        $this->assertEquals(300000, $payment->total_pembayaran);
+        $this->assertEquals(60000, $payment->dp_amount);
+        $this->assertEquals([100000, 260000], $payment->akunItems->pluck('nominal')->map(fn ($value) => (int) $value)->all());
+        $this->assertEquals([[1, 100000.0, 0], [3, 260000.0, 0], [4, 0, 60000.0], [2, 0, 300000.0]], $entries);
+    }
+
+    public function test_account_amounts_must_equal_gross_total_before_dp(): void
+    {
+        DB::table('pembayaran_obs')->insert(['id' => 1, 'dp_amount' => 60000]);
+        $service = $this->mock(CoaTransactionService::class);
+        $service->shouldNotReceive('recordTransaction');
+        $controller = new PembayaranPranotaObController($service);
+        $request = $this->paymentRequest(['1', 'muat_temas:1']);
+        $request->merge([
+            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 300000]],
+            'dp_ids' => [1], 'akun_dp_id' => 4,
+        ]);
+
+        $controller->store($request);
+        $this->assertDatabaseCount('pembayaran_pranota_obs', 0);
+        $this->assertDatabaseHas('pranota_obs', ['id' => 1, 'status' => 'unpaid']);
+        $this->assertDatabaseHas('pranota_ob_muat_temas', ['id' => 1, 'status' => 'unpaid']);
     }
 
     public function test_paid_or_missing_pranota_cannot_create_another_payment(): void

@@ -87,6 +87,17 @@
                 <div>
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Total Pembayaran</h3>
                     <dl class="space-y-3">
+                        @if($pembayaran->akunItems->isNotEmpty())
+                        <div>
+                            <dt class="text-sm font-medium text-gray-500">Nominal per Akun Sebelum DP</dt>
+                            @foreach($pembayaran->akunItems as $item)
+                                <dd class="text-sm text-gray-900 flex justify-between gap-3"><span>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}</span><span>Rp {{ number_format($item->nominal, 0, ',', '.') }}</span></dd>
+                            @endforeach
+                        </div>
+                        @endif
+                        @if($pembayaran->akunDp && $pembayaran->dp_amount > 0)
+                        <div><dt class="text-sm font-medium text-gray-500">Akun Potongan DP</dt><dd class="text-sm text-gray-900">{{ $pembayaran->akunDp->nomor_akun }} - {{ $pembayaran->akunDp->nama_akun }}</dd></div>
+                        @endif
                         @if($pembayaran->pembayaranObs && $pembayaran->pembayaranObs->count() > 0)
                         <div>
                             <dt class="text-sm font-medium text-gray-500">DP ({{ $pembayaran->pembayaranObs->pluck('nomor_pembayaran')->join(', ') }})</dt>

@@ -278,20 +278,6 @@
                                 </select>
                             </div>
 
-                            <div>
-                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
-                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }} coa-select" required>
-                                    <option value="">-- Pilih Akun Biaya --</option>
-                                    @foreach($akunBiaya as $akun)
-                                        <option value="{{ $akun->id }}" 
-                                                data-nama="{{ $akun->nama_akun }}"
-                                                {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
-                                            {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-
                             <!-- Dynamic Journal Preview -->
                             <div id="journal_preview" class="md:col-span-2 mt-1 p-2 bg-white border border-blue-200 rounded text-[11px] hidden transition-all duration-300">
                                 <p class="font-bold text-gray-700 mb-1 flex items-center">
@@ -306,6 +292,8 @@
                     </div>
                 </div>
             </div>
+
+            @include('pembayaran-pranota-ob.partials.akun-items')
 
             {{-- Pilih Pranota OB --}}
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -570,6 +558,7 @@
             const total = parseFloat(document.getElementById('total_pembayaran').value.replace(/\./g, '').replace(',', '.')) || 0;
             const penyesuaian = parseFloat(document.getElementById('total_tagihan_penyesuaian').value.replace(/\./g, '').replace(',', '.')) || 0;
             document.getElementById('total_tagihan_setelah_penyesuaian').value = (total + penyesuaian).toLocaleString('id-ID');
+            window.updatePranotaObAkunItems?.();
         }
 
         // Select all functionality
@@ -827,7 +816,7 @@
                 updateNomorPembayaran();
                 updateJournalPreview();
             });
-            $('#akun_coa_id').on('change', updateJournalPreview);
+            $('#akun-items-list').on('change input', updateJournalPreview);
             $('#debit_kredit').on('change', updateJournalPreview);
 
             // Initial call after initialization
@@ -914,58 +903,25 @@
             
             if (!journalPreview || !journalContent) return;
 
-            const debitKredit = $('#debit_kredit').val();
-            const akunBank = $('#akun_bank_id').select2('data') ? $('#akun_bank_id').select2('data')[0] : null;
-            const akunBiaya = $('#akun_coa_id').select2('data') ? $('#akun_coa_id').select2('data')[0] : null;
-            const totalSetelahPenyesuaian = document.getElementById('total_tagihan_setelah_penyesuaian').value || '0';
-            
-            if (!debitKredit || !akunBank || !akunBank.id || !akunBiaya || !akunBiaya.id || totalSetelahPenyesuaian === '0' || totalSetelahPenyesuaian === '0,00') {
+            const bankOption = document.querySelector('#akun_bank_id option:checked');
+            const direction = document.getElementById('debit_kredit').value;
+            const rows = [...document.querySelectorAll('.akun-item-row')].filter(row => row.querySelector('select').value && Number(row.querySelector('input').value) > 0);
+            if (!bankOption?.value || !direction || !rows.length) {
                 journalPreview.classList.add('hidden');
                 return;
             }
-
-            const bankText = akunBank.element.dataset.nama || akunBank.text.split(' - ')[1];
-            const biayaText = akunBiaya.element.dataset.nama || akunBiaya.text.split(' - ')[1];
-            const amountFormatted = 'Rp ' + totalSetelahPenyesuaian;
-
-            let html = '';
-            if (debitKredit === 'credit') {
-                html = `
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-green-50 p-2 rounded border border-green-100">
-                            <p class="text-green-800 font-bold text-[10px]">DEBIT (+)</p>
-                            <p class="text-green-700 font-medium truncate">${biayaText}</p>
-                            <p class="text-green-800 font-bold">${amountFormatted}</p>
-                        </div>
-                        <div class="bg-red-50 p-2 rounded border border-red-100">
-                            <p class="text-red-800 font-bold text-[10px]">KREDIT (-)</p>
-                            <p class="text-red-700 font-medium truncate">${bankText}</p>
-                            <p class="text-red-800 font-bold">${amountFormatted}</p>
-                        </div>
-                    </div>
-                    <p class="mt-1 text-[10px] text-gray-500 italic">💡 Efek: Beban bertambah, Saldo Bank berkurang</p>
-                `;
-            } else {
-                html = `
-                    <div class="grid grid-cols-2 gap-2">
-                        <div class="bg-green-50 p-2 rounded border border-green-100">
-                            <p class="text-green-800 font-bold text-[10px]">DEBIT (+)</p>
-                            <p class="text-green-700 font-medium truncate">${bankText}</p>
-                            <p class="text-green-800 font-bold">${amountFormatted}</p>
-                        </div>
-                        <div class="bg-red-50 p-2 rounded border border-red-100">
-                            <p class="text-red-800 font-bold text-[10px]">KREDIT (-)</p>
-                            <p class="text-red-700 font-medium truncate">${biayaText}</p>
-                            <p class="text-red-800 font-bold">${amountFormatted}</p>
-                        </div>
-                    </div>
-                    <p class="mt-1 text-[10px] text-gray-500 italic">💡 Efek: Saldo Bank bertambah, Beban berkurang</p>
-                `;
-            }
-
-            journalContent.innerHTML = html;
+            const dp = Number(document.getElementById('akun-items-section').dataset.dp) || 0;
+            const kas = rows.reduce((sum, row) => sum + Number(row.querySelector('input').value), 0) - dp;
+            const biayaSide = direction === 'credit' ? 'DEBIT' : 'KREDIT';
+            const kasSide = direction === 'credit' ? 'KREDIT' : 'DEBIT';
+            const lines = rows.map(row => `${biayaSide} ${row.querySelector('select option:checked').textContent.trim()}: Rp ${Number(row.querySelector('input').value).toLocaleString('id-ID')}`);
+            if (dp > 0) lines.push(`${kasSide} Potongan DP (${document.querySelector('#akun_dp_id option:checked')?.textContent.trim() || 'pilih akun'}): Rp ${dp.toLocaleString('id-ID')}`);
+            lines.push(`${kasSide} ${bankOption.textContent.trim()}: Rp ${kas.toLocaleString('id-ID')}`);
+            journalContent.style.whiteSpace = 'pre-line';
+            journalContent.textContent = lines.join('\n');
             journalPreview.classList.remove('hidden');
         }
+        window.updatePranotaObJournalPreview = updateJournalPreview;
 
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
@@ -1001,10 +957,6 @@
 
             if (!$('#akun_bank_id').val()) {
                 e.preventDefault(); alert('Pilih bank terlebih dahulu.'); return false;
-            }
-
-            if (!$('#akun_coa_id').val()) {
-                e.preventDefault(); alert('Pilih akun biaya.'); return false;
             }
 
             if (!$('#debit_kredit').val()) {

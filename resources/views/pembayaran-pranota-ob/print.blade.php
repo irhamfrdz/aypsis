@@ -302,12 +302,30 @@
                     </tbody>
                 </table>
 
+                @if($pembayaran->akunItems->isNotEmpty())
+                <div class="section-title">Rincian Akun Sebelum DP</div>
+                <table class="ob-table">
+                    <thead><tr><th>Akun</th><th style="text-align: right">Nominal</th></tr></thead>
+                    <tbody>
+                        @foreach($pembayaran->akunItems as $item)
+                        <tr><td>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}</td><td style="text-align: right">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td></tr>
+                        @endforeach
+                    </tbody>
+                </table>
+                @endif
+
                 <!-- Total Biaya -->
                 <div class="total-section">
                     <div class="total-row">
                         <span>Total Tagihan:</span>
                         <span>Rp {{ number_format($pranotaObs->sum(fn($p) => $p->calculateTotalAmount()), 0, ',', '.') }}</span>
                     </div>
+                    @if($pembayaran->dp_amount > 0)
+                    <div class="total-row">
+                        <span>Potongan DP{{ $pembayaran->akunDp ? ' ('.$pembayaran->akunDp->nomor_akun.')' : '' }}:</span>
+                        <span>- Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}</span>
+                    </div>
+                    @endif
                     @if($pembayaran->penyesuaian != 0)
                     <div class="total-row">
                         <span>Penyesuaian:</span>
