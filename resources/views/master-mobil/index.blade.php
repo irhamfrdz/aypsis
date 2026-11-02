@@ -328,7 +328,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kendaraan</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
-                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buntut Terpasang</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">CHASIS &amp; HEAD</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                     <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Roda</th>
@@ -370,14 +370,7 @@
                             </div>
                         </td>
                         <td class="py-2 px-3 text-sm">
-                            @if(strtoupper(trim((string) $mobil->jenis)) === 'TRACTOR HEAD' && $mobil->buntut)
-                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                    {{ $mobil->buntut->nomor_polisi ?: ($mobil->buntut->no_kir ?: $mobil->buntut->kode_no) }}
-                                </span>
-                                <span class="mt-1 block text-xs text-gray-500">{{ $mobil->buntut->jenis }}</span>
-                            @else
-                                <span class="text-gray-400">-</span>
-                            @endif
+                            @include('master-mobil._chasis-head')
                         </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">

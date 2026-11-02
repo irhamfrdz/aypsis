@@ -137,4 +137,24 @@ class MobilTractorHeadSizeTest extends TestCase
         ])));
         $this->assertNull(Mobil::where('kode_no', 'TR002')->firstOrFail()->buntut_id);
     }
+
+    public function test_chasis_and_head_column_displays_both_sides_of_the_saved_pair(): void
+    {
+        $this->buntut->withoutEvents(fn () => $this->buntut->update(['nomor_polisi' => 'JKT1504522']));
+        $head = Mobil::withoutEvents(fn () => Mobil::create([
+            'kode_no' => 'HEAD001', 'jenis' => 'TRACTOR HEAD', 'nomor_polisi' => 'B9740UIW',
+            'buntut_id' => $this->buntut->id,
+        ]));
+        $head->load('buntut');
+        $buntut = $this->buntut->fresh()->load('tractorHeads');
+
+        $this->assertStringContainsString('JKT1504522', view('master-mobil._chasis-head', ['mobil' => $head])->render());
+        $this->assertStringContainsString('B9740UIW', view('master-mobil._chasis-head', ['mobil' => $buntut])->render());
+
+        Mobil::withoutEvents(fn () => $head->update(['buntut_id' => null]));
+        $buntut->load('tractorHeads');
+        $html = view('master-mobil._chasis-head', ['mobil' => $buntut])->render();
+        $this->assertStringNotContainsString('B9740UIW', $html);
+        $this->assertStringContainsString('>-</span>', $html);
+    }
 }

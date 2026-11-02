@@ -86,4 +86,10 @@ class Mobil extends Model
     {
         return $this->belongsTo(self::class, 'buntut_id');
     }
+
+    public function tractorHeads()
+    {
+        return $this->hasMany(self::class, 'buntut_id')
+            ->whereRaw('UPPER(TRIM(jenis)) = ?', ['TRACTOR HEAD']);
+    }
 }

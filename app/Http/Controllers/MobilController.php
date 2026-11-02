@@ -16,7 +16,7 @@ class MobilController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Mobil::with(['karyawan', 'buntut']);
+        $query = Mobil::with(['karyawan', 'buntut', 'tractorHeads']);
 
         // Filter berdasarkan lokasi mobil untuk user cabang BTM
         $currentUser = auth()->user();
