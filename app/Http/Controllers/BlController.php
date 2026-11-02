@@ -2496,7 +2496,6 @@ class BlController extends Controller
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $satuan = 'Colly';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $distinctNames = $group->pluck('nama_barang')
@@ -2513,6 +2512,8 @@ class BlController extends Controller
                 } else {
                     $namaBarang = $distinctNames->first() ?: 'Cargo';
                 }
+
+                $satuan = preg_match('/\bmobil\b/i', $namaBarang) ? 'Unit' : 'Colly';
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
@@ -2738,7 +2739,6 @@ class BlController extends Controller
             $type = $parts[0];
 
             if ($type === 'cargo') {
-                $satuan = 'Colly';
                 $totalKuantitas = $group->sum('kuantitas') ?: $group->count();
 
                 $distinctNames = $group->pluck('nama_barang')
@@ -2755,6 +2755,8 @@ class BlController extends Controller
                 } else {
                     $namaBarang = $distinctNames->first() ?: 'Cargo';
                 }
+
+                $satuan = preg_match('/\bmobil\b/i', $namaBarang) ? 'Unit' : 'Colly';
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
