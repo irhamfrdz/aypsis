@@ -24,7 +24,7 @@
     .approval-shipper-option + .approval-shipper-option { border-top: 1px solid #f1f5f9; }
     .approval-shipper-option:hover, .approval-shipper-option:focus { background: #eef2ff; outline: 2px solid #6366f1; outline-offset: -2px; }
     .approval-shipper-option-name { display: block; font-weight: 600; }
-    .approval-shipper-option-detail { display: block; margin-top: 2px; font-size: 12px; color: #64748b; }
+    .approval-shipper-option-detail { display: block; margin-top: 2px; font-size: 12px; color: #64748b; white-space: pre-line; overflow-wrap: anywhere; }
     .approval-shipper-field-preview { display: block; width: 100%; margin-top: 2px; padding: 2px 4px; text-align: left; white-space: pre-line; overflow-wrap: anywhere; border: 0; border-radius: 4px; background: transparent; color: #1f2937; cursor: text; }
     .approval-shipper-field-preview:not(:disabled):hover, .approval-shipper-field-preview:not(:disabled):focus-visible { outline: 2px solid #6366f1; outline-offset: 1px; }
     .approval-shipper-field-preview:disabled { cursor: default; }

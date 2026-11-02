@@ -417,12 +417,16 @@
                 name.className = 'approval-shipper-option-name';
                 name.textContent = option.text;
                 button.append(name);
-                if (option.consignee) {
+                [
+                    ['Consignee', 'consignee'],
+                    ['Notify Party', 'notify_party_consignee'],
+                    ['Delivery Address & Contact Person', 'delivery_address_contact_person'],
+                ].forEach(([label, field]) => {
                     const detail = document.createElement('span');
                     detail.className = 'approval-shipper-option-detail';
-                    detail.textContent = 'Consignee: ' + option.consignee;
+                    detail.textContent = label + ': ' + (String(option[field] ?? '').trim() || '-');
                     button.append(detail);
-                }
+                });
                 button.addEventListener('click', () => choose(option));
                 options.append(button);
             });
