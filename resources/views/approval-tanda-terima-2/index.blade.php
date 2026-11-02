@@ -7,7 +7,7 @@
 <style>
     #approval-shipper-dialog { width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
-    #approval-ttsj-dialog { width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
+    #approval-ttsj-dialog { width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-ttsj-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-combobox { position: relative; }
@@ -459,6 +459,7 @@
         <input type="hidden" name="_approval_ttsj_create" value="1">
         <input id="approval-ttsj-shipper-id" type="hidden" name="shipper_jb_id" value="{{ old('shipper_jb_id') }}">
         <div class="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
+            <h3 class="sm:col-span-2 text-base font-semibold text-indigo-800">1. Data Tanda Terima dan Shipper / Consignee</h3>
             <div>
                 <label for="approval-ttsj-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
                 <input id="approval-ttsj-number" name="no_tanda_terima" value="{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -474,14 +475,37 @@
                 <p id="approval-ttsj-shipper-message" class="mt-1 text-xs text-gray-500" aria-live="polite">Pilih pasangan shipper dan consignee dari hasil pencarian.</p>
                 @error('shipper_jb_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
-            <div>
-                <label for="approval-ttsj-sender" class="mb-1 block text-sm font-medium text-gray-700">Pengirim <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-sender" readonly placeholder="Terisi dari master" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700">
+            @php
+                $ttsjShipperGroups = [
+                    'Shipper' => ['shipper' => 'Shipper', 'alamat_shipper' => 'Address Shipper', 'npwp_shipper' => 'NPWP Shipper'],
+                    'Consignee' => ['consignee' => 'Consignee', 'alamat_consignee' => 'Address Consignee', 'npwp_consignee' => 'NPWP Consignee'],
+                    'Notify Party' => ['notify_party_consignee' => 'Notify Party', 'alamat_notify_party_consignee' => 'Address Notify Party', 'npwp_notify_party_consignee' => 'NPWP Notify Party'],
+                    'Informasi Lainnya' => ['delivery_address_contact_person' => 'Delivery Address & Contact Person', 'document_ppftz_03' => 'Dokumen PPFTZ-03', 'condition' => 'Condition', 'status' => 'Status'],
+                ];
+            @endphp
+            <div class="sm:col-span-2 grid gap-3 lg:grid-cols-2">
+                @foreach($ttsjShipperGroups as $groupTitle => $fields)
+                    <section class="rounded-xl border border-gray-200 bg-gray-50 p-4">
+                        <h4 class="mb-3 font-semibold text-gray-800">{{ $groupTitle }}</h4>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @foreach($fields as $field => $label)
+                                <div class="{{ in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']) ? 'sm:col-span-2' : '' }}">
+                                    <label for="approval-ttsj-field-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }}</label>
+                                    @if($field === 'status')
+                                        <select id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" disabled class="w-full rounded-lg border-gray-300 bg-white text-sm"><option value="1">Aktif</option><option value="0">Tidak aktif</option></select>
+                                    @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
+                                        <textarea id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" rows="2" disabled class="w-full rounded-lg border-gray-300 bg-white text-sm">{{ old($field) }}</textarea>
+                                    @else
+                                        <input id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" value="{{ old($field) }}" maxlength="255" {{ in_array($field, ['shipper', 'consignee']) ? 'required' : '' }} disabled class="w-full rounded-lg border-gray-300 bg-white text-sm">
+                                    @endif
+                                    @error($field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                            @endforeach
+                        </div>
+                    </section>
+                @endforeach
             </div>
-            <div>
-                <label for="approval-ttsj-receiver" class="mb-1 block text-sm font-medium text-gray-700">Penerima <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-receiver" readonly placeholder="Terisi dari master" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700">
-            </div>
+            <p class="sm:col-span-2 text-xs text-gray-500">Data dapat disesuaikan untuk tanda terima ini. Perubahan membuat salinan; data master asli tetap tersedia.</p>
             <div>
                 <label for="approval-ttsj-destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman <span class="text-red-600">*</span></label>
                 <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -491,20 +515,6 @@
                 <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
-                <label for="approval-ttsj-goods" class="mb-1 block text-sm font-medium text-gray-700">Nama barang <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-goods" name="nama_barang" value="{{ old('nama_barang') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-            </div>
-            <div class="grid grid-cols-2 gap-3">
-                <div>
-                    <label for="approval-ttsj-quantity" class="mb-1 block text-sm font-medium text-gray-700">Jumlah <span class="text-red-600">*</span></label>
-                    <input id="approval-ttsj-quantity" name="jumlah_barang" type="number" min="1" value="{{ old('jumlah_barang', 1) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-                <div>
-                    <label for="approval-ttsj-unit" class="mb-1 block text-sm font-medium text-gray-700">Satuan</label>
-                    <input id="approval-ttsj-unit" name="satuan_barang" value="{{ old('satuan_barang', 'unit') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                </div>
-            </div>
-            <div>
                 <label for="approval-ttsj-size" class="mb-1 block text-sm font-medium text-gray-700">Ukuran kontainer</label>
                 <input id="approval-ttsj-size" name="size_kontainer" value="{{ old('size_kontainer') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
@@ -512,11 +522,46 @@
                 <label for="approval-ttsj-seal" class="mb-1 block text-sm font-medium text-gray-700">Nomor seal</label>
                 <input id="approval-ttsj-seal" name="no_seal" value="{{ old('no_seal') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
-            <div class="sm:col-span-2">
-                <label for="approval-ttsj-note" class="mb-1 block text-sm font-medium text-gray-700">Keterangan barang</label>
-                <textarea id="approval-ttsj-note" name="keterangan_barang" rows="2" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('keterangan_barang') }}</textarea>
-            </div>
         </div>
+        <section class="border-t border-gray-200 px-5 py-5 sm:px-6">
+            <h3 class="mb-4 text-base font-semibold text-indigo-800">2. Detail Barang Manifest dan Perincian</h3>
+            <div class="grid gap-5 lg:grid-cols-2">
+                @foreach(['manifest_goods' => 'Detail Barang Manifest', 'goods' => 'Detail Barang Perincian'] as $prefix => $title)
+                    <fieldset class="rounded-xl border border-gray-200 p-4">
+                        <legend class="px-1 font-semibold text-gray-800">{{ $title }}</legend>
+                        <div class="grid gap-3 sm:grid-cols-2">
+                            @if($prefix === 'manifest_goods')
+                                <div class="sm:col-span-2">
+                                    <label for="approval-ttsj-hs-codes" class="mb-1 block text-xs font-medium text-gray-600">HS Code (satu per baris)</label>
+                                    <textarea id="approval-ttsj-hs-codes" name="manifest_goods[0][hs_codes]" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('manifest_goods.0.hs_codes') }}</textarea>
+                                </div>
+                            @endif
+                            @foreach(['nama_barang' => 'Nama Barang', 'jumlah' => 'Jumlah', 'satuan' => 'Satuan', 'ukuran' => 'Ukuran'] as $field => $label)
+                                <div class="{{ $field === 'nama_barang' ? 'sm:col-span-2' : '' }}">
+                                    <label for="approval-ttsj-{{ $prefix }}-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }} {{ $field === 'ukuran' ? '' : '*' }}</label>
+                                    <input id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" value="{{ old($prefix.'.0.'.$field, $field === 'jumlah' ? 1 : ($field === 'satuan' ? 'unit' : '')) }}" {{ $field === 'ukuran' ? '' : 'required' }} @if($field === 'jumlah') type="number" min="1" @endif class="w-full rounded-lg border-gray-300 text-sm">
+                                    @error($prefix.'.0.'.$field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                            @endforeach
+                            @if($prefix === 'manifest_goods')
+                                @foreach(['tonase' => 'Tonase', 'meter_kubik' => 'Volume (m³)'] as $field => $label)
+                                    <div>
+                                        <label for="approval-ttsj-manifest-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }}</label>
+                                        <input id="approval-ttsj-manifest-{{ $field }}" name="manifest_goods[0][{{ $field }}]" value="{{ old('manifest_goods.0.'.$field) }}" inputmode="decimal" placeholder="Contoh: 17.665,78" class="w-full rounded-lg border-gray-300 text-sm">
+                                        @error('manifest_goods.0.'.$field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="sm:col-span-2">
+                                    <label for="approval-ttsj-note" class="mb-1 block text-xs font-medium text-gray-600">Keterangan Barang</label>
+                                    <textarea id="approval-ttsj-note" name="keterangan_barang" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan_barang') }}</textarea>
+                                </div>
+                            @endif
+                        </div>
+                    </fieldset>
+                @endforeach
+            </div>
+        </section>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" data-ttsj-close class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>
             <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan Tanda Terima</button>
@@ -628,21 +673,35 @@ document.addEventListener('DOMContentLoaded', () => {
     const results = document.getElementById('approval-ttsj-shipper-results');
     const message = document.getElementById('approval-ttsj-shipper-message');
     const selectedId = document.getElementById('approval-ttsj-shipper-id');
-    const sender = document.getElementById('approval-ttsj-sender');
-    const receiver = document.getElementById('approval-ttsj-receiver');
+    const shipperFields = form.querySelectorAll('[data-ttsj-shipper-field]');
+    ['nama_barang', 'jumlah', 'satuan', 'ukuran'].forEach(field => {
+        const manifestField = form.elements.namedItem(`manifest_goods[0][${field}]`);
+        const perincianField = form.elements.namedItem(`goods[0][${field}]`);
+        if (!manifestField || !perincianField) return;
+        perincianField.addEventListener('input', () => { perincianField.dataset.edited = 'true'; });
+        manifestField.addEventListener('input', () => {
+            if (perincianField.dataset.edited !== 'true') perincianField.value = manifestField.value;
+        });
+    });
     let timer;
     let controller;
 
-    function selectShipper(item) {
+    function selectShipper(item, preserveEdits = false) {
         selectedId.value = item.real_id;
-        sender.value = item.shipper || '';
-        receiver.value = item.consignee || '';
+        shipperFields.forEach(field => {
+            field.disabled = false;
+            if (!preserveEdits) {
+                field.value = field.name === 'status'
+                    ? (item.status === 0 || item.status === '0' ? '0' : '1')
+                    : (item[field.dataset.ttsjShipperField] ?? '');
+            }
+        });
         search.value = item.display_text;
-        message.textContent = 'Data master dipilih.';
+        message.textContent = 'Data master dipilih. Periksa dan sesuaikan rincian di bawah.';
         results.hidden = true;
     }
 
-    async function findShippers(id = null) {
+    async function findShippers(id = null, preserveEdits = false) {
         controller?.abort();
         controller = new AbortController();
         const url = new URL(form.dataset.shipperSearchUrl, location.href);
@@ -657,7 +716,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const items = await response.json();
             if (id) {
                 const item = items.find(item => String(item.real_id) === String(id));
-                if (item && item.shipper && item.consignee) selectShipper(item);
+                if (item && item.shipper && item.consignee) selectShipper(item, preserveEdits);
                 else {
                     selectedId.value = '';
                     message.textContent = 'Data master perlu memiliki shipper dan consignee.';
@@ -680,13 +739,15 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    if (selectedId.value) findShippers(selectedId.value);
+    if (selectedId.value) findShippers(selectedId.value, true);
     search.addEventListener('input', () => {
         clearTimeout(timer);
         controller?.abort();
         selectedId.value = '';
-        sender.value = '';
-        receiver.value = '';
+        shipperFields.forEach(field => {
+            field.value = '';
+            field.disabled = true;
+        });
         results.hidden = true;
         timer = setTimeout(() => findShippers(), 250);
     });

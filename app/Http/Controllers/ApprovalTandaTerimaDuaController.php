@@ -225,17 +225,29 @@ class ApprovalTandaTerimaDuaController extends Controller
                 },
             ],
             'tujuan_pengiriman' => ['required', 'string', 'max:255'],
-            'nama_barang' => ['required', 'string', 'max:255'],
-            'jumlah_barang' => ['required', 'integer', 'min:1'],
-            'satuan_barang' => ['nullable', 'string', 'max:50'],
+            'manifest_goods' => ['required', 'array', 'size:1'],
+            'manifest_goods.0.nama_barang' => ['required', 'string', 'max:255'],
+            'manifest_goods.0.hs_codes' => ['nullable', 'string', 'max:4000'],
+            'manifest_goods.0.jumlah' => ['required', 'integer', 'min:1'],
+            'manifest_goods.0.satuan' => ['required', 'string', 'max:100'],
+            'manifest_goods.0.ukuran' => ['nullable', 'string', 'max:255'],
+            'manifest_goods.0.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
+            'manifest_goods.0.meter_kubik' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
+            'goods' => ['required', 'array', 'size:1'],
+            'goods.0.nama_barang' => ['required', 'string', 'max:255'],
+            'goods.0.jumlah' => ['required', 'integer', 'min:1'],
+            'goods.0.satuan' => ['required', 'string', 'max:100'],
+            'goods.0.ukuran' => ['nullable', 'string', 'max:255'],
             'no_kontainer' => ['nullable', 'string', 'max:255'],
             'size_kontainer' => ['nullable', 'string', 'max:50'],
             'no_seal' => ['nullable', 'string', 'max:255'],
-            'keterangan_barang' => ['nullable', 'string'],
+            'keterangan_barang' => ['nullable', 'string', 'max:2000'],
         ]);
 
-        $shipper = ShipperConsignee::findOrFail($data['shipper_jb_id']);
-        if (! filled($shipper->shipper) || ! filled($shipper->consignee)) {
+        [$shipper, $shipperFields] = $this->validateShipperSelection($request);
+        $shipperName = array_key_exists('shipper', $shipperFields) ? $shipperFields['shipper'] : $shipper->shipper;
+        $consigneeName = array_key_exists('consignee', $shipperFields) ? $shipperFields['consignee'] : $shipper->consignee;
+        if (! filled($shipperName) || ! filled($consigneeName)) {
             throw ValidationException::withMessages([
                 'shipper_jb_id' => 'Pilih data master yang memiliki shipper dan consignee.',
             ]);
@@ -252,21 +264,47 @@ class ApprovalTandaTerimaDuaController extends Controller
             ]);
         }
 
-        TandaTerimaTanpaSuratJalan::create([
-            ...$data,
-            'pengirim' => $shipper->shipper,
-            'penerima' => $shipper->consignee,
-            'alamat_pengirim' => $shipper->alamat_shipper,
-            'alamat_penerima' => $shipper->alamat_consignee,
-            'notify_party' => $shipper->notify_party_consignee,
-            'alamat_notify_party' => $shipper->alamat_notify_party_consignee,
-            'no_tanda_terima' => $number,
-            'nomor_tanda_terima' => $number,
-            'jenis_barang' => $data['nama_barang'],
-            'satuan_barang' => filled($data['satuan_barang'] ?? null) ? $data['satuan_barang'] : 'unit',
-            'status' => 'draft',
-            'created_by' => $request->user()?->name,
-        ]);
+        $manifest = $data['manifest_goods'][0];
+        $manifest['hs_codes'] = collect(preg_split('/\R/u', $manifest['hs_codes'] ?? ''))
+            ->map(fn ($code) => trim($code))->filter()->values()->all();
+        $manifest['hs_code'] = $manifest['hs_codes'][0] ?? null;
+        foreach (['tonase', 'meter_kubik'] as $field) {
+            if (filled($manifest[$field] ?? null)) {
+                $manifest[$field] = $this->formatManifestNumber($manifest[$field]);
+            }
+        }
+        $perincian = $data['goods'][0];
+        unset($data['manifest_goods'], $data['goods']);
+
+        DB::transaction(function () use ($data, $number, $shipper, $shipperFields, $manifest, $perincian, $request) {
+            $shipper = $this->saveShipperEdits($shipper, $shipperFields);
+            $receipt = TandaTerimaTanpaSuratJalan::create([
+                ...$data,
+                'shipper_jb_id' => $shipper->id,
+                'pengirim' => $shipper->shipper,
+                'penerima' => $shipper->consignee,
+                'alamat_pengirim' => $shipper->alamat_shipper,
+                'alamat_penerima' => $shipper->alamat_consignee,
+                'notify_party' => $shipper->notify_party_consignee,
+                'alamat_notify_party' => $shipper->alamat_notify_party_consignee,
+                'no_tanda_terima' => $number,
+                'nomor_tanda_terima' => $number,
+                'nama_barang' => $perincian['nama_barang'],
+                'jenis_barang' => $perincian['nama_barang'],
+                'jumlah_barang' => $perincian['jumlah'],
+                'satuan_barang' => $perincian['satuan'],
+                'status' => 'draft',
+                'created_by' => $request->user()?->name,
+            ]);
+            ApprovalTandaTerimaDuaGoods::create([
+                'source_type' => 'ttsj',
+                'source_id' => $receipt->id,
+                'manifest_goods' => [$manifest],
+                'goods' => [$perincian],
+                'keterangan_barang' => $data['keterangan_barang'] ?? null,
+                'updated_by' => $request->user()?->id,
+            ]);
+        });
 
         return redirect()->route('approval-tanda-terima-2.index', [
             'type' => 'ttsj',

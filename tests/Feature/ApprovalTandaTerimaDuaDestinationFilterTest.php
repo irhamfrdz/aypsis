@@ -100,6 +100,10 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->string('source_type');
             $table->unsignedBigInteger('source_id');
             $table->json('goods');
+            $table->json('manifest_goods')->nullable();
+            $table->text('keterangan_barang')->nullable();
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
         });
         Schema::create('approval_tanda_terima_2_fcl_shippers', function (Blueprint $table) {
             $table->id();
@@ -145,8 +149,13 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             'pengirim' => 'Nilai manipulasi',
             'penerima' => 'Nilai manipulasi',
             'tujuan_pengiriman' => 'Batam',
-            'nama_barang' => 'Mesin',
-            'jumlah_barang' => 2,
+            'manifest_goods' => [[
+                'nama_barang' => 'Mesin Manifest', 'jumlah' => 2, 'satuan' => 'unit',
+                'hs_codes' => "1234\n5678", 'tonase' => '17.665,78',
+            ]],
+            'goods' => [[
+                'nama_barang' => 'Mesin', 'jumlah' => 2, 'satuan' => 'unit',
+            ]],
         ]);
 
         $response = $controller->storeTtsj($request);
@@ -163,6 +172,11 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             'alamat_pengirim' => 'Alamat Pengirim',
             'alamat_penerima' => 'Alamat Penerima',
         ]);
+        $savedGoods = \App\Models\ApprovalTandaTerimaDuaGoods::where('source_type', 'ttsj')->firstOrFail();
+        $this->assertSame('Mesin Manifest', $savedGoods->manifest_goods[0]['nama_barang']);
+        $this->assertSame(['1234', '5678'], $savedGoods->manifest_goods[0]['hs_codes']);
+        $this->assertSame('17.665,78', $savedGoods->manifest_goods[0]['tonase']);
+        $this->assertSame('Mesin', $savedGoods->goods[0]['nama_barang']);
 
         $items = $controller->index(Request::create('/', 'GET', [
             'type' => 'ttsj', 'destination' => 'batam', 'search' => 'TT-NEW-001',
@@ -200,8 +214,8 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             'tanggal_tanda_terima' => '2026-11-02',
             'shipper_jb_id' => $shipperId,
             'tujuan_pengiriman' => 'Batam',
-            'nama_barang' => 'Mesin',
-            'jumlah_barang' => 2,
+            'manifest_goods' => [['nama_barang' => 'Mesin', 'jumlah' => 2, 'satuan' => 'unit']],
+            'goods' => [['nama_barang' => 'Mesin', 'jumlah' => 2, 'satuan' => 'unit']],
         ]);
 
         $response = (new ApprovalTandaTerimaDuaController)->storeTtsj($request);
