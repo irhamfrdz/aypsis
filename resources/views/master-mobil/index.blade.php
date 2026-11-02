@@ -369,7 +369,12 @@
                             </div>
                         </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
-                        <td class="py-2 px-3 text-sm">{{ $mobil->jenis ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">
+                            {{ $mobil->jenis ?? '-' }}
+                            @if(strtoupper(trim((string) $mobil->jenis)) === 'TRACTOR HEAD' && $mobil->ukuran_tractor_head)
+                                <span class="block text-xs text-gray-500">Mobil {{ ucfirst($mobil->ukuran_tractor_head) }}</span>
+                            @endif
+                        </td>
                         <td class="py-2 px-3 text-center">
                             @if($mobil->roda)
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-800 border border-slate-300">

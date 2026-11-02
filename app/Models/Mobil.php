@@ -30,6 +30,7 @@ class Mobil extends Model
         'lokasi',
         'merek',
         'jenis',
+        'ukuran_tractor_head',
         'roda',
         'tahun_pembuatan',
         'bpkb',

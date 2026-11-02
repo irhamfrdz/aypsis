@@ -114,6 +114,8 @@
                     @enderror
                 </div>
 
+                @include('master-mobil._ukuran-tractor-head')
+
                 <!-- Roda -->
                 <div>
                     <label for="roda" class="block text-sm font-medium text-gray-700">Roda (Jumlah Roda)</label>

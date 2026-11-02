@@ -6,6 +6,7 @@ use App\Models\Mobil;
 use App\Services\MobilAssetSyncService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class MobilController extends Controller
@@ -136,6 +137,8 @@ class MobilController extends Controller
             $request->merge(['kode_no' => $this->generateKodeNomor()]);
         }
 
+        $isTractorHead = strtoupper(trim((string) $request->input('jenis'))) === 'TRACTOR HEAD';
+
         $validated = $request->validate([
             'kode_no' => 'nullable|string|max:50|unique:mobils,kode_no',
             'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi',
@@ -143,6 +146,7 @@ class MobilController extends Controller
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
+            'ukuran_tractor_head' => [Rule::requiredIf($isTractorHead), 'nullable', Rule::in(['panjang', 'pendek'])],
             'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
@@ -168,6 +172,7 @@ class MobilController extends Controller
         ]);
 
         $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
+        $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
         DB::transaction(function () use ($validated, $request) {
             $mobil = Mobil::create($validated);
             app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
@@ -282,6 +287,8 @@ class MobilController extends Controller
             $request->merge(['kode_no' => $this->generateKodeNomor()]);
         }
 
+        $isTractorHead = strtoupper(trim((string) $request->input('jenis'))) === 'TRACTOR HEAD';
+
         $validated = $request->validate([
             'kode_no' => 'required|string|max:50|unique:mobils,kode_no,'.$id,
             'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,'.$id,
@@ -289,6 +296,7 @@ class MobilController extends Controller
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
+            'ukuran_tractor_head' => [Rule::requiredIf($isTractorHead), 'nullable', Rule::in(['panjang', 'pendek'])],
             'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
@@ -314,6 +322,7 @@ class MobilController extends Controller
         ]);
 
         $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
+        $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
 
         DB::transaction(function () use ($mobil, $validated, $request) {
             $mobil = Mobil::whereKey($mobil->id)->lockForUpdate()->firstOrFail();

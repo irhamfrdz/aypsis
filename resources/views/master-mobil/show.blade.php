@@ -176,6 +176,12 @@
                         <label class="block text-sm font-medium text-gray-600 mb-1">Jenis</label>
                         <p class="text-sm bg-white p-3 rounded border">{{ $mobil->jenis ?? '-' }}</p>
                     </div>
+                    @if(strtoupper(trim((string) $mobil->jenis)) === 'TRACTOR HEAD')
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Ukuran Tractor Head</label>
+                            <p class="text-sm bg-white p-3 rounded border">{{ $mobil->ukuran_tractor_head ? 'Mobil '.ucfirst($mobil->ukuran_tractor_head) : '-' }}</p>
+                        </div>
+                    @endif
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Roda</label>
                         <p class="text-sm bg-white p-3 rounded border">
