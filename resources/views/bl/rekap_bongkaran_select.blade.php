@@ -129,9 +129,9 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: `{{ route('bl.get-voyage-by-kapal', [], false) }}`,
+            // Use the same voyage source as the Manifest menu and the recap report.
+            url: `{{ url('/api/manifests/voyages') }}/${encodeURIComponent(namaKapal)}`,
             type: 'GET',
-            data: { nama_kapal: namaKapal },
             dataType: 'json',
             success: function(data) {
                 voyageSelect.empty();
