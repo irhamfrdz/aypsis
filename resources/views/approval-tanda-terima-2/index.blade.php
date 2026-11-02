@@ -473,19 +473,31 @@
                     ],
                 ];
             @endphp
-            <div class="space-y-2" aria-label="Data dari master Shipper / Consignee">
+            <div class="space-y-2" aria-label="Data Shipper / Consignee yang akan disimpan">
                 @foreach($shipperPreviewGroups as $groupTitle => $fields)
                     <section class="rounded-xl border border-gray-200 bg-gray-50 p-3">
                         <h3 class="mb-2 text-sm font-semibold text-gray-800">{{ $groupTitle }}</h3>
-                        <dl class="grid gap-2 text-sm sm:grid-cols-3">
+                        <div class="grid gap-3 text-sm sm:grid-cols-3">
                             @foreach($fields as $field => $label)
-                                <div><dt class="text-xs font-medium text-gray-500">{{ $label }}</dt><dd data-shipper-field="{{ $field }}" class="mt-0.5 whitespace-pre-line break-words text-gray-800">-</dd></div>
+                                <div>
+                                    <label for="approval-field-{{ $field }}" class="block text-xs font-medium text-gray-600">{{ $label }}</label>
+                                    @if($field === 'status')
+                                        <select id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled>
+                                            <option value="1">Aktif</option>
+                                            <option value="0">Tidak aktif</option>
+                                        </select>
+                                    @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
+                                        <textarea id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" rows="2" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled></textarea>
+                                    @else
+                                        <input id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" type="text" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" {{ $field === 'shipper' ? 'required' : '' }} disabled>
+                                    @endif
+                                </div>
                             @endforeach
-                        </dl>
+                        </div>
                     </section>
                 @endforeach
             </div>
-            <p class="text-xs text-gray-500">Periksa data master sebelum menyimpan. Data ini akan mengisi manifest voyage JB yang terkait.</p>
+            <p class="text-xs text-gray-500">Anda dapat mengubah data setelah memilih shipper. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" class="approval-shipper-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>

@@ -26,6 +26,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
             $table->text('alamat_consignee')->nullable();
             $table->string('notify_party_consignee')->nullable();
             $table->text('alamat_notify_party_consignee')->nullable();
+            $table->timestamps();
         });
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
@@ -202,5 +203,35 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $linkedManifestId)->value('shipper_jb_id'));
         $this->assertNull(DB::table('manifests')->where('id', $otherManifestId)->value('shipper_jb_id'));
         $this->assertEquals($shipperId, DB::table('tanda_terima_tanpa_surat_jalan')->where('id', $ttsjId)->value('shipper_jb_id'));
+    }
+
+    public function test_editing_selected_shipper_creates_a_separate_record_for_the_receipt_and_jb_manifest(): void
+    {
+        $shipperId = DB::table('shipper_consignees')->insertGetId([
+            'shipper' => 'Pengirim Master', 'consignee' => 'Penerima Master',
+        ]);
+        $receiptId = DB::table('tanda_terimas_lcl')->insertGetId([
+            'nomor_tanda_terima' => 'TT-EDIT-1',
+        ]);
+        $manifestId = DB::table('manifests')->insertGetId([
+            'no_voyage' => 'SA16JB26', 'nomor_tanda_terima' => 'TT-EDIT-1',
+        ]);
+
+        (new ApprovalTandaTerimaDuaController)->update(
+            Request::create('/approval-tanda-terima-2/lcl/'.$receiptId, 'PUT', [
+                'shipper_jb_id' => $shipperId,
+                'shipper' => 'Pengirim Revisi',
+                'consignee' => 'Penerima Revisi',
+            ]),
+            'lcl', $receiptId
+        );
+
+        $selectedId = DB::table('tanda_terimas_lcl')->where('id', $receiptId)->value('shipper_jb_id');
+        $this->assertNotEquals($shipperId, $selectedId);
+        $this->assertEquals($selectedId, DB::table('manifests')->where('id', $manifestId)->value('shipper_jb_id'));
+        $this->assertSame('Pengirim Master', DB::table('shipper_consignees')->where('id', $shipperId)->value('shipper'));
+        $this->assertSame('Penerima Master', DB::table('shipper_consignees')->where('id', $shipperId)->value('consignee'));
+        $this->assertSame('Pengirim Revisi', DB::table('shipper_consignees')->where('id', $selectedId)->value('shipper'));
+        $this->assertSame('Penerima Revisi', DB::table('shipper_consignees')->where('id', $selectedId)->value('consignee'));
     }
 }

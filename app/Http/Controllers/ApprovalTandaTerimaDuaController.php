@@ -350,14 +350,41 @@ class ApprovalTandaTerimaDuaController extends Controller
         $item = self::SOURCES[$sourceType]::findOrFail($id);
         $validated = $request->validate([
             'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
+            'shipper' => 'sometimes|required|string|max:255',
+            'alamat_shipper' => 'nullable|string|max:10000',
+            'npwp_shipper' => 'nullable|string|max:255',
+            'consignee' => 'nullable|string|max:255',
+            'alamat_consignee' => 'nullable|string|max:10000',
+            'npwp_consignee' => 'nullable|string|max:255',
+            'notify_party_consignee' => 'nullable|string|max:255',
+            'alamat_notify_party_consignee' => 'nullable|string|max:10000',
+            'npwp_notify_party_consignee' => 'nullable|string|max:255',
+            'delivery_address_contact_person' => 'nullable|string|max:10000',
+            'document_ppftz_03' => 'nullable|string|max:255',
+            'condition' => 'nullable|string|max:255',
+            'status' => 'sometimes|required|boolean',
         ]);
         $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
-        abort_unless(filled($shipper->shipper), 422, 'Nama shipper belum diisi pada master.');
+        $fields = collect($validated)->except('shipper_jb_id')->all();
+        foreach ($fields as $field => $value) {
+            if ($field !== 'status' && $value === '') {
+                $fields[$field] = null;
+            }
+        }
+        abort_unless(filled($fields['shipper'] ?? $shipper->shipper), 422, 'Nama shipper harus diisi.');
         if ($sourceType === 'fcl') {
             abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
         }
 
-        DB::transaction(function () use ($item, $sourceType, $shipper) {
+        DB::transaction(function () use ($item, $sourceType, $shipper, $fields) {
+            $hasChanges = collect($fields)->contains(
+                fn ($value, $field) => (string) ($shipper->{$field} ?? '') !== (string) ($value ?? '')
+            );
+            if ($hasChanges) {
+                $shipper = $shipper->replicate();
+                $shipper->fill($fields);
+                $shipper->save();
+            }
             $item->update(['shipper_jb_id' => $shipper->id]);
 
             $number = $item->{$this->numberColumn($sourceType)};

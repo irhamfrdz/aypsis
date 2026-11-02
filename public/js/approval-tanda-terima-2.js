@@ -328,13 +328,8 @@
         previewFields.forEach(field => {
             const name = field.dataset.shipperField;
             const value = data?.[name];
-            field.textContent = name === 'status' && value !== null && value !== undefined
-                ? (String(value) === '1' || value === true ? 'Aktif' : 'Tidak aktif')
-                : (value === null || value === undefined || value === '' ? '-' : String(value));
-            field.classList.toggle('approval-shipper-name-highlight',
-                (name === 'shipper' || name === 'consignee') && value !== null && value !== undefined && String(value).trim() !== '');
-            field.classList.toggle('approval-shipper-document-highlight',
-                name === 'document_ppftz_03' && value !== null && value !== undefined && String(value).trim() !== '');
+            field.value = name === 'status' ? (String(value) === '0' || value === false ? '0' : '1') : (value ?? '');
+            field.disabled = !data;
         });
     }
 
@@ -348,7 +343,7 @@
         showPreview(option);
         save.disabled = false;
         hideOptions();
-        save.focus();
+        dialog.querySelector('[data-shipper-field="shipper"]')?.focus();
     }
 
     async function fetchShippers() {
@@ -429,9 +424,11 @@
                 fetchShippers();
             } else {
                 const previousName = search.value;
+                selectedId.value = current.real_id;
                 search.value = current.text;
-                selection.textContent = 'Shipper saat ini: ' + current.text + '. Pilih dari hasil pencarian untuk mengubahnya.';
+                selection.textContent = 'Shipper saat ini: ' + current.text + '. Anda dapat mengedit data di bawah atau memilih shipper lain.';
                 showPreview(current);
+                save.disabled = false;
                 if (previousName !== current.text) fetchShippers();
             }
         } catch (error) {
@@ -450,6 +447,7 @@
             save.textContent = button.dataset.additional === 'true' ? 'Tambah Shipper' : 'Simpan Shipper';
             selectedId.value = '';
             save.disabled = true;
+            save.textContent = 'Simpan Shipper';
             search.value = button.dataset.shipper || '';
             document.getElementById('approval-shipper-context').textContent =
                 'Tanda terima: ' + (button.dataset.number || '-') + ' · Pengirim: ' + (button.dataset.sender || '-');
@@ -473,7 +471,7 @@
         save.disabled = true;
         selection.textContent = 'Pilih shipper dari hasil pencarian.';
         selection.className = 'mt-2 text-xs text-gray-500';
-        showPreview({});
+        showPreview(null);
         hideOptions();
         timer = setTimeout(fetchShippers, 250);
     });
