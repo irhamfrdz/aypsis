@@ -7,6 +7,8 @@
 <style>
     #approval-shipper-dialog { width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
+    #approval-ttsj-dialog { width: min(720px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
+    #approval-ttsj-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-combobox { position: relative; }
     #approval-shipper-search { display: block; width: 100%; min-height: 44px; padding: 10px 42px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgb(15 23 42 / 5%); }
@@ -162,6 +164,9 @@
             <h2 class="font-semibold text-gray-900">Daftar Tanda Terima</h2>
             <div class="flex flex-wrap items-center gap-3">
                 @can('approval-tanda-terima-2-approve')
+                    @if($type === 'ttsj')
+                        <button id="approval-ttsj-open" type="button" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"><i class="fas fa-plus" aria-hidden="true"></i>Tambah Tanda Terima</button>
+                    @endif
                     <label class="inline-flex items-center gap-2 text-xs font-medium text-gray-700"><input id="approval-select-all" type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih semua tanda terima di halaman ini">Pilih halaman ini</label>
                     <form id="approval-bulk-export-form" method="POST" action="{{ route('approval-tanda-terima-2.export-bulk', ['sourceType' => $type]) }}" class="approval-export-form">
                         @csrf
@@ -425,6 +430,77 @@
 </div>
 
 @can('approval-tanda-terima-2-approve')
+@if($type === 'ttsj')
+<dialog id="approval-ttsj-dialog" aria-labelledby="approval-ttsj-title" @if(old('_approval_ttsj_create')) data-reopen="true" @endif>
+    <div class="flex items-start justify-between gap-3 border-b border-gray-200 px-5 py-4 sm:px-6">
+        <div>
+            <h2 id="approval-ttsj-title" class="text-lg font-semibold text-gray-900">Tambah Tanda Terima Tanpa Surat Jalan</h2>
+            <p class="mt-1 text-sm text-gray-500">Isi data tanda terima yang belum ada di daftar approval.</p>
+        </div>
+        <button type="button" data-ttsj-close class="rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
+    </div>
+    <form method="POST" action="{{ route('approval-tanda-terima-2.ttsj.store') }}">
+        @csrf
+        <input type="hidden" name="_approval_ttsj_create" value="1">
+        <div class="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
+            <div>
+                <label for="approval-ttsj-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-number" name="no_tanda_terima" value="{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-date" class="mb-1 block text-sm font-medium text-gray-700">Tanggal tanda terima <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-date" name="tanggal_tanda_terima" type="date" value="{{ old('tanggal_tanda_terima', now()->toDateString()) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-sender" class="mb-1 block text-sm font-medium text-gray-700">Pengirim <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-sender" name="pengirim" value="{{ old('pengirim') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-receiver" class="mb-1 block text-sm font-medium text-gray-700">Penerima <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-receiver" name="penerima" value="{{ old('penerima') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-container" class="mb-1 block text-sm font-medium text-gray-700">Nomor kontainer</label>
+                <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-goods" class="mb-1 block text-sm font-medium text-gray-700">Nama barang <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-goods" name="nama_barang" value="{{ old('nama_barang') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label for="approval-ttsj-quantity" class="mb-1 block text-sm font-medium text-gray-700">Jumlah <span class="text-red-600">*</span></label>
+                    <input id="approval-ttsj-quantity" name="jumlah_barang" type="number" min="1" value="{{ old('jumlah_barang', 1) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+                <div>
+                    <label for="approval-ttsj-unit" class="mb-1 block text-sm font-medium text-gray-700">Satuan</label>
+                    <input id="approval-ttsj-unit" name="satuan_barang" value="{{ old('satuan_barang', 'unit') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
+            </div>
+            <div>
+                <label for="approval-ttsj-size" class="mb-1 block text-sm font-medium text-gray-700">Ukuran kontainer</label>
+                <input id="approval-ttsj-size" name="size_kontainer" value="{{ old('size_kontainer') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div>
+                <label for="approval-ttsj-seal" class="mb-1 block text-sm font-medium text-gray-700">Nomor seal</label>
+                <input id="approval-ttsj-seal" name="no_seal" value="{{ old('no_seal') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
+            <div class="sm:col-span-2">
+                <label for="approval-ttsj-note" class="mb-1 block text-sm font-medium text-gray-700">Keterangan barang</label>
+                <textarea id="approval-ttsj-note" name="keterangan_barang" rows="2" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('keterangan_barang') }}</textarea>
+            </div>
+        </div>
+        <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
+            <button type="button" data-ttsj-close class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>
+            <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Simpan Tanda Terima</button>
+        </div>
+    </form>
+</dialog>
+@endif
 <dialog id="approval-shipper-dialog" aria-labelledby="approval-shipper-title" data-search-url="{{ route('approval-tanda-terima-2.shippers') }}">
     <div class="border-b border-gray-200 px-5 py-4 sm:px-6">
         <div class="flex items-start justify-between gap-3">
@@ -515,4 +591,14 @@
 
 @push('scripts')
 <script src="{{ asset('js/approval-tanda-terima-2.js') }}?v={{ substr(hash_file('sha256', public_path('js/approval-tanda-terima-2.js')), 0, 12) }}" defer></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const dialog = document.getElementById('approval-ttsj-dialog');
+    if (!dialog) return;
+    const openButton = document.getElementById('approval-ttsj-open');
+    openButton?.addEventListener('click', () => dialog.showModal());
+    dialog.querySelectorAll('[data-ttsj-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
+    if (dialog.dataset.reopen === 'true') dialog.showModal();
+});
+</script>
 @endpush

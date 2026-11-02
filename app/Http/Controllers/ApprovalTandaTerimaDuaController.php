@@ -204,6 +204,59 @@ class ApprovalTandaTerimaDuaController extends Controller
         ]);
     }
 
+    public function storeTtsj(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'no_tanda_terima' => ['required', 'string', 'max:255'],
+            'tanggal_tanda_terima' => [
+                'required',
+                'date',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    if (is_string($value) && str_starts_with($value, '2025-')) {
+                        $fail('Tanda terima tahun 2025 tidak ditampilkan pada halaman approval.');
+                    }
+                },
+            ],
+            'pengirim' => ['required', 'string', 'max:255'],
+            'penerima' => ['required', 'string', 'max:255'],
+            'tujuan_pengiriman' => ['required', 'string', 'max:255'],
+            'nama_barang' => ['required', 'string', 'max:255'],
+            'jumlah_barang' => ['required', 'integer', 'min:1'],
+            'satuan_barang' => ['nullable', 'string', 'max:50'],
+            'no_kontainer' => ['nullable', 'string', 'max:255'],
+            'size_kontainer' => ['nullable', 'string', 'max:50'],
+            'no_seal' => ['nullable', 'string', 'max:255'],
+            'keterangan_barang' => ['nullable', 'string'],
+        ]);
+
+        $number = trim($data['no_tanda_terima']);
+        $alreadyExists = TandaTerimaTanpaSuratJalan::query()
+            ->where('no_tanda_terima', $number)
+            ->orWhere('nomor_tanda_terima', $number)
+            ->exists();
+        if ($alreadyExists || Manifest::query()->where('nomor_tanda_terima', $number)->exists()) {
+            return back()->withInput()->withErrors([
+                'no_tanda_terima' => 'Nomor tanda terima sudah terdaftar. Cari nomor tersebut sebelum menambah data baru.',
+            ]);
+        }
+
+        TandaTerimaTanpaSuratJalan::create([
+            ...$data,
+            'no_tanda_terima' => $number,
+            'nomor_tanda_terima' => $number,
+            'jenis_barang' => $data['nama_barang'],
+            'satuan_barang' => filled($data['satuan_barang'] ?? null) ? $data['satuan_barang'] : 'unit',
+            'status' => 'draft',
+            'created_by' => $request->user()?->name,
+        ]);
+
+        return redirect()->route('approval-tanda-terima-2.index', [
+            'type' => 'ttsj',
+            'destination' => '',
+            'search' => $number,
+        ])->with('success', 'Tanda terima tanpa surat jalan berhasil ditambahkan.');
+    }
+
     public function export(string $sourceType, int $id, ApprovalTandaTerimaDuaExcelService $excel): BinaryFileResponse
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);

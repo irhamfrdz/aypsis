@@ -35,12 +35,21 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->string('no_tanda_terima')->nullable();
             $table->string('nomor_tanda_terima')->nullable();
             $table->string('pengirim')->nullable();
+            $table->string('penerima')->nullable();
             $table->string('no_kontainer')->nullable();
+            $table->string('size_kontainer')->nullable();
+            $table->string('no_seal')->nullable();
             $table->string('nama_barang')->nullable();
             $table->string('jenis_barang')->nullable();
+            $table->integer('jumlah_barang')->nullable();
+            $table->string('satuan_barang')->nullable();
+            $table->text('keterangan_barang')->nullable();
             $table->date('tanggal_tanda_terima')->nullable();
             $table->string('tujuan_pengiriman')->nullable();
+            $table->string('status')->nullable();
+            $table->string('created_by')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
+            $table->timestamps();
         });
         Schema::create('master_tujuan_kirim', function (Blueprint $table) {
             $table->id();
@@ -104,6 +113,57 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->unsignedBigInteger('prospek_id')->nullable();
             $table->string('nomor_tanda_terima')->nullable();
         });
+    }
+
+    public function test_approval_can_add_missing_ttsj_and_find_it_in_the_list(): void
+    {
+        $controller = new ApprovalTandaTerimaDuaController;
+        $request = Request::create('/approval-tanda-terima-2/ttsj', 'POST', [
+            'no_tanda_terima' => 'TT-NEW-001',
+            'tanggal_tanda_terima' => '2026-11-02',
+            'pengirim' => 'PT Pengirim',
+            'penerima' => 'PT Penerima',
+            'tujuan_pengiriman' => 'Batam',
+            'nama_barang' => 'Mesin',
+            'jumlah_barang' => 2,
+        ]);
+
+        $response = $controller->storeTtsj($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertDatabaseHas('tanda_terima_tanpa_surat_jalan', [
+            'no_tanda_terima' => 'TT-NEW-001',
+            'nomor_tanda_terima' => 'TT-NEW-001',
+            'jenis_barang' => 'Mesin',
+            'status' => 'draft',
+        ]);
+
+        $items = $controller->index(Request::create('/', 'GET', [
+            'type' => 'ttsj', 'destination' => 'batam', 'search' => 'TT-NEW-001',
+        ]))->getData()['items'];
+        $this->assertSame(1, $items->total());
+        $this->assertSame('TT-NEW-001', $items->first()->no_tanda_terima);
+    }
+
+    public function test_approval_rejects_duplicate_ttsj_number(): void
+    {
+        DB::table('tanda_terima_tanpa_surat_jalan')->insert([
+            'nomor_tanda_terima' => 'TT-EXISTING',
+        ]);
+        $request = Request::create('/approval-tanda-terima-2/ttsj', 'POST', [
+            'no_tanda_terima' => 'TT-EXISTING',
+            'tanggal_tanda_terima' => '2026-11-02',
+            'pengirim' => 'PT Pengirim',
+            'penerima' => 'PT Penerima',
+            'tujuan_pengiriman' => 'Batam',
+            'nama_barang' => 'Mesin',
+            'jumlah_barang' => 2,
+        ]);
+
+        $response = (new ApprovalTandaTerimaDuaController)->storeTtsj($request);
+
+        $this->assertSame(302, $response->getStatusCode());
+        $this->assertSame(1, DB::table('tanda_terima_tanpa_surat_jalan')->count());
     }
 
     public function test_destination_filter_uses_the_correct_source_for_each_receipt_type(): void

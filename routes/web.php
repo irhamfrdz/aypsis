@@ -7511,6 +7511,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('approval-tanda-terima-2/shippers', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'searchShippers'])
         ->name('approval-tanda-terima-2.shippers')
         ->middleware('can:approval-tanda-terima-2-approve');
+    Route::post('approval-tanda-terima-2/ttsj', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'storeTtsj'])
+        ->name('approval-tanda-terima-2.ttsj.store')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::post('approval-tanda-terima-2/{sourceType}/{id}/export', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'export'])
         ->name('approval-tanda-terima-2.export')
         ->middleware('can:approval-tanda-terima-2-approve');
