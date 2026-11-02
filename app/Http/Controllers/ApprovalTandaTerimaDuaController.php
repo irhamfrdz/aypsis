@@ -78,6 +78,8 @@ class ApprovalTandaTerimaDuaController extends Controller
         // A receipt that already has a manifest no longer needs approval here.
         if ($type === 'fcl') {
             $query->whereDoesntHave('prospeks.manifests');
+            // Old receipts that should not enter the Approval Tanda Terima 2 queue.
+            $query->whereNotIn('no_surat_jalan', ['JB0033973', 'JB0033887']);
         }
 
         $dateColumn = $type === 'fcl' ? 'tanggal_surat_jalan' : 'tanggal_tanda_terima';

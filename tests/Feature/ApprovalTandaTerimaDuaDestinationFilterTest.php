@@ -145,6 +145,22 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         $this->assertSame('TT-NEW-001', $items->first()->no_tanda_terima);
     }
 
+    public function test_old_fcl_receipts_from_the_report_are_hidden_from_approval(): void
+    {
+        DB::table('tanda_terimas')->insert([
+            ['no_surat_jalan' => 'JB0033973', 'tanggal_surat_jalan' => '2026-05-12', 'tujuan_pengiriman' => 'Batam'],
+            ['no_surat_jalan' => 'JB0033887', 'tanggal_surat_jalan' => '2026-05-08', 'tujuan_pengiriman' => 'Batam'],
+            ['no_surat_jalan' => 'JB0034000', 'tanggal_surat_jalan' => '2026-05-12', 'tujuan_pengiriman' => 'Batam'],
+        ]);
+
+        $items = (new ApprovalTandaTerimaDuaController)->index(Request::create('/', 'GET', [
+            'type' => 'fcl', 'destination' => 'batam',
+        ]))->getData()['items'];
+
+        $this->assertSame(1, $items->total());
+        $this->assertSame('JB0034000', $items->first()->no_surat_jalan);
+    }
+
     public function test_approval_rejects_duplicate_ttsj_number(): void
     {
         DB::table('tanda_terima_tanpa_surat_jalan')->insert([
