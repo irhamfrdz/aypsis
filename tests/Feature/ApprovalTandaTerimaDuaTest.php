@@ -182,6 +182,42 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $this->assertDatabaseMissing('approval_tanda_terima_2_fcl_shippers', ['id' => $detailId]);
     }
 
+    public function test_additional_shipper_modal_edits_are_saved_without_changing_the_primary_or_master(): void
+    {
+        $primaryId = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Pengirim Utama']);
+        $masterId = DB::table('shipper_consignees')->insertGetId(['shipper' => 'Pengirim Kedua', 'consignee' => 'Penerima Asli']);
+        $receiptId = DB::table('tanda_terimas')->insertGetId(['no_surat_jalan' => 'FCL-2', 'shipper_jb_id' => $primaryId]);
+        $controller = new ApprovalTandaTerimaDuaController;
+
+        $controller->addFclShipper(Request::create('/', 'PUT', [
+            'shipper_jb_id' => $masterId,
+            'shipper' => 'Pengirim Kedua Cabang',
+            'consignee' => 'Penerima Asli',
+        ]), $receiptId);
+
+        $detail = \App\Models\ApprovalTandaTerimaDuaFclShipper::where('tanda_terima_id', $receiptId)->firstOrFail();
+        $this->assertNotEquals($masterId, $detail->shipper_jb_id);
+        $this->assertSame('Pengirim Kedua Cabang', $detail->shipperJb->shipper);
+        $this->assertSame('Pengirim Kedua', DB::table('shipper_consignees')->where('id', $masterId)->value('shipper'));
+
+        $controller->updateFclShipperGoods(Request::create('/', 'PUT', [
+            'manifest_goods' => ['nama_barang' => 'Barang Manifest Kedua'],
+            'goods' => ['nama_barang' => 'Barang Perincian Kedua'],
+        ]), $receiptId, $detail->id);
+        $controller->updateFclShipper(Request::create('/', 'PUT', [
+            'shipper_jb_id' => $detail->shipper_jb_id,
+            'shipper' => 'Pengirim Kedua Cabang',
+            'consignee' => 'Penerima Baru',
+        ]), $receiptId, $detail->id);
+
+        $detail->refresh();
+        $this->assertSame('Penerima Baru', $detail->shipperJb->consignee);
+        $this->assertSame('Barang Manifest Kedua', $detail->manifest_goods['nama_barang']);
+        $this->assertSame('Barang Perincian Kedua', $detail->goods['nama_barang']);
+        $this->assertEquals($primaryId, DB::table('tanda_terimas')->where('id', $receiptId)->value('shipper_jb_id'));
+        $this->assertSame('Penerima Asli', DB::table('shipper_consignees')->where('id', $masterId)->value('consignee'));
+    }
+
     public function test_lcl_selection_matches_its_receipt_and_an_unnumbered_receipt_cannot_update_unrelated_manifests(): void
     {
         $shipperId = DB::table('shipper_consignees')->insertGetId([

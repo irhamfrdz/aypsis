@@ -7529,6 +7529,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::put('approval-tanda-terima-2/fcl/{id}/shippers', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'addFclShipper'])
         ->name('approval-tanda-terima-2.fcl-shippers.store')
         ->middleware('can:approval-tanda-terima-2-approve');
+    Route::put('approval-tanda-terima-2/fcl/{id}/shippers/{detailId}', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'updateFclShipper'])
+        ->name('approval-tanda-terima-2.fcl-shippers.update')
+        ->middleware('can:approval-tanda-terima-2-approve');
     Route::put('approval-tanda-terima-2/fcl/{id}/shippers/{detailId}/goods', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'updateFclShipperGoods'])
         ->name('approval-tanda-terima-2.fcl-shippers.goods')
         ->middleware('can:approval-tanda-terima-2-approve');

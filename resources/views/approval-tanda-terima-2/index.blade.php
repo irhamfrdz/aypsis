@@ -502,7 +502,7 @@
                     </section>
                 @endforeach
             </div>
-            <p class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
+            <p id="approval-shipper-help" class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" class="approval-shipper-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>

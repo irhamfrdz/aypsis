@@ -300,6 +300,8 @@
     const selectedId = document.getElementById('approval-shipper-id');
     const selection = document.getElementById('approval-shipper-selection');
     const save = document.getElementById('approval-shipper-save');
+    const title = document.getElementById('approval-shipper-title');
+    const help = document.getElementById('approval-shipper-help');
     const previewFields = dialog.querySelectorAll('[data-shipper-field]');
     const previewButtons = dialog.querySelectorAll('[data-shipper-preview]');
     let timer;
@@ -463,10 +465,15 @@
             stopDetails();
             opener = button;
             form.action = button.dataset.updateUrl;
-            save.textContent = button.dataset.additional === 'true' ? 'Tambah Shipper' : 'Simpan Shipper';
+            const isAdditional = button.dataset.additional === 'true';
+            const isEditingAdditional = button.dataset.mode === 'edit-additional';
+            title.textContent = isEditingAdditional ? 'Ubah Shipper Tambahan' : (isAdditional ? 'Tambah Shipper Manifest JB' : 'Pilih Shipper Manifest JB');
+            save.textContent = isEditingAdditional ? 'Simpan Shipper Tambahan' : (isAdditional ? 'Tambah Shipper' : 'Simpan Shipper');
+            help.textContent = isAdditional || isEditingAdditional
+                ? 'Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk shipper tambahan ini; shipper utama dan data master asli tetap tersedia.'
+                : 'Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.';
             selectedId.value = '';
             save.disabled = true;
-            save.textContent = 'Simpan Shipper';
             search.value = button.dataset.shipper || '';
             document.getElementById('approval-shipper-context').textContent =
                 'Tanda terima: ' + (button.dataset.number || '-') + ' · Pengirim: ' + (button.dataset.sender || '-');

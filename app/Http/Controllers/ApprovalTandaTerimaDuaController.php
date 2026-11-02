@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ApprovalTandaTerimaDuaGoods;
 use App\Models\ApprovalTandaTerimaDuaFclShipper;
+use App\Models\ApprovalTandaTerimaDuaGoods;
 use App\Models\Manifest;
 use App\Models\ShipperConsignee;
 use App\Models\TandaTerima;
@@ -348,43 +348,13 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $item = self::SOURCES[$sourceType]::findOrFail($id);
-        $validated = $request->validate([
-            'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
-            'shipper' => 'sometimes|required|string|max:255',
-            'alamat_shipper' => 'nullable|string|max:10000',
-            'npwp_shipper' => 'nullable|string|max:255',
-            'consignee' => 'nullable|string|max:255',
-            'alamat_consignee' => 'nullable|string|max:10000',
-            'npwp_consignee' => 'nullable|string|max:255',
-            'notify_party_consignee' => 'nullable|string|max:255',
-            'alamat_notify_party_consignee' => 'nullable|string|max:10000',
-            'npwp_notify_party_consignee' => 'nullable|string|max:255',
-            'delivery_address_contact_person' => 'nullable|string|max:10000',
-            'document_ppftz_03' => 'nullable|string|max:255',
-            'condition' => 'nullable|string|max:255',
-            'status' => 'sometimes|required|boolean',
-        ]);
-        $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
-        $fields = collect($validated)->except('shipper_jb_id')->all();
-        foreach ($fields as $field => $value) {
-            if ($field !== 'status' && $value === '') {
-                $fields[$field] = null;
-            }
-        }
-        abort_unless(filled($fields['shipper'] ?? $shipper->shipper), 422, 'Nama shipper harus diisi.');
+        [$shipper, $fields] = $this->validateShipperSelection($request);
         if ($sourceType === 'fcl') {
             abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
         }
 
         DB::transaction(function () use ($item, $sourceType, $shipper, $fields) {
-            $hasChanges = collect($fields)->contains(
-                fn ($value, $field) => (string) ($shipper->{$field} ?? '') !== (string) ($value ?? '')
-            );
-            if ($hasChanges) {
-                $shipper = $shipper->replicate();
-                $shipper->fill($fields);
-                $shipper->save();
-            }
+            $shipper = $this->saveShipperEdits($shipper, $fields);
             $item->update(['shipper_jb_id' => $shipper->id]);
 
             $number = $item->{$this->numberColumn($sourceType)};
@@ -415,23 +385,84 @@ class ApprovalTandaTerimaDuaController extends Controller
         return back()->with('success', 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
     }
 
+    private function validateShipperSelection(Request $request): array
+    {
+        $validated = $request->validate([
+            'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
+            'shipper' => 'sometimes|required|string|max:255',
+            'alamat_shipper' => 'nullable|string|max:10000',
+            'npwp_shipper' => 'nullable|string|max:255',
+            'consignee' => 'nullable|string|max:255',
+            'alamat_consignee' => 'nullable|string|max:10000',
+            'npwp_consignee' => 'nullable|string|max:255',
+            'notify_party_consignee' => 'nullable|string|max:255',
+            'alamat_notify_party_consignee' => 'nullable|string|max:10000',
+            'npwp_notify_party_consignee' => 'nullable|string|max:255',
+            'delivery_address_contact_person' => 'nullable|string|max:10000',
+            'document_ppftz_03' => 'nullable|string|max:255',
+            'condition' => 'nullable|string|max:255',
+            'status' => 'sometimes|required|boolean',
+        ]);
+        $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
+        $fields = collect($validated)->except('shipper_jb_id')->all();
+        foreach ($fields as $field => $value) {
+            if ($field !== 'status' && $value === '') {
+                $fields[$field] = null;
+            }
+        }
+        abort_unless(filled($fields['shipper'] ?? $shipper->shipper), 422, 'Nama shipper harus diisi.');
+
+        return [$shipper, $fields];
+    }
+
+    private function saveShipperEdits(ShipperConsignee $shipper, array $fields): ShipperConsignee
+    {
+        $hasChanges = collect($fields)->contains(
+            fn ($value, $field) => (string) ($shipper->{$field} ?? '') !== (string) ($value ?? '')
+        );
+        if ($hasChanges) {
+            $shipper = $shipper->replicate();
+            $shipper->fill($fields);
+            $shipper->save();
+        }
+
+        return $shipper;
+    }
+
     public function addFclShipper(Request $request, int $id): RedirectResponse
     {
         $item = TandaTerima::findOrFail($id);
         abort_unless($item->shipper_jb_id, 422, 'Pilih shipper utama terlebih dahulu.');
-        $validated = $request->validate([
-            'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
-        ]);
-        abort_if((int) $item->shipper_jb_id === (int) $validated['shipper_jb_id'], 422, 'Shipper ini sudah menjadi shipper utama.');
-        $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
-        abort_unless(filled($shipper->shipper), 422, 'Nama shipper belum diisi pada master.');
+        [$shipper, $fields] = $this->validateShipperSelection($request);
+        abort_if((int) $item->shipper_jb_id === (int) $shipper->id, 422, 'Shipper ini sudah menjadi shipper utama.');
+        abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
 
-        ApprovalTandaTerimaDuaFclShipper::firstOrCreate(
-            ['tanda_terima_id' => $item->id, 'shipper_jb_id' => $shipper->id],
-            ['updated_by' => auth()->id()]
-        );
+        DB::transaction(function () use ($item, $shipper, $fields) {
+            $shipper = $this->saveShipperEdits($shipper, $fields);
+            ApprovalTandaTerimaDuaFclShipper::create([
+                'tanda_terima_id' => $item->id,
+                'shipper_jb_id' => $shipper->id,
+                'updated_by' => auth()->id(),
+            ]);
+        });
 
         return back()->with('success', 'Shipper tambahan ditambahkan. Lengkapi rincian barangnya sebelum ekspor.');
+    }
+
+    public function updateFclShipper(Request $request, int $id, int $detailId): RedirectResponse
+    {
+        $item = TandaTerima::findOrFail($id);
+        $detail = $item->fclShipperDetails()->findOrFail($detailId);
+        [$shipper, $fields] = $this->validateShipperSelection($request);
+        abort_if((int) $item->shipper_jb_id === (int) $shipper->id, 422, 'Shipper ini sudah menjadi shipper utama.');
+        abort_if($item->fclShipperDetails()->whereKeyNot($detail->id)->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
+
+        DB::transaction(function () use ($detail, $shipper, $fields) {
+            $shipper = $this->saveShipperEdits($shipper, $fields);
+            $detail->update(['shipper_jb_id' => $shipper->id, 'updated_by' => auth()->id()]);
+        });
+
+        return back()->with('success', 'Data shipper tambahan berhasil disimpan.');
     }
 
     public function updateFclShipperGoods(Request $request, int $id, int $detailId): RedirectResponse
