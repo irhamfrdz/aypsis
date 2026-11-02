@@ -301,6 +301,7 @@
     const selection = document.getElementById('approval-shipper-selection');
     const save = document.getElementById('approval-shipper-save');
     const previewFields = dialog.querySelectorAll('[data-shipper-field]');
+    const previewButtons = dialog.querySelectorAll('[data-shipper-preview]');
     let timer;
     let pendingSearch;
     let generation = 0;
@@ -330,8 +331,23 @@
             const value = data?.[name];
             field.value = name === 'status' ? (String(value) === '0' || value === false ? '0' : '1') : (value ?? '');
             field.disabled = !data;
+            field.hidden = true;
+            const preview = dialog.querySelector('[data-shipper-preview="' + name + '"]');
+            preview.textContent = data ? (name === 'status' ? (field.value === '1' ? 'Aktif' : 'Tidak aktif') : (field.value || '-')) : '-';
+            preview.disabled = !data;
+            preview.hidden = false;
         });
     }
+
+    previewButtons.forEach(preview => {
+        preview.addEventListener('click', () => {
+            if (preview.disabled) return;
+            const field = dialog.querySelector('[data-shipper-field="' + preview.dataset.shipperPreview + '"]');
+            preview.hidden = true;
+            field.hidden = false;
+            field.focus();
+        });
+    });
 
     function choose(option) {
         stopSearch();
@@ -343,7 +359,7 @@
         showPreview(option);
         save.disabled = false;
         hideOptions();
-        dialog.querySelector('[data-shipper-field="shipper"]')?.focus();
+        dialog.querySelector('[data-shipper-preview="shipper"]')?.focus();
     }
 
     async function fetchShippers() {

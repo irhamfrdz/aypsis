@@ -23,6 +23,9 @@
     .approval-shipper-option:hover, .approval-shipper-option:focus { background: #eef2ff; outline: 2px solid #6366f1; outline-offset: -2px; }
     .approval-shipper-option-name { display: block; font-weight: 600; }
     .approval-shipper-option-detail { display: block; margin-top: 2px; font-size: 12px; color: #64748b; }
+    .approval-shipper-field-preview { display: block; width: 100%; margin-top: 2px; padding: 2px 4px; text-align: left; white-space: pre-line; overflow-wrap: anywhere; border: 0; border-radius: 4px; background: #fef9c3; color: #1f2937; cursor: text; }
+    .approval-shipper-field-preview:not(:disabled):hover, .approval-shipper-field-preview:not(:disabled):focus-visible { background: #fef08a; outline: 2px solid #eab308; outline-offset: 1px; }
+    .approval-shipper-field-preview:disabled { cursor: default; }
     .approval-shipper-name-highlight, .approval-shipper-document-highlight { display: inline-block; max-width: 100%; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
     .approval-shipper-name-highlight { background: #fef08a; color: #713f12; }
     .approval-shipper-document-highlight { background: #fca5a5; color: #7f1d1d; }
@@ -477,19 +480,20 @@
                 @foreach($shipperPreviewGroups as $groupTitle => $fields)
                     <section class="rounded-xl border border-gray-200 bg-gray-50 p-3">
                         <h3 class="mb-2 text-sm font-semibold text-gray-800">{{ $groupTitle }}</h3>
-                        <div class="grid gap-3 text-sm sm:grid-cols-3">
+                        <div class="grid gap-2 text-sm sm:grid-cols-3">
                             @foreach($fields as $field => $label)
                                 <div>
-                                    <label for="approval-field-{{ $field }}" class="block text-xs font-medium text-gray-600">{{ $label }}</label>
+                                    <label for="approval-field-{{ $field }}" class="block text-xs font-medium text-gray-500">{{ $label }}</label>
+                                    <button type="button" data-shipper-preview="{{ $field }}" class="approval-shipper-field-preview text-sm" aria-label="Ubah {{ $label }}" disabled>-</button>
                                     @if($field === 'status')
-                                        <select id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled>
+                                        <select id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled hidden>
                                             <option value="1">Aktif</option>
                                             <option value="0">Tidak aktif</option>
                                         </select>
                                     @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
-                                        <textarea id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" rows="2" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled></textarea>
+                                        <textarea id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" rows="2" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled hidden></textarea>
                                     @else
-                                        <input id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" type="text" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" {{ $field === 'shipper' ? 'required' : '' }} disabled>
+                                        <input id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" type="text" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" {{ $field === 'shipper' ? 'required' : '' }} disabled hidden>
                                     @endif
                                 </div>
                             @endforeach
@@ -497,7 +501,7 @@
                     </section>
                 @endforeach
             </div>
-            <p class="text-xs text-gray-500">Anda dapat mengubah data setelah memilih shipper. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
+            <p class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" class="approval-shipper-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>
