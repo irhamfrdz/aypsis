@@ -5,8 +5,11 @@ namespace App\Http\Controllers;
 use App\Exports\UangJalanExport;
 use App\Models\SuratJalan;
 use App\Models\UangJalan;
+use App\Models\UangJalanApprovalRequest;
+use App\Services\UangJalanApprovalService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -220,7 +223,7 @@ class UangJalanController extends Controller
     /**
      * Show the form for creating a new uang jalan berdasarkan surat jalan yang dipilih.
      */
-    public function create(Request $request)
+    public function create(Request $request, UangJalanApprovalService $approvalService)
     {
         $suratJalanId = $request->get('surat_jalan_id');
         $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
@@ -290,13 +293,24 @@ class UangJalanController extends Controller
         // Generate nomor uang jalan untuk preview - gunakan format yang sama untuk semua jenis
         $nomorUangJalan = UangJalan::generateNomorUangJalan();
 
-        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan'));
+        $tugasBerjalan = $approvalService->tugasBerjalan($suratJalan->supir);
+        $pengajuanPending = UangJalanApprovalRequest::where('jenis_surat_jalan', $jenisSuratJalan)
+            ->where('surat_jalan_id', $suratJalan->id)
+            ->where('status', 'pending')
+            ->first();
+        $pengajuanDitolak = UangJalanApprovalRequest::where('jenis_surat_jalan', $jenisSuratJalan)
+            ->where('surat_jalan_id', $suratJalan->id)
+            ->where('status', 'rejected')
+            ->latest()
+            ->first();
+
+        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'jenisSuratJalan', 'tugasBerjalan', 'pengajuanPending', 'pengajuanDitolak'));
     }
 
     /**
      * Store a newly created uang jalan in storage.
      */
-    public function store(Request $request)
+    public function store(Request $request, UangJalanApprovalService $approvalService)
     {
         // Tentukan jenis surat jalan
         $jenisSuratJalan = $request->get('jenis_surat_jalan', 'biasa');
@@ -311,7 +325,7 @@ class UangJalanController extends Controller
 
         // Validasi berbeda berdasarkan jenis surat jalan
         if ($jenisSuratJalan === 'bongkaran') {
-            $request->validate([
+            $validated = $request->validate([
                 'surat_jalan_id' => 'required|exists:surat_jalan_bongkarans,id',
                 'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
                 'tanggal_uang_jalan' => 'required|date',
@@ -348,33 +362,13 @@ class UangJalanController extends Controller
                     ->withInput();
             }
 
+            $suratJalan = \App\Models\SuratJalanBongkaran::findOrFail($request->surat_jalan_id);
+            if ($response = $this->ajukanApprovalJikaPerlu($approvalService, $suratJalan, 'bongkaran', $validated)) {
+                return $response;
+            }
+
             try {
-                // Generate nomor uang jalan otomatis - gunakan format yang sama untuk semua jenis
-                $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
-
-                // Buat record uang jalan baru dengan surat_jalan_bongkaran_id
-                $uangJalan = UangJalan::create([
-                    'nomor_uang_jalan' => $nomorUangJalan,
-                    'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
-                    'surat_jalan_id' => null,
-                    'surat_jalan_bongkaran_id' => $request->surat_jalan_id,
-                    'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
-                    'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
-                    'jumlah_mel' => $request->jumlah_mel ?? 0,
-                    'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
-                    'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
-                    'jumlah_parkir' => $request->jumlah_parkir ?? 0,
-                    'subtotal' => $request->subtotal,
-                    'alasan_penyesuaian' => $request->alasan_penyesuaian,
-                    'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
-                    'jumlah_total' => $request->jumlah_total,
-                    'memo' => $request->memo,
-                    'status' => 'belum_masuk_pranota',
-                    'created_by' => Auth::id(),
-                ]);
-
-                // Get surat jalan untuk pesan sukses
-                $suratJalan = \App\Models\SuratJalanBongkaran::find($request->surat_jalan_id);
+                DB::transaction(fn () => $approvalService->buatUangJalan($suratJalan, 'bongkaran', $validated, Auth::id()));
 
                 return redirect()->route('uang-jalan.index')
                     ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan bongkaran '.($suratJalan->nomor_surat_jalan ?? ''));
@@ -386,7 +380,7 @@ class UangJalanController extends Controller
             }
         } else {
             // Validasi untuk surat jalan biasa
-            $request->validate([
+            $validated = $request->validate([
                 'surat_jalan_id' => 'required|exists:surat_jalans,id',
                 'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
                 'tanggal_uang_jalan' => 'required|date',
@@ -435,42 +429,15 @@ class UangJalanController extends Controller
                     ->withInput();
             }
 
+            if ($response = $this->ajukanApprovalJikaPerlu($approvalService, $sj, 'biasa', $validated)) {
+                return $response;
+            }
+
             try {
-                // Generate nomor uang jalan otomatis jika tidak diisi
-                $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
-
-                // Buat record uang jalan baru
-                $uangJalan = UangJalan::create([
-                    'nomor_uang_jalan' => $nomorUangJalan,
-                    'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
-                    'surat_jalan_id' => $request->surat_jalan_id,
-                    'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
-                    'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
-                    'jumlah_mel' => $request->jumlah_mel ?? 0,
-                    'jumlah_pelancar' => $request->jumlah_pelancar ?? 0,
-                    'jumlah_kawalan' => $request->jumlah_kawalan ?? 0,
-                    'jumlah_parkir' => $request->jumlah_parkir ?? 0,
-                    'subtotal' => $request->subtotal,
-                    'alasan_penyesuaian' => $request->alasan_penyesuaian,
-                    'jumlah_penyesuaian' => $request->jumlah_penyesuaian ?? 0,
-                    'jumlah_total' => $request->jumlah_total,
-                    'memo' => $request->memo,
-                    'jumlah_uang_supir' => $request->jumlah_uang_supir ?? 0,
-                    'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
-                    'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
-                    'keterangan' => $request->keterangan ?? $request->memo,
-                    'status' => 'belum_masuk_pranota',
-                    'created_by' => Auth::id(),
-                ]);
-
-                // Update status pembayaran uang jalan di surat jalan
-                $suratJalan = SuratJalan::find($request->surat_jalan_id);
-                $suratJalan->update([
-                    'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan',
-                ]);
+                DB::transaction(fn () => $approvalService->buatUangJalan($sj, 'biasa', $validated, Auth::id()));
 
                 return redirect()->route('uang-jalan.index')
-                    ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan '.$suratJalan->no_surat_jalan);
+                    ->with('success', 'Uang jalan berhasil dibuat untuk surat jalan '.$sj->no_surat_jalan);
 
             } catch (\Exception $e) {
                 return redirect()->back()
@@ -478,6 +445,43 @@ class UangJalanController extends Controller
                     ->withInput();
             }
         }
+    }
+
+    private function ajukanApprovalJikaPerlu(UangJalanApprovalService $approvalService, SuratJalan|\App\Models\SuratJalanBongkaran $suratJalan, string $jenis, array $data): ?\Illuminate\Http\RedirectResponse
+    {
+        return DB::transaction(function () use ($approvalService, $suratJalan, $jenis, $data) {
+            $model = $jenis === 'bongkaran' ? \App\Models\SuratJalanBongkaran::class : SuratJalan::class;
+            $suratJalan = $model::whereKey($suratJalan->id)->lockForUpdate()->firstOrFail();
+
+            $pengajuan = UangJalanApprovalRequest::where('jenis_surat_jalan', $jenis)
+                ->where('surat_jalan_id', $suratJalan->id)
+                ->where('status', 'pending')
+                ->first();
+            if ($pengajuan) {
+                return back()->withInput()->with('error', 'Pengajuan uang jalan untuk surat jalan ini masih menunggu approval.');
+            }
+
+            $tugasBerjalan = $approvalService->tugasBerjalan($suratJalan->supir);
+            if ($tugasBerjalan->count() < 2) {
+                return null;
+            }
+
+            UangJalanApprovalRequest::create([
+                'jenis_surat_jalan' => $jenis,
+                'surat_jalan_id' => $suratJalan->id,
+                'nomor_surat_jalan' => $jenis === 'bongkaran' ? $suratJalan->nomor_surat_jalan : $suratJalan->no_surat_jalan,
+                'supir' => $suratJalan->supir,
+                'jumlah_tugas_berjalan' => $tugasBerjalan->count(),
+                'data_uang_jalan' => $data,
+                'status' => 'pending',
+                'requested_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('uang-jalan.create', [
+                'surat_jalan_id' => $suratJalan->id,
+                'jenis_surat_jalan' => $jenis,
+            ])->with('success', 'Pengajuan uang jalan dikirim untuk approval karena supir memiliki '.$tugasBerjalan->count().' tugas yang belum selesai.');
+        });
     }
 
     /**

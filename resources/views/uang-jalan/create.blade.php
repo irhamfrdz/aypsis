@@ -98,6 +98,28 @@
             </div>
         </div>
 
+        @if($tugasBerjalan->count() >= 2 || $pengajuanPending)
+            <div class="mx-3 mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">
+                <p class="font-semibold">{{ $pengajuanPending ? 'Menunggu approval:' : 'Perlu approval:' }} {{ $suratJalan->supir }} memiliki {{ $tugasBerjalan->count() }} tugas yang belum selesai saat ini.</p>
+                <p class="mt-1 text-xs">Tugas mengikuti daftar surat jalan yang sudah dibayar tetapi tanda terima pelabuhannya belum disetujui.</p>
+                <ul class="mt-2 list-inside list-disc text-xs">
+                    @foreach($tugasBerjalan as $tugas)
+                        <li>{{ $tugas->no_surat_jalan }} — {{ $tugas->tanggal_surat_jalan ? \Carbon\Carbon::parse($tugas->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</li>
+                    @endforeach
+                </ul>
+                @if($pengajuanPending)
+                    <p class="mt-2 font-semibold">Pengajuan untuk surat jalan ini sudah menunggu approval.</p>
+                @endif
+            </div>
+        @endif
+        @if($pengajuanDitolak && ! $pengajuanPending)
+            <div class="mx-3 mt-3 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+                <p class="font-semibold">Pengajuan sebelumnya ditolak.</p>
+                @if($pengajuanDitolak->catatan_approval)<p class="mt-1">Alasan: {{ $pengajuanDitolak->catatan_approval }}</p>@endif
+                <p class="mt-1 text-xs">Perbaiki data lalu kirim ulang jika masih perlu approval.</p>
+            </div>
+        @endif
+
         <!-- Form -->
         <form action="{{ route('uang-jalan.store') }}" method="POST" class="p-3">
             @csrf
@@ -448,9 +470,9 @@
                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-3 py-1.5 rounded text-sm">
                     Batal
                 </a>
-                <button type="submit"
+                <button type="submit" @disabled($pengajuanPending)
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-1.5 rounded text-sm">
-                    Simpan Uang Jalan
+                    {{ $pengajuanPending ? 'Menunggu Approval' : ($tugasBerjalan->count() >= 2 ? 'Ajukan Approval Uang Jalan' : 'Simpan Uang Jalan') }}
                 </button>
             </div>
         </form>

@@ -4448,6 +4448,16 @@ Route::middleware([
             ->name('uang-jalan.export')
             ->middleware('can:uang-jalan-export');
 
+        Route::get('uang-jalan/approval', [\App\Http\Controllers\UangJalanApprovalController::class, 'index'])
+            ->name('uang-jalan.approval.index')
+            ->middleware('can:uang-jalan-approve');
+        Route::post('uang-jalan/approval/{pengajuan}/approve', [\App\Http\Controllers\UangJalanApprovalController::class, 'approve'])
+            ->name('uang-jalan.approval.approve')
+            ->middleware('can:uang-jalan-approve');
+        Route::post('uang-jalan/approval/{pengajuan}/reject', [\App\Http\Controllers\UangJalanApprovalController::class, 'reject'])
+            ->name('uang-jalan.approval.reject')
+            ->middleware('can:uang-jalan-approve');
+
         Route::resource('uang-jalan', \App\Http\Controllers\UangJalanController::class)
             ->middleware([
                 'index' => 'can:uang-jalan-view',
