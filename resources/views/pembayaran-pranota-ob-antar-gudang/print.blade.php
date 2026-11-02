@@ -208,7 +208,7 @@
                     <td class="info-label">Jenis Transaksi:</td>
                     <td class="info-value">{{ ucfirst($pembayaran->jenis_transaksi) }}</td>
                     <td class="info-label">Akun Biaya:</td>
-                    <td class="info-value">{{ $pembayaran->akunCoa->nama_akun ?? '-' }}</td>
+                    <td class="info-value">{{ $pembayaran->akunItems->isNotEmpty() ? $pembayaran->akunItems->count().' akun' : ($pembayaran->akunCoa->nama_akun ?? '-') }}</td>
                 </tr>
                 <tr>
                     <td class="info-label">Status:</td>
@@ -218,6 +218,24 @@
                 </tr>
             </table>
         </div>
+
+        @if($pembayaran->akunItems->isNotEmpty())
+        <div class="content-section">
+            <div class="section-title">Rincian Akun Biaya dan Memo</div>
+            <table class="ob-table">
+                <thead><tr><th>Akun</th><th style="text-align: right">Nominal</th><th>Memo / Catatan</th></tr></thead>
+                <tbody>
+                    @foreach($pembayaran->akunItems as $akunItem)
+                        <tr>
+                            <td>{{ $akunItem->akunCoa?->nomor_akun }} - {{ $akunItem->akunCoa?->nama_akun }}</td>
+                            <td style="text-align: right">Rp {{ number_format($akunItem->nominal, 0, ',', '.') }}</td>
+                            <td style="white-space: pre-line">{{ $akunItem->memo ?: '-' }}</td>
+                        </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
 
         <!-- Daftar Pranota OB Antar Gudang -->
         <div class="content-section">

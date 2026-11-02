@@ -47,10 +47,12 @@
                             <span class="text-xs text-gray-500">Akun Bank:</span>
                             <span class="text-xs font-semibold text-gray-900">{{ $pembayaran->akunBank->nama_akun ?? ($pembayaran->bank ?? '-') }}</span>
                         </div>
-                        <div class="flex justify-between">
-                            <span class="text-xs text-gray-500">Akun Biaya:</span>
-                            <span class="text-xs font-semibold text-gray-900">{{ $pembayaran->akunCoa->nama_akun ?? '-' }}</span>
-                        </div>
+                        @if($pembayaran->akunItems->isEmpty())
+                            <div class="flex justify-between">
+                                <span class="text-xs text-gray-500">Akun Biaya:</span>
+                                <span class="text-xs font-semibold text-gray-900">{{ $pembayaran->akunCoa->nama_akun ?? '-' }}</span>
+                            </div>
+                        @endif
                         <div class="flex justify-between">
                             <span class="text-xs text-gray-500">Dibuat Pada:</span>
                             <span class="text-xs font-semibold text-gray-900">{{ $pembayaran->created_at->format('d/m/Y H:i') }}</span>
@@ -88,6 +90,26 @@
                     </div>
                 </div>
             </div>
+
+            @if($pembayaran->akunItems->isNotEmpty())
+                <div class="bg-white border border-gray-200 rounded-lg p-5 mb-8">
+                    <h3 class="text-sm font-bold text-gray-900 mb-3">Rincian Akun Biaya dan Memo</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200 text-xs">
+                            <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left">Akun</th><th class="px-3 py-2 text-right">Nominal</th><th class="px-3 py-2 text-left">Memo / Catatan</th></tr></thead>
+                            <tbody class="divide-y divide-gray-100">
+                                @foreach($pembayaran->akunItems as $akunItem)
+                                    <tr>
+                                        <td class="px-3 py-2">{{ $akunItem->akunCoa?->nomor_akun }} - {{ $akunItem->akunCoa?->nama_akun }}</td>
+                                        <td class="px-3 py-2 text-right">Rp {{ number_format($akunItem->nominal, 0, ',', '.') }}</td>
+                                        <td class="px-3 py-2 whitespace-pre-line">{{ $akunItem->memo ?: '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            @endif
 
             {{-- Keterangan --}}
             <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 mb-8">

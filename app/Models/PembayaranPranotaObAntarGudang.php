@@ -91,6 +91,11 @@ class PembayaranPranotaObAntarGudang extends Model
         return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaObAntarGudangAkunItem::class, 'pembayaran_id');
+    }
+
     /**
      * Generate nomor pembayaran
      */

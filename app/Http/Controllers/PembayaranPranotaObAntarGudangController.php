@@ -60,7 +60,10 @@ class PembayaranPranotaObAntarGudangController extends Controller
             'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_ob_antar_gudangs,nomor_pembayaran',
             'nomor_accurate' => 'nullable|string|max:255',
             'debit_kredit' => 'required|in:debit,credit',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => 'required|array|min:1',
+            'akun_items.*.akun_coa_id' => 'required|distinct|exists:akun_coa,id',
+            'akun_items.*.nominal' => 'required|numeric|gt:0',
+            'akun_items.*.memo' => 'nullable|string|max:2000',
             'akun_bank_id' => 'required|exists:akun_coa,id',
             'tanggal_kas' => 'required|date',
             'pranota_ids' => 'required|array|min:1',
@@ -88,8 +91,11 @@ class PembayaranPranotaObAntarGudangController extends Controller
             }
 
             $totalSetelahPenyesuaian = $totalTagihan + $penyesuaian;
+            $akunItems = collect($request->input('akun_items'));
+            if ($totalSetelahPenyesuaian <= 0 || abs($akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalSetelahPenyesuaian) > 0.01) {
+                throw new \Exception('Jumlah nominal per akun harus sama dengan grand total bayar.');
+            }
 
-            $akunBiaya = Coa::findOrFail($request->akun_coa_id);
             $akunBank = Coa::findOrFail($request->akun_bank_id);
 
             // Create payment record
@@ -107,11 +113,12 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
                 'pranota_ob_antar_gudang_ids' => $pranotaIds,
-                'akun_coa_id' => $request->akun_coa_id,
+                'akun_coa_id' => $akunItems->first()['akun_coa_id'],
                 'akun_bank_id' => $request->akun_bank_id,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
+            $pembayaran->akunItems()->createMany($akunItems->all());
 
             // Update status of all associated pranotas to Lunas
             PranotaObAntarGudang::whereIn('id', $pranotaIds)->update([
@@ -127,27 +134,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 $journalKeterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
-            if ($request->debit_kredit === 'credit') {
-                // CREDIT: Debit Expense (Akun Biaya), Credit Cash/Bank (Akun Bank)
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    $request->tanggal_kas,
-                    $request->nomor_pembayaran,
-                    'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
-                );
-            } else {
-                // DEBIT: Debit Cash/Bank (Akun Bank), Credit Expense (Akun Biaya)
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    $request->tanggal_kas,
-                    $request->nomor_pembayaran,
-                    'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
-                );
-            }
+            $this->recordPaymentJournal($pembayaran->load('akunItems.akunCoa'), $journalKeterangan);
 
             DB::commit();
 
@@ -166,7 +153,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
 
     public function show($id)
     {
-        $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
+        $pembayaran = PembayaranPranotaObAntarGudang::with('akunItems.akunCoa')->findOrFail($id);
 
         return view('pembayaran-pranota-ob-antar-gudang.show', compact('pembayaran'));
     }
@@ -193,7 +180,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
 
     public function edit($id)
     {
-        $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
+        $pembayaran = PembayaranPranotaObAntarGudang::with('akunItems.akunCoa')->findOrFail($id);
 
         // Get all COA accounts for Akun Biaya
         $akunBiaya = Coa::orderBy('kode_nomor')->get();
@@ -216,7 +203,10 @@ class PembayaranPranotaObAntarGudangController extends Controller
         $request->validate([
             'nomor_accurate' => 'nullable|string|max:255',
             'debit_kredit' => 'required|in:debit,credit',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => 'required|array|min:1',
+            'akun_items.*.akun_coa_id' => 'required|distinct|exists:akun_coa,id',
+            'akun_items.*.nominal' => 'required|numeric|gt:0',
+            'akun_items.*.memo' => 'nullable|string|max:2000',
             'akun_bank_id' => 'required|exists:akun_coa,id',
             'tanggal_kas' => 'required|date',
             'penyesuaian' => 'nullable|numeric',
@@ -230,8 +220,11 @@ class PembayaranPranotaObAntarGudangController extends Controller
             $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
             $penyesuaian = floatval($request->input('penyesuaian', 0));
             $totalSetelahPenyesuaian = floatval($pembayaran->total_pembayaran) + $penyesuaian;
+            $akunItems = collect($request->input('akun_items'));
+            if ($totalSetelahPenyesuaian <= 0 || abs($akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalSetelahPenyesuaian) > 0.01) {
+                throw new \Exception('Jumlah nominal per akun harus sama dengan grand total bayar.');
+            }
 
-            $akunBiaya = Coa::findOrFail($request->akun_coa_id);
             $akunBank = Coa::findOrFail($request->akun_bank_id);
 
             $pembayaran->update([
@@ -243,13 +236,17 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
-                'akun_coa_id' => $request->akun_coa_id,
+                'akun_coa_id' => $akunItems->first()['akun_coa_id'],
                 'akun_bank_id' => $request->akun_bank_id,
                 'updated_by' => Auth::id(),
             ]);
+            $pembayaran->akunItems()->delete();
+            $pembayaran->akunItems()->createMany($akunItems->all());
 
             // Sync COA double entry: delete first, then recreate
-            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
+            if (! $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran)) {
+                throw new \RuntimeException('Gagal menghapus jurnal lama.');
+            }
 
             $journalKeterangan = 'Pembayaran Pranota OB Antar Gudang - '.$pembayaran->nomor_pembayaran.' (Updated)';
             if ($request->keterangan) {
@@ -259,25 +256,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 $journalKeterangan .= ' | Penyesuaian: '.$request->alasan_penyesuaian;
             }
 
-            if ($request->debit_kredit === 'credit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    $request->tanggal_kas,
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $akunBank->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    ['nama_akun' => $akunBiaya->nama_akun, 'jumlah' => $totalSetelahPenyesuaian],
-                    $request->tanggal_kas,
-                    $pembayaran->nomor_pembayaran,
-                    'Pembayaran Pranota OB Antar Gudang',
-                    $journalKeterangan
-                );
-            }
+            $this->recordPaymentJournal($pembayaran->fresh('akunItems.akunCoa'), $journalKeterangan);
 
             DB::commit();
 
@@ -331,8 +310,54 @@ class PembayaranPranotaObAntarGudangController extends Controller
 
     public function print($id)
     {
-        $pembayaran = PembayaranPranotaObAntarGudang::findOrFail($id);
+        $pembayaran = PembayaranPranotaObAntarGudang::with('akunItems.akunCoa')->findOrFail($id);
 
         return view('pembayaran-pranota-ob-antar-gudang.print', compact('pembayaran'));
+    }
+
+    private function recordPaymentJournal(PembayaranPranotaObAntarGudang $pembayaran, string $keterangan): void
+    {
+        $items = $pembayaran->akunItems;
+        $total = (float) $pembayaran->total_setelah_penyesuaian;
+        if ($total <= 0 || abs($items->sum(fn ($item) => (float) $item->nominal) - $total) > 0.01) {
+            throw new \RuntimeException('Rincian akun tidak seimbang dengan total pembayaran.');
+        }
+
+        $tanggal = $pembayaran->tanggal_kas->format('Y-m-d');
+        $debitBiaya = $pembayaran->jenis_transaksi === 'credit';
+        foreach ($items as $item) {
+            $akun = $item->akunCoa;
+            if (! $akun) {
+                throw new \RuntimeException('Akun biaya tidak ditemukan.');
+            }
+            $memo = trim((string) $item->memo);
+            $this->recordJournalLine(
+                $akun,
+                (float) $item->nominal,
+                $debitBiaya,
+                $pembayaran,
+                $tanggal,
+                $memo === '' ? $keterangan : $keterangan.' | Memo akun: '.$memo
+            );
+        }
+
+        $this->recordJournalLine(Coa::findOrFail($pembayaran->akun_bank_id), $total, ! $debitBiaya, $pembayaran, $tanggal, $keterangan);
+    }
+
+    private function recordJournalLine(Coa $akun, float $jumlah, bool $debit, PembayaranPranotaObAntarGudang $pembayaran, string $tanggal, string $keterangan): void
+    {
+        $recorded = $this->coaTransactionService->recordTransaction(
+            $akun->nama_akun,
+            $debit ? $jumlah : 0,
+            $debit ? 0 : $jumlah,
+            $tanggal,
+            $pembayaran->nomor_pembayaran,
+            'Pembayaran Pranota OB Antar Gudang',
+            $keterangan,
+            $akun->id
+        );
+        if (! $recorded) {
+            throw new \RuntimeException('Gagal mencatat jurnal akun '.$akun->nama_akun.'.');
+        }
     }
 }

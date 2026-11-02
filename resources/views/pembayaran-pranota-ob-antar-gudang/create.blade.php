@@ -104,17 +104,6 @@
                         </select>
                     </div>
 
-                    <div>
-                        <label for="akun_coa_id" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Pilih Akun Biaya (COA)</label>
-                        <select name="akun_coa_id" id="akun_coa_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 coa-select" required>
-                            <option value="">-- Pilih Akun Biaya --</option>
-                            @foreach ($akunBiaya as $akun)
-                                <option value="{{ $akun->id }}" {{ old('akun_coa_id') == $akun->id ? 'selected' : '' }}>
-                                    {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
                 </div>
 
                 <!-- Section Pilih Pranota -->
@@ -176,6 +165,8 @@
                 </div>
 
                 <!-- Alasan & Keterangan -->
+                @include('pembayaran-pranota-ob-antar-gudang._akun-items')
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                     <div>
                         <label for="alasan_penyesuaian" class="block text-xs font-semibold text-gray-700 uppercase mb-1">Alasan Penyesuaian</label>
@@ -224,6 +215,7 @@
 
             totalTagihanDisplay.value = formatRupiah(total);
             totalSetelahPenyesuaianDisplay.value = formatRupiah(grandTotal);
+            window.updateAntarGudangAkunItems?.();
         }
 
         if (selectAll) {
