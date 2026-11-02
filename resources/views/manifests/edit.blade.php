@@ -176,8 +176,9 @@
 
                     <div>
                         <label for="tonnage" class="block text-sm font-medium text-gray-700 mb-2">Tonnage</label>
-                        <input type="number" step="0.001" name="tonnage" id="tonnage" value="{{ old('tonnage', $manifest->tonnage) }}"
+                        <input type="text" inputmode="decimal" name="tonnage" id="tonnage" value="{{ old('tonnage', $manifest->tonnage_input) }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                        <p class="mt-1 text-xs text-gray-500">Gunakan titik atau koma untuk desimal, misalnya 78,776 ton.</p>
                     </div>
 
                     <div>

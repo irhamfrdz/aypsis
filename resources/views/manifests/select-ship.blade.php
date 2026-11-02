@@ -241,6 +241,7 @@
                             <li>File harus berisi kolom: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
                             <li>Data manifest akan dikelompokkan otomatis per kapal dan voyage</li>
                             <li>Format: .xlsx atau .xls (maksimal 10MB)</li>
+                            <li>Isi Tonnage dalam kg; contoh 78.776 kg akan tersimpan sebagai 78,776 ton</li>
                         </ul>
                     </div>
                 </div>

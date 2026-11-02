@@ -31,6 +31,7 @@ class ManifestTonnageStorageTest extends TestCase
 
         DB::table('manifests')->insert(['tonnage' => '192']);
         DB::table('manifests')->insert(['tonnage' => '192.5']);
+        DB::table('manifests')->insert(['tonnage' => '78,776']);
 
         $this->assertSame('varchar', Schema::getColumnType('manifests', 'tonnage'));
         $this->assertSame('192.000', DB::table('manifests')->where('id', 1)->value('tonnage'));
@@ -39,5 +40,7 @@ class ManifestTonnageStorageTest extends TestCase
         $this->assertSame('192', DB::table('manifests')->where('id', 3)->value('tonnage'));
         $this->assertSame('192', Manifest::find(3)->tonnage);
         $this->assertSame('192.5', Manifest::find(4)->tonnage);
+        $this->assertSame('78,776', DB::table('manifests')->where('id', 5)->value('tonnage'));
+        $this->assertEqualsWithDelta(271.276, Manifest::whereIn('id', [4, 5])->get()->sum('tonnage'), 0.000001);
     }
 }

@@ -77,6 +77,16 @@ class Manifest extends Model
         'tanggal_muat' => 'date',
     ];
 
+    public function getTonnageAttribute($value): ?string
+    {
+        return $value === null ? null : str_replace(',', '.', (string) $value);
+    }
+
+    public function getTonnageInputAttribute(): ?string
+    {
+        return $this->getRawOriginal('tonnage');
+    }
+
     // Relationships
     public function isFclBooking(): bool
     {

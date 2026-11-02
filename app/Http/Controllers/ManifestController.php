@@ -317,7 +317,15 @@ class ManifestController extends Controller
     {
         $manifest = Manifest::findOrFail($id);
 
-        $validated = $request->validate([
+        $tonnageInput = $request->input('tonnage');
+        $validationInput = $request->all();
+        if ($tonnageInput !== null) {
+            $tonnageInput = trim((string) $tonnageInput);
+            $tonnage = str_replace(',', '.', $tonnageInput);
+            $validationInput['tonnage'] = $tonnage === '' ? null : $tonnage;
+        }
+
+        $validated = validator($validationInput, [
             'nomor_bl' => 'required|string|max:255',
             'nomor_urut' => 'nullable|integer',
             'prospek_id' => 'nullable|exists:prospek,id',
@@ -340,7 +348,7 @@ class ManifestController extends Controller
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
-            'tonnage' => 'nullable|numeric',
+            'tonnage' => 'nullable|numeric|min:0|decimal:0,3',
             'tonnage_perincian' => 'nullable|numeric',
             'volume' => 'nullable|numeric',
             'volume_perincian' => 'nullable|numeric',
@@ -349,7 +357,11 @@ class ManifestController extends Controller
             'kuantitas' => 'nullable|integer',
             'hs_code' => 'nullable|string|max:255',
             'penerimaan' => 'nullable|date',
-        ]);
+        ])->validate();
+
+        if ($tonnageInput !== null) {
+            $validated['tonnage'] = $tonnageInput === '' ? null : $tonnageInput;
+        }
 
         $validated['updated_by'] = Auth::id();
 
@@ -983,13 +995,18 @@ class ManifestController extends Controller
                     continue;
                 }
 
-                if ($tonnageInput !== '' && ! is_numeric($tonnageInput)) {
-                    $errors[] = "Baris {$rowNumber}: Tonnage harus berupa angka";
+                if ($tonnageInput !== '' && ! preg_match('/^(?:\d+|\d{1,3}(?:\.\d{3})+)$/', $tonnageInput)) {
+                    $errors[] = "Baris {$rowNumber}: Tonnage harus berupa kg bulat (contoh: 78776 atau 78.776)";
 
                     continue;
                 }
 
-                $tonnage = $tonnageInput === '' ? null : $tonnageInput;
+                $tonnage = null;
+                if ($tonnageInput !== '') {
+                    $kg = ltrim(str_replace('.', '', $tonnageInput), '0') ?: '0';
+                    $kg = str_pad($kg, 4, '0', STR_PAD_LEFT);
+                    $tonnage = substr($kg, 0, -3).','.substr($kg, -3);
+                }
 
                 try {
                     // Check if manifest already exists
@@ -1025,7 +1042,7 @@ class ManifestController extends Controller
                             'alamat_penerima' => $alamatPenerima ?: $existing->alamat_penerima,
                             'contact_person' => $contactPerson ?: $existing->contact_person,
                             'term' => $term ?: $existing->term,
-                            'tonnage' => $tonnage ?? $existing->tonnage,
+                            'tonnage' => $tonnage ?? $existing->tonnage_input,
                             'volume' => $volume ?: $existing->volume,
                             'satuan' => $satuan ?: $existing->satuan,
                             'kuantitas' => $kuantitas ?: $existing->kuantitas,
@@ -1161,7 +1178,7 @@ class ManifestController extends Controller
             'Alamat Penerima',
             'Contact Person',
             'Term',
-            'Tonnage',
+            'Tonnage (kg)',
             'Volume',
             'Satuan',
             'Kuantitas',
@@ -1202,7 +1219,7 @@ class ManifestController extends Controller
             'Jl. Penerima No.2',  // Alamat Penerima
             '08123456789',         // Contact Person
             'FOB',                 // Term
-            '10.500',              // Tonnage
+            '10.500',              // Tonnage (kg) => 10,500 ton
             '25.000',              // Volume
             'M3',                  // Satuan
             '100',                 // Kuantitas
@@ -1214,7 +1231,11 @@ class ManifestController extends Controller
 
         $col = 'A';
         foreach ($exampleData as $data) {
-            $sheet->setCellValue($col.'2', $data);
+            if ($col === 'R') {
+                $sheet->setCellValueExplicit($col.'2', $data, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            } else {
+                $sheet->setCellValue($col.'2', $data);
+            }
             $col++;
         }
 

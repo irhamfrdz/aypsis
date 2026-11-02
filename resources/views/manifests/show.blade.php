@@ -117,7 +117,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Tonnage</label>
-                    <p class="text-base text-gray-900">{{ $manifest->tonnage ?? '-' }}</p>
+                    <p class="text-base text-gray-900">{{ $manifest->tonnage_input ?? '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Tonnage Perincian</label>

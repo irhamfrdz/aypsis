@@ -28,7 +28,8 @@ class ManifestShipperTest extends TestCase
             foreach (['no_seal', 'tipe_kontainer', 'size_kontainer', 'nama_kapal', 'pelabuhan_asal', 'pelabuhan_tujuan', 'pelabuhan_muat', 'pelabuhan_bongkar', 'tanggal_berangkat', 'tanggal_muat', 'satuan', 'term', 'nomor_tanda_terima'] as $field) {
                 $table->text($field)->nullable();
             }
-            foreach (['tonnage', 'volume', 'tonnage_perincian', 'volume_perincian', 'kuantitas'] as $field) {
+            $table->string('tonnage', 32)->nullable();
+            foreach (['volume', 'tonnage_perincian', 'volume_perincian', 'kuantitas'] as $field) {
                 $table->decimal($field, 12, 3)->nullable();
             }
             foreach (['nomor_bl', 'nomor_kontainer', 'nama_barang', 'no_voyage', 'pengirim', 'alamat_pengirim', 'penerima', 'alamat_penerima', 'notify_party', 'alamat_notify_party'] as $field) {
@@ -106,6 +107,19 @@ class ManifestShipperTest extends TestCase
             'tonnage' => 3.125, 'volume' => 4.5, 'kuantitas' => 25,
             'tonnage_perincian' => 3.125, 'volume_perincian' => 4.5,
         ], $fields));
+    }
+
+    public function test_manifest_edit_accepts_comma_as_tonnage_decimal_separator(): void
+    {
+        $this->put(route('report.manifests.update', $this->manifest->id), [
+            'nomor_bl' => 'BL-001',
+            'nomor_kontainer' => 'AYPU1234567',
+            'tonnage' => '78,776',
+        ])->assertRedirect();
+
+        $this->assertSame('78,776', DB::table('manifests')->where('id', $this->manifest->id)->value('tonnage'));
+        $this->assertSame('78,776', $this->manifest->fresh()->tonnage_input);
+        $this->assertSame('78.776', $this->manifest->fresh()->tonnage);
     }
 
     public function test_booking_adds_a_shipper_detail_without_creating_another_manifest_or_changing_container_totals(): void
