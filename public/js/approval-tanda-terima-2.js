@@ -527,6 +527,28 @@
             options.querySelector('button')?.focus();
         }
     });
+    options.addEventListener('keydown', event => {
+        const current = event.target.closest('.approval-shipper-option');
+        if (!current) return;
+
+        const buttons = Array.from(options.querySelectorAll('.approval-shipper-option'));
+        const index = buttons.indexOf(current);
+        if (event.key === 'ArrowDown') {
+            event.preventDefault();
+            buttons[Math.min(index + 1, buttons.length - 1)]?.focus();
+        } else if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (index === 0) search.focus();
+            else buttons[index - 1]?.focus();
+        } else if (event.key === 'Home' || event.key === 'End') {
+            event.preventDefault();
+            buttons[event.key === 'Home' ? 0 : buttons.length - 1]?.focus();
+        } else if (event.key === 'Escape') {
+            event.preventDefault();
+            search.focus();
+            hideOptions();
+        }
+    });
     dialog.addEventListener('click', event => {
         if (!options.contains(event.target) && event.target !== search) hideOptions();
     });

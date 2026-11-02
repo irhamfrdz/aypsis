@@ -192,8 +192,8 @@
                 <colgroup>
                     @can('approval-tanda-terima-2-approve')<col style="width:4%">@endcan
                     <col style="width:4%">
-                    <col style="width:10%"><col style="width:8%"><col style="width:11%"><col style="width:12%">
-                    <col style="width:12%"><col style="width:13%"><col style="width:26%">
+                    <col style="width:10%"><col style="width:8%"><col style="width:10%"><col style="width:11%">
+                    <col style="width:7%"><col style="width:7%"><col style="width:10%"><col style="width:12%"><col style="width:17%">
                 </colgroup>
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
@@ -205,6 +205,8 @@
                         <th scope="col" class="px-5 py-3">Tanggal</th>
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
                         <th scope="col" class="px-5 py-3">Nama Barang</th>
+                        <th scope="col" class="px-5 py-3">Jumlah Manifest</th>
+                        <th scope="col" class="px-5 py-3">Satuan Manifest</th>
                         <th scope="col" class="px-5 py-3">Shipper Perincian</th>
                         <th scope="col" class="px-5 py-3">Shipper Manifest JB</th>
                         <th scope="col" class="px-5 py-3 text-right">Aksi</th>
@@ -218,6 +220,7 @@
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
                             $goodsOverride = $goodsOverrides->get($item->id);
+                            $manifestGood = collect($goodsOverride?->manifest_goods ?? [])->first();
                             $isIncomplete = $incompleteMarks->has($item->id);
                             $isExported = $exportedMarks->has($item->id);
                             $goods = $goodsOverride ? collect($goodsOverride->goods) : match ($type) {
@@ -262,6 +265,8 @@
                                     -
                                 @endif
                             </td>
+                            <td data-label="Jumlah Manifest" class="text-gray-700">{{ filled(data_get($manifestGood, 'jumlah')) ? data_get($manifestGood, 'jumlah') : '-' }}</td>
+                            <td data-label="Satuan Manifest" class="text-gray-700">{{ data_get($manifestGood, 'satuan') ?: '-' }}</td>
                             <td data-label="Shipper Perincian" class="text-gray-700">{{ $sender ?: '-' }}</td>
                             <td data-label="Shipper Manifest JB">
                                 @if($item->shipperJb)
@@ -424,7 +429,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr class="approval-empty-row"><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 9 : 8 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr class="approval-empty-row"><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 11 : 10 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>
