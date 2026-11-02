@@ -17,9 +17,12 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
         $receipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'AYP']));
         $otherReceipt = clone $receipt;
         $otherReceipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'LAINNYA']));
+        $nonFakturReceipt = clone $receipt;
+        $nonFakturReceipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => ' non-faktur ']));
         $path = (new ApprovalTandaTerimaDuaExcelService)->createMany('fcl', [
             ['receipt' => $receipt],
             ['receipt' => $otherReceipt],
+            ['receipt' => $nonFakturReceipt],
         ]);
 
         try {
@@ -34,6 +37,10 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
             $this->assertSame('FFFCA5A5', $sheet->getStyle('AA7')->getFill()->getStartColor()->getARGB());
             $this->assertSame('LAINNYA', $sheet->getCell('AA8')->getValue());
             $this->assertSame(Fill::FILL_NONE, $sheet->getStyle('AA8')->getFill()->getFillType());
+            foreach (['Q', 'T'] as $column) {
+                $this->assertSame(Fill::FILL_SOLID, $sheet->getStyle($column.'7')->getFill()->getFillType());
+                $this->assertSame(Fill::FILL_NONE, $sheet->getStyle($column.'9')->getFill()->getFillType());
+            }
             $this->assertSame(70, $sheet->getSheetView()->getZoomScale());
             $this->assertSame('A7', $sheet->getFreezePane());
 

@@ -327,6 +327,19 @@
         search.setAttribute('aria-expanded', 'false');
     }
 
+    function updateNameHighlights() {
+        const documentValue = dialog.querySelector('[data-shipper-field="document_ppftz_03"]')?.value || '';
+        const isNonFaktur = documentValue.trim().replace(/[\s_-]+/g, ' ').toUpperCase() === 'NON FAKTUR';
+        dialog.querySelector('[data-shipper-preview="document_ppftz_03"]')?.classList.toggle(
+            'approval-shipper-document-highlight', documentValue.trim().toUpperCase() === 'AYP'
+        );
+        ['shipper', 'consignee'].forEach(name => {
+            const field = dialog.querySelector(`[data-shipper-field="${name}"]`);
+            const preview = dialog.querySelector(`[data-shipper-preview="${name}"]`);
+            preview?.classList.toggle('approval-shipper-name-highlight', !isNonFaktur && !!field?.value.trim());
+        });
+    }
+
     function showPreview(data) {
         previewFields.forEach(field => {
             const name = field.dataset.shipperField;
@@ -336,13 +349,13 @@
             field.hidden = true;
             const preview = dialog.querySelector('[data-shipper-preview="' + name + '"]');
             preview.textContent = data ? (name === 'status' ? (field.value === '1' ? 'Aktif' : 'Tidak aktif') : (field.value || '-')) : '-';
-            const hasValue = value !== null && value !== undefined && String(value).trim() !== '';
-            preview.classList.toggle('approval-shipper-name-highlight', hasValue && (name === 'shipper' || name === 'consignee'));
-            preview.classList.toggle('approval-shipper-document-highlight', name === 'document_ppftz_03' && String(value ?? '').trim().toUpperCase() === 'AYP');
             preview.disabled = !data;
             preview.hidden = false;
         });
+        updateNameHighlights();
     }
+
+    dialog.querySelector('[data-shipper-field="document_ppftz_03"]')?.addEventListener('input', updateNameHighlights);
 
     previewButtons.forEach(preview => {
         preview.addEventListener('click', () => {

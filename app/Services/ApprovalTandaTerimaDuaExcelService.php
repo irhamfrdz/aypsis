@@ -102,12 +102,17 @@ class ApprovalTandaTerimaDuaExcelService
                 $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
             }
         }
+        $documentType = strtoupper(trim(preg_replace('/[\s_-]+/', ' ', (string) ($shipper?->document_ppftz_03 ?? ''))));
         foreach (['Q', 'T'] as $column) {
-            $sheet->getStyle($column.$row)->getFill()
-                ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()->setARGB('FFFFFF00');
+            $fill = $sheet->getStyle($column.$row)->getFill();
+            if ($documentType === 'NON FAKTUR') {
+                $fill->setFillType(Fill::FILL_NONE);
+            } else {
+                $fill->setFillType(Fill::FILL_SOLID)
+                    ->getStartColor()->setARGB('FFFFFF00');
+            }
         }
-        if (strtoupper(trim((string) ($shipper?->document_ppftz_03 ?? ''))) === 'AYP') {
+        if ($documentType === 'AYP') {
             $sheet->getStyle('AA'.$row)->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFFCA5A5');
