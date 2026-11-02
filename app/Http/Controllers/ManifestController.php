@@ -989,7 +989,7 @@ class ManifestController extends Controller
                     continue;
                 }
 
-                $tonnage = $tonnageInput === '' ? null : (float) $tonnageInput;
+                $tonnage = $tonnageInput === '' ? null : $tonnageInput;
 
                 try {
                     // Check if manifest already exists

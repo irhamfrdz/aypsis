@@ -65,7 +65,6 @@ class Manifest extends Model
     protected $casts = [
         'tanggal_berangkat' => 'date',
         'penerimaan' => 'date',
-        'tonnage' => 'decimal:3',
         'tonnage_perincian' => 'decimal:3',
         'volume' => 'decimal:3',
         'volume_perincian' => 'decimal:3',
