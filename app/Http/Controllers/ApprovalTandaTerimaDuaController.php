@@ -14,6 +14,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -32,6 +33,9 @@ class ApprovalTandaTerimaDuaController extends Controller
         $query = ShipperConsignee::query()
             ->whereNotNull('shipper')
             ->where('shipper', '!=', '');
+        if ($request->boolean('complete_pair')) {
+            $query->whereNotNull('consignee')->where('consignee', '!=', '');
+        }
 
         $items = $request->has('id')
             ? $query->whereKey($request->integer('id'))->get()
@@ -210,6 +214,7 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         $data = $request->validate([
             'no_tanda_terima' => ['required', 'string', 'max:255'],
+            'shipper_jb_id' => ['required', 'integer', 'exists:shipper_consignees,id'],
             'tanggal_tanda_terima' => [
                 'required',
                 'date',
@@ -219,8 +224,6 @@ class ApprovalTandaTerimaDuaController extends Controller
                     }
                 },
             ],
-            'pengirim' => ['required', 'string', 'max:255'],
-            'penerima' => ['required', 'string', 'max:255'],
             'tujuan_pengiriman' => ['required', 'string', 'max:255'],
             'nama_barang' => ['required', 'string', 'max:255'],
             'jumlah_barang' => ['required', 'integer', 'min:1'],
@@ -230,6 +233,13 @@ class ApprovalTandaTerimaDuaController extends Controller
             'no_seal' => ['nullable', 'string', 'max:255'],
             'keterangan_barang' => ['nullable', 'string'],
         ]);
+
+        $shipper = ShipperConsignee::findOrFail($data['shipper_jb_id']);
+        if (! filled($shipper->shipper) || ! filled($shipper->consignee)) {
+            throw ValidationException::withMessages([
+                'shipper_jb_id' => 'Pilih data master yang memiliki shipper dan consignee.',
+            ]);
+        }
 
         $number = trim($data['no_tanda_terima']);
         $alreadyExists = TandaTerimaTanpaSuratJalan::query()
@@ -244,6 +254,12 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         TandaTerimaTanpaSuratJalan::create([
             ...$data,
+            'pengirim' => $shipper->shipper,
+            'penerima' => $shipper->consignee,
+            'alamat_pengirim' => $shipper->alamat_shipper,
+            'alamat_penerima' => $shipper->alamat_consignee,
+            'notify_party' => $shipper->notify_party_consignee,
+            'alamat_notify_party' => $shipper->alamat_notify_party_consignee,
             'no_tanda_terima' => $number,
             'nomor_tanda_terima' => $number,
             'jenis_barang' => $data['nama_barang'],

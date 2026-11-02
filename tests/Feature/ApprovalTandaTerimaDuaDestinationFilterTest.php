@@ -17,6 +17,16 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:', 'cache.default' => 'array']);
         DB::purge('sqlite');
 
+        Schema::create('shipper_consignees', function (Blueprint $table) {
+            $table->id();
+            $table->string('shipper')->nullable();
+            $table->string('consignee')->nullable();
+            $table->text('alamat_shipper')->nullable();
+            $table->text('alamat_consignee')->nullable();
+            $table->string('notify_party_consignee')->nullable();
+            $table->text('alamat_notify_party_consignee')->nullable();
+        });
+
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->string('no_surat_jalan')->nullable();
@@ -36,6 +46,10 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->string('nomor_tanda_terima')->nullable();
             $table->string('pengirim')->nullable();
             $table->string('penerima')->nullable();
+            $table->text('alamat_pengirim')->nullable();
+            $table->text('alamat_penerima')->nullable();
+            $table->string('notify_party')->nullable();
+            $table->text('alamat_notify_party')->nullable();
             $table->string('no_kontainer')->nullable();
             $table->string('size_kontainer')->nullable();
             $table->string('no_seal')->nullable();
@@ -117,12 +131,19 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
 
     public function test_approval_can_add_missing_ttsj_and_find_it_in_the_list(): void
     {
+        $shipperId = DB::table('shipper_consignees')->insertGetId([
+            'shipper' => 'PT Pengirim',
+            'consignee' => 'PT Penerima',
+            'alamat_shipper' => 'Alamat Pengirim',
+            'alamat_consignee' => 'Alamat Penerima',
+        ]);
         $controller = new ApprovalTandaTerimaDuaController;
         $request = Request::create('/approval-tanda-terima-2/ttsj', 'POST', [
             'no_tanda_terima' => 'TT-NEW-001',
             'tanggal_tanda_terima' => '2026-11-02',
-            'pengirim' => 'PT Pengirim',
-            'penerima' => 'PT Penerima',
+            'shipper_jb_id' => $shipperId,
+            'pengirim' => 'Nilai manipulasi',
+            'penerima' => 'Nilai manipulasi',
             'tujuan_pengiriman' => 'Batam',
             'nama_barang' => 'Mesin',
             'jumlah_barang' => 2,
@@ -136,6 +157,11 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             'nomor_tanda_terima' => 'TT-NEW-001',
             'jenis_barang' => 'Mesin',
             'status' => 'draft',
+            'shipper_jb_id' => $shipperId,
+            'pengirim' => 'PT Pengirim',
+            'penerima' => 'PT Penerima',
+            'alamat_pengirim' => 'Alamat Pengirim',
+            'alamat_penerima' => 'Alamat Penerima',
         ]);
 
         $items = $controller->index(Request::create('/', 'GET', [
@@ -163,14 +189,16 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
 
     public function test_approval_rejects_duplicate_ttsj_number(): void
     {
+        $shipperId = DB::table('shipper_consignees')->insertGetId([
+            'shipper' => 'PT Pengirim', 'consignee' => 'PT Penerima',
+        ]);
         DB::table('tanda_terima_tanpa_surat_jalan')->insert([
             'nomor_tanda_terima' => 'TT-EXISTING',
         ]);
         $request = Request::create('/approval-tanda-terima-2/ttsj', 'POST', [
             'no_tanda_terima' => 'TT-EXISTING',
             'tanggal_tanda_terima' => '2026-11-02',
-            'pengirim' => 'PT Pengirim',
-            'penerima' => 'PT Penerima',
+            'shipper_jb_id' => $shipperId,
             'tujuan_pengiriman' => 'Batam',
             'nama_barang' => 'Mesin',
             'jumlah_barang' => 2,

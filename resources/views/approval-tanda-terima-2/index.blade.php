@@ -454,9 +454,10 @@
         </div>
         <button type="button" data-ttsj-close class="rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>
     </div>
-    <form method="POST" action="{{ route('approval-tanda-terima-2.ttsj.store') }}">
+    <form method="POST" action="{{ route('approval-tanda-terima-2.ttsj.store') }}" data-shipper-search-url="{{ route('approval-tanda-terima-2.shippers') }}">
         @csrf
         <input type="hidden" name="_approval_ttsj_create" value="1">
+        <input id="approval-ttsj-shipper-id" type="hidden" name="shipper_jb_id" value="{{ old('shipper_jb_id') }}">
         <div class="grid gap-4 px-5 py-5 sm:grid-cols-2 sm:px-6">
             <div>
                 <label for="approval-ttsj-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
@@ -466,13 +467,20 @@
                 <label for="approval-ttsj-date" class="mb-1 block text-sm font-medium text-gray-700">Tanggal tanda terima <span class="text-red-600">*</span></label>
                 <input id="approval-ttsj-date" name="tanggal_tanda_terima" type="date" value="{{ old('tanggal_tanda_terima', now()->toDateString()) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
+            <div class="sm:col-span-2">
+                <label for="approval-ttsj-shipper-search" class="mb-1 block text-sm font-medium text-gray-700">Shipper / consignee dari master <span class="text-red-600">*</span></label>
+                <input id="approval-ttsj-shipper-search" type="search" autocomplete="off" placeholder="Cari shipper atau consignee..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" aria-controls="approval-ttsj-shipper-results">
+                <div id="approval-ttsj-shipper-results" class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm" hidden></div>
+                <p id="approval-ttsj-shipper-message" class="mt-1 text-xs text-gray-500" aria-live="polite">Pilih pasangan shipper dan consignee dari hasil pencarian.</p>
+                @error('shipper_jb_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+            </div>
             <div>
                 <label for="approval-ttsj-sender" class="mb-1 block text-sm font-medium text-gray-700">Pengirim <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-sender" name="pengirim" value="{{ old('pengirim') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-sender" readonly placeholder="Terisi dari master" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700">
             </div>
             <div>
                 <label for="approval-ttsj-receiver" class="mb-1 block text-sm font-medium text-gray-700">Penerima <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-receiver" name="penerima" value="{{ old('penerima') }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-receiver" readonly placeholder="Terisi dari master" class="w-full rounded-lg border border-gray-300 bg-gray-50 px-3 py-2 text-sm text-gray-700">
             </div>
             <div>
                 <label for="approval-ttsj-destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman <span class="text-red-600">*</span></label>
@@ -614,6 +622,83 @@ document.addEventListener('DOMContentLoaded', () => {
     openButton?.addEventListener('click', () => dialog.showModal());
     dialog.querySelectorAll('[data-ttsj-close]').forEach(button => button.addEventListener('click', () => dialog.close()));
     if (dialog.dataset.reopen === 'true') dialog.showModal();
+
+    const form = dialog.querySelector('form');
+    const search = document.getElementById('approval-ttsj-shipper-search');
+    const results = document.getElementById('approval-ttsj-shipper-results');
+    const message = document.getElementById('approval-ttsj-shipper-message');
+    const selectedId = document.getElementById('approval-ttsj-shipper-id');
+    const sender = document.getElementById('approval-ttsj-sender');
+    const receiver = document.getElementById('approval-ttsj-receiver');
+    let timer;
+    let controller;
+
+    function selectShipper(item) {
+        selectedId.value = item.real_id;
+        sender.value = item.shipper || '';
+        receiver.value = item.consignee || '';
+        search.value = item.display_text;
+        message.textContent = 'Data master dipilih.';
+        results.hidden = true;
+    }
+
+    async function findShippers(id = null) {
+        controller?.abort();
+        controller = new AbortController();
+        const url = new URL(form.dataset.shipperSearchUrl, location.href);
+        if (id) url.searchParams.set('id', id);
+        else {
+            url.searchParams.set('q', search.value.trim());
+            url.searchParams.set('complete_pair', '1');
+        }
+        try {
+            const response = await fetch(url, {signal: controller.signal});
+            if (!response.ok) throw new Error('Pencarian master gagal. Coba lagi.');
+            const items = await response.json();
+            if (id) {
+                const item = items.find(item => String(item.real_id) === String(id));
+                if (item && item.shipper && item.consignee) selectShipper(item);
+                else {
+                    selectedId.value = '';
+                    message.textContent = 'Data master perlu memiliki shipper dan consignee.';
+                }
+                return;
+            }
+            results.replaceChildren();
+            items.forEach(item => {
+                const button = document.createElement('button');
+                button.type = 'button';
+                button.className = 'block w-full border-b border-gray-100 px-3 py-2 text-left text-sm hover:bg-indigo-50 focus:bg-indigo-50';
+                button.textContent = item.display_text;
+                button.addEventListener('click', () => selectShipper(item));
+                results.append(button);
+            });
+            results.hidden = !results.childElementCount;
+            message.textContent = results.hidden ? 'Pasangan shipper dan consignee tidak ditemukan.' : 'Pilih satu hasil pencarian.';
+        } catch (error) {
+            if (error.name !== 'AbortError') message.textContent = error.message;
+        }
+    }
+
+    if (selectedId.value) findShippers(selectedId.value);
+    search.addEventListener('input', () => {
+        clearTimeout(timer);
+        controller?.abort();
+        selectedId.value = '';
+        sender.value = '';
+        receiver.value = '';
+        results.hidden = true;
+        timer = setTimeout(() => findShippers(), 250);
+    });
+    search.addEventListener('focus', () => {
+        if (!selectedId.value) findShippers();
+    });
+    form.addEventListener('submit', event => {
+        if (selectedId.value) return;
+        event.preventDefault();
+        message.textContent = 'Pilih shipper dan consignee dari master terlebih dahulu.';
+        search.focus();
+    });
 });
 </script>
 @endpush
