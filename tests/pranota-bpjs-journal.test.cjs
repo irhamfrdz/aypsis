@@ -1,6 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-journal.js');
+require('../public/js/pranota-bpjs-filters.js');
 require('../public/js/pranota-bpjs-performance.js');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-allowances.js');
@@ -76,7 +77,7 @@ test('special-case JKN is biaya, unknown types remain visible, and cents do not 
     assert.equal(journal.totals.grand_total, 0.6);
 });
 
-test('live journal includes selected hidden rows, refreshes after edits, and uses contributions independently of manual summaries', () => {
+test('live journal follows visible employees and component filters, refreshes after edits, and resets totals', () => {
     const previousDocument = globalThis.document;
     const node = () => ({ children: [], appendChild(child) { this.children.push(child); },
         replaceChildren(fragment) { this.children = fragment.children; } });
@@ -105,12 +106,35 @@ test('live journal includes selected hidden rows, refreshes after edits, and use
     try {
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '284,00');
-        assert.equal(body.children[0].children[1].textContent, '200,00');
-        assert.equal(body.children[1].children[2].textContent, '20,00');
+        assert.equal(totals.grand_total.textContent, '142,00');
+        assert.equal(body.children[0].children[1].textContent, '100,00');
+        assert.equal(body.children[1].children[2].textContent, '10,00');
         input.value = '200.25';
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
+        assert.equal(totals.grand_total.textContent, '242,25');
+        container.bpjsJournalFilter = { records: [
+            { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'CREW' },
+            { jenis: 'jamsostek', group_name: 'PPU', tipe: 'Harian' },
+        ], group: 'JKN-KIS', tipe: 'all' };
+        BpjsAllowances.update(container, Number, String);
+        assert.equal(totals.grand_total.textContent, '225,25');
+        assert.equal(body.children[1].children[2].textContent, '-');
+        container.bpjsJournalFilter.group = 'all';
+        container.bpjsJournalFilter.tipe = 'Harian';
+        BpjsAllowances.update(container, Number, String);
+        assert.equal(totals.grand_total.textContent, '17,00');
+        assert.equal(body.children[0].children[1].textContent, '-');
+        assert.equal(body.children[1].children[3].textContent, '5,00');
+        // Filtering must not alter the underlying employee contributions.
+        assert.equal(rows[0].bpjsJournalRecord.amounts.bpjs_kesehatan, 200.25);
+        rows[0].classList.contains = () => true;
+        BpjsAllowances.update(container, Number, String);
+        assert.equal(totals.grand_total.textContent, '0,00');
+        assert.equal(totals.debit.textContent, '0,00');
+        container.bpjsJournalFilter.group = container.bpjsJournalFilter.tipe = 'all';
+        rows.forEach(item => { item.classList.contains = () => false; });
+        BpjsAllowances.update(container, Number, String);
         assert.equal(totals.grand_total.textContent, '484,50');
     } finally { globalThis.document = previousDocument; }
 });

@@ -96,16 +96,18 @@
                         <div>
                             <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900">Jarak Tempuh per Kendaraan</h3>
                             <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit.</p>
+                            <p class="mt-2 text-xs leading-relaxed text-slate-500">Pergantian ban dihitung per kendaraan dari Ban Luar dan Ban Luar Batam berstatus Terpakai, berdasarkan tanggal pasang dalam periode pilihan. Satu nomor bukti pakai dihitung satu kali; tanpa nomor bukti, setiap catatan ban dihitung satu kali.</p>
                         </div>
                     </div>
                     <div class="mt-5 overflow-x-auto rounded-xl border border-slate-100">
-                        <table class="min-w-[620px] w-full divide-y divide-slate-100 text-sm">
+                        <table class="min-w-[760px] w-full divide-y divide-slate-100 text-sm">
                             <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
                                 <tr>
                                     <th class="px-4 py-3">Kendaraan</th>
                                     <th class="px-4 py-3 text-center">Hari GPS</th>
                                     <th class="px-4 py-3 text-center">Hari Bergerak</th>
                                     <th class="px-4 py-3 text-center">Rit</th>
+                                    <th class="px-4 py-3 text-center">Pergantian Ban</th>
                                     <th class="px-4 py-3 text-right">Jarak</th>
                                 </tr>
                             </thead>
@@ -138,10 +140,14 @@
                                         <td class="px-4 py-3 text-center text-slate-600">{{ $row->days_with_data }}</td>
                                         <td class="px-4 py-3 text-center text-slate-600">{{ $row->moving_days }}</td>
                                         <td class="px-4 py-3 text-center"><span class="inline-flex min-w-8 justify-center rounded-full bg-indigo-50 px-2 py-1 text-xs font-bold text-indigo-700">{{ number_format($row->rit_count, 0, ',', '.') }}</span></td>
+                                        <td class="whitespace-nowrap px-4 py-3 text-center">
+                                            <span class="font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</span>
+                                            <span class="mt-0.5 block text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} ban</span>
+                                        </td>
                                         <td class="whitespace-nowrap px-4 py-3 text-right font-bold text-indigo-700">{{ number_format((float) $row->total_km, 2, ',', '.') }} km</td>
                                     </tr>
                                     <tr id="rit-details-{{ $row->mobil_id }}" class="hidden bg-indigo-50/60">
-                                        <td colspan="5" class="px-4 py-5">
+                                        <td colspan="6" class="px-4 py-5">
                                             <p class="mb-3 text-sm font-bold text-indigo-950">Detail Rit · {{ $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id }} <span class="ml-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-indigo-700">{{ number_format($row->rit_count, 0, ',', '.') }} rit</span></p>
                                             @if($row->rit_details->isEmpty())
                                                 <p class="text-xs text-gray-600">Tidak ada surat jalan rit untuk kendaraan ini pada periode yang dipilih.</p>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\GpsDailyDistance;
 use App\Services\RitSuratJalanService;
+use App\Services\VehicleTireReplacementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -41,6 +42,9 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->values();
 
             if ($vehicleStats->isNotEmpty()) {
+                $tireReplacements = app(VehicleTireReplacementService::class)->summarize(
+                    $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai
+                );
                 $start = Carbon::parse($tanggalDari)->startOfDay();
                 $end = Carbon::parse($tanggalSampai)->endOfDay();
                 $ritCounts = [];
@@ -112,6 +116,9 @@ class DashboardPerjalananKendaraanController extends Controller
                 }
 
                 foreach ($vehicleStats as $row) {
+                    $tires = $tireReplacements->get($row->mobil_id, ['replacement_count' => 0, 'tire_count' => 0]);
+                    $row->tire_replacement_count = $tires['replacement_count'];
+                    $row->tire_count = $tires['tire_count'];
                     $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($row->mobil?->nomor_polisi ?? ''));
                     $row->rit_count = $ritCounts[$plate] ?? 0;
                     $row->rit_details = collect($ritDetails[$plate] ?? [])

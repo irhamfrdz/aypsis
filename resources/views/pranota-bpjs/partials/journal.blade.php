@@ -1,6 +1,6 @@
 <section class="bpjs-journal" data-bpjs-journal aria-labelledby="bpjs-journal-title">
     <h3 id="bpjs-journal-title" class="text-lg font-bold text-gray-800">Jurnal</h3>
-    <p class="text-xs text-gray-500 mt-1 mb-4">Seluruh karyawan dalam pranota, berdasarkan komponen iuran. JKN mengikuti Tipe JKN dan Jamsostek mengikuti Tipe BP Jamsostek. Nominal dalam Rupiah.</p>
+    <p class="text-xs text-gray-500 mt-1 mb-4">Nominal mengikuti filter dan pencarian karyawan yang aktif, berdasarkan komponen iuran. JKN mengikuti Tipe JKN dan Jamsostek mengikuti Tipe BP Jamsostek. Nominal dalam Rupiah.</p>
     <div class="overflow-x-auto">
         <table class="bpjs-journal-table">
             <thead>

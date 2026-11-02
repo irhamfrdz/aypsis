@@ -654,6 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (filterEmptyState) filterEmptyState.classList.add('hidden');
         }
 
+        container.bpjsJournalFilter = { records: rumusBpjs, group: selectedGroup, tipe: selectedCabang };
         calculateTotals(isFiltered, visibleRows, totalRows, selectedGroup, selectedCabang);
     }
 

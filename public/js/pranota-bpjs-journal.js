@@ -97,8 +97,26 @@
         });
     }
     function renderFromRows(container) {
+        const filter = container.bpjsJournalFilter;
         render(Array.from(container.querySelectorAll('tr.detail-row')).filter(row =>
-            row.querySelector('.karyawan-hidden-input')?.value && row.bpjsJournalRecord).map(row => row.bpjsJournalRecord));
+            !row.classList.contains('hidden') && row.querySelector('.karyawan-hidden-input')?.value
+            && row.bpjsJournalRecord).map(row => {
+                const record = row.bpjsJournalRecord;
+                if (!filter) return record;
+                const employee = record.employee || {};
+                const matches = jenis => root.BpjsMasterFilters.matches(jenis === 'jkn'
+                    ? { group_jkn: employee.group_jkn, tipe_jkn: employee.tipe_jkn }
+                    : { group_bp_jamsostek: employee.group_bp_jamsostek, tipe_bp_jamsostek: employee.tipe_bp_jamsostek },
+                    filter.records, filter.group, filter.tipe);
+                const amounts = { ...record.amounts };
+                if (!matches('jkn')) {
+                    for (const key of ['bpjs_kesehatan', 'bpjs_ketenagakerjaan', 'kis_biaya', 'kis_tunjangan']) amounts[key] = 0;
+                }
+                if (!matches('jamsostek')) {
+                    for (const key of fields.filter(key => !['bpjs_kesehatan', 'bpjs_ketenagakerjaan'].includes(key))) amounts[key] = 0;
+                }
+                return { ...record, amounts };
+            }));
     }
     root.BpjsJournal = { fields, calculate, render, renderFromRows };
 })(globalThis);
