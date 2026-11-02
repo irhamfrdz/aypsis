@@ -107,7 +107,7 @@ class ApprovalTandaTerimaDuaExcelService
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFFFFF00');
         }
-        if (filled($shipper?->document_ppftz_03)) {
+        if (strtoupper(trim((string) ($shipper?->document_ppftz_03 ?? ''))) === 'AYP') {
             $sheet->getStyle('AA'.$row)->getFill()
                 ->setFillType(Fill::FILL_SOLID)
                 ->getStartColor()->setARGB('FFFCA5A5');

@@ -336,7 +336,7 @@
             preview.textContent = data ? (name === 'status' ? (field.value === '1' ? 'Aktif' : 'Tidak aktif') : (field.value || '-')) : '-';
             const hasValue = value !== null && value !== undefined && String(value).trim() !== '';
             preview.classList.toggle('approval-shipper-name-highlight', hasValue && (name === 'shipper' || name === 'consignee'));
-            preview.classList.toggle('approval-shipper-document-highlight', hasValue && name === 'document_ppftz_03');
+            preview.classList.toggle('approval-shipper-document-highlight', name === 'document_ppftz_03' && String(value ?? '').trim().toUpperCase() === 'AYP');
             preview.disabled = !data;
             preview.hidden = false;
         });

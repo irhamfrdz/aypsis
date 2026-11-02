@@ -6,6 +6,7 @@ use App\Models\ShipperConsignee;
 use App\Services\ApprovalTandaTerimaDuaExcelService;
 use Illuminate\Database\Eloquent\Model;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 use Tests\TestCase;
 
 class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
@@ -14,9 +15,11 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
     {
         $receipt = (new class extends Model {})->forceFill(['no_surat_jalan' => 'TEST-001']);
         $receipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'AYP']));
+        $otherReceipt = clone $receipt;
+        $otherReceipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'LAINNYA']));
         $path = (new ApprovalTandaTerimaDuaExcelService)->createMany('fcl', [
             ['receipt' => $receipt],
-            ['receipt' => $receipt],
+            ['receipt' => $otherReceipt],
         ]);
 
         try {
@@ -29,6 +32,8 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
             $this->assertSame('TEST-001', $sheet->getCell('AC8')->getValue());
             $this->assertSame('AYP', $sheet->getCell('AA7')->getValue());
             $this->assertSame('FFFCA5A5', $sheet->getStyle('AA7')->getFill()->getStartColor()->getARGB());
+            $this->assertSame('LAINNYA', $sheet->getCell('AA8')->getValue());
+            $this->assertSame(Fill::FILL_NONE, $sheet->getStyle('AA8')->getFill()->getFillType());
             $this->assertSame(70, $sheet->getSheetView()->getZoomScale());
             $this->assertSame('A7', $sheet->getFreezePane());
 
