@@ -56,6 +56,10 @@
                             <label class="{{ $labelClasses }}">Nomor Pembayaran <span class="text-red-500">*</span></label>
                             <input type="text" name="nomor_pembayaran" id="nomor_pembayaran" value="{{ $item->nomor_pembayaran }}" class="{{ $readonlyInputClasses }}" readonly required>
                         </div>
+                        <div class="col-span-2">
+                            <label class="{{ $labelClasses }}">Nomor Pranota Terpilih</label>
+                            <div id="selectedPranotaNumbers" class="{{ $readonlyInputClasses }} break-words" aria-live="polite">{{ $item->pranotaStocks->pluck('nomor_pranota')->implode(', ') ?: '-' }}</div>
+                        </div>
                         <div>
                             <label class="{{ $labelClasses }}">Nomor Accurate</label>
                             <input type="text" name="nomor_accurate" value="{{ old('nomor_accurate', $item->nomor_accurate) }}" class="{{ $inputClasses }}" placeholder="Input Accurate No">
@@ -140,7 +144,7 @@
                                 @endphp
                                 <tr class="pranota-row hover:bg-gray-50 cursor-pointer" onclick="toggleRow(this)">
                                     <td class="px-4 py-2" onclick="event.stopPropagation()">
-                                        <input type="checkbox" name="pranota_stock_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox rounded border-gray-300" data-amount="{{ $totalBill }}" {{ $isChecked ? 'checked' : '' }}>
+                                        <input type="checkbox" name="pranota_stock_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox rounded border-gray-300" data-amount="{{ $totalBill }}" data-pranota-number="{{ $pranota->nomor_pranota }}" {{ $isChecked ? 'checked' : '' }}>
                                     </td>
                                     <td class="px-4 py-2 text-xs font-medium">{{ $pranota->nomor_pranota }}</td>
                                     <td class="px-4 py-2 text-xs">{{ $pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/m/Y') : '-' }}</td>
@@ -262,20 +266,24 @@
             const penyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
             const totalAkhirInput = document.getElementById('total_akhir');
             const checkedCount = document.getElementById('checkedCount');
+            const selectedPranotaNumbers = document.getElementById('selectedPranotaNumbers');
 
             window.calculateTotal = function() {
                 let subtotal = 0;
                 let count = 0;
+                const pranotaNumbers = [];
                 checkboxes.forEach(cb => {
                     if(cb.checked) {
                         subtotal += parseFloat(cb.dataset.amount);
                         count++;
+                        pranotaNumbers.push(cb.dataset.pranotaNumber);
                     }
                 });
 
                 if(subtotalInput) subtotalInput.value = subtotal;
                 if(subtotalDisplay) subtotalDisplay.value = subtotal;
                 if(checkedCount) checkedCount.innerText = count + " Item Terpilih";
+                if(selectedPranotaNumbers) selectedPranotaNumbers.textContent = pranotaNumbers.join(', ') || '-';
                 
                 const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
                 if(totalAkhirInput) totalAkhirInput.value = subtotal + penyesuaian;
