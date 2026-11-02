@@ -920,7 +920,7 @@ class ManifestController extends Controller
                 $alamatPenerima = trim($row[14] ?? '');
                 $contactPerson = trim($row[15] ?? '');
                 $term = trim($row[16] ?? '');
-                $tonnage = trim($row[17] ?? '');
+                $tonnageInput = trim((string) ($row[17] ?? ''));
                 $volume = trim($row[18] ?? '');
                 $satuan = trim($row[19] ?? '');
                 $kuantitas = trim($row[20] ?? '');
@@ -983,6 +983,14 @@ class ManifestController extends Controller
                     continue;
                 }
 
+                if ($tonnageInput !== '' && ! is_numeric($tonnageInput)) {
+                    $errors[] = "Baris {$rowNumber}: Tonnage harus berupa angka";
+
+                    continue;
+                }
+
+                $tonnage = $tonnageInput === '' ? null : (float) $tonnageInput;
+
                 try {
                     // Check if manifest already exists
                     $existing = Manifest::where('nomor_bl', $nomorBl)
@@ -1017,7 +1025,7 @@ class ManifestController extends Controller
                             'alamat_penerima' => $alamatPenerima ?: $existing->alamat_penerima,
                             'contact_person' => $contactPerson ?: $existing->contact_person,
                             'term' => $term ?: $existing->term,
-                            'tonnage' => $tonnage ?: $existing->tonnage,
+                            'tonnage' => $tonnage ?? $existing->tonnage,
                             'volume' => $volume ?: $existing->volume,
                             'satuan' => $satuan ?: $existing->satuan,
                             'kuantitas' => $kuantitas ?: $existing->kuantitas,
@@ -1053,7 +1061,7 @@ class ManifestController extends Controller
                             'alamat_penerima' => $alamatPenerima,
                             'contact_person' => $contactPerson,
                             'term' => $term,
-                            'tonnage' => $tonnage ?: null,
+                            'tonnage' => $tonnage,
                             'volume' => $volume ?: null,
                             'satuan' => $satuan,
                             'kuantitas' => $kuantitas ?: null,
