@@ -129,6 +129,7 @@ class DashboardPerjalananKendaraanController extends Controller
                     $tires = $tireReplacements->get($row->mobil_id, ['replacement_count' => 0, 'tire_count' => 0]);
                     $row->tire_replacement_count = $tires['replacement_count'];
                     $row->tire_count = $tires['tire_count'];
+                    $row->tire_details = $tires['details'] ?? collect();
                     $plate = preg_replace('/[^A-Z0-9]/', '', strtoupper($row->mobil?->nomor_polisi ?? ''));
                     $row->rit_count = $ritCounts[$plate] ?? 0;
                     $row->rit_details = collect($ritDetails[$plate] ?? [])

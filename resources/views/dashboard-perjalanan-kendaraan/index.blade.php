@@ -95,7 +95,7 @@
                         <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600"><i class="fas fa-truck" aria-hidden="true"></i></span>
                         <div>
                             <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900">Jarak Tempuh per Kendaraan</h3>
-                            <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit dan pemakaian barang atau servis.</p>
+                            <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit, pergantian ban supir, dan pemakaian barang atau servis.</p>
                             <p class="mt-2 text-xs leading-relaxed text-slate-500">Pergantian ban mengikuti supir penerima pada Ban Luar dan Ban Luar Batam berstatus Terpakai, termasuk ban kendaraan lain yang diterima supir tersebut. Setiap ban dihitung satu kali, meskipun nomor buktinya sama. Periode mengikuti tanggal pemakaian (atau tanggal pasang jika belum diisi). Jika penerima atau supir belum tercatat, pencocokan menggunakan kendaraan.</p>
                         </div>
                     </div>
@@ -183,6 +183,8 @@
                                                     </table>
                                                 </div>
                                             @endif
+
+                                            @include('dashboard-perjalanan-kendaraan.partials.tire-details', ['tireDetails' => $row->tire_details])
 
                                             <div class="mt-6 border-t border-indigo-100 pt-5">
                                                 <p class="mb-3 text-sm font-bold text-indigo-950">Barang/Servis Dipakai <span class="ml-1 rounded-full bg-white px-2 py-1 text-xs font-semibold text-indigo-700">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</span></p>

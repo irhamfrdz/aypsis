@@ -32,9 +32,12 @@ class VehicleTireReplacementService
                         $query->orWhereIn(\Illuminate\Support\Facades\DB::raw('UPPER(TRIM(penerima_manual))'), $driverNames);
                     }
                 })
-                ->select(['id', 'mobil_id', 'penerima_id'])
+                ->with(['mobil:id,nomor_polisi,no_kir,kode_no', 'penerima:id,nama_lengkap'])
+                ->select(['id', 'mobil_id', 'penerima_id', 'nomor_bukti_pakai', 'nomor_seri', 'merk', 'ukuran', 'kondisi', 'keterangan'])
                 ->selectRaw($hasManualReceiver ? 'penerima_manual' : 'NULL AS penerima_manual')
+                ->selectRaw($dateColumn.' AS usage_date')
                 ->get();
+            $rows->each(fn ($row) => $row->setAttribute('stock_source', $hasManualReceiver ? 'Ban Luar' : 'Ban Luar Batam'));
             $usages = $usages->concat($rows);
         }
 
@@ -42,7 +45,7 @@ class VehicleTireReplacementService
         foreach ($vehicleIds as $vehicleId) {
             $driver = $drivers[$vehicleId] ?? null;
             $names = array_values(array_filter(array_map($normalize, $driver['names'] ?? [])));
-            $count = $usages->filter(function ($row) use ($driver, $names, $vehicleId, $normalize) {
+            $matched = $usages->filter(function ($row) use ($driver, $names, $vehicleId, $normalize) {
                 if ($driver && ($row->penerima_id || trim((string) $row->penerima_manual) !== '')) {
                     return $row->penerima_id
                         ? (string) $row->penerima_id === (string) $driver['id']
@@ -50,9 +53,22 @@ class VehicleTireReplacementService
                 }
 
                 return (string) $row->mobil_id === (string) $vehicleId;
-            })->count();
+            });
+            $count = $matched->count();
             if ($count > 0) {
-                $summary->put($vehicleId, ['replacement_count' => $count, 'tire_count' => $count]);
+                $details = $matched->sortByDesc('usage_date')->values()->map(fn ($row) => [
+                    'tanggal' => $row->usage_date,
+                    'nomor_bukti' => $row->nomor_bukti_pakai,
+                    'nomor_seri' => $row->nomor_seri,
+                    'merk' => $row->merk,
+                    'ukuran' => $row->ukuran,
+                    'kondisi' => $row->kondisi,
+                    'kendaraan' => $row->mobil?->nomor_polisi ?: ($row->mobil?->no_kir ?: ($row->mobil?->kode_no ?: '-')),
+                    'penerima' => $row->penerima?->nama_lengkap ?: ($row->penerima_manual ?: '-'),
+                    'sumber' => $row->stock_source,
+                    'keterangan' => $row->keterangan,
+                ]);
+                $summary->put($vehicleId, ['replacement_count' => $count, 'tire_count' => $count, 'details' => $details]);
             }
         }
 

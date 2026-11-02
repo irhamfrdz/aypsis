@@ -13,6 +13,16 @@ class VehicleTireReplacementTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        Schema::create('mobils', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_polisi')->nullable();
+            $table->string('no_kir')->nullable();
+            $table->string('kode_no')->nullable();
+        });
+        Schema::create('karyawans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_lengkap')->nullable();
+        });
         foreach (['stock_bans', 'stock_ban_luar_batams'] as $name) {
             Schema::create($name, function (Blueprint $table) {
                 $table->id();
@@ -23,6 +33,11 @@ class VehicleTireReplacementTest extends TestCase
                 $table->string('nomor_bukti_pakai')->nullable();
                 $table->unsignedBigInteger('penerima_id')->nullable();
                 $table->string('penerima_manual')->nullable();
+                $table->string('nomor_seri')->nullable();
+                $table->string('merk')->nullable();
+                $table->string('ukuran')->nullable();
+                $table->string('kondisi')->nullable();
+                $table->text('keterangan')->nullable();
             });
         }
     }
@@ -49,8 +64,9 @@ class VehicleTireReplacementTest extends TestCase
         $service = app(VehicleTireReplacementService::class);
         $summary = $service->summarize([1, 2, 4], '2026-10-01', '2026-10-31');
 
-        $this->assertSame(['replacement_count' => 6, 'tire_count' => 6], $summary->get(1));
-        $this->assertSame(['replacement_count' => 1, 'tire_count' => 1], $summary->get(2));
+        $this->assertSame(6, $summary->get(1)['replacement_count']);
+        $this->assertCount(6, $summary->get(1)['details']);
+        $this->assertSame(1, $summary->get(2)['tire_count']);
         $this->assertFalse($summary->has(3));
         $this->assertFalse($summary->has(4));
         $this->assertTrue($service->summarize([], '2026-10-01', '2026-10-31')->isEmpty());
@@ -66,8 +82,7 @@ class VehicleTireReplacementTest extends TestCase
         $drivers = [1 => ['id' => 10, 'names' => ['BENI', 'BENI SUPIR']]];
         $service = app(VehicleTireReplacementService::class);
 
-        $this->assertSame(['replacement_count' => 2, 'tire_count' => 2],
-            $service->summarize([1], '2026-10-01', '2026-10-31', $drivers)->get(1));
+        $this->assertSame(2, $service->summarize([1], '2026-10-01', '2026-10-31', $drivers)->get(1)['replacement_count']);
         $this->assertTrue($service->summarize([1], '2026-09-01', '2026-09-30', $drivers)->isEmpty());
 
         DB::table('stock_bans')->insert([
@@ -82,7 +97,41 @@ class VehicleTireReplacementTest extends TestCase
             'mobil_id' => 9, 'status' => 'Terpakai', 'tanggal_keluar' => '2026-10-31', 'penerima_id' => 10,
         ]);
         $summary = $service->summarize([1, 2], '2026-10-01', '2026-10-31', $drivers);
-        $this->assertSame(['replacement_count' => 5, 'tire_count' => 5], $summary->get(1));
+        $this->assertSame(5, $summary->get(1)['tire_count']);
+        $this->assertCount(5, $summary->get(1)['details']);
         $this->assertFalse($summary->has(2));
+    }
+
+    public function test_details_reconcile_with_counts_show_actual_vehicle_and_receiver_and_render_safely(): void
+    {
+        DB::table('mobils')->insert(['id' => 9, 'no_kir' => 'JKT2022409', 'kode_no' => 'BT009']);
+        DB::table('karyawans')->insert(['id' => 10, 'nama_lengkap' => 'BENI']);
+        DB::table('stock_bans')->insert([
+            'mobil_id' => 9, 'penerima_id' => 10, 'status' => 'Terpakai',
+            'tanggal_keluar' => '2026-09-01', 'tanggal_digunakan' => '2026-10-30',
+            'nomor_bukti_pakai' => 'P261000330', 'nomor_seri' => 'SERIBAN01',
+            'merk' => 'GITI', 'ukuran' => '1000', 'kondisi' => 'Kanisir', 'keterangan' => '<script>alert(1)</script>',
+        ]);
+        DB::table('stock_ban_luar_batams')->insert([
+            'mobil_id' => 9, 'penerima_id' => 10, 'status' => 'Terpakai', 'tanggal_keluar' => '2026-10-31',
+            'nomor_seri' => 'SERIBAN02',
+        ]);
+        $summary = app(VehicleTireReplacementService::class)->summarize([1], '2026-10-01', '2026-10-31', [
+            1 => ['id' => 10, 'names' => ['BENI']],
+        ])->get(1);
+        $details = $summary['details'];
+        $this->assertCount($summary['replacement_count'], $details);
+        $this->assertSame('Ban Luar Batam', $details[0]['sumber']);
+        $this->assertSame('2026-10-30', $details[1]['tanggal']);
+        $this->assertSame('JKT2022409', $details[1]['kendaraan']);
+        $this->assertSame('BENI', $details[1]['penerima']);
+        $this->assertSame('P261000330', $details[1]['nomor_bukti']);
+        $html = view('dashboard-perjalanan-kendaraan.partials.tire-details', ['tireDetails' => $details])->render();
+        $this->assertStringContainsString('SERIBAN01', $html);
+        $this->assertStringContainsString('31/10/2026', $html);
+        $this->assertStringNotContainsString('<script>', $html);
+        $this->assertStringContainsString('Tidak ada pergantian ban', view('dashboard-perjalanan-kendaraan.partials.tire-details', [
+            'tireDetails' => collect(),
+        ])->render());
     }
 }
