@@ -181,6 +181,10 @@
                             <label class="block text-sm font-medium text-gray-600 mb-1">Ukuran Tractor Head</label>
                             <p class="text-sm bg-white p-3 rounded border">{{ $mobil->ukuran_tractor_head ? 'Mobil '.ucfirst($mobil->ukuran_tractor_head) : '-' }}</p>
                         </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600 mb-1">Buntut Terpasang</label>
+                            <p class="text-sm bg-white p-3 rounded border">{{ $mobil->buntut?->nomor_polisi ?: ($mobil->buntut?->no_kir ?: ($mobil->buntut?->kode_no ?: '-')) }}</p>
+                        </div>
                     @endif
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Roda</label>

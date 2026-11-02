@@ -31,6 +31,7 @@ class Mobil extends Model
         'merek',
         'jenis',
         'ukuran_tractor_head',
+        'buntut_id',
         'roda',
         'tahun_pembuatan',
         'bpkb',
@@ -79,5 +80,10 @@ class Mobil extends Model
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function buntut()
+    {
+        return $this->belongsTo(self::class, 'buntut_id');
     }
 }

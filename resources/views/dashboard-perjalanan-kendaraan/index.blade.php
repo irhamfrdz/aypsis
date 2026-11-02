@@ -96,7 +96,7 @@
                         <div>
                             <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900">Jarak Tempuh per Kendaraan</h3>
                             <p class="mt-1 text-sm leading-relaxed text-slate-500">Diurutkan dari jarak terjauh. Klik nama kendaraan untuk melihat detail rit.</p>
-                            <p class="mt-2 text-xs leading-relaxed text-slate-500">Pergantian ban dihitung per kendaraan dari Ban Luar dan Ban Luar Batam berstatus Terpakai, berdasarkan tanggal pasang dalam periode pilihan. Satu nomor bukti pakai dihitung satu kali; tanpa nomor bukti, setiap catatan ban dihitung satu kali.</p>
+                            <p class="mt-2 text-xs leading-relaxed text-slate-500">Pergantian ban mengikuti supir penerima pada Ban Luar dan Ban Luar Batam berstatus Terpakai, termasuk ban kendaraan lain yang diterima supir tersebut. Setiap ban dihitung satu kali, meskipun nomor buktinya sama. Periode mengikuti tanggal pemakaian (atau tanggal pasang jika belum diisi). Jika penerima atau supir belum tercatat, pencocokan menggunakan kendaraan.</p>
                         </div>
                     </div>
                     <div class="mt-5 overflow-x-auto rounded-xl border border-slate-100">
@@ -107,7 +107,7 @@
                                     <th class="px-4 py-3 text-center">Hari GPS</th>
                                     <th class="px-4 py-3 text-center">Hari Bergerak</th>
                                     <th class="px-4 py-3 text-center">Rit</th>
-                                    <th class="px-4 py-3 text-center">Pergantian Ban</th>
+                                    <th class="px-4 py-3 text-center">Pergantian Ban Supir</th>
                                     <th class="px-4 py-3 text-right">Jarak</th>
                                 </tr>
                             </thead>

@@ -328,6 +328,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nickname</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kendaraan</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Buntut Terpasang</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                     <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Roda</th>
@@ -367,6 +368,16 @@
                                     <span class="text-gray-400 text-xs">-</span>
                                 @endif
                             </div>
+                        </td>
+                        <td class="py-2 px-3 text-sm">
+                            @if(strtoupper(trim((string) $mobil->jenis)) === 'TRACTOR HEAD' && $mobil->buntut)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                    {{ $mobil->buntut->nomor_polisi ?: ($mobil->buntut->no_kir ?: $mobil->buntut->kode_no) }}
+                                </span>
+                                <span class="mt-1 block text-xs text-gray-500">{{ $mobil->buntut->jenis }}</span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">
@@ -462,7 +473,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="15" class="py-6 px-3 text-center text-gray-500">
+                        <td colspan="16" class="py-6 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center py-4">
                                 <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>

@@ -43,7 +43,12 @@ class DashboardPerjalananKendaraanController extends Controller
 
             if ($vehicleStats->isNotEmpty()) {
                 $tireReplacements = app(VehicleTireReplacementService::class)->summarize(
-                    $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai
+                    $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai,
+                    $vehicleStats->filter(fn ($row) => $row->mobil?->karyawan)
+                        ->mapWithKeys(fn ($row) => [$row->mobil_id => [
+                            'id' => $row->mobil->karyawan->id,
+                            'names' => [$row->mobil->karyawan->nama_lengkap, $row->mobil->karyawan->nama_panggilan],
+                        ]])->all()
                 );
                 $start = Carbon::parse($tanggalDari)->startOfDay();
                 $end = Carbon::parse($tanggalSampai)->endOfDay();

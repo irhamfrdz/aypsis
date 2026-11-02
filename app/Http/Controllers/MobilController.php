@@ -16,7 +16,7 @@ class MobilController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Mobil::with('karyawan');
+        $query = Mobil::with(['karyawan', 'buntut']);
 
         // Filter berdasarkan lokasi mobil untuk user cabang BTM
         $currentUser = auth()->user();
@@ -124,7 +124,9 @@ class MobilController extends Controller
         // Generate kode nomor otomatis untuk ditampilkan di form
         $nextKodeNomor = $this->generateKodeNomor();
 
-        return view('master-mobil.create', compact('karyawans', 'nextKodeNomor'));
+        $buntuts = Mobil::whereRaw('(UPPER(TRIM(jenis)) = ? OR UPPER(TRIM(jenis)) LIKE ?)', ['BUNTUT', 'BUNTUT %'])->orderBy('kode_no')->get();
+
+        return view('master-mobil.create', compact('karyawans', 'nextKodeNomor', 'buntuts'));
     }
 
     /**
@@ -147,6 +149,8 @@ class MobilController extends Controller
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
             'ukuran_tractor_head' => [Rule::requiredIf($isTractorHead), 'nullable', Rule::in(['panjang', 'pendek'])],
+            'buntut_id' => [Rule::excludeIf(! $isTractorHead), Rule::requiredIf($isTractorHead), 'integer',
+                Rule::exists('mobils', 'id')->where(fn ($query) => $query->whereRaw('(UPPER(TRIM(jenis)) = ? OR UPPER(TRIM(jenis)) LIKE ?)', ['BUNTUT', 'BUNTUT %']))],
             'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
@@ -173,6 +177,7 @@ class MobilController extends Controller
 
         $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
         $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
+        $validated['buntut_id'] = $isTractorHead ? $validated['buntut_id'] : null;
         DB::transaction(function () use ($validated, $request) {
             $mobil = Mobil::create($validated);
             app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
@@ -233,7 +238,7 @@ class MobilController extends Controller
      */
     public function show($id)
     {
-        $mobil = Mobil::with('karyawan')->findOrFail($id);
+        $mobil = Mobil::with(['karyawan', 'buntut'])->findOrFail($id);
 
         // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
@@ -272,7 +277,9 @@ class MobilController extends Controller
 
         $karyawans = $karyawansQuery->orderBy('nama_panggilan')->get();
 
-        return view('master-mobil.edit', compact('mobil', 'karyawans'));
+        $buntuts = Mobil::whereRaw('(UPPER(TRIM(jenis)) = ? OR UPPER(TRIM(jenis)) LIKE ?)', ['BUNTUT', 'BUNTUT %'])->whereKeyNot($mobil->id)->orderBy('kode_no')->get();
+
+        return view('master-mobil.edit', compact('mobil', 'karyawans', 'buntuts'));
     }
 
     /**
@@ -297,6 +304,9 @@ class MobilController extends Controller
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
             'ukuran_tractor_head' => [Rule::requiredIf($isTractorHead), 'nullable', Rule::in(['panjang', 'pendek'])],
+            'buntut_id' => [Rule::excludeIf(! $isTractorHead), Rule::requiredIf($isTractorHead), 'integer',
+                Rule::exists('mobils', 'id')->where(fn ($query) => $query
+                    ->whereRaw('(UPPER(TRIM(jenis)) = ? OR UPPER(TRIM(jenis)) LIKE ?)', ['BUNTUT', 'BUNTUT %'])->where('id', '!=', $mobil->id))],
             'roda' => 'nullable|integer|min:1|max:50',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:'.(date('Y') + 1),
             'bpkb' => 'nullable|string|max:50',
@@ -323,6 +333,7 @@ class MobilController extends Controller
 
         $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
         $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
+        $validated['buntut_id'] = $isTractorHead ? $validated['buntut_id'] : null;
 
         DB::transaction(function () use ($mobil, $validated, $request) {
             $mobil = Mobil::whereKey($mobil->id)->lockForUpdate()->firstOrFail();

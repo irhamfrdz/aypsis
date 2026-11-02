@@ -26,6 +26,13 @@
             wrapper.hidden = !isTractorHead;
             ukuran.disabled = !isTractorHead;
             ukuran.required = isTractorHead;
+            const buntutWrapper = document.getElementById('buntut-terpasang-wrapper');
+            const buntut = document.getElementById('buntut_id');
+            if (buntutWrapper && buntut) {
+                buntutWrapper.hidden = !isTractorHead;
+                buntut.disabled = !isTractorHead;
+                buntut.required = isTractorHead;
+            }
         };
 
         jenis.addEventListener('input', toggleSize);

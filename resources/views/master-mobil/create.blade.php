@@ -115,6 +115,7 @@
                 </div>
 
                 @include('master-mobil._ukuran-tractor-head')
+                @include('master-mobil._buntut-terpasang')
 
                 <!-- Roda -->
                 <div>
