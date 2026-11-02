@@ -92,8 +92,8 @@
                                 {{ Str::limit($item['nama_barang'], 80) }}
                             </td>
                             <!-- Ton/M3 Amount -->
-                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900 amount-cell" data-tonnage="{{ $item['tonnage'] ?? '' }}" data-volume="{{ $item['volume'] ?? '' }}">
-                                {{ $item['amount'] !== null ? number_format($item['amount'], 3, ',', '.') : '' }}
+                            <td class="border border-gray-400 px-2 py-0.5 text-right font-medium w-16 text-gray-900 amount-cell" data-tonnage="{{ $item['tonnage'] ?? '' }}" data-volume="{{ $item['volume'] ?? '' }}" data-tonnage-decimals="{{ $item['tonnage_decimals'] ?? 0 }}" data-volume-decimals="{{ $item['volume_decimals'] ?? 0 }}" data-decimals="{{ $item['amount_decimals'] ?? 0 }}">
+                                {{ $item['amount'] !== null ? number_format($item['amount'], $item['amount_decimals'] ?? 0, ',', '.') : '' }}
                             </td>
                             <!-- Ton/M3 Unit -->
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700 w-16 border-l-0 unit-cell">
@@ -124,7 +124,7 @@
                                 Jumlah
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-right text-gray-900 total-amount-cell">
-                                {{ rtrim(rtrim(number_format($totalAmount, 3, ',', '.'), '0'), ',') }}
+                                {{ number_format($totalAmount, $totalDecimals, ',', '.') }}
                             </td>
                             <td class="border border-gray-400 px-2 py-0.5 text-center text-gray-700">
                                 Kgs/m3
@@ -209,8 +209,10 @@ document.addEventListener('DOMContentLoaded', function() {
             this.classList.add('font-bold', 'bg-blue-100');
 
             let val = amountCell.getAttribute('data-' + (unit === 'ton' ? 'tonnage' : 'volume'));
+            let decimals = Number(amountCell.getAttribute('data-' + (unit === 'ton' ? 'tonnage' : 'volume') + '-decimals') || 0);
+            amountCell.dataset.decimals = decimals;
             if (val && parseFloat(val) > 0) {
-                let parts = parseFloat(val).toFixed(3).split('.');
+                let parts = parseFloat(val).toFixed(decimals).split('.');
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");
                 amountCell.innerText = parts.join(',');
             } else {
@@ -221,17 +223,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (choiceInput) choiceInput.value = unit;
 
             let total = 0;
+            let totalDecimals = 0;
             document.querySelectorAll('.amount-cell').forEach(cell => {
                 let text = cell.innerText.replace(/\./g, '').replace(',', '.');
                 let num = parseFloat(text);
-                if (!isNaN(num)) total += num;
+                if (!isNaN(num)) {
+                    total += num;
+                    totalDecimals = Math.max(totalDecimals, Number(cell.dataset.decimals || 0));
+                }
             });
             
             let totalCell = document.querySelector('.total-amount-cell');
             if(totalCell) {
-                let formattedTotal = total.toFixed(3).replace('.', ',');
-                formattedTotal = formattedTotal.replace(/0+$/, '').replace(/\,$/, '');
-                if(!formattedTotal) formattedTotal = '0';
+                let formattedTotal = total.toFixed(totalDecimals).replace('.', ',');
                 
                 let parts = formattedTotal.split(',');
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".");

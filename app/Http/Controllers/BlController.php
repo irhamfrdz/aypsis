@@ -2517,9 +2517,12 @@ class BlController extends Controller
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
+                $volumeDecimals = $this->rekapBongkaranDecimalPlaces($group, 'volume');
+                $tonnageDecimals = $this->rekapBongkaranDecimalPlaces($group, 'tonnage');
 
                 $amount = null;
                 $unit = '';
+                $amountDecimals = 0;
 
                 $safeKey = md5($key);
                 $choice = request()->input("choices.$safeKey") ?: $group->first()->rekap_bongkaran_unit;
@@ -2527,9 +2530,11 @@ class BlController extends Controller
                 if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;
                     $unit = 'm3';
+                    $amountDecimals = $volumeDecimals;
                 } elseif ($choice === 'ton' || ($choice !== 'm3' && $totalTonnage > 0)) {
                     $amount = $totalTonnage;
                     $unit = 'ton';
+                    $amountDecimals = $tonnageDecimals;
                 }
 
                 return [
@@ -2543,6 +2548,9 @@ class BlController extends Controller
                     'unit' => $unit,
                     'tonnage' => $totalTonnage,
                     'volume' => $totalVolume,
+                    'tonnage_decimals' => $tonnageDecimals,
+                    'volume_decimals' => $volumeDecimals,
+                    'amount_decimals' => $amountDecimals,
                 ];
             } else {
                 $size = $parts[1];
@@ -2604,8 +2612,18 @@ class BlController extends Controller
         })->values();
 
         $totalAmount = $items->sum('amount');
+        $totalDecimals = $items->max('amount_decimals') ?? 0;
 
-        return view('bl.rekap_bongkaran', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount'));
+        return view('bl.rekap_bongkaran', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount', 'totalDecimals'));
+    }
+
+    private function rekapBongkaranDecimalPlaces($group, string $field): int
+    {
+        return min(3, $group->pluck($field)->map(function ($value) {
+            $parts = explode('.', (string) $value, 2);
+
+            return isset($parts[1]) ? strlen($parts[1]) : 0;
+        })->max() ?? 0);
     }
 
     private function rekapBongkaranCargoGroupKey($item): string
@@ -2760,9 +2778,12 @@ class BlController extends Controller
 
                 $totalVolume = $group->sum('volume');
                 $totalTonnage = $group->sum('tonnage');
+                $volumeDecimals = $this->rekapBongkaranDecimalPlaces($group, 'volume');
+                $tonnageDecimals = $this->rekapBongkaranDecimalPlaces($group, 'tonnage');
 
                 $amount = null;
                 $unit = '';
+                $amountDecimals = 0;
 
                 $safeKey = md5($key);
                 $choice = request()->input("choices.$safeKey") ?: $group->first()->rekap_bongkaran_unit;
@@ -2770,9 +2791,11 @@ class BlController extends Controller
                 if ($choice === 'm3' || ($choice !== 'ton' && $totalVolume > 0)) {
                     $amount = $totalVolume;
                     $unit = 'm3';
+                    $amountDecimals = $volumeDecimals;
                 } elseif ($choice === 'ton' || ($choice !== 'm3' && $totalTonnage > 0)) {
                     $amount = $totalTonnage;
                     $unit = 'ton';
+                    $amountDecimals = $tonnageDecimals;
                 }
 
                 return [
@@ -2786,6 +2809,9 @@ class BlController extends Controller
                     'unit' => $unit,
                     'tonnage' => $totalTonnage,
                     'volume' => $totalVolume,
+                    'tonnage_decimals' => $tonnageDecimals,
+                    'volume_decimals' => $volumeDecimals,
+                    'amount_decimals' => $amountDecimals,
                 ];
             } else {
                 $size = $parts[1];
@@ -2850,7 +2876,9 @@ class BlController extends Controller
 
         $totalAmount = $items->sum('amount');
 
-        return view('bl.rekap_bongkaran_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount'));
+        $totalDecimals = $items->max('amount_decimals') ?? 0;
+
+        return view('bl.rekap_bongkaran_print', compact('namaKapal', 'noVoyage', 'dari', 'estTiba', 'labelTanggal', 'items', 'totalAmount', 'totalDecimals'));
     }
 
     /**
