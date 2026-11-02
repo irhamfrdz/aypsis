@@ -9,17 +9,24 @@
         <h2 class="text-2xl font-bold text-gray-800">Daftar Shipper / Consignee</h2>
         <div class="flex flex-wrap items-center gap-3">
             <form action="{{ route('master.shipper-consignee.index') }}" method="GET" class="flex items-center">
+                @if(request()->boolean('duplicates'))
+                    <input type="hidden" name="duplicates" value="1">
+                @endif
                 <input type="text" name="search" value="{{ request('search') }}" placeholder="Cari..." class="border border-gray-300 rounded-l-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 w-48">
                 <button type="submit" class="bg-gray-100 hover:bg-gray-200 text-gray-700 py-2 px-3 rounded-r-lg border border-l-0 border-gray-300 transition duration-300">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                 </button>
                 @if(request('search'))
-                    <a href="{{ route('master.shipper-consignee.index') }}" class="ml-2 text-red-500 hover:text-red-700">
+                    <a href="{{ route('master.shipper-consignee.index', request()->boolean('duplicates') ? ['duplicates' => 1] : []) }}" class="ml-2 text-red-500 hover:text-red-700">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </a>
                 @endif
             </form>
-            <a href="{{ route('master.shipper-consignee.export', request()->only('search')) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center text-[11px] sm:text-sm" title="Unduh seluruh data sesuai pencarian">
+            <a href="{{ route('master.shipper-consignee.index', array_merge(request()->only('search'), request()->boolean('duplicates') ? [] : ['duplicates' => 1])) }}" class="{{ request()->boolean('duplicates') ? 'bg-indigo-100 text-indigo-800 hover:bg-indigo-200' : 'bg-amber-500 text-white hover:bg-amber-600' }} font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center text-[11px] sm:text-sm">
+                <i class="fas fa-clone mr-2" aria-hidden="true"></i>
+                {{ request()->boolean('duplicates') ? 'Tampilkan Semua' : 'Tampilkan Data Kembar' }}
+            </a>
+            <a href="{{ route('master.shipper-consignee.export', request()->only('search', 'duplicates')) }}" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 flex items-center text-[11px] sm:text-sm" title="Unduh seluruh data sesuai pencarian">
                 <i class="fas fa-file-excel mr-2" aria-hidden="true"></i>
                 Export Excel
             </a>
@@ -59,6 +66,12 @@
                     <li>{{ $error }}</li>
                 @endforeach
             </ul>
+        </div>
+    @endif
+
+    @if(request()->boolean('duplicates'))
+        <div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-3 text-sm text-indigo-800">
+            Menampilkan {{ $shipperConsignees->total() }} data kembar berdasarkan seluruh field master, termasuk status.
         </div>
     @endif
 
@@ -208,7 +221,7 @@
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
-                                <p class="text-lg font-medium">Belum ada data Shipper / Consignee</p>
+                                <p class="text-lg font-medium">{{ request()->boolean('duplicates') ? 'Tidak ada data kembar' : 'Belum ada data Shipper / Consignee' }}</p>
                             </div>
                         </td>
                     </tr>

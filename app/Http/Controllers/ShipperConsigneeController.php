@@ -28,6 +28,24 @@ class ShipperConsigneeController extends Controller
     private function filteredQuery(Request $request): Builder
     {
         $query = ShipperConsignee::query();
+        if ($request->boolean('duplicates')) {
+            $fields = (new ShipperConsignee)->getFillable();
+            $query->whereExists(function ($duplicates) use ($fields) {
+                $duplicates->selectRaw('1')
+                    ->from('shipper_consignees as duplicate')
+                    ->whereColumn('duplicate.id', '<>', 'shipper_consignees.id');
+
+                foreach ($fields as $field) {
+                    $duplicates->where(function ($same) use ($field) {
+                        $same->whereColumn('duplicate.'.$field, 'shipper_consignees.'.$field)
+                            ->orWhere(function ($bothNull) use ($field) {
+                                $bothNull->whereNull('duplicate.'.$field)
+                                    ->whereNull('shipper_consignees.'.$field);
+                            });
+                    });
+                }
+            });
+        }
         if ($request->filled('search')) {
             $search = $request->query('search');
             $query->where(function (Builder $query) use ($search) {

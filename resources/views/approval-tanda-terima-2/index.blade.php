@@ -64,7 +64,8 @@
         .approval-receipts-table > tbody > tr > td { display: block; min-width: 0; padding: 0; border: 0; white-space: normal; }
         .approval-receipts-table > tbody > tr > td[data-label]::before { content: attr(data-label); display: block; margin-bottom: 3px; color: #64748b; font-size: 11px; font-weight: 700; text-transform: uppercase; }
         .approval-receipts-table .approval-receipt-select { position: absolute; top: 20px; left: 16px; }
-        .approval-receipts-table .approval-receipt-number { grid-column: 1 / -1; padding-left: 28px; }
+        .approval-receipts-table .approval-receipt-order { position: absolute; top: 16px; right: 16px; border-radius: 9999px; background: #eef2ff; padding: 4px 9px; color: #4338ca; font-size: 12px; font-weight: 700; }
+        .approval-receipts-table .approval-receipt-number { grid-column: 1 / -1; padding-left: 28px; padding-right: 48px; }
         .approval-receipts-table .approval-receipt-wide, .approval-receipts-table .approval-actions-cell { grid-column: 1 / -1; }
         .approval-receipts-table .approval-actions-cell { padding-top: 10px; border-top: 1px solid #e2e8f0; background: transparent !important; }
         .approval-receipts-table .approval-empty-row { display: block; grid-column: 1 / -1; }
@@ -190,14 +191,16 @@
             <table class="approval-receipts-table divide-y divide-gray-200 text-sm">
                 <colgroup>
                     @can('approval-tanda-terima-2-approve')<col style="width:4%">@endcan
+                    <col style="width:4%">
                     <col style="width:10%"><col style="width:8%"><col style="width:11%"><col style="width:12%">
-                    <col style="width:12%"><col style="width:13%"><col style="width:30%">
+                    <col style="width:12%"><col style="width:13%"><col style="width:26%">
                 </colgroup>
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
                     <tr>
                         @can('approval-tanda-terima-2-approve')
                             <th scope="col" aria-label="Pilihan"></th>
                         @endcan
+                        <th scope="col" class="px-3 py-3 text-center">No.</th>
                         <th scope="col" class="px-5 py-3">Tanda Terima</th>
                         <th scope="col" class="px-5 py-3">Tanggal</th>
                         <th scope="col" class="px-5 py-3">Nomor Kontainer</th>
@@ -244,6 +247,7 @@
                             @can('approval-tanda-terima-2-approve')
                                 <td class="approval-receipt-select"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
                             @endcan
+                            <td class="approval-receipt-order text-center font-semibold text-gray-700">{{ $items->firstItem() + $loop->index }}</td>
                             <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
@@ -420,7 +424,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr class="approval-empty-row"><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 8 : 7 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
+                        <tr class="approval-empty-row"><td colspan="{{ auth()->user()?->can('approval-tanda-terima-2-approve') ? 9 : 8 }}" class="px-5 py-14 text-center text-gray-500"><i class="fas fa-inbox mb-3 block text-3xl text-gray-300" aria-hidden="true"></i>Tidak ada tanda terima yang sesuai.</td></tr>
                     @endforelse
                 </tbody>
             </table>
