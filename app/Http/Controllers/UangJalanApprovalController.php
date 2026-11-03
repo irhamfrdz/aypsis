@@ -16,7 +16,7 @@ class UangJalanApprovalController extends Controller
 {
     public function index(Request $request, UangJalanApprovalService $service): View
     {
-        $filters = $request->validate(['status' => 'nullable|in:pending,approved,rejected,all']);
+        $filters = $request->validate(['status' => 'nullable|in:pending,approved,rejected,cancelled,all']);
         $status = $filters['status'] ?? 'pending';
         $pengajuan = UangJalanApprovalRequest::with(['requester', 'reviewer', 'uangJalan'])
             ->when($status !== 'all', fn ($query) => $query->where('status', $status))
@@ -34,7 +34,7 @@ class UangJalanApprovalController extends Controller
     {
         $data = $request->validate(['catatan_approval' => 'nullable|string|max:1000']);
 
-        DB::transaction(function () use ($pengajuan, $service, $data, $request) {
+        $approved = DB::transaction(function () use ($pengajuan, $service, $data, $request) {
             $pengajuan = UangJalanApprovalRequest::whereKey($pengajuan->id)->lockForUpdate()->firstOrFail();
             if ($pengajuan->status !== 'pending') {
                 throw ValidationException::withMessages(['pengajuan' => 'Pengajuan ini sudah diproses.']);
@@ -42,6 +42,15 @@ class UangJalanApprovalController extends Controller
 
             $model = $pengajuan->jenis_surat_jalan === 'bongkaran' ? SuratJalanBongkaran::class : SuratJalan::class;
             $suratJalan = $model::whereKey($pengajuan->surat_jalan_id)->lockForUpdate()->firstOrFail();
+            if ($service->tugasBerjalan($suratJalan->supir)->count() < 2) {
+                $pengajuan->update([
+                    'status' => 'cancelled',
+                    'reviewed_at' => now(),
+                    'catatan_approval' => 'Otomatis dibatalkan karena tugas berjalan supir sudah kurang dari dua.',
+                ]);
+
+                return false;
+            }
             if ($suratJalan->supir !== $pengajuan->supir || ($pengajuan->jenis_surat_jalan === 'biasa' && ($suratJalan->is_supir_customer || in_array($suratJalan->status, ['cancelled', 'draft'])))) {
                 throw ValidationException::withMessages(['pengajuan' => 'Data supir pada surat jalan berubah. Tolak pengajuan ini dan minta pengajuan baru.']);
             }
@@ -54,9 +63,13 @@ class UangJalanApprovalController extends Controller
                 'catatan_approval' => $data['catatan_approval'] ?? null,
                 'uang_jalan_id' => $uangJalan->id,
             ]);
+
+            return true;
         });
 
-        return back()->with('success', 'Pengajuan disetujui dan uang jalan berhasil dibuat.');
+        return back()->with('success', $approved
+            ? 'Pengajuan disetujui dan uang jalan berhasil dibuat.'
+            : 'Pengajuan dibatalkan karena tugas berjalan supir sudah kurang dari dua. Uang jalan dapat dibuat langsung.');
     }
 
     public function reject(Request $request, UangJalanApprovalRequest $pengajuan): RedirectResponse

@@ -298,6 +298,9 @@ class UangJalanController extends Controller
             ->where('surat_jalan_id', $suratJalan->id)
             ->where('status', 'pending')
             ->first();
+        if ($tugasBerjalan->count() < 2) {
+            $pengajuanPending = null;
+        }
         $pengajuanDitolak = UangJalanApprovalRequest::where('jenis_surat_jalan', $jenisSuratJalan)
             ->where('surat_jalan_id', $suratJalan->id)
             ->where('status', 'rejected')
@@ -453,17 +456,23 @@ class UangJalanController extends Controller
             $model = $jenis === 'bongkaran' ? \App\Models\SuratJalanBongkaran::class : SuratJalan::class;
             $suratJalan = $model::whereKey($suratJalan->id)->lockForUpdate()->firstOrFail();
 
+            $tugasBerjalan = $approvalService->tugasBerjalan($suratJalan->supir);
             $pengajuan = UangJalanApprovalRequest::where('jenis_surat_jalan', $jenis)
                 ->where('surat_jalan_id', $suratJalan->id)
                 ->where('status', 'pending')
+                ->lockForUpdate()
                 ->first();
+            if ($tugasBerjalan->count() < 2) {
+                $pengajuan?->update([
+                    'status' => 'cancelled',
+                    'reviewed_at' => now(),
+                    'catatan_approval' => 'Otomatis dibatalkan karena tugas berjalan supir sudah kurang dari dua.',
+                ]);
+
+                return null;
+            }
             if ($pengajuan) {
                 return back()->withInput()->with('error', 'Pengajuan uang jalan untuk surat jalan ini masih menunggu approval.');
-            }
-
-            $tugasBerjalan = $approvalService->tugasBerjalan($suratJalan->supir);
-            if ($tugasBerjalan->count() < 2) {
-                return null;
             }
 
             UangJalanApprovalRequest::create([

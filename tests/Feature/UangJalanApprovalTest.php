@@ -151,7 +151,7 @@ class UangJalanApprovalTest extends TestCase
         $this->assertDatabaseHas('uang_jalans', ['surat_jalan_id' => $target]);
     }
 
-    public function test_pending_request_cannot_be_bypassed_and_rejection_allows_new_request(): void
+    public function test_pending_request_is_cancelled_when_previous_tasks_are_completed(): void
     {
         $first = $this->buatSuratJalan('SJ-1');
         $this->buatSuratJalan('SJ-2');
@@ -166,8 +166,19 @@ class UangJalanApprovalTest extends TestCase
             'created_at' => now(),
         ]);
         $controller->store(Request::create('/uang-jalan', 'POST', $this->formData($target)), $service);
-        $this->assertSame(0, DB::table('uang_jalans')->count());
+        $this->assertSame(1, DB::table('uang_jalans')->count());
         $this->assertSame(1, DB::table('uang_jalan_approval_requests')->count());
+        $this->assertDatabaseHas('uang_jalan_approval_requests', ['surat_jalan_id' => $target, 'status' => 'cancelled']);
+    }
+
+    public function test_rejection_allows_new_request(): void
+    {
+        $this->buatSuratJalan('SJ-1');
+        $this->buatSuratJalan('SJ-2');
+        $target = $this->buatSuratJalan('SJ-3', 'belum_ada');
+        $service = new UangJalanApprovalService;
+        $controller = app(UangJalanController::class);
+        $controller->store(Request::create('/uang-jalan', 'POST', $this->formData($target)), $service);
 
         $pengajuan = UangJalanApprovalRequest::firstOrFail();
         app(UangJalanApprovalController::class)->reject(Request::create('/approval', 'POST', [
@@ -176,6 +187,7 @@ class UangJalanApprovalTest extends TestCase
         $this->assertDatabaseHas('uang_jalan_approval_requests', ['id' => $pengajuan->id, 'status' => 'rejected']);
 
         $controller->store(Request::create('/uang-jalan', 'POST', $this->formData($target)), $service);
-        $this->assertDatabaseHas('uang_jalans', ['surat_jalan_id' => $target]);
+        $this->assertSame(2, DB::table('uang_jalan_approval_requests')->count());
+        $this->assertSame(0, DB::table('uang_jalans')->count());
     }
 }

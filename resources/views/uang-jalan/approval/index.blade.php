@@ -24,7 +24,7 @@
         <div>
             <label for="status" class="mb-1 block text-sm font-medium text-gray-700">Status</label>
             <select id="status" name="status" class="rounded-lg border-gray-300 text-sm">
-                @foreach(['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'all' => 'Semua'] as $value => $label)
+                @foreach(['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan', 'all' => 'Semua'] as $value => $label)
                     <option value="{{ $value }}" @selected($status === $value)>{{ $label }}</option>
                 @endforeach
             </select>
@@ -41,8 +41,8 @@
                         <p class="mt-1 text-sm text-gray-600">Supir: <strong>{{ $item->supir ?: '-' }}</strong> · {{ $item->jenis_surat_jalan === 'bongkaran' ? 'Bongkaran' : 'Surat jalan biasa' }}</p>
                         <p class="mt-1 text-xs text-gray-500">Diajukan oleh {{ $item->requester?->name ?: '-' }} pada {{ $item->created_at?->format('d/m/Y H:i') }}</p>
                     </div>
-                    <span class="h-fit rounded-full px-3 py-1 text-xs font-semibold {{ $item->status === 'pending' ? 'bg-amber-100 text-amber-800' : ($item->status === 'approved' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800') }}">
-                        {{ ['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak'][$item->status] ?? $item->status }}
+                    <span class="h-fit rounded-full px-3 py-1 text-xs font-semibold {{ $item->status === 'pending' ? 'bg-amber-100 text-amber-800' : ($item->status === 'approved' ? 'bg-green-100 text-green-800' : ($item->status === 'cancelled' ? 'bg-gray-100 text-gray-700' : 'bg-red-100 text-red-800')) }}">
+                        {{ ['pending' => 'Menunggu', 'approved' => 'Disetujui', 'rejected' => 'Ditolak', 'cancelled' => 'Dibatalkan'][$item->status] ?? $item->status }}
                     </span>
                 </div>
                 <div class="mt-4 grid gap-3 rounded-lg bg-gray-50 p-3 text-sm text-gray-700 sm:grid-cols-3">
