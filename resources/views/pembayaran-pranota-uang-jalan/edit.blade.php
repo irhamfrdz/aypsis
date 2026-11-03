@@ -53,7 +53,7 @@
             </div>
         @endif
 
-        <form action="{{ route('pembayaran-pranota-uang-jalan.update', $pembayaranPranotaUangJalan->id) }}" method="POST" enctype="multipart/form-data" id="pembayaranForm">
+        <form action="{{ route('pembayaran-pranota-uang-jalan.update', $pembayaranPranotaUangJalan->id) }}" method="POST" enctype="multipart/form-data" id="pembayaranForm" class="space-y-3">
             @csrf
             @method('PUT')
 
@@ -117,12 +117,12 @@
                 </div>
             @else
                 <!-- Full Edit Form for Unpaid Payments -->
-                <div class="grid grid-cols-1 lg:grid-cols-3 gap-3 mb-3">
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                     <!-- Info Pembayaran -->
-                    <div class="lg:col-span-1">
+                    <div class="lg:col-span-2">
                         <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Info Pembayaran</h4>
-                            <div class="grid grid-cols-1 gap-2">
+                            <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                                 <div>
                                     <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
                                     <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
@@ -148,7 +148,7 @@
                 <!-- Bank & Transaksi -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book Accounting)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank <span class="text-red-500">*</span></label>
@@ -213,9 +213,12 @@
             </div>
 
             <!-- Pranota Info -->
-            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
-                <h4 class="text-sm font-semibold text-gray-800 mb-2">Informasi Pranota</h4>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800">Pranota Uang Jalan yang Dibayar</h4>
+                    <p class="mt-1 text-xs text-blue-600">Pranota sudah terhubung ke pembayaran ini dan tidak dapat diganti dari halaman edit.</p>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-3 py-3 text-sm">
                     <div>
                         <span class="text-gray-600">Nomor Pranota:</span>
                         <p class="font-medium">{{ $pembayaranPranotaUangJalan->pranotaUangJalan->nomor_pranota }}</p>
@@ -236,50 +239,53 @@
             </div>
 
             <!-- Pembayaran & Penyesuaian -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Pembayaran</h4>
-                    <div class="grid grid-cols-1 gap-2">
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Total Pembayaran</h4>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                         <div>
-                            <label for="total_pembayaran" class="{{ $labelClasses }}">Total Pembayaran <span class="text-red-500">*</span></label>
+                            <label for="total_pembayaran" class="{{ $labelClasses }}">Total Tagihan <span class="text-red-500">*</span></label>
                             <input type="number" name="total_pembayaran" id="total_pembayaran" step="0.01"
                                 value="{{ old('total_pembayaran', $pembayaranPranotaUangJalan->total_pembayaran) }}"
                                 class="{{ $inputClasses }}" required>
                         </div>
                         <div>
-                            <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" rows="2"
-                                class="{{ $inputClasses }}" placeholder="Keterangan tambahan">{{ old('keterangan', $pembayaranPranotaUangJalan->keterangan) }}</textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Penyesuaian (Opsional)</h4>
-                    <div class="grid grid-cols-1 gap-2">
-                        <div>
-                            <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Total Penyesuaian</label>
+                            <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
                             <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian" step="0.01"
                                 value="{{ old('total_tagihan_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_penyesuaian ?? 0) }}"
                                 class="{{ $inputClasses }}" placeholder="0">
                         </div>
                         <div>
-                            <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Setelah Penyesuaian</label>
+                            <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
                             <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian" step="0.01"
                                 value="{{ old('total_tagihan_setelah_penyesuaian', $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian) }}"
                                 class="{{ $readonlyInputClasses }}" readonly>
                         </div>
+                    </div>
+                    </div>
+                </div>
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Informasi Tambahan</h4>
+                    <div class="space-y-2">
                         <div>
                             <label for="alasan_penyesuaian" class="{{ $labelClasses }}">Alasan Penyesuaian</label>
                             <textarea name="alasan_penyesuaian" id="alasan_penyesuaian" rows="2"
                                 class="{{ $inputClasses }}" placeholder="Jelaskan alasan penyesuaian">{{ old('alasan_penyesuaian', $pembayaranPranotaUangJalan->alasan_penyesuaian) }}</textarea>
                         </div>
+                        <div>
+                            <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
+                            <textarea name="keterangan" id="keterangan" rows="2"
+                                class="{{ $inputClasses }}" placeholder="Tambahkan keterangan">{{ old('keterangan', $pembayaranPranotaUangJalan->keterangan) }}</textarea>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
 
             <!-- Bukti Pembayaran -->
-            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                 <h4 class="text-sm font-semibold text-gray-800 mb-2">Bukti Pembayaran</h4>
                 <div>
                     <label for="bukti_pembayaran" class="{{ $labelClasses }}">Upload Bukti Pembayaran (Opsional)</label>
@@ -297,14 +303,14 @@
             @endif
 
             <!-- Action Buttons -->
-            <div class="flex justify-between items-center pt-3 border-t border-gray-200">
-                <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 text-sm font-medium rounded-lg transition-colors">
+            <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
+                <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
                     </svg>
-                    Kembali
+                    Batal
                 </a>
-                <button type="submit" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
                     </svg>
