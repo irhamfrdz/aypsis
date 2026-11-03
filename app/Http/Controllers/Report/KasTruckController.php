@@ -101,6 +101,7 @@ class KasTruckController extends Controller
             $akunPembayaranIds = [];
             $rincianAkunStockMap = [];
             $rincianAkunObMap = [];
+            $rincianAkunPranotaObMap = [];
             $rincianAkunPalMap = [];
             $arahPembayaranPalMap = [];
 
@@ -273,6 +274,25 @@ class KasTruckController extends Controller
                 }
             }
 
+            if (! empty($referensiList) && Schema::hasTable('pembayaran_pranota_ob_akun_items')) {
+                $rincianAkunPranotaOb = DB::table('pembayaran_pranota_ob_akun_items as rincian')
+                    ->join('pembayaran_pranota_obs as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_pranota_ob_id')
+                    ->join('akun_coa as akun', 'akun.id', '=', 'rincian.akun_coa_id')
+                    ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
+                    ->orderBy('rincian.id')
+                    ->get(['pembayaran.nomor_pembayaran', 'pembayaran.jenis_transaksi', 'akun.nama_akun', 'akun.nomor_akun', 'rincian.nominal', 'rincian.memo']);
+
+                foreach ($rincianAkunPranotaOb as $rincian) {
+                    $rincianAkunPranotaObMap[$rincian->nomor_pembayaran][] = [
+                        'nama_akun' => $rincian->nama_akun,
+                        'nomor_akun' => $rincian->nomor_akun,
+                        'nominal' => $rincian->nominal,
+                        'memo' => $rincian->memo,
+                        'debit_kredit' => strtolower($rincian->jenis_transaksi) === 'debit' ? 'kredit' : 'debit',
+                    ];
+                }
+            }
+
             // -------------------------------------------------------
             // Attach nomor_accurate dan Sortir
             // -------------------------------------------------------
@@ -301,6 +321,8 @@ class KasTruckController extends Controller
                             'debit_kredit' => $arahAkun,
                         ];
                     }, $rincianAkunPalMap[$t->nomor_referensi]);
+                } elseif ($t->jenis_transaksi === 'Pembayaran Pranota OB' && ! empty($rincianAkunPranotaObMap[$t->nomor_referensi])) {
+                    $t->rincian_akun_pembayaran = $rincianAkunPranotaObMap[$t->nomor_referensi];
                 } elseif (! empty($rincianAkunObMap[$t->nomor_referensi])) {
                     $t->rincian_akun_pembayaran = $rincianAkunObMap[$t->nomor_referensi];
                 } else {
