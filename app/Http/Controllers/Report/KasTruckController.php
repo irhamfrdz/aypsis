@@ -291,6 +291,36 @@ class KasTruckController extends Controller
                         'debit_kredit' => strtolower($rincian->jenis_transaksi) === 'debit' ? 'kredit' : 'debit',
                     ];
                 }
+
+                if (Schema::hasColumn('pembayaran_pranota_obs', 'akun_dp_id')
+                    && Schema::hasColumn('pembayaran_pranota_obs', 'dp_amount')) {
+                    $potonganDp = DB::table('pembayaran_pranota_obs as pembayaran')
+                        ->leftJoin('akun_coa as akun_dp', 'akun_dp.id', '=', 'pembayaran.akun_dp_id')
+                        ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
+                        ->where('pembayaran.dp_amount', '>', 0)
+                        ->get([
+                            'pembayaran.nomor_pembayaran',
+                            'pembayaran.jenis_transaksi',
+                            'pembayaran.dp_amount',
+                            'pembayaran.akun_dp_id',
+                            'akun_dp.nama_akun',
+                            'akun_dp.nomor_akun',
+                        ]);
+
+                    foreach ($potonganDp as $dp) {
+                        $rincianAkunPranotaObMap[$dp->nomor_pembayaran][] = [
+                            'nama_akun' => $dp->nama_akun ?? 'Akun DP tidak ditemukan',
+                            'nomor_akun' => $dp->nomor_akun,
+                            'nominal' => $dp->dp_amount,
+                            'memo' => 'Potongan DP',
+                            'debit_kredit' => strtolower($dp->jenis_transaksi) === 'debit' ? 'debit' : 'kredit',
+                        ];
+
+                        if ($dp->akun_dp_id) {
+                            $akunPembayaranIds[] = $dp->akun_dp_id;
+                        }
+                    }
+                }
             }
 
             // -------------------------------------------------------
