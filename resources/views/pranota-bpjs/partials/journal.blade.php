@@ -8,8 +8,8 @@
             </thead>
             <tbody data-journal-rows></tbody>
             <tfoot>
-                <tr><th scope="row">Total</th><td class="bpjs-journal-total-green" data-journal-total="tunjangan">0</td><td class="bpjs-journal-total-blue" data-journal-total="biaya">0</td><td class="bpjs-journal-total-yellow" data-journal-total="hutang">0</td><td class="bpjs-journal-total-green">Grand Total: Rp <span data-journal-total="grand_total">0</span></td></tr>
-                <tr><th scope="row">Total Tunjangan + Biaya</th><td colspan="2" class="bpjs-journal-total-green" data-journal-total="debit">0</td><td colspan="2"></td></tr>
+                <tr><th scope="row">Total</th><td class="bpjs-journal-total-green" data-journal-total="tunjangan">0,00</td><td class="bpjs-journal-total-blue" data-journal-total="biaya">0,00</td><td class="bpjs-journal-total-yellow" data-journal-total="hutang">0,00</td><td class="bpjs-journal-total-green">Grand Total: Rp <span data-journal-total="grand_total">0,00</span></td></tr>
+                <tr><th scope="row">Total Tunjangan + Biaya</th><td colspan="2" class="bpjs-journal-total-green" data-journal-total="debit">0,00</td><td colspan="2"></td></tr>
             </tfoot>
         </table>
     </div>

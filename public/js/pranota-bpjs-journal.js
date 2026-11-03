@@ -60,7 +60,7 @@
         const section = document.querySelector('[data-bpjs-journal]');
         if (!section) return;
         const journal = calculate(records);
-        const formatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+        const formatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const fragment = document.createDocumentFragment();
         journal.rows.forEach(row => {
             const tr = document.createElement('tr');

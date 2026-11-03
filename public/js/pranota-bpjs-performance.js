@@ -59,24 +59,6 @@
         };
     }
 
-    const rupiahFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
-
-    function showRoundedAmount(input, parseAmount) {
-        if (!input || typeof document === 'undefined' || !input.parentElement?.appendChild) return;
-        let display = input.bpjsRoundedDisplay;
-        if (!display) {
-            display = document.createElement('span');
-            display.className = 'bpjs-rounded-amount';
-            display.setAttribute('aria-hidden', 'true');
-            input.bpjsRoundedDisplay = display;
-            input.classList.add('bpjs-precise-amount');
-        }
-        input.parentElement.classList.add('bpjs-amount-cell');
-        if (display.parentElement !== input.parentElement) input.parentElement.appendChild(display);
-        const text = rupiahFormatter.format(parseAmount(input.value));
-        if (display.textContent !== text) display.textContent = text;
-    }
-
     function updateGroupTotals(row, parseAmount, formatNumber) {
         const values = {};
         for (const [key, selector] of Object.entries({ bpjs_kesehatan: '.input-kes',
@@ -87,7 +69,6 @@
             noncrew_jht_biaya: '.input-noncrew-jht-biaya', noncrew_jht_hutang: '.input-noncrew-jht-hutang',
             noncrew_jkk_tunjangan: '.input-noncrew-jkk', noncrew_jkm_tunjangan: '.input-noncrew-jkm' })) {
             values[key] = readNumber(row, selector, parseAmount);
-            showRoundedAmount(field(row, selector), parseAmount);
         }
         const totals = groupTotals(values);
         for (const [key, amount] of Object.entries(totals)) {

@@ -354,7 +354,7 @@
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn bpjs-jkn-contribution" id="total_kes">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn bpjs-jkn-contribution" id="total_kes_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-indigo-700 bg-indigo-50/50 col-group-jkn bpjs-jkn-debt" id="total_ket">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0,00</td>
                             
                             {{-- PPU --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu bpjs-ppu-cost" id="total_jht_biaya">Rp 0</td>
@@ -364,29 +364,29 @@
                             
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu bpjs-ppu-cost" id="total_jp_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-emerald-700 bg-emerald-50/50 col-group-ppu bpjs-ppu-debt" id="total_jp_hutang">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0,00</td>
                             {{-- BPU-CREW --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-rose-600 bg-rose-50/50 col-group-bpu-crew" id="total_jkk_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew bpjs-bpu-allowance" id="total_bpu_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-sky-700 bg-sky-50/50 col-group-bpu-crew bpjs-bpu-allowance" id="total_bpu_jkm">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_crew col-group-bpu-crew" id="total_group_bpu_crew">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_crew col-group-bpu-crew" id="total_group_bpu_crew">Rp 0,00</td>
                             
                             {{-- Non BPU-CREW --}}
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew bpjs-bpu-jht" id="total_noncrew_jht_biaya">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew bpjs-bpu-jht" id="total_noncrew_jht_hutang">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew bpjs-bpu-allowance" id="total_noncrew_jkk">Rp 0</td>
                             <td class="px-3 py-3.5 text-right font-mono font-bold text-purple-700 bg-purple-50/50 col-group-bpu-noncrew bpjs-bpu-allowance" id="total_noncrew_jkm">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" id="total_group_bpu_noncrew">Rp 0</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" id="total_group_bpu_noncrew">Rp 0,00</td>
 
                             
                             {{-- Grand Total --}}
-                            <td class="col-group-ppu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0</td>
-<td class="col-summary-bpu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0</td>
-<td class="col-group-jkn bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0</td>
-<td class="col-summary-jamsostek bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0</td>
-<td class="col-group-jkn bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0</td>
-<td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0</td>
-<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0</td>
+                            <td class="col-group-ppu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
+<td class="col-summary-bpu bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
+<td class="col-group-jkn bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
+<td class="col-summary-jamsostek bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0,00</td>
+<td class="col-group-jkn bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0,00</td>
+<td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0,00</td>
+<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0,00</td>
 <td class="px-3 py-3 bg-orange-50"></td>
 <td class="px-4 py-3.5 text-right font-mono font-bold text-teal-800 text-sm bg-teal-100/70" id="grand_total">Rp 0</td>
                             <td class="bg-gray-100/90"></td>
@@ -479,9 +479,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let isRefreshing = false;
     const pendingUpdate = BpjsPerformance.scheduler(() => applyFilter());
     const pendingSearch = BpjsPerformance.scheduler(() => applyFilter(), 150);
-
-    const rupiahFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
-    const displayNumber = num => rupiahFormatter.format(num || 0);
 
     function formatNumber(num) {
         return amountFormatter.format(num || 0);
@@ -680,7 +677,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         allRows.forEach(tr => {
             const isVisible = !tr.classList.contains('hidden');
-            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, displayNumber);
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
 
             const valKes   = BpjsPerformance.readNumber(tr, '.input-kes', parseIdNumber);
             const valKet   = BpjsPerformance.readNumber(tr, '.input-ket', parseIdNumber);
@@ -707,7 +704,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             const rowSubtotalEl = tr.querySelector('.subtotal-text');
             if (rowSubtotalEl) {
-                const text = 'Rp ' + displayNumber(rowSubtotal);
+                const text = 'Rp ' + formatNumber(rowSubtotal);
                 if (rowSubtotalEl.textContent !== text) rowSubtotalEl.textContent = text;
             }
 
@@ -750,22 +747,22 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Update footer table cells
-        document.getElementById('total_kes').textContent                 = 'Rp ' + displayNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').textContent = 'Rp ' + displayNumber(sumKesBiaya);
-        document.getElementById('total_ket').textContent                 = 'Rp ' + displayNumber(sumKet);
-        document.getElementById('total_jht_biaya').textContent           = 'Rp ' + displayNumber(sumJhtB);
-        document.getElementById('total_jht_hutang').textContent          = 'Rp ' + displayNumber(sumJhtH);
-        document.getElementById('total_jkk').textContent                 = 'Rp ' + displayNumber(sumJkk);
-        document.getElementById('total_jkm').textContent                 = 'Rp ' + displayNumber(sumJkm);
-        document.getElementById('total_jkk_hutang').textContent          = 'Rp ' + displayNumber(sumBpuJht);
-        document.getElementById('total_bpu_jkk').textContent             = 'Rp ' + displayNumber(sumBpuJkk);
-        document.getElementById('total_bpu_jkm').textContent             = 'Rp ' + displayNumber(sumBpuJkm);
-        document.getElementById('total_noncrew_jht_biaya').textContent   = 'Rp ' + displayNumber(sumNcJhtB);
-        document.getElementById('total_noncrew_jht_hutang').textContent  = 'Rp ' + displayNumber(sumNcJhtH);
-        document.getElementById('total_noncrew_jkk').textContent         = 'Rp ' + displayNumber(sumNcJkk);
-        document.getElementById('total_noncrew_jkm').textContent         = 'Rp ' + displayNumber(sumNcJkm);
-        document.getElementById('total_jp_biaya').textContent            = 'Rp ' + displayNumber(sumJpB);
-        document.getElementById('total_jp_hutang').textContent           = 'Rp ' + displayNumber(sumJpH);
+        document.getElementById('total_kes').textContent                 = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
+        document.getElementById('total_ket').textContent                 = 'Rp ' + formatNumber(sumKet);
+        document.getElementById('total_jht_biaya').textContent           = 'Rp ' + formatNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').textContent          = 'Rp ' + formatNumber(sumJhtH);
+        document.getElementById('total_jkk').textContent                 = 'Rp ' + formatNumber(sumJkk);
+        document.getElementById('total_jkm').textContent                 = 'Rp ' + formatNumber(sumJkm);
+        document.getElementById('total_jkk_hutang').textContent          = 'Rp ' + formatNumber(sumBpuJht);
+        document.getElementById('total_bpu_jkk').textContent             = 'Rp ' + formatNumber(sumBpuJkk);
+        document.getElementById('total_bpu_jkm').textContent             = 'Rp ' + formatNumber(sumBpuJkm);
+        document.getElementById('total_noncrew_jht_biaya').textContent   = 'Rp ' + formatNumber(sumNcJhtB);
+        document.getElementById('total_noncrew_jht_hutang').textContent  = 'Rp ' + formatNumber(sumNcJhtH);
+        document.getElementById('total_noncrew_jkk').textContent         = 'Rp ' + formatNumber(sumNcJkk);
+        document.getElementById('total_noncrew_jkm').textContent         = 'Rp ' + formatNumber(sumNcJkm);
+        document.getElementById('total_jp_biaya').textContent            = 'Rp ' + formatNumber(sumJpB);
+        document.getElementById('total_jp_hutang').textContent           = 'Rp ' + formatNumber(sumJpH);
         
         const visibleGrandTotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
             jkn: sumKes + sumKet,
@@ -774,11 +771,11 @@ document.addEventListener('DOMContentLoaded', function() {
             bpu_non_crew: sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm
         });
         
-        document.getElementById('total_group_jkn').textContent = 'Rp ' + displayNumber(sumKes + sumKet);
-        document.getElementById('total_group_bpu_crew').textContent = 'Rp ' + displayNumber(sumBpuJht + sumBpuJkk + sumBpuJkm);
-        document.getElementById('total_group_bpu_noncrew').textContent = 'Rp ' + displayNumber(sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm);
-        document.getElementById('total_group_ppu').textContent = 'Rp ' + displayNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
-        document.getElementById('grand_total').textContent = 'Rp ' + displayNumber(visibleGrandTotal);
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_group_bpu_crew').textContent = 'Rp ' + formatNumber(sumBpuJht + sumBpuJkk + sumBpuJkm);
+        document.getElementById('total_group_bpu_noncrew').textContent = 'Rp ' + formatNumber(sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm);
+        document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
+        document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(visibleGrandTotal);
 
         // Update Footer Label
         const footerLabel = document.getElementById('footer-total-label');
@@ -801,10 +798,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const globalGrandTotal = globalTotalJkn + globalTotalPpu + globalTotalBpu;
 
         document.getElementById('card_total_karyawan').textContent = allRows.length + ' Orang';
-        document.getElementById('card_total_jkn').textContent = 'Rp ' + displayNumber(globalTotalJkn);
-        document.getElementById('card_total_ppu').textContent = 'Rp ' + displayNumber(globalTotalPpu);
-        document.getElementById('card_total_bpu').textContent = 'Rp ' + displayNumber(globalTotalBpu);
-        document.getElementById('card_grand_total').textContent = 'Rp ' + displayNumber(globalGrandTotal);
+        document.getElementById('card_total_jkn').textContent = 'Rp ' + formatNumber(globalTotalJkn);
+        document.getElementById('card_total_ppu').textContent = 'Rp ' + formatNumber(globalTotalPpu);
+        document.getElementById('card_total_bpu').textContent = 'Rp ' + formatNumber(globalTotalBpu);
+        document.getElementById('card_grand_total').textContent = 'Rp ' + formatNumber(globalGrandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
@@ -896,7 +893,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-indigo-50/10 border-r border-indigo-100 col-group-jkn bpjs-jkn-debt">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right font-mono text-xs input-ket font-semibold text-indigo-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-indigo-400 focus:ring-1 focus:ring-indigo-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
             
             {{-- PPU (7) --}}
             <td class="px-1.5 py-2 align-middle bg-emerald-50/10 col-group-ppu bpjs-ppu-cost">
@@ -918,7 +915,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-emerald-50/10 border-r border-emerald-100 col-group-ppu bpjs-ppu-debt">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right font-mono text-xs input-jp-hutang font-semibold text-emerald-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-emerald-400 focus:ring-1 focus:ring-emerald-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>
             {{-- BPU-CREW (4) --}}
             <td class="px-1.5 py-2 align-middle bg-rose-50/10 col-group-bpu-crew">
                 <input type="text" name="details[${rowCount}][jkk_hutang]" class="w-full text-right font-mono text-xs input-jkk-hutang font-semibold text-rose-600 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-rose-400 focus:ring-1 focus:ring-rose-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
@@ -929,7 +926,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-sky-50/10 border-r border-sky-100 col-group-bpu-crew bpjs-bpu-allowance">
                 <input type="text" name="details[${rowCount}][bpu_jkm]" class="w-full text-right font-mono text-xs input-bpu-jkm font-semibold text-sky-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-sky-400 focus:ring-1 focus:ring-sky-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_crew col-group-bpu-crew row-total-bpu_crew">Rp 0</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_crew col-group-bpu-crew row-total-bpu_crew">Rp 0,00</td>
 
             {{-- Non BPU-CREW (5) --}}
             <td class="px-1.5 py-2 align-middle bg-purple-50/10 col-group-bpu-noncrew bpjs-bpu-jht">
@@ -944,17 +941,17 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="px-1.5 py-2 align-middle bg-purple-50/10 border-r border-purple-100 col-group-bpu-noncrew bpjs-bpu-allowance">
                 <input type="text" name="details[${rowCount}][noncrew_jkm_tunjangan]" class="w-full text-right font-mono text-xs input-noncrew-jkm font-semibold text-purple-700 bg-gray-50/60 hover:bg-white focus:bg-white border border-transparent hover:border-gray-200 focus:border-purple-400 focus:ring-1 focus:ring-purple-200 rounded px-2 py-1 transition" value="0" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_noncrew col-group-bpu-noncrew row-total-bpu_noncrew">Rp 0</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-bpu_noncrew col-group-bpu-noncrew row-total-bpu_noncrew">Rp 0,00</td>
             
             
             {{-- Subtotal & Action --}}
-            <td class="col-group-ppu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0</td>
-            <td class="col-summary-bpu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0</td>
-            <td class="col-group-jkn bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0</td>
-            <td class="col-summary-jamsostek bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0</td>
-            <td class="col-group-jkn bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0</td>
-            <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0</td>
-            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0</td>
+            <td class="col-group-ppu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
+            <td class="col-summary-bpu bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
+            <td class="col-group-jkn bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
+            <td class="col-summary-jamsostek bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
+            <td class="col-group-jkn bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
+            <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
+            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
             <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>
             <td class="px-3 py-2 text-right font-mono font-bold align-middle subtotal-text text-teal-800 bg-teal-50/40 whitespace-nowrap">Rp 0</td>
             <td class="px-2 py-2 text-center align-middle">
@@ -990,7 +987,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const updateSubtotal = () => {
             BpjsJknColumns.syncRow(tr);
-            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, displayNumber);
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
             const currentSelectedGroup = filterGroupSelect ? filterGroupSelect.value : 'all';
             const kes       = parseIdNumber(inputKes.value);
             const ket       = parseIdNumber(inputKet.value);
@@ -1015,7 +1012,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 bpu_non_crew: ncJhtB + ncJhtH + ncJkk + ncJkm
             });
 
-            subtotalText.textContent = 'Rp ' + displayNumber(rowTotal);
+            subtotalText.textContent = 'Rp ' + formatNumber(rowTotal);
             if (!isGenerating && !isRefreshing) pendingUpdate.schedule();
         };
 
@@ -1044,7 +1041,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         function updateInfoBadgeJkn(kId) {
             const karyawan = karyawans.find(k => k.unique_id == kId || k.id == kId);
-            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, displayNumber);
+            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, formatNumber);
         }
 
         function calculateBpjsForKaryawan(kId, tipeJkn) {

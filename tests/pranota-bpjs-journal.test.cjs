@@ -107,35 +107,35 @@ test('live journal follows visible employees and component filters, refreshes af
     try {
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '142');
-        assert.equal(body.children[0].children[1].textContent, '100');
-        assert.equal(body.children[1].children[2].textContent, '10');
+        assert.equal(totals.grand_total.textContent, '142,00');
+        assert.equal(body.children[0].children[1].textContent, '100,00');
+        assert.equal(body.children[1].children[2].textContent, '10,00');
         input.value = '200.25';
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '242');
+        assert.equal(totals.grand_total.textContent, '242,25');
         container.bpjsJournalFilter = { records: [
             { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'CREW' },
             { jenis: 'jamsostek', group_name: 'PPU', tipe: 'Harian' },
         ], group: 'JKN-KIS', tipe: 'all' };
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '225');
+        assert.equal(totals.grand_total.textContent, '225,25');
         assert.equal(body.children[1].children[2].textContent, '-');
         container.bpjsJournalFilter.group = 'all';
         container.bpjsJournalFilter.tipe = 'Harian';
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '17');
+        assert.equal(totals.grand_total.textContent, '17,00');
         assert.equal(body.children[0].children[1].textContent, '-');
-        assert.equal(body.children[1].children[3].textContent, '5');
+        assert.equal(body.children[1].children[3].textContent, '5,00');
         // Filtering must not alter the underlying employee contributions.
         assert.equal(rows[0].bpjsJournalRecord.amounts.bpjs_kesehatan, 200.25);
         rows[0].classList.contains = () => true;
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '0');
-        assert.equal(totals.debit.textContent, '0');
+        assert.equal(totals.grand_total.textContent, '0,00');
+        assert.equal(totals.debit.textContent, '0,00');
         container.bpjsJournalFilter.group = container.bpjsJournalFilter.tipe = 'all';
         rows.forEach(item => { item.classList.contains = () => false; });
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '485');
+        assert.equal(totals.grand_total.textContent, '484,50');
     } finally { globalThis.document = previousDocument; }
 });
