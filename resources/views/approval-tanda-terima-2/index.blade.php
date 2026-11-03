@@ -9,6 +9,21 @@
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-ttsj-dialog { width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-ttsj-dialog::backdrop { background: rgb(15 23 42 / 60%); }
+    #approval-ttsj-dialog { background: #f8fafc; color: #0f172a; }
+    #approval-ttsj-dialog > div:first-child { position: sticky; top: 0; z-index: 3; background: #fff; }
+    #approval-ttsj-dialog form > div:last-child { position: sticky; bottom: 0; z-index: 3; background: #fff; box-shadow: 0 -4px 16px rgb(15 23 42 / 6%); }
+    #approval-ttsj-dialog fieldset { min-width: 0; padding: 20px; border-color: #dbe2ea; background: #fff; }
+    #approval-ttsj-dialog fieldset legend { padding: 0 8px; font-size: 15px; }
+    #approval-ttsj-dialog fieldset label { display: block; margin-bottom: 7px; color: #334155; font-size: 13px; font-weight: 600; }
+    #approval-ttsj-dialog fieldset input, #approval-ttsj-dialog fieldset textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 14px; line-height: 20px; }
+    #approval-ttsj-dialog fieldset textarea { min-height: 96px; resize: vertical; }
+    #approval-ttsj-dialog fieldset input:focus, #approval-ttsj-dialog fieldset textarea:focus { outline: 0; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
+    #approval-ttsj-dialog fieldset input::placeholder, #approval-ttsj-dialog fieldset textarea::placeholder { color: #94a3b8; }
+    #approval-ttsj-dialog #approval-ttsj-hs-codes { min-height: 120px; }
+    @media (max-width: 640px) {
+        #approval-ttsj-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
+        #approval-ttsj-dialog fieldset { padding: 16px; }
+    }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-combobox { position: relative; }
     #approval-shipper-search { display: block; width: 100%; min-height: 44px; padding: 10px 42px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgb(15 23 42 / 5%); }
@@ -551,7 +566,7 @@
                             @if($prefix === 'manifest_goods')
                                 <div class="sm:col-span-2">
                                     <label for="approval-ttsj-hs-codes" class="mb-1 block text-xs font-medium text-gray-600">HS Code (satu per baris)</label>
-                                    <textarea id="approval-ttsj-hs-codes" name="manifest_goods[0][hs_codes]" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('manifest_goods.0.hs_codes') }}</textarea>
+                                    <textarea id="approval-ttsj-hs-codes" name="manifest_goods[0][hs_codes]" rows="4" placeholder="Masukkan satu HS Code per baris" class="w-full rounded-lg border-gray-300 text-sm">{{ old('manifest_goods.0.hs_codes') }}</textarea>
                                 </div>
                             @endif
                             @foreach(['nama_barang' => 'Nama Barang', 'jumlah' => 'Jumlah', 'satuan' => 'Satuan', 'ukuran' => 'Ukuran'] as $field => $label)
@@ -572,7 +587,7 @@
                             @else
                                 <div class="sm:col-span-2">
                                     <label for="approval-ttsj-note" class="mb-1 block text-xs font-medium text-gray-600">Keterangan Barang</label>
-                                    <textarea id="approval-ttsj-note" name="keterangan_barang" rows="2" class="w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan_barang') }}</textarea>
+                                    <textarea id="approval-ttsj-note" name="keterangan_barang" rows="4" placeholder="Tambahkan keterangan barang bila diperlukan" class="w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan_barang') }}</textarea>
                                 </div>
                             @endif
                         </div>
