@@ -13,7 +13,8 @@ class HrdDashboardDetailExportTest extends TestCase
 {
     public function test_missing_clock_out_dates_are_matched_per_day(): void
     {
-        $controller = new class extends HrdDashboardController {
+        $controller = new class extends HrdDashboardController
+        {
             public function dates(array $masuk, array $pulang): array
             {
                 $logs = fn ($dates) => collect($dates)->map(fn ($date) => (object) ['waktu' => $date]);
@@ -54,12 +55,14 @@ class HrdDashboardDetailExportTest extends TestCase
             ]),
         ];
 
-        $controller = new class($data) extends HrdDashboardController {
+        $controller = new class($data) extends HrdDashboardController
+        {
             public function __construct(private array $data) {}
 
             public function index(Request $request)
             {
-                return new class($this->data) {
+                return new class($this->data)
+                {
                     public function __construct(private array $data) {}
 
                     public function getData(): array
@@ -122,12 +125,14 @@ class HrdDashboardDetailExportTest extends TestCase
             'karyawanTerlambat' => collect([$absen]),
             'absensiLuarRadius' => collect([$absen]),
         ];
-        $controller = new class($data) extends HrdDashboardController {
+        $controller = new class($data) extends HrdDashboardController
+        {
             public function __construct(private array $data) {}
 
             public function index(Request $request)
             {
-                return new class($this->data) {
+                return new class($this->data)
+                {
                     public function __construct(private array $data) {}
 
                     public function getData(): array

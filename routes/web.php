@@ -29,8 +29,8 @@ use App\Http\Controllers\MasterKegiatanController;
 use App\Http\Controllers\MasterLwbpLamaController;
 use App\Http\Controllers\MasterNamaBarangAmprahanController;
 use App\Http\Controllers\MasterPelayananPelabuhanController;
-use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\MasterPenerimaBuktiPotongPphController;
+use App\Http\Controllers\MasterPengirimPenerimaController;
 use App\Http\Controllers\MasterPricelistAirTawarController;
 use App\Http\Controllers\MasterPricelistKanisirBanController;
 use App\Http\Controllers\MasterPricelistObAntarGudangController;
@@ -311,7 +311,6 @@ Route::middleware([
         ->name('jurnal-opp-opt.destroy')
         ->middleware('can:jurnal-opp-opt-delete');
 
-
     // Denah gudang uses the existing warehouse view/edit permissions.
     Route::middleware('can:master-gudang-view')->group(function () {
         Route::get('/denah-gudang', [\App\Http\Controllers\GudangPlanController::class, 'index'])->name('denah-gudang.index');
@@ -361,7 +360,6 @@ Route::middleware([
         ->middleware('can:chatbox-delete');
 
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
-
 
     Route::get('pranota-bpjs/riwayat', [PranotaBpjsController::class, 'index'])->name('pranota-bpjs.history');
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
@@ -1289,14 +1287,12 @@ Route::middleware([
 
         Route::get('tarif', function () {
             $user = auth()->user();
-            $items = collect(config('master_tarif'))->filter(fn ($item) =>
-                $item['permission'] && ($user->can($item['permission']) || (!empty($item['admin']) && $user->hasRole('admin')))
+            $items = collect(config('master_tarif'))->filter(fn ($item) => $item['permission'] && ($user->can($item['permission']) || (! empty($item['admin']) && $user->hasRole('admin')))
             );
 
             abort_if($items->isEmpty(), 403);
 
-            $items = collect(config('master_tarif'))->filter(fn ($item) =>
-                !$item['permission'] || $user->can($item['permission']) || (!empty($item['admin']) && $user->hasRole('admin'))
+            $items = collect(config('master_tarif'))->filter(fn ($item) => ! $item['permission'] || $user->can($item['permission']) || (! empty($item['admin']) && $user->hasRole('admin'))
             );
 
             return view('master.tarif.index', compact('items'));
@@ -6126,22 +6122,9 @@ Route::middleware([
 
     // Individual routes with specific middleware instead of resource
 
-
-
-
-
-
-
-
-
     // Bulk operations for daftar tagihan kontainer sewa
 
     // Group management routes
-
-
-
-
-
 
     // Invoice Kontainer Sewa routes - menggunakan permission tagihan-kontainer-sewa
 

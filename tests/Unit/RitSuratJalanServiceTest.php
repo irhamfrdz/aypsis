@@ -2,8 +2,8 @@
 
 namespace Tests\Unit;
 
-use App\Services\RitSuratJalanService;
 use App\Services\PranotaUangRitEligibility;
+use App\Services\RitSuratJalanService;
 use Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager;
 use Illuminate\Database\Eloquent\Model;

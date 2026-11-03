@@ -2,8 +2,8 @@
 
 namespace Tests\Feature;
 
-use App\Http\Controllers\AbsensiImportController;
 use App\Http\Controllers\AbsensiController;
+use App\Http\Controllers\AbsensiImportController;
 use App\Http\Controllers\Api\ApiAttendanceController;
 use App\Models\Absensi;
 use App\Models\Karyawan;

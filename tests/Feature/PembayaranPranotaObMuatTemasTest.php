@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Http\Controllers\PembayaranPranotaObController;
-use App\Models\PembayaranPranotaOb;
 use App\Models\CoaTransaction;
+use App\Models\PembayaranPranotaOb;
 use App\Models\PranotaObMuatTemas;
 use App\Models\User;
 use App\Services\CoaTransactionService;
@@ -138,6 +138,7 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $service->shouldReceive('recordTransaction')->times(4)
             ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan, $coaId) use (&$entries) {
                 $entries[] = [$coaId, $debit, $kredit];
+
                 return new CoaTransaction;
             });
         $controller = new PembayaranPranotaObController($service);

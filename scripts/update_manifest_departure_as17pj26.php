@@ -80,10 +80,10 @@ try {
     if (! $execute) {
         echo PHP_EOL.'[MODE PREVIEW] Database belum diubah.'.PHP_EOL;
         echo 'Jalankan perintah berikut di terminal untuk mengeksekusi:'.PHP_EOL;
-        echo "  php scripts/update_manifest_departure_as17pj26.php --execute".PHP_EOL;
+        echo '  php scripts/update_manifest_departure_as17pj26.php --execute'.PHP_EOL;
         if ($totalBl > 0) {
             echo PHP_EOL.'Tip: Jika ingin mengupdate tanggal berangkat tabel BL (bls) juga:'.PHP_EOL;
-            echo "  php scripts/update_manifest_departure_as17pj26.php --execute --with-bl".PHP_EOL;
+            echo '  php scripts/update_manifest_departure_as17pj26.php --execute --with-bl'.PHP_EOL;
         }
         echo PHP_EOL;
         exit(0);

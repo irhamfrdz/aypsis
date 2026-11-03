@@ -55,6 +55,7 @@ class PembayaranPranotaObAntarGudangAkunMemoTest extends TestCase
         $service->shouldReceive('recordTransaction')->times(6)
             ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan, $coaId) use (&$journal) {
                 $journal[] = ['coa_id' => $coaId, 'debit' => $debit, 'kredit' => $kredit, 'keterangan' => $keterangan];
+
                 return new CoaTransaction;
             });
         $service->shouldReceive('deleteTransactionByReference')->once()->andReturn(true);

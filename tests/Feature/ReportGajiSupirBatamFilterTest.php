@@ -3,8 +3,8 @@
 namespace Tests\Feature;
 
 use App\Exports\ReportGajiSupirBatamExport;
-use App\Http\Controllers\ReportGajiSupirBatamController;
 use App\Http\Controllers\GajiSupirBatamController;
+use App\Http\Controllers\ReportGajiSupirBatamController;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;

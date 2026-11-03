@@ -22,7 +22,9 @@ class PranotaLemburAddEmployeesTest extends TestCase
         Cache::flush();
         Schema::create('karyawans', function (Blueprint $table) {
             $table->id();
-            foreach (['nik', 'nama_lengkap', 'grup'] as $column) $table->string($column);
+            foreach (['nik', 'nama_lengkap', 'grup'] as $column) {
+                $table->string($column);
+            }
             $table->integer('nominal_uang_makan')->default(0);
         });
         Schema::create('absensis', function (Blueprint $table) {
@@ -56,12 +58,19 @@ class PranotaLemburAddEmployeesTest extends TestCase
             $table->string('satuan');
             $table->integer('nominal');
         });
-        Schema::create('hari_liburs', function (Blueprint $table) { $table->id(); $table->date('tanggal'); });
+        Schema::create('hari_liburs', function (Blueprint $table) {
+            $table->id();
+            $table->date('tanggal');
+        });
         Schema::create('pranota_lembur_karyawan_headers', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_pranota');
-            foreach (['tanggal_pranota', 'periode_mulai', 'periode_selesai'] as $column) $table->date($column);
-            foreach (['total_biaya', 'adjustment', 'total_setelah_adjustment'] as $column) $table->decimal($column, 15, 2)->default(0);
+            foreach (['tanggal_pranota', 'periode_mulai', 'periode_selesai'] as $column) {
+                $table->date($column);
+            }
+            foreach (['total_biaya', 'adjustment', 'total_setelah_adjustment'] as $column) {
+                $table->decimal($column, 15, 2)->default(0);
+            }
             $table->integer('pranota_puml_id')->nullable();
             $table->integer('updated_by')->nullable();
             $table->timestamps();
@@ -75,14 +84,18 @@ class PranotaLemburAddEmployeesTest extends TestCase
             $table->date('periode_selesai')->nullable();
             $table->json('tanggal_lembur')->nullable();
             $table->string('jam_lembur')->nullable();
-            foreach (['nominal_awal', 'adjustment', 'total_akhir'] as $column) $table->decimal($column, 15, 2)->default(0);
+            foreach (['nominal_awal', 'adjustment', 'total_akhir'] as $column) {
+                $table->decimal($column, 15, 2)->default(0);
+            }
             $table->string('catatan')->nullable();
             $table->timestamps();
         });
         Schema::create('pranota_pumls', function (Blueprint $table) {
             $table->id();
             $table->string('status');
-            foreach (['total_lembur', 'total_uang_makan', 'grand_total'] as $column) $table->decimal($column, 15, 2);
+            foreach (['total_lembur', 'total_uang_makan', 'grand_total'] as $column) {
+                $table->decimal($column, 15, 2);
+            }
             $table->timestamps();
         });
         for ($id = 1; $id <= 4; $id++) {
