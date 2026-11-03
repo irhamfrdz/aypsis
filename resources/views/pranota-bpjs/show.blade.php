@@ -177,7 +177,7 @@
                                         @if($field === 'no_voucher')
                                             <td class="border border-gray-200 p-3">{{ $detail->no_voucher ?: '-' }}</td>
                                         @else
-                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ in_array($field, ['kis_tunjangan', 'bpjs_ketenagakerjaan']) ? number_format(round($amount($detail, $field)), 0, ',', '.') : number_format($amount($detail, $field), 2, ',', '.') }}</td>
                                         @endif
                                     @endforeach
                                 @endforeach

@@ -216,6 +216,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     /**
+     * Format angka dibulatkan ke rupiah utuh (tanpa desimal)
+     */
+    function formatRounded(num) {
+        return Math.round(num || 0).toLocaleString('id-ID');
+    }
+
+    /**
      * Parse angka format Indonesia ke float
      * Contoh: "5.729.880,00" → 5729880
      *         5200000        → 5200000 (sudah number, langsung return)
@@ -363,11 +370,11 @@ document.addEventListener('DOMContentLoaded', async function() {
             </td>
             <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
             <td class="px-4 py-3 align-middle bpjs-jkn-contribution" data-jkn-tunjangan>
-                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKes)}" autocomplete="off">
+                <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatRounded(valKes)}" autocomplete="off">
             </td>
             <td class="px-4 py-3 align-middle bpjs-jkn-contribution" data-jkn-biaya></td>
             <td class="px-4 py-3 align-middle bpjs-jkn-debt">
-                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKet)}" autocomplete="off">
+                <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatRounded(valKet)}" autocomplete="off">
             </td>
             <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
             <td class="px-4 py-3 align-middle bpjs-ppu-cost">
@@ -446,7 +453,14 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (!isGenerating) pendingUpdate.schedule();
         };
 
-        const inputs = [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
+        [inputKes, inputKet].forEach(input => {
+            input.addEventListener('change', function() {
+                this.value = formatRounded(parseIdNumber(this.value));
+                updateSubtotal();
+            });
+            input.addEventListener('input', updateSubtotal);
+        });
+        const inputs = [inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputJpBiaya, inputJpHutang];
         inputs.forEach(input => {
             input.addEventListener('change', function() {
                 this.value = formatNumber(parseIdNumber(this.value));
@@ -587,10 +601,10 @@ document.addEventListener('DOMContentLoaded', async function() {
             }
 
             if (tipeJkn !== 'manual') { 
-                inputKes.value = formatNumber(nominalKes);
+                inputKes.value = formatRounded(nominalKes);
             }
             
-            inputKet.value = formatNumber(nominalKet);
+            inputKet.value = formatRounded(nominalKet);
             updateSubtotal();
         }
 
@@ -630,8 +644,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 selectTipe.value = 'manual';
                 updateInfoBadgeJkn(k ? k.unique_id : karyawanId);
                 
-                inputKes.value = formatNumber(valKes);
-                inputKet.value = formatNumber(valKet);
+                inputKes.value = formatRounded(valKes);
+                inputKet.value = formatRounded(valKet);
                 
                 updateSubtotal();
         } else if (isGenerated && karyawanId) {

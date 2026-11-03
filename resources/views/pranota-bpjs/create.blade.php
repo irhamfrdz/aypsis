@@ -485,6 +485,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     /**
+     * Format angka dibulatkan ke rupiah utuh (tanpa desimal)
+     */
+    function formatRounded(num) {
+        return Math.round(num || 0).toLocaleString('id-ID');
+    }
+
+    /**
      * Parse angka format Indonesia ke float
      */
     function parseIdNumber(val) {
@@ -1023,7 +1030,15 @@ document.addEventListener('DOMContentLoaded', function() {
         };
 
         // Format saat kehilangan fokus atau nilai berubah (oleh sistem / user)
-        [inputKes, inputKet, inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputBpuJht, inputBpuJkk, inputBpuJkm, inputNcJhtBiaya, inputNcJhtHutang, inputNcJkk, inputNcJkm, inputJpBiaya, inputJpHutang].forEach(function(input) {
+        [inputKes, inputKet].forEach(function(input) {
+            if (!input) return;
+            input.addEventListener('change', function() {
+                this.value = formatRounded(parseIdNumber(this.value));
+                updateSubtotal();
+            });
+            input.addEventListener('input', updateSubtotal);
+        });
+        [inputJhtBiaya, inputJhtHutang, inputJkk, inputJkm, inputBpuJht, inputBpuJkk, inputBpuJkm, inputNcJhtBiaya, inputNcJhtHutang, inputNcJkk, inputNcJkm, inputJpBiaya, inputJpHutang].forEach(function(input) {
             if (!input) return;
             input.addEventListener('change', function() {
                 this.value = formatNumber(parseIdNumber(this.value));
@@ -1196,10 +1211,10 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             if (tipeJkn !== 'manual') {
-                inputKes.value = formatNumber(nominalKes);
+                inputKes.value = formatRounded(nominalKes);
             }
             
-            inputKet.value = formatNumber(nominalKet);
+            inputKet.value = formatRounded(nominalKet);
             updateSubtotal();
         }
 
