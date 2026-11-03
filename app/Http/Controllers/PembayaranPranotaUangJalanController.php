@@ -327,7 +327,21 @@ class PembayaranPranotaUangJalanController extends Controller
             'pranotaUangJalans.uangJalans.suratJalan.tujuanPengirimanRelation',
         ]);
 
-        // Get akun COA for bank selection (only needed for unpaid payments)
+        // Show available pranota alongside those already attached to this payment.
+        $selectedIds = $pembayaranPranotaUangJalan->pranotaUangJalans->modelKeys();
+        $pranotaUangJalans = PranotaUangJalan::query()
+            ->where(function ($query) use ($selectedIds) {
+                $query->whereIn('id', $selectedIds)
+                    ->orWhere(function ($available) {
+                        $available->where('status_pembayaran', PranotaUangJalan::STATUS_UNPAID)
+                            ->whereDoesntHave('pembayaranPranotaUangJalans');
+                    });
+            })
+            ->with(['uangJalans.suratJalan.supirKaryawan', 'uangJalans.suratJalan.tujuanPengambilanRelation'])
+            ->orderBy('tanggal_pranota', 'desc')
+            ->get();
+
+        // Get akun COA for bank selection.
         $akunCoa = Coa::where(function ($query) {
             $query->where('tipe_akun', 'LIKE', '%bank%')
                 ->orWhere('nama_akun', 'LIKE', '%bank%')
@@ -337,7 +351,7 @@ class PembayaranPranotaUangJalanController extends Controller
             ->get();
         $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
 
-        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'akunCoa', 'akunBiaya'));
+        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'pranotaUangJalans', 'akunCoa', 'akunBiaya'));
     }
 
     /**
@@ -351,44 +365,9 @@ class PembayaranPranotaUangJalanController extends Controller
                 ->with('error', 'Pembayaran yang dibatalkan tidak dapat diubah.');
         }
 
-        // If payment is already paid, only allow updating nomor_accurate
-        if ($pembayaranPranotaUangJalan->isPaid()) {
-            $request->validate([
-                'nomor_accurate' => 'nullable|string|max:255',
-                'tanggal_pembayaran' => 'nullable|date',
-            ]);
-
-            DB::beginTransaction();
-
-            try {
-                $pembayaranPranotaUangJalan->update([
-                    'nomor_accurate' => $request->nomor_accurate,
-                    'tanggal_pembayaran' => $request->tanggal_pembayaran ?: $pembayaranPranotaUangJalan->tanggal_pembayaran,
-                    'updated_by' => Auth::id(),
-                ]);
-
-                // Synchronize date to CoaTransactions
-                if ($request->filled('tanggal_pembayaran')) {
-                    CoaTransaction::where('nomor_referensi', $pembayaranPranotaUangJalan->nomor_pembayaran)
-                        ->update(['tanggal_transaksi' => $request->tanggal_pembayaran]);
-                }
-
-                DB::commit();
-
-                return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                    ->with('success', 'Nomor Accurate dan Tanggal berhasil diperbarui.');
-
-            } catch (\Exception $e) {
-                DB::rollBack();
-                Log::error('Error updating nomor accurate: '.$e->getMessage());
-
-                return back()->with('error', 'Gagal memperbarui nomor accurate: '.$e->getMessage())
-                    ->withInput();
-            }
-        }
-
-        // For unpaid payments, allow full edit
-        $request->validate([
+        $validated = $request->validate([
+            'pranota_uang_jalan_ids' => ['required', 'array', 'min:1'],
+            'pranota_uang_jalan_ids.*' => ['required', 'integer', 'distinct', 'exists:pranota_uang_jalans,id'],
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
@@ -397,7 +376,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'bank' => 'required|string|max:255',
-            'akun_coa_id' => 'nullable|exists:akun_coa,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'keterangan' => 'nullable|string',
             'bukti_pembayaran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
@@ -405,13 +384,79 @@ class PembayaranPranotaUangJalanController extends Controller
         DB::beginTransaction();
 
         try {
+            $payment = PembayaranPranotaUangJalan::whereKey($pembayaranPranotaUangJalan->id)
+                ->lockForUpdate()->firstOrFail();
+            if ($payment->isCancelled()) {
+                throw new \RuntimeException('Pembayaran yang dibatalkan tidak dapat diubah.');
+            }
+            $previousIds = $payment->pranotaUangJalans()->pluck('pranota_uang_jalans.id')->all();
+            $selectedIds = array_map('intval', $validated['pranota_uang_jalan_ids']);
+            $addedIds = array_diff($selectedIds, $previousIds);
+            $removedIds = array_diff($previousIds, $selectedIds);
+
+            $pranotas = PranotaUangJalan::with('uangJalans.suratJalan')
+                ->whereIn('id', $selectedIds)->lockForUpdate()->get()->keyBy('id');
+            foreach ($addedIds as $id) {
+                $pranota = $pranotas->get($id);
+                if ($pranota->status_pembayaran !== PranotaUangJalan::STATUS_UNPAID
+                    || $pranota->pembayaranPranotaUangJalans()->exists()) {
+                    throw new \RuntimeException('Pranota yang dipilih sudah dibayar oleh pembayaran lain.');
+                }
+            }
+
+            $total = 0;
+            foreach ($selectedIds as $id) {
+                $pranota = $pranotas->get($id);
+                $subtotal = in_array($id, $addedIds) ? $pranota->total_for_payment
+                    : (float) $payment->pranotaUangJalans->firstWhere('id', $id)->pivot->subtotal;
+                $total += (float) $subtotal;
+            }
+            $final = $total + (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
+            if ($final < 0 || abs($total - (float) $validated['total_pembayaran']) > 0.01
+                || abs($final - (float) $validated['total_tagihan_setelah_penyesuaian']) > 0.01) {
+                throw new \RuntimeException('Total pembayaran tidak sesuai dengan pranota yang dipilih.');
+            }
+
+            foreach ($removedIds as $id) {
+                $pranota = PranotaUangJalan::with('uangJalans.suratJalan')->findOrFail($id);
+                $payment->pranotaUangJalans()->detach($id);
+                if (! $pranota->pembayaranPranotaUangJalans()
+                    ->where('pembayaran_pranota_uang_jalans.status_pembayaran', PembayaranPranotaUangJalan::STATUS_PAID)->exists()) {
+                    $pranota->update(['status_pembayaran' => PranotaUangJalan::STATUS_UNPAID, 'updated_by' => Auth::id()]);
+                    foreach ($pranota->uangJalans as $uangJalan) {
+                        $uangJalan->forceFill(['status' => 'sudah_masuk_pranota'])->save();
+                        if ($uangJalan->suratJalan) {
+                            $uangJalan->suratJalan->forceFill(['status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan'])->save();
+                        }
+                    }
+                    Prospek::whereNull('tanda_terima_id')
+                        ->where('keterangan', 'like', '%Pranota: '.$pranota->nomor_pranota.'%')->delete();
+                }
+            }
+            foreach ($addedIds as $id) {
+                $pranota = $pranotas->get($id);
+                $payment->pranotaUangJalans()->attach($id, ['subtotal' => $pranota->total_for_payment]);
+                $pranota->update(['status_pembayaran' => PranotaUangJalan::STATUS_PAID, 'updated_by' => Auth::id()]);
+                foreach ($pranota->uangJalans as $uangJalan) {
+                    $uangJalan->update(['status' => 'lunas', 'updated_by' => Auth::id()]);
+                    if ($uangJalan->suratJalan) {
+                        $uangJalan->suratJalan->update([
+                            'status_pembayaran_uang_jalan' => 'dibayar',
+                            'status' => 'belum masuk checkpoint',
+                            'updated_by' => Auth::id(),
+                        ]);
+                    }
+                }
+                $this->createProspekFromFclUangJalan($id);
+            }
+
             $data = [
                 'nomor_accurate' => $request->nomor_accurate,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'total_pembayaran' => $request->total_pembayaran,
-                'total_tagihan_penyesuaian' => $request->total_tagihan_penyesuaian,
-                'total_tagihan_setelah_penyesuaian' => $request->total_tagihan_setelah_penyesuaian,
+                'total_pembayaran' => $total,
+                'total_tagihan_penyesuaian' => $validated['total_tagihan_penyesuaian'] ?? 0,
+                'total_tagihan_setelah_penyesuaian' => $final,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'bank' => $request->bank,
                 'akun_coa_id' => $request->akun_coa_id,
@@ -420,21 +465,42 @@ class PembayaranPranotaUangJalanController extends Controller
             ];
 
             // Handle file upload
+            $oldProof = $payment->bukti_pembayaran;
             if ($request->hasFile('bukti_pembayaran')) {
-                // Delete old file if exists
-                if ($pembayaranPranotaUangJalan->bukti_pembayaran) {
-                    Storage::disk('public')->delete($pembayaranPranotaUangJalan->bukti_pembayaran);
-                }
-
                 $file = $request->file('bukti_pembayaran');
                 $filename = 'bukti_pembayaran_'.time().'.'.$file->getClientOriginalExtension();
                 $path = $file->storeAs('bukti_pembayaran', $filename, 'public');
                 $data['bukti_pembayaran'] = $path;
             }
 
-            $pembayaranPranotaUangJalan->update($data);
+            $payment->update($data);
+
+            $hasJournal = CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->exists();
+            if ($payment->isPaid() || $hasJournal) {
+                $bank = Coa::where('nama_akun', $validated['bank'])->firstOrFail();
+                $biaya = Coa::findOrFail($validated['akun_coa_id']);
+                if ($hasJournal && ! $this->coaTransactionService->deleteTransactionByReference($payment->nomor_pembayaran)) {
+                    throw new \RuntimeException('Jurnal lama gagal dibatalkan.');
+                }
+                $debit = $validated['jenis_transaksi'] === 'Debit' ? $bank : $biaya;
+                $credit = $validated['jenis_transaksi'] === 'Debit' ? $biaya : $bank;
+                if (! $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $debit->nama_akun, 'coa_id' => $debit->id, 'jumlah' => $final],
+                    ['nama_akun' => $credit->nama_akun, 'coa_id' => $credit->id, 'jumlah' => $final],
+                    $validated['tanggal_pembayaran'], $payment->nomor_pembayaran,
+                    'Pembayaran Pranota Uang Jalan', 'Pembayaran Pranota Uang Jalan - '.$payment->nomor_pembayaran
+                )) {
+                    throw new \RuntimeException('Jurnal baru gagal dicatat.');
+                }
+                if (CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->count() !== 2) {
+                    throw new \RuntimeException('Jurnal baru tidak lengkap.');
+                }
+            }
 
             DB::commit();
+            if ($request->hasFile('bukti_pembayaran') && $oldProof) {
+                Storage::disk('public')->delete($oldProof);
+            }
 
             return redirect()->route('pembayaran-pranota-uang-jalan.index')
                 ->with('success', 'Pembayaran pranota uang jalan berhasil diperbarui.');

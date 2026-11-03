@@ -53,70 +53,23 @@
             </div>
         @endif
 
+        <div class="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-200">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
+                <h3 class="text-sm font-semibold text-gray-800">Filter Pranota Uang Jalan</h3>
+                <div class="flex flex-wrap items-end gap-2">
+                    <div><label for="start_date" class="{{ $labelClasses }}">Dari</label><input type="date" id="start_date" class="{{ $inputClasses }}"></div>
+                    <div><label for="end_date" class="{{ $labelClasses }}">Sampai</label><input type="date" id="end_date" class="{{ $inputClasses }}"></div>
+                    <button type="button" id="filterPranota" class="py-2 px-3 text-xs rounded-md bg-blue-600 text-white">Cari</button>
+                    <button type="button" id="resetFilterPranota" class="py-2 px-3 text-xs rounded-md border border-gray-300 bg-white">Reset</button>
+                </div>
+            </div>
+        </div>
+
         <form action="{{ route('pembayaran-pranota-uang-jalan.update', $pembayaranPranotaUangJalan->id) }}" method="POST" enctype="multipart/form-data" id="pembayaranForm" class="space-y-3">
             @csrf
             @method('PUT')
 
-            @if($pembayaranPranotaUangJalan->isPaid())
-                <!-- Alert for paid payment - only nomor accurate can be edited -->
-                <div class="mb-3 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-800 text-sm">
-                    <div class="flex items-start">
-                        <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
-                        </svg>
-                        <div>
-                            <strong>Pembayaran Sudah Dibayar</strong><br>
-                            Hanya nomor accurate yang dapat diubah untuk pembayaran yang sudah lunas.
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Edit Nomor Accurate</h4>
-                    <div class="grid grid-cols-1 gap-2">
-                        <div>
-                            <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
-                            <input type="text" name="nomor_accurate" id="nomor_accurate"
-                                value="{{ old('nomor_accurate', $pembayaranPranotaUangJalan->nomor_accurate) }}"
-                                class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
-                        </div>
-                        <div class="mt-2">
-                            <label for="tanggal_pembayaran" class="{{ $labelClasses }}">Tanggal Pembayaran</label>
-                            <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran"
-                                value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
-                                class="{{ $inputClasses }}">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Pranota Info (Read Only) -->
-                <div class="bg-gray-50 rounded-lg p-3 border border-gray-200 mb-3">
-                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Informasi Pembayaran (Read Only)</h4>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                        <div>
-                            <span class="text-gray-600">Nomor Pembayaran:</span>
-                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->nomor_pembayaran }}</p>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Tanggal Pembayaran:</span>
-                            <p class="font-medium">{{ optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('d/m/Y') }}</p>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Bank:</span>
-                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->bank }}</p>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Akun Biaya:</span>
-                            <p class="font-medium">{{ $pembayaranPranotaUangJalan->akunCoa?->nama_akun ?? 'Biaya Uang Jalan Muat' }}</p>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Total Pembayaran:</span>
-                            <p class="font-medium">Rp {{ number_format($pembayaranPranotaUangJalan->total_pembayaran, 0, ',', '.') }}</p>
-                        </div>
-                    </div>
-                </div>
-            @else
-                <!-- Full Edit Form for Unpaid Payments -->
+            <!-- Data pembayaran -->
                 <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                     <!-- Info Pembayaran -->
                     <div class="lg:col-span-2">
@@ -136,10 +89,12 @@
                                         class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                                 </div>
                                  <div>
-                                    <label for="tanggal_pembayaran" class="{{ $labelClasses }}">Tanggal Pembayaran <span class="text-red-500">*</span></label>
-                                    <input type="date" name="tanggal_pembayaran" id="tanggal_pembayaran"
+                                    <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas <span class="text-red-500">*</span></label>
+                                    <input type="date" name="tanggal_kas" id="tanggal_kas"
                                         value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}"
                                         class="{{ $inputClasses }}" required>
+                                    <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran"
+                                        value="{{ old('tanggal_pembayaran', optional($pembayaranPranotaUangJalan->tanggal_pembayaran)->format('Y-m-d')) }}">
                                 </div>
                             </div>
                         </div>
@@ -184,8 +139,8 @@
                                 </select>
                             </div>
                             <div class="md:col-span-2">
-                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya</label>
-                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}">
+                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
+                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
                                     <option value="">-- Biaya Uang Jalan Muat (data lama) --</option>
                                     @foreach($akunBiaya as $akun)
                                         <option value="{{ $akun->id }}" {{ old('akun_coa_id', $pembayaranPranotaUangJalan->akun_coa_id) == $akun->id ? 'selected' : '' }}>
@@ -212,29 +167,56 @@
                 </div>
             </div>
 
-            <!-- Pranota Info -->
+            <!-- Pilih Pranota Uang Jalan -->
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800">Pranota Uang Jalan yang Dibayar</h4>
-                    <p class="mt-1 text-xs text-blue-600">Pranota sudah terhubung ke pembayaran ini dan tidak dapat diganti dari halaman edit.</p>
+                    <div class="flex items-center justify-between gap-2">
+                        <h4 class="text-sm font-semibold text-gray-800">Pilih Pranota Uang Jalan</h4>
+                        <input type="text" id="searchPranota" placeholder="Cari nomor pranota, supir, tujuan..." class="px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 w-64">
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 px-3 py-3 text-sm">
-                    <div>
-                        <span class="text-gray-600">Nomor Pranota:</span>
-                        <p class="font-medium">{{ $pembayaranPranotaUangJalan->pranotaUangJalan->nomor_pranota }}</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-600">Tanggal Pranota:</span>
-                        <p class="font-medium">{{ optional($pembayaranPranotaUangJalan->pranotaUangJalan->tanggal_pranota)->format('d/m/Y') }}</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-600">Total Pranota:</span>
-                        <p class="font-medium">Rp {{ number_format($pembayaranPranotaUangJalan->pranotaUangJalan->total_amount, 0, ',', '.') }}</p>
-                    </div>
-                    <div>
-                        <span class="text-gray-600">Jumlah Item:</span>
-                        <p class="font-medium">{{ $pembayaranPranotaUangJalan->pranotaUangJalan->uangJalans->count() }} item</p>
-                    </div>
+                <div class="overflow-x-auto max-h-60">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50 sticky top-0 z-20">
+                            <tr>
+                                <th class="px-2 py-2 text-left"><input type="checkbox" id="select-all" class="h-3 w-3 text-indigo-600 border-gray-300 rounded"></th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Pranota</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tujuan Ambil</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tipe</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jumlah Item</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total Uang Jalan</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pranotaTableBody" class="bg-white divide-y divide-gray-200">
+                            @php $selectedPranotaIds = old('pranota_uang_jalan_ids', $pembayaranPranotaUangJalan->pranotaUangJalans->modelKeys()); @endphp
+                            @forelse($pranotaUangJalans as $pranota)
+                                @php
+                                    $isSelected = in_array($pranota->id, $selectedPranotaIds);
+                                    $linked = $pembayaranPranotaUangJalan->pranotaUangJalans->firstWhere('id', $pranota->id);
+                                    $subtotal = $linked ? $linked->pivot->subtotal : $pranota->total_for_payment;
+                                    $supirs = $pranota->uangJalans->map(fn ($item) => $item->suratJalan?->supirKaryawan?->nama_panggilan ?? $item->suratJalan?->supir)->filter()->unique();
+                                    $tujuans = $pranota->uangJalans->map(fn ($item) => $item->suratJalan?->tujuanPengambilanRelation?->ke ?? $item->suratJalan?->tujuan_pengambilan)->filter()->unique();
+                                    $types = $pranota->uangJalans->pluck('suratJalan.tipe_kontainer')->filter()->unique();
+                                @endphp
+                                <tr class="pranota-row hover:bg-gray-50" data-date="{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('Y-m-d') : '' }}">
+                                    <td class="px-2 py-2"><input type="checkbox" name="pranota_uang_jalan_ids[]" value="{{ $pranota->id }}" data-total="{{ $subtotal }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" @checked($isSelected)></td>
+                                    <td class="px-2 py-2 text-xs font-medium"><a href="{{ route('pranota-uang-jalan.show', $pranota->id) }}" target="_blank" class="text-indigo-600 hover:underline">{{ $pranota->nomor_pranota }}</a></td>
+                                    <td class="px-2 py-2 text-xs">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') : '-' }}</td>
+                                    <td class="px-2 py-2 text-xs">{{ $supirs->take(2)->implode(', ') ?: '-' }}</td>
+                                    <td class="px-2 py-2 text-xs">{{ $tujuans->take(2)->implode(', ') ?: '-' }}</td>
+                                    <td class="px-2 py-2 text-xs">{{ $types->take(2)->implode(', ') ?: '-' }}</td>
+                                    <td class="px-2 py-2 text-xs">{{ $pranota->uangJalans->count() }} item</td>
+                                    <td class="px-2 py-2 text-right text-xs font-semibold">Rp {{ number_format($subtotal, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 text-xs">{{ $linked ? 'Sudah Bayar' : 'Belum Bayar' }}</td>
+                                </tr>
+                            @empty
+                                <tr><td colspan="9" class="px-2 py-4 text-center text-xs text-gray-500">Tidak ada pranota tersedia.</td></tr>
+                            @endforelse
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -248,7 +230,7 @@
                             <label for="total_pembayaran" class="{{ $labelClasses }}">Total Tagihan <span class="text-red-500">*</span></label>
                             <input type="number" name="total_pembayaran" id="total_pembayaran" step="0.01"
                                 value="{{ old('total_pembayaran', $pembayaranPranotaUangJalan->total_pembayaran) }}"
-                                class="{{ $inputClasses }}" required>
+                                class="{{ $readonlyInputClasses }}" readonly required>
                         </div>
                         <div>
                             <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
@@ -300,8 +282,6 @@
                     @endif
                 </div>
             </div>
-            @endif
-
             <!-- Action Buttons -->
             <div class="flex justify-end gap-2 pt-3 border-t border-gray-200">
                 <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
@@ -329,10 +309,6 @@
                     minimumResultsForSearch: 0
                 });
             }
-            const isPaid = {{ $pembayaranPranotaUangJalan->isPaid() ? 'true' : 'false' }};
-            
-            // Only initialize bank search for unpaid payments
-            if (!isPaid) {
                 // Bank search functionality
                 const bankSearch = document.getElementById('bankSearch');
                 const bankSelect = document.getElementById('bank');
@@ -401,19 +377,56 @@
                 const totalPembayaran = document.getElementById('total_pembayaran');
                 const totalPenyesuaian = document.getElementById('total_tagihan_penyesuaian');
                 const totalSetelah = document.getElementById('total_tagihan_setelah_penyesuaian');
+                const checkboxes = Array.from(document.querySelectorAll('.pranota-checkbox'));
+                const selectAll = document.getElementById('select-all');
+                const searchPranota = document.getElementById('searchPranota');
+                const tanggalKas = document.getElementById('tanggal_kas');
+                const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
 
                 function updateTotalSetelah() {
-                    const pembayaran = parseFloat(totalPembayaran.value) || 0;
+                    const pembayaran = checkboxes.reduce((sum, checkbox) =>
+                        sum + (checkbox.checked ? parseFloat(checkbox.dataset.total) || 0 : 0), 0);
                     const penyesuaian = parseFloat(totalPenyesuaian.value) || 0;
+                    totalPembayaran.value = pembayaran;
                     totalSetelah.value = pembayaran + penyesuaian;
+                    selectAll.checked = checkboxes.length > 0 && checkboxes.every(checkbox => checkbox.checked);
                 }
 
-                totalPembayaran.addEventListener('input', updateTotalSetelah);
+                checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateTotalSetelah));
+                selectAll.addEventListener('change', () => {
+                    checkboxes.forEach(checkbox => { checkbox.checked = selectAll.checked; });
+                    updateTotalSetelah();
+                });
                 totalPenyesuaian.addEventListener('input', updateTotalSetelah);
-                
-                // Initial calculation
+                searchPranota.addEventListener('input', () => {
+                    filterRows();
+                });
+                function filterRows() {
+                    const term = searchPranota.value.toLowerCase().trim();
+                    const start = document.getElementById('start_date').value;
+                    const end = document.getElementById('end_date').value;
+                    document.querySelectorAll('.pranota-row').forEach(row => {
+                        const matchesText = row.textContent.toLowerCase().includes(term);
+                        const matchesDate = (!start || row.dataset.date >= start) && (!end || row.dataset.date <= end);
+                        row.classList.toggle('hidden', !matchesText || !matchesDate);
+                    });
+                }
+                document.getElementById('filterPranota').addEventListener('click', filterRows);
+                document.getElementById('resetFilterPranota').addEventListener('click', () => {
+                    document.getElementById('start_date').value = '';
+                    document.getElementById('end_date').value = '';
+                    searchPranota.value = '';
+                    filterRows();
+                });
+                tanggalKas.addEventListener('change', () => { tanggalPembayaran.value = tanggalKas.value; });
+                document.getElementById('pembayaranForm').addEventListener('submit', event => {
+                    tanggalPembayaran.value = tanggalKas.value;
+                    if (!checkboxes.some(checkbox => checkbox.checked)) {
+                        event.preventDefault();
+                        alert('Pilih minimal satu pranota uang jalan.');
+                    }
+                });
                 updateTotalSetelah();
-            }
         });
     </script>
 @endsection
