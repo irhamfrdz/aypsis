@@ -544,9 +544,17 @@
                 <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
-                <label for="approval-ttsj-container" class="mb-1 block text-sm font-medium text-gray-700">Nomor kontainer</label>
-                <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <label for="approval-ttsj-container-type" class="mb-1 block text-sm font-medium text-gray-700">Jenis pengiriman <span class="text-red-600">*</span></label>
+                <select id="approval-ttsj-container-type" name="tipe_kontainer" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="fcl" @selected(old('tipe_kontainer', 'fcl') === 'fcl')>FCL (Kontainer)</option>
+                    <option value="cargo" @selected(old('tipe_kontainer') === 'cargo')>Cargo</option>
+                </select>
             </div>
+            <div id="approval-ttsj-container-fields" class="contents">
+                <div>
+                    <label for="approval-ttsj-container" class="mb-1 block text-sm font-medium text-gray-700">Nomor kontainer <span class="text-red-600">*</span></label>
+                    <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                </div>
             <div>
                 <label for="approval-ttsj-size" class="mb-1 block text-sm font-medium text-gray-700">Ukuran kontainer</label>
                 <input id="approval-ttsj-size" name="size_kontainer" value="{{ old('size_kontainer') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -554,6 +562,7 @@
             <div>
                 <label for="approval-ttsj-seal" class="mb-1 block text-sm font-medium text-gray-700">Nomor seal</label>
                 <input id="approval-ttsj-seal" name="no_seal" value="{{ old('no_seal') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
             </div>
         </div>
         <section class="border-t border-gray-200 px-5 py-5 sm:px-6">
@@ -702,6 +711,17 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dialog.dataset.reopen === 'true') dialog.showModal();
 
     const form = dialog.querySelector('form');
+    const containerType = document.getElementById('approval-ttsj-container-type');
+    const containerFields = document.getElementById('approval-ttsj-container-fields');
+    const containerNumber = document.getElementById('approval-ttsj-container');
+    function updateContainerFields() {
+        const isFcl = containerType.value === 'fcl';
+        containerFields.style.display = isFcl ? 'contents' : 'none';
+        containerNumber.required = isFcl;
+        containerFields.querySelectorAll('input').forEach(input => { input.disabled = !isFcl; });
+    }
+    containerType.addEventListener('change', updateContainerFields);
+    updateContainerFields();
     const search = document.getElementById('approval-ttsj-shipper-search');
     const results = document.getElementById('approval-ttsj-shipper-results');
     const message = document.getElementById('approval-ttsj-shipper-message');

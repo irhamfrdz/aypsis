@@ -305,6 +305,7 @@ class ApprovalTandaTerimaDuaController extends Controller
                 },
             ],
             'tujuan_pengiriman' => ['required', 'string', 'max:255'],
+            'tipe_kontainer' => ['required', 'in:fcl,cargo'],
             'manifest_goods' => ['required', 'array', 'size:1'],
             'manifest_goods.0.nama_barang' => ['required', 'string', 'max:255'],
             'manifest_goods.0.hs_codes' => ['nullable', 'string', 'max:4000'],
@@ -318,7 +319,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'goods.0.jumlah' => ['required', 'integer', 'min:1'],
             'goods.0.satuan' => ['required', 'string', 'max:100'],
             'goods.0.ukuran' => ['nullable', 'string', 'max:255'],
-            'no_kontainer' => ['nullable', 'string', 'max:255'],
+            'no_kontainer' => ['required_if:tipe_kontainer,fcl', 'nullable', 'string', 'max:255'],
             'size_kontainer' => ['nullable', 'string', 'max:50'],
             'no_seal' => ['nullable', 'string', 'max:255'],
             'keterangan_barang' => ['nullable', 'string', 'max:2000'],
@@ -354,6 +355,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
         }
         $perincian = $data['goods'][0];
+        if ($data['tipe_kontainer'] === 'cargo') {
+            $data['no_kontainer'] = 'CARGO';
+            $data['size_kontainer'] = null;
+            $data['no_seal'] = null;
+        }
         unset($data['manifest_goods'], $data['goods']);
 
         DB::transaction(function () use ($data, $number, $shipper, $shipperFields, $manifest, $perincian, $request) {
