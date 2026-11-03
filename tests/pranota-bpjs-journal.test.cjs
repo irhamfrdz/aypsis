@@ -107,35 +107,64 @@ test('live journal follows visible employees and component filters, refreshes af
     try {
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '142,00');
-        assert.equal(body.children[0].children[1].textContent, '100,00');
-        assert.equal(body.children[1].children[2].textContent, '10,00');
+        assert.equal(totals.grand_total.textContent, '142');
+        assert.equal(body.children[0].children[1].textContent, '100');
+        assert.equal(body.children[1].children[2].textContent, '10');
         input.value = '200.25';
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '242,25');
+        assert.equal(totals.grand_total.textContent, '242');
         container.bpjsJournalFilter = { records: [
             { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'CREW' },
             { jenis: 'jamsostek', group_name: 'PPU', tipe: 'Harian' },
         ], group: 'JKN-KIS', tipe: 'all' };
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '225,25');
+        assert.equal(totals.grand_total.textContent, '225');
         assert.equal(body.children[1].children[2].textContent, '-');
         container.bpjsJournalFilter.group = 'all';
         container.bpjsJournalFilter.tipe = 'Harian';
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '17,00');
+        assert.equal(totals.grand_total.textContent, '17');
         assert.equal(body.children[0].children[1].textContent, '-');
-        assert.equal(body.children[1].children[3].textContent, '5,00');
+        assert.equal(body.children[1].children[3].textContent, '5');
         // Filtering must not alter the underlying employee contributions.
         assert.equal(rows[0].bpjsJournalRecord.amounts.bpjs_kesehatan, 200.25);
         rows[0].classList.contains = () => true;
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '0,00');
-        assert.equal(totals.debit.textContent, '0,00');
+        assert.equal(totals.grand_total.textContent, '0');
+        assert.equal(totals.debit.textContent, '0');
         container.bpjsJournalFilter.group = container.bpjsJournalFilter.tipe = 'all';
         rows.forEach(item => { item.classList.contains = () => false; });
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '484,50');
+        assert.equal(totals.grand_total.textContent, '485');
     } finally { globalThis.document = previousDocument; }
+});
+
+test('journal rounds rendered subgroup amounts and totals to whole rupiah', () => {
+    const previousDocument = globalThis.document;
+    const node = () => ({ children: [], appendChild(child) { this.children.push(child); },
+        replaceChildren(fragment) { this.children = fragment.children; } });
+    const body = node(), totals = {};
+    for (const key of ['tunjangan', 'biaya', 'hutang', 'debit', 'grand_total']) totals[key] = {};
+    const section = { querySelector(selector) {
+        if (selector === '[data-journal-rows]') return body;
+        return totals[selector.match(/"([^"]+)"/)[1]];
+    } };
+    globalThis.document = { querySelector: () => section, createElement: node, createDocumentFragment: node };
+
+    try {
+        // TIPE KANTOR with nominal 397.110,60 must round to 397.111
+        BpjsJournal.render([{
+            employee: { group_jkn: 'JKN-KIS', tipe_jkn: 'Kantor' },
+            amounts: { bpjs_kesehatan: 397110.60, bpjs_ketenagakerjaan: 0 },
+        }]);
+
+        const kantorRow = body.children.find(r => r.children[0].textContent === 'Kantor');
+        assert.ok(kantorRow);
+        assert.equal(kantorRow.children[1].textContent, '397.111');
+        assert.equal(totals.tunjangan.textContent, '397.111');
+        assert.equal(totals.grand_total.textContent, '397.111');
+    } finally {
+        globalThis.document = previousDocument;
+    }
 });
