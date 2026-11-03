@@ -189,7 +189,7 @@
                         <tr>
                             <td colspan="7" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : ($field === 'bpjs_ketenagakerjaan' || $field === 'allowance_kary_jkn' ? 'Rp ' . number_format(round($groupTotal([$field])), 0, ',', '.') : ($field === 'total_jkn' ? 'Rp ' . number_format($groupTotal(['kis_tunjangan', 'kis_biaya']) + round($groupTotal(['bpjs_ketenagakerjaan'])), 2, ',', '.') : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.'))) }}</td>@endforeach
                             @endforeach
                             <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
                         </tr>

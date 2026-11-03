@@ -747,9 +747,13 @@ document.addEventListener('DOMContentLoaded', function() {
         });
 
         // Update footer table cells
-        document.getElementById('total_kes').textContent                 = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
-        document.getElementById('total_ket').textContent                 = 'Rp ' + formatNumber(sumKet);
+        const totalKesTunj = sumKes - sumKesBiaya;
+        const totalKesBiay = sumKesBiaya;
+        const totalKetHutang = Math.round(sumKet);
+
+        document.getElementById('total_kes').textContent                 = 'Rp ' + formatNumber(totalKesTunj);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(totalKesBiay);
+        document.getElementById('total_ket').textContent                 = 'Rp ' + totalKetHutang.toLocaleString('id-ID');
         document.getElementById('total_jht_biaya').textContent           = 'Rp ' + formatNumber(sumJhtB);
         document.getElementById('total_jht_hutang').textContent          = 'Rp ' + formatNumber(sumJhtH);
         document.getElementById('total_jkk').textContent                 = 'Rp ' + formatNumber(sumJkk);
@@ -764,14 +768,16 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('total_jp_biaya').textContent            = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').textContent           = 'Rp ' + formatNumber(sumJpH);
         
+        const totalJkn = totalKesTunj + totalKesBiay + totalKetHutang;
+
         const visibleGrandTotal = BpjsMasterFilters.total(rumusBpjs, selectedGroup, selectedCabang, {
-            jkn: sumKes + sumKet,
+            jkn: totalJkn,
             ppu: sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH,
             bpu_crew: sumBpuJht + sumBpuJkk + sumBpuJkm,
             bpu_non_crew: sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm
         });
         
-        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(totalJkn);
         document.getElementById('total_group_bpu_crew').textContent = 'Rp ' + formatNumber(sumBpuJht + sumBpuJkk + sumBpuJkm);
         document.getElementById('total_group_bpu_noncrew').textContent = 'Rp ' + formatNumber(sumNcJhtB + sumNcJhtH + sumNcJkk + sumNcJkm);
         document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);

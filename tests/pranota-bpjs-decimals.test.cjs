@@ -27,3 +27,26 @@ test('actual create and edit calculations preserve fractional JKN contributions 
         assert.equal(inputs.inputKet.value, '57.298,80');
     }
 });
+
+test('Group JKN totals keep KIS 4% unrounded while rounding KIS 1% debt', () => {
+    // 12 employees (1 @ 6.000.000 DPP, 11 @ 5.729.880 DPP)
+    // KIS 4%: 240.000 + 11 * 229.195,20 = 2.761.147,20
+    // KIS 1%: 60.000 + 11 * 57.298,80 = 690.286,80 -> rounded: 690.287
+    const sumKes = 2761147.20;
+    const sumKesBiaya = 0;
+    const sumKet = 690286.80;
+
+    const totalKesTunj = sumKes - sumKesBiaya;
+    const totalKesBiay = sumKesBiaya;
+    const totalKetHutang = Math.round(sumKet);
+    const totalJkn = totalKesTunj + totalKesBiay + totalKetHutang;
+
+    assert.equal(totalKesTunj, 2761147.20);
+    assert.equal(totalKetHutang, 690287);
+    assert.equal(totalJkn, 3451434.20);
+
+    const formatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    assert.equal(formatter.format(totalKesTunj), '2.761.147,20');
+    assert.equal(totalKetHutang.toLocaleString('id-ID'), '690.287');
+    assert.equal(formatter.format(totalJkn), '3.451.434,20');
+});

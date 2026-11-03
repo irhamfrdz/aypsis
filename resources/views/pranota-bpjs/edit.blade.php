@@ -245,9 +245,13 @@ document.addEventListener('DOMContentLoaded', async function() {
             sumJpH += read('.input-jp-hutang');
         });
 
-        document.getElementById('total_kes').textContent = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
-        document.getElementById('total_ket').textContent = 'Rp ' + formatNumber(sumKet);
+        const totalKesTunj = sumKes - sumKesBiaya;
+        const totalKesBiay = sumKesBiaya;
+        const totalKetHutang = Math.round(sumKet);
+
+        document.getElementById('total_kes').textContent = 'Rp ' + formatNumber(totalKesTunj);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(totalKesBiay);
+        document.getElementById('total_ket').textContent = 'Rp ' + totalKetHutang.toLocaleString('id-ID');
         document.getElementById('total_jht_biaya').textContent = 'Rp ' + formatNumber(sumJhtB);
         document.getElementById('total_jht_hutang').textContent = 'Rp ' + formatNumber(sumJhtH);
         document.getElementById('total_jkk').textContent = 'Rp ' + formatNumber(sumJkk);
@@ -255,9 +259,10 @@ document.addEventListener('DOMContentLoaded', async function() {
         document.getElementById('total_jp_biaya').textContent = 'Rp ' + formatNumber(sumJpB);
         document.getElementById('total_jp_hutang').textContent = 'Rp ' + formatNumber(sumJpH);
         
-        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
+        const totalJkn = totalKesTunj + totalKesBiay + totalKetHutang;
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(totalJkn);
         document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
-        const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
+        const grandTotal = totalJkn + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
         document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(grandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
