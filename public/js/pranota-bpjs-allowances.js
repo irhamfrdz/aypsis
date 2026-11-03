@@ -207,7 +207,7 @@
         container.querySelectorAll('tr.detail-row').forEach(row => {
             const amounts = updateRow(row, container, parseAmount, formatNumber);
             if (!row.classList.contains('hidden')) {
-                Object.entries(amounts).forEach(([key, amount]) => { totals[key] += Math.round(amount); });
+                Object.entries(amounts).forEach(([key, amount]) => { totals[key] += amount; });
             }
         });
         Object.entries(totals).forEach(([key, amount]) => {

@@ -406,7 +406,7 @@ test('264 unchanged rows skip all 1848 editor writes; edits, manual zero, and fi
         rows[0].fields.get('.input-kes').value = '200.25';
         update();
         assert.equal(writes, 7);
-        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.500');
+        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.566');
         rows[0].allowanceOverrides = { jkn: 0 };
         update();
         const manual = rows[0].fields.get('[data-allowance="jkn"]').querySelector('input');
@@ -414,12 +414,12 @@ test('264 unchanged rows skip all 1848 editor writes; edits, manual zero, and fi
         assert.equal(manual.value, '0.00');
         rows[1].hidden = true;
         update();
-        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.200');
+        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.266');
         delete rows[0].allowanceOverrides.jkn;
         update();
         assert.equal(manual.name, undefined);
         assert.equal(manual.value, '200.25');
-        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.400');
+        assert.equal(totals.get('total-allowance-jkn').textContent, 'Rp 26.466');
     } finally {
         globalThis.document = previousDocument;
     }
@@ -526,7 +526,7 @@ test('non employee burden drops excluded saved manual amounts and updates eligib
 });
 
 
-test('totals add whole rupiah components before summing across employees', () => {
+test('whole rupiah display preserves precise contribution inputs and total for DARMO', () => {
     const previousDocument = globalThis.document;
     const classList = { add() {} };
     const parent = () => ({ classList, appendChild(child) { child.parentElement = this; } });
@@ -535,15 +535,13 @@ test('totals add whole rupiah components before summing across employees', () =>
     const totalCell = {};
     const fields = new Map([['.input-kes', contribution], ['.input-ket', debt], ['.row-total-jkn', totalCell]]);
     globalThis.document = { createElement: () => ({ setAttribute() {} }) };
-    const parse = value => Math.round(Number(String(value).replace(/\./g, '').replace(',', '.')) || 0);
+    const parse = value => Number(String(value).replace(/\./g, '').replace(',', '.')) || 0;
     const format = value => value.toLocaleString('id-ID', { maximumFractionDigits: 0 });
     try {
         const row = { querySelector: selector => fields.get(selector) || null };
         BpjsPerformance.updateGroupTotals(row, parse, format);
-        assert.equal(BpjsPerformance.readNumber(row, '.input-kes', parse), 229195);
-        assert.equal(BpjsPerformance.readNumber(row, '.input-ket', parse), 57299);
-        assert.equal(12 * BpjsPerformance.readNumber(row, '.input-kes', parse), 2750340);
-        assert.notEqual(12 * BpjsPerformance.readNumber(row, '.input-kes', parse), Math.round(12 * 229195.20));
+        assert.equal(contribution.bpjsRoundedDisplay.textContent, '229.195');
+        assert.equal(debt.bpjsRoundedDisplay.textContent, '57.299');
         assert.equal(contribution.value, '229.195,20');
         assert.equal(debt.value, '57.298,80');
         assert.equal(totalCell.textContent, 'Rp 286.494');

@@ -19,15 +19,15 @@
 
     function calculate(record, dpp, employee = null) {
         if (isReimbursement(employee || { group_jkn: record?.group_name, tipe_jkn: record?.tipe })) {
-            return { contribution: Math.round(dpp), debt: 0 };
+            return { contribution: dpp, debt: 0 };
         }
         if (!record) return { contribution: 0, debt: 0 };
         const tunjangan = parseFloat(record.tunjangan_persen) || 0;
         const biaya = parseFloat(record.biaya_persen) || 0;
         const hutang = parseFloat(record.hutang_persen) || 0;
         return {
-            contribution: Math.round(dpp * (tunjangan || biaya) / 100),
-            debt: Math.round(dpp * hutang / 100),
+            contribution: dpp * (tunjangan || biaya) / 100,
+            debt: dpp * hutang / 100,
         };
     }
 

@@ -46,7 +46,7 @@ test('JKN-KIS NON KARY uses its own percentage with no debt from another type', 
     const formula = findFormula(records, employee);
     assert.equal(formula, records[1]);
     assert.deepEqual(calculate(formula, 5729880), { contribution: 286494, debt: 0 });
-    assert.deepEqual(calculate(records[0], 5729880), { contribution: 229195, debt: 57299 });
+    assert.deepEqual(calculate(records[0], 5729880), { contribution: 229195.2, debt: 57298.8 });
     assert.equal(findFormula(records, { ...employee, tipe_jkn: 'UNKNOWN' }), null);
     assert.equal(findFormula(records, { group_jkn: 'JKN-KIS' }), null);
     assert.deepEqual(calculate(null, 5729880), { contribution: 0, debt: 0 });

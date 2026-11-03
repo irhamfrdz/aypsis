@@ -209,7 +209,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     let isGenerating = false;
     let rowTarget = container;
     const pendingUpdate = BpjsPerformance.scheduler(() => calculateTotals());
-    const amountFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+    const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
     const rupiahFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
     const displayNumber = num => rupiahFormatter.format(num || 0);
@@ -224,7 +224,7 @@ document.addEventListener('DOMContentLoaded', async function() {
      *         5200000        → 5200000 (sudah number, langsung return)
      */
     function parseIdNumber(val) {
-        return Math.round(BpjsJamsostek.parseAmount(val));
+        return BpjsJamsostek.parseAmount(val);
     }
 
     function calculateTotals() {
@@ -490,7 +490,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 const rumus = BpjsJknColumns.findFormula(rumusBpjs, karyawan);
 
                 if ((rumus || BpjsJknColumns.isReimbursement(karyawan)) && tipeJkn === 'tunjangan_hutang') {
-                    const amounts = BpjsJknColumns.calculate(rumus, BpjsJamsostek.parseAmount(karyawan.dpp_jkn), karyawan);
+                    const amounts = BpjsJknColumns.calculate(rumus, parseIdNumber(karyawan.dpp_jkn), karyawan);
                     nominalKes = amounts.contribution;
                     nominalKet = amounts.debt;
                 }
@@ -501,15 +501,15 @@ document.addEventListener('DOMContentLoaded', async function() {
             if (karyawan.group_bp_jamsostek && tipeJkn !== 'manual') {
                 const rumus = BpjsJamsostek.findFormula(rumusBpjs, karyawan);
                 if (rumus) {
-                    const dppJamsostek = BpjsJamsostek.parseAmount(karyawan.dpp_bp_jamsostek);
+                    const dppJamsostek = parseIdNumber(karyawan.dpp_bp_jamsostek);
                     let jhtBiaya = 0, jhtHutang = 0, jkkTunj = 0, jkmTunj = 0, jpBiaya = 0, jpHutang = 0;
                     
                     if (rumus.group_name.toUpperCase().includes('PPU')) {
                         const jhtBiayaMaster = parseFloat(rumus.jht_biaya || 0);
                         const jhtHutangMaster = parseFloat(rumus.jht_hutang || 0);
                         
-                        jhtHutang = Math.round((jhtHutangMaster / 100) * dppJamsostek);
-                        jhtBiaya = Math.round(((jhtBiayaMaster / 100) * dppJamsostek) - jhtHutang);
+                        jhtHutang = (jhtHutangMaster / 100) * dppJamsostek;
+                        jhtBiaya = ((jhtBiayaMaster / 100) * dppJamsostek) - jhtHutang;
                         
                         const jpBiayaMaster = parseFloat(rumus.jp_biaya || 0);
                         const jpHutangMaster = parseFloat(rumus.jp_hutang || 0);
@@ -544,20 +544,20 @@ document.addEventListener('DOMContentLoaded', async function() {
                             }
 
                             // PPU JP 1% (Hutang Karyawan)
-                            jpHutang = Math.round((jpHutangMaster / 100) * dppJp);
+                            jpHutang = (jpHutangMaster / 100) * dppJp;
 
                             // PPU JP 2% (Biaya Perusahaan) = (JP Biaya % * dppJp) - PPU JP 1% (jpHutang)
-                            jpBiaya = Math.round(Math.max(0, ((jpBiayaMaster / 100) * dppJp) - jpHutang));
+                            jpBiaya = Math.max(0, ((jpBiayaMaster / 100) * dppJp) - jpHutang);
                         }
 
-                        jkkTunj = Math.round((parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek);
-                        jkmTunj = Math.round((parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek);
+                        jkkTunj = (parseFloat(rumus.jkk_tunjangan || 0) / 100) * dppJamsostek;
+                        jkmTunj = (parseFloat(rumus.jkm_tunjangan || 0) / 100) * dppJamsostek;
                     } else if (BpjsMasterFilters.category(rumus) === 'bpu_crew') {
                         const amounts = BpjsJamsostek.calculateCrew(rumus, karyawan.dpp_bp_jamsostek, karyawan);
                         jhtHutang = amounts.jht;
                         jkkTunj = amounts.jkk;
                         jkmTunj = amounts.jkm;
-                        nominalKet += Math.round(parseFloat(rumus.hutang_persen || 0) / 100 * dppJamsostek);
+                        nominalKet += parseFloat(rumus.hutang_persen || 0) / 100 * dppJamsostek;
                     } else {
                         const amounts = BpjsJamsostek.calculateNonCrew(rumus, karyawan.dpp_bp_jamsostek, karyawan);
                         jhtBiaya = amounts.jhtBiaya;

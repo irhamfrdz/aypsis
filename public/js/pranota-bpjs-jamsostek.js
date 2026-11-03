@@ -62,12 +62,12 @@
         calculateNonCrew(record, dppValue, employee = null) {
             const dpp = parseAmount(dppValue);
             const tier = this.findDppTier(record.hutang_tiers, dpp);
-            const jhtHutang = Math.round(tier ? parseAmount(tier.potongan) : parseFloat(record.jht_hutang || record.hutang_persen || 0) / 100 * dpp);
+            const jhtHutang = tier ? parseAmount(tier.potongan) : parseFloat(record.jht_hutang || record.hutang_persen || 0) / 100 * dpp;
             return {
                 jhtHutang,
-                jhtBiaya: Math.round(Math.max(0, parseFloat(record.jht_biaya || 0) / 100 * dpp - jhtHutang)),
-                jkk: Math.round(applyDiscount(record, parseFloat(record.jkk_tunjangan || record.tunjangan_persen || 0) / 100 * dpp, employee)),
-                jkm: Math.round(applyDiscount(record, parseFloat(record.jkm_tunjangan || record.biaya_persen || 0), employee)),
+                jhtBiaya: Math.max(0, parseFloat(record.jht_biaya || 0) / 100 * dpp - jhtHutang),
+                jkk: applyDiscount(record, parseFloat(record.jkk_tunjangan || record.tunjangan_persen || 0) / 100 * dpp, employee),
+                jkm: applyDiscount(record, parseFloat(record.jkm_tunjangan || record.biaya_persen || 0), employee),
             };
         },
         calculateCrew(record, dppValue, employee = null) {
@@ -77,12 +77,12 @@
                 try { tiers = JSON.parse(tiers); } catch (_) { tiers = []; }
             }
             const tier = Array.isArray(tiers) ? tiers.find(item => parseAmount(item.dpp) === dpp) : null;
-            const jht = tier ? Math.round(parseAmount(tier.potongan)) : 0;
+            const jht = tier ? parseAmount(tier.potongan) : 0;
             const discount = amount => applyDiscount(record, amount, employee);
             return {
                 jht,
-                jkk: Math.round(Math.max(0, discount(parseFloat(record.tunjangan_persen || 0) / 100 * dpp) - jht)),
-                jkm: Math.round(discount(parseFloat(record.biaya_persen || 0)))
+                jkk: Math.max(0, discount(parseFloat(record.tunjangan_persen || 0) / 100 * dpp) - jht),
+                jkm: discount(parseFloat(record.biaya_persen || 0))
             };
         }
     };
