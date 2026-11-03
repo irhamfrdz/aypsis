@@ -270,6 +270,66 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->assertEquals(80000, $payment->fresh()->total_pembayaran);
     }
 
+    public function test_potongan_utang_in_breakdown_is_not_deducted_twice(): void
+    {
+        DB::table('akun_coa')->insert(['id' => 5, 'nama_akun' => 'Piutang Lain-Lain']);
+        $breakdown = [[
+            'nama_supir' => 'IWAN',
+            'total_biaya' => 3520000,
+            'dp' => 1800000,
+            'sisa' => 1720000,
+            'potongan_utang' => 100000,
+            'potongan_tabungan' => 0,
+            'potongan_bpjs' => 0,
+            'grand_total' => 1620000,
+        ]];
+        $payment = PembayaranPranotaOb::create([
+            'nomor_pembayaran' => 'PY-OB-POTONGAN',
+            'tanggal_kas' => '2026-11-03',
+            'jenis_transaksi' => 'credit',
+            'total_pembayaran' => 1620000,
+            'total_setelah_penyesuaian' => 1620000,
+            'dp_amount' => 1800000,
+            'breakdown_supir' => $breakdown,
+            'akun_coa_id' => 1,
+            'akun_dp_id' => 4,
+            'akun_bank_id' => 2,
+        ]);
+        $payment->akunItems()->create(['akun_coa_id' => 1, 'nominal' => 3520000]);
+
+        $entries = [];
+        $service = $this->mock(CoaTransactionService::class);
+        $service->shouldReceive('deleteTransactionByReference')->once()->andReturn(true);
+        $service->shouldReceive('recordTransaction')->times(4)
+            ->andReturnUsing(function ($nama, $debit, $kredit) use (&$entries) {
+                $entries[] = [$nama, $debit, $kredit];
+
+                return new CoaTransaction;
+            });
+
+        $request = Request::create('/pembayaran-pranota-ob/'.$payment->id, 'PUT', [
+            'tanggal_kas' => '2026-11-03',
+            'debit_kredit' => 'credit',
+            'akun_items' => [
+                ['akun_coa_id' => 1, 'nominal' => 3520000],
+                ['akun_coa_id' => 5, 'nominal' => 100000],
+            ],
+            'akun_dp_id' => 4,
+            'akun_bank_id' => 2,
+            'breakdown_supir' => json_encode($breakdown),
+        ]);
+        (new PembayaranPranotaObController($service))->update($request, (string) $payment->id);
+
+        $this->assertEquals(1620000, $payment->fresh()->total_pembayaran);
+        $this->assertEquals(1620000, $payment->fresh()->total_setelah_penyesuaian);
+        $this->assertEquals([
+            ['Biaya OB', 3520000, 0],
+            ['Piutang Lain-Lain', 0, 100000],
+            ['Uang Muka OB', 0, 1800000],
+            ['Bank', 0, 1620000],
+        ], $entries);
+    }
+
     public function test_account_amounts_must_equal_gross_total_before_dp(): void
     {
         DB::table('pembayaran_obs')->insert(['id' => 1, 'dp_amount' => 60000]);

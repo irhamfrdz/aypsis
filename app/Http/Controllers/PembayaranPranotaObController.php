@@ -432,6 +432,8 @@ class PembayaranPranotaObController extends Controller
             if (! empty($breakdownSupir)) {
                 foreach ($breakdownSupir as $breakdown) {
                     $totalPembayaran += (float) ($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
+                    // Potongan utang sudah masuk ke grand_total; akun piutang mencatat potongan yang sama.
+                    $totalPembayaran += (float) ($breakdown['potongan_utang'] ?? 0);
                 }
             } else {
                 // If no breakdown, keep original total
@@ -701,9 +703,10 @@ class PembayaranPranotaObController extends Controller
             // Update main payment record
             $penyesuaian = $pembayaranPranotaOb->penyesuaian ?? 0;
             $deductions = collect($finalBreakdown)->sum(fn ($row) => (float) $row['potongan_utang'] + (float) $row['potongan_tabungan'] + (float) $row['potongan_bpjs']);
+            $potonganUtang = collect($finalBreakdown)->sum(fn ($row) => (float) $row['potongan_utang']);
             $akunItems = $pembayaranPranotaOb->akunItems()->with('akunCoa')->orderBy('id')->get();
             $piutang = $akunItems->sum(fn ($item) => $item->akunCoa?->isPiutangLainLain() ? (float) $item->nominal : 0);
-            $totalPembayaran = $newTotal - (float) $pembayaranPranotaOb->dp_amount - $deductions - $piutang;
+            $totalPembayaran = $newTotal - (float) $pembayaranPranotaOb->dp_amount - $deductions + $potonganUtang - $piutang;
             $pembayaranPranotaOb->update([
                 'total_pembayaran' => $totalPembayaran,
                 'total_biaya_pranota' => $newTotal,

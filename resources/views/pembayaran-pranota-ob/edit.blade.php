@@ -457,7 +457,7 @@
             }
             
             // Update total pembayaran
-            if (breakdown.length) document.getElementById('akun-items-section').dataset.baseTotal = totalGrandTotal;
+            if (breakdown.length) document.getElementById('akun-items-section').dataset.baseTotal = totalGrandTotal + totalPotUtang;
             window.updatePranotaObAkunItems?.();
         }
 
