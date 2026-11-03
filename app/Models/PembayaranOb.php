@@ -78,6 +78,11 @@ class PembayaranOb extends Model
         return $this->belongsTo(PembayaranUangMuka::class, 'pembayaran_uang_muka_id');
     }
 
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranObAkunItem::class, 'pembayaran_ob_id');
+    }
+
     public function supirList()
     {
         return \App\Models\Karyawan::whereIn('id', $this->supir_ids ?? [])->get();

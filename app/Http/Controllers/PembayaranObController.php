@@ -87,6 +87,7 @@ class PembayaranObController extends Controller
 
         // Ambil semua akun COA untuk pilihan Akun Biaya
         $akunBiayaList = Coa::orderBy('kode_nomor')->get();
+        $akunItems = old('akun_items', [['akun_coa_id' => old('akun_coa_id'), 'nominal' => null, 'memo' => null]]);
 
         // Get Uang Muka yang belum terpakai
         $uangMukaBelumTerpakaiList = \App\Models\PembayaranUangMuka::where('status', 'uang_muka_belum_terpakai')
@@ -104,6 +105,7 @@ class PembayaranObController extends Controller
             'kasBankList' => $kasBankList,
             'uangMukaBelumTerpakaiList' => $uangMukaBelumTerpakaiList,
             'akunBiayaList' => $akunBiayaList,
+            'akunItems' => $akunItems,
         ]);
     }
 
@@ -250,7 +252,10 @@ class PembayaranObController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => 'required|array|min:1',
+            'akun_items.*.akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items.*.nominal' => 'required|numeric|min:0.01',
+            'akun_items.*.memo' => 'nullable|string|max:2000',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'kegiatan' => 'nullable|string|max:255',
             'nomor_voyage' => 'nullable|string|max:255',
@@ -299,13 +304,19 @@ class PembayaranObController extends Controller
                 }
             }
 
+            $akunItems = collect($validated['akun_items'])->values();
+            if (abs((float) $akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalPembayaran) > 0.01) {
+                DB::rollBack();
+                return back()->withInput()->withErrors(['akun_items' => 'Total nominal akun harus sama dengan total pembayaran setelah Uang Muka.']);
+            }
+
             // Simpan pembayaran OB
             $pembayaran = PembayaranOb::create([
                 'nomor_pembayaran' => $nomorPembayaran,
                 'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
-                'akun_coa_id' => $validated['akun_coa_id'],
+                'akun_coa_id' => $akunItems->first()['akun_coa_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'kegiatan' => $validated['kegiatan'] ?? null,
                 'nomor_voyage' => $validated['nomor_voyage'] ?? null,
@@ -322,6 +333,10 @@ class PembayaranObController extends Controller
                 'disetujui_oleh' => Auth::id(),
                 'tanggal_persetujuan' => now(),
             ]);
+
+            $pembayaran->akunItems()->createMany($akunItems->map(fn ($item) => [
+                'akun_coa_id' => $item['akun_coa_id'], 'nominal' => $item['nominal'], 'memo' => $item['memo'] ?? null,
+            ])->all());
 
             // Create Double Book Journal
             $this->createDoubleBookJournal($pembayaran, $validated, $totalPembayaran);
@@ -469,6 +484,13 @@ class PembayaranObController extends Controller
 
         // Ambil semua akun COA untuk pilihan Akun Biaya
         $akunBiayaList = Coa::orderBy('kode_nomor')->get();
+        $akunItems = $pembayaran->akunItems()->get()->map(fn ($item) => [
+            'akun_coa_id' => $item->akun_coa_id, 'nominal' => $item->nominal, 'memo' => $item->memo,
+        ])->all();
+        if (empty($akunItems)) {
+            $akunItems = [['akun_coa_id' => $pembayaran->akun_coa_id, 'nominal' => $pembayaran->total_pembayaran, 'memo' => null]];
+        }
+        $akunItems = old('akun_items', $akunItems);
 
         return view('pembayaran-dp-ob.edit', [
             'title' => 'Edit Pembayaran DP OB',
@@ -476,6 +498,7 @@ class PembayaranObController extends Controller
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
             'akunBiayaList' => $akunBiayaList,
+            'akunItems' => $akunItems,
         ]);
     }
 
@@ -505,7 +528,10 @@ class PembayaranObController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
-            'akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items' => 'required|array|min:1',
+            'akun_items.*.akun_coa_id' => 'required|exists:akun_coa,id',
+            'akun_items.*.nominal' => 'required|numeric|min:0.01',
+            'akun_items.*.memo' => 'nullable|string|max:2000',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'kegiatan' => 'nullable|string|max:255',
             'nomor_voyage' => 'nullable|string|max:255',
@@ -562,13 +588,19 @@ class PembayaranObController extends Controller
                 }
             }
 
+            $akunItems = collect($validated['akun_items'])->values();
+            if (abs((float) $akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalPembayaran) > 0.01) {
+                DB::rollBack();
+                return back()->withInput()->withErrors(['akun_items' => 'Total nominal akun harus sama dengan total pembayaran setelah Uang Muka.']);
+            }
+
             // Update pembayaran
             $pembayaran->update([
                 'nomor_pembayaran' => $validated['nomor_pembayaran'],
                 'nomor_accurate' => $validated['nomor_accurate'] ?? null,
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
-                'akun_coa_id' => $validated['akun_coa_id'],
+                'akun_coa_id' => $akunItems->first()['akun_coa_id'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'kegiatan' => $validated['kegiatan'] ?? null,
                 'nomor_voyage' => $validated['nomor_voyage'] ?? null,
@@ -580,6 +612,11 @@ class PembayaranObController extends Controller
                 'total_pembayaran' => $totalPembayaran,
                 'keterangan' => $validated['keterangan'] ?? null,
             ]);
+
+            $pembayaran->akunItems()->delete();
+            $pembayaran->akunItems()->createMany($akunItems->map(fn ($item) => [
+                'akun_coa_id' => $item['akun_coa_id'], 'nominal' => $item['nominal'], 'memo' => $item['memo'] ?? null,
+            ])->all());
 
             // Create new journal entries
             $this->createDoubleBookJournal($pembayaran, $validated, $totalPembayaran);
@@ -920,42 +957,28 @@ class PembayaranObController extends Controller
      */
     private function createDoubleBookJournal($pembayaran, $validated, $amount)
     {
-        $coaDebitId = null;
-        $coaKreditId = null;
-
-        if ($validated['jenis_transaksi'] === 'debit') {
-            $coaDebitId = $validated['kas_bank'];
-            $coaKreditId = $validated['akun_coa_id'];
-        } else {
-            $coaDebitId = $validated['akun_coa_id'];
-            $coaKreditId = $validated['kas_bank'];
-        }
-
         $keterangan = 'Pembayaran OB: '.$pembayaran->nomor_pembayaran.($validated['keterangan'] ? ' - '.$validated['keterangan'] : '');
 
-        // Debit Entry
-        if ($coaDebitId) {
-            $this->createCoaTransaction(
-                $coaDebitId,
-                $validated['tanggal_pembayaran'],
-                $amount,
-                0,
-                $keterangan,
-                $pembayaran->nomor_pembayaran
-            );
+        $details = $validated['akun_items'] ?? [[
+            'akun_coa_id' => $validated['akun_coa_id'], 'nominal' => $amount, 'memo' => null,
+        ]];
+        foreach ($details as $detail) {
+            $memo = ! empty($detail['memo']) ? ' - '.$detail['memo'] : '';
+            if ($validated['jenis_transaksi'] === 'debit') {
+                $this->createCoaTransaction($detail['akun_coa_id'], $validated['tanggal_pembayaran'], 0, (float) $detail['nominal'], $keterangan.$memo, $pembayaran->nomor_pembayaran);
+            } else {
+                $this->createCoaTransaction($detail['akun_coa_id'], $validated['tanggal_pembayaran'], (float) $detail['nominal'], 0, $keterangan.$memo, $pembayaran->nomor_pembayaran);
+            }
         }
 
-        // Kredit Entry
-        if ($coaKreditId) {
-            $this->createCoaTransaction(
-                $coaKreditId,
-                $validated['tanggal_pembayaran'],
-                0,
-                $amount,
-                $keterangan,
-                $pembayaran->nomor_pembayaran
-            );
-        }
+        $this->createCoaTransaction(
+            $validated['kas_bank'],
+            $validated['tanggal_pembayaran'],
+            $validated['jenis_transaksi'] === 'debit' ? $amount : 0,
+            $validated['jenis_transaksi'] === 'kredit' ? $amount : 0,
+            $keterangan,
+            $pembayaran->nomor_pembayaran
+        );
     }
 
     /**

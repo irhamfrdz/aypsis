@@ -211,22 +211,25 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-                            <!-- Akun Biaya Field -->
                             <div>
-                                <label for="akun_coa_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Pilih Akun Biaya <span class="text-red-500">*</span>
-                                </label>
-                                <select name="akun_coa_id" id="akun_coa_id" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                    <option value="">-- Pilih Akun Biaya --</option>
-                                    @foreach($akunBiayaList as $akun)
-                                        <option value="{{ $akun->id }}" data-nama="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor }}" {{ old('akun_coa_id', $pembayaran->akun_coa_id) == $akun->id ? 'selected' : '' }}>
-                                            {{ $akun->kode_nomor }} - {{ $akun->nama_akun }}
-                                        </option>
+                                <div class="flex items-center justify-between mb-2">
+                                    <label class="block text-sm font-medium text-gray-700">Rincian Akun Biaya <span class="text-red-500">*</span></label>
+                                    <button type="button" id="add-akun-item" class="text-sm text-blue-600">+ Tambah Akun</button>
+                                </div>
+                                <div id="akun-items" class="space-y-3">
+                                    @foreach($akunItems as $index => $item)
+                                        <div class="akun-item grid grid-cols-1 md:grid-cols-3 gap-2">
+                                            <select name="akun_items[{{ $index }}][akun_coa_id]" required class="akun-item-coa w-full px-3 py-2 border rounded-md text-sm">
+                                                <option value="">-- Pilih Akun Biaya --</option>
+                                                @foreach($akunBiayaList as $akun)<option value="{{ $akun->id }}" {{ ($item['akun_coa_id'] ?? '') == $akun->id ? 'selected' : '' }}>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>@endforeach
+                                            </select>
+                                            <input type="number" min="0.01" step="0.01" name="akun_items[{{ $index }}][nominal]" value="{{ $item['nominal'] ?? '' }}" required placeholder="Nominal" class="akun-item-nominal w-full px-3 py-2 border rounded-md text-sm">
+                                            <div class="flex gap-2"><input type="text" name="akun_items[{{ $index }}][memo]" value="{{ $item['memo'] ?? '' }}" placeholder="Memo/catatan akun (opsional)" class="w-full px-3 py-2 border rounded-md text-sm"><button type="button" class="remove-akun-item text-red-600">Hapus</button></div>
+                                        </div>
                                     @endforeach
-                                </select>
-                                @error('akun_coa_id')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                </div>
+                                @error('akun_items')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                                <select id="akun_coa_id" class="hidden"><option value="">--</option>@foreach($akunBiayaList as $akun)<option value="{{ $akun->id }}">{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>@endforeach</select>
                             </div>
 
                             <!-- Dynamic Journal Preview -->
@@ -691,6 +694,7 @@ function updateJournalPreview() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    initAkunItems();
     const bindings = ['jenis_transaksi', 'kas_bank', 'akun_coa_id'];
     bindings.forEach(id => {
         const el = document.getElementById(id);
@@ -703,6 +707,29 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+function initAkunItems() {
+    const container = document.getElementById('akun-items');
+    const addButton = document.getElementById('add-akun-item');
+    if (!container || !addButton) return;
+    const options = @json($akunBiayaList->map(fn ($akun) => ['id' => $akun->id, 'label' => $akun->kode_nomor.' - '.$akun->nama_akun])->values());
+    const reindex = () => container.querySelectorAll('.akun-item').forEach((row, i) => row.querySelectorAll('[name]').forEach(input => {
+        input.name = input.name.replace(/akun_items\[\d+\]/, `akun_items[${i}]`);
+    }));
+    addButton.addEventListener('click', () => {
+        const index = container.querySelectorAll('.akun-item').length;
+        const row = document.createElement('div');
+        row.className = 'akun-item grid grid-cols-1 md:grid-cols-3 gap-2';
+        row.innerHTML = `<select name="akun_items[${index}][akun_coa_id]" required class="akun-item-coa w-full px-3 py-2 border rounded-md text-sm"><option value="">-- Pilih Akun Biaya --</option>${options.map(o => `<option value="${o.id}">${o.label}</option>`).join('')}</select><input type="number" min="0.01" step="0.01" name="akun_items[${index}][nominal]" required placeholder="Nominal" class="w-full px-3 py-2 border rounded-md text-sm"><div class="flex gap-2"><input type="text" name="akun_items[${index}][memo]" placeholder="Memo/catatan akun (opsional)" class="w-full px-3 py-2 border rounded-md text-sm"><button type="button" class="remove-akun-item text-red-600">Hapus</button></div>`;
+        container.appendChild(row);
+    });
+    container.addEventListener('click', e => {
+        if (e.target.closest('.remove-akun-item')) {
+            if (container.querySelectorAll('.akun-item').length > 1) e.target.closest('.akun-item').remove();
+            reindex();
+        }
+    });
+}
 </script>
 
 @endsection
