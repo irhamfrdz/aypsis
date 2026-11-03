@@ -109,9 +109,3 @@ td.bpjs-allowance-green[data-allowance] { background: #f0fdf466; border-left-col
         outline-offset: -2px;
     }
 }
-
-/* Keep precise input values for totals and submission; show whole rupiah when idle. */
-.bpjs-amount-cell { position: relative; }
-.bpjs-precise-amount:not(:focus) { opacity: 0; }
-.bpjs-rounded-amount { position: absolute; inset: 0; display: flex; align-items: center; justify-content: flex-end; padding-right: .75rem; pointer-events: none; font-family: monospace; font-size: .75rem; }
-.bpjs-amount-cell:focus-within > .bpjs-rounded-amount { visibility: hidden; }

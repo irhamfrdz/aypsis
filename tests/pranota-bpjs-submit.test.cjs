@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-submit.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
 
-test('264 employee rows become one payload while preserving IDs and fractional amounts', () => {
+test('264 employee rows become one payload while preserving IDs and rounding each amount before submission', () => {
     const fields = [];
     for (let index = 1; index <= 264; index++) {
         for (const [key, value] of Object.entries({ karyawan_id: String(index), tipe_karyawan: 'App\\Models\\Karyawan',
@@ -24,7 +24,7 @@ test('264 employee rows become one payload while preserving IDs and fractional a
     assert.equal(details[263].karyawan_id, '264');
     assert.equal(details[263].tipe_karyawan, 'App\\Models\\Karyawan');
     assert.equal(details[263].bpjs_kesehatan, 229195);
-    assert.equal(details[263].jht_biaya, 100000.8);
+    assert.equal(details[263].jht_biaya, 100001);
     assert.equal(form.payload.name, 'details_json');
     assert.equal(fields.filter(field => field.name).length, 0);
 });
@@ -47,7 +47,7 @@ test('submission captures employee metadata, automatic zero and manual summaries
     prepareBpjsSubmission(form, BpjsJamsostek.parseAmount, formulas);
     const detail = JSON.parse(inputs['[name="details_json"]'].value)[0];
     assert.deepEqual(detail.snapshot_karyawan, employee);
-    assert.equal(detail.ringkasan_bpjs.pt, 12500.75);
+    assert.equal(detail.ringkasan_bpjs.pt, 12501);
     assert.equal(detail.ringkasan_bpjs.jkn, 0);
     assert.equal(detail.no_voucher, 'VC-007');
     assert.deepEqual(JSON.parse(inputs['[name="snapshot_rumus_json"]'].value), formulas);

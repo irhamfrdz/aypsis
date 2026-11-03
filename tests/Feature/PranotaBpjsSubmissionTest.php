@@ -53,18 +53,18 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertSame(7, $insertCount, '264 detail rows should use seven batch inserts on '.$action);
             $this->assertEquals(264, $header->total_karyawan);
             $this->assertSame(264, $header->details()->count());
-            $this->assertSame('229195.20', $header->details()->firstOrFail()->bpjs_kesehatan);
-            $this->assertSame('57298.80', $header->details()->firstOrFail()->bpjs_ketenagakerjaan);
+            $this->assertSame('229195.00', $header->details()->firstOrFail()->bpjs_kesehatan);
+            $this->assertSame('57299.00', $header->details()->firstOrFail()->bpjs_ketenagakerjaan);
             $this->assertSame('VC-001/2026', $header->details()->firstOrFail()->no_voucher);
-            $this->assertSame(123.45, $header->details()->firstOrFail()->tunjangan_manual['kary_jht']);
+            $this->assertEquals(123, $header->details()->firstOrFail()->tunjangan_manual['kary_jht']);
             $this->assertSame(0, $header->details()->firstOrFail()->tunjangan_manual['kary_jkn']);
             $breakdown = $header->details()->firstOrFail()->rincian_bpjs;
-            $this->assertSame(12345.67, $header->details()->firstOrFail()->tunjangan_manual['ppu']);
+            $this->assertEquals(12346, $header->details()->firstOrFail()->tunjangan_manual['ppu']);
             $this->assertSame(0, $header->details()->firstOrFail()->tunjangan_manual['bpu']);
             $this->assertSame(4000.0, (float) $breakdown['bpu_jkk_tunjangan']);
             $this->assertSame(8000.0, (float) $breakdown['noncrew_jkk_tunjangan']);
-            $this->assertSame(100000.8, (float) $breakdown['jht_biaya']);
-            $expected = array_sum(array_diff_key($details[0], array_flip(['snapshot_karyawan', 'ringkasan_bpjs', 'karyawan_id', 'tipe_karyawan', 'allowance_ppu', 'allowance_bpu', 'allowance_jkn', 'no_voucher', 'allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary']))) * 264;
+            $this->assertSame(100001.0, (float) $breakdown['jht_biaya']);
+            $expected = array_sum(array_map(fn ($amount) => round($amount), array_diff_key($details[0], array_flip(['snapshot_karyawan', 'ringkasan_bpjs', 'karyawan_id', 'tipe_karyawan', 'allowance_ppu', 'allowance_bpu', 'allowance_jkn', 'no_voucher', 'allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary'])))) * 264;
             $this->assertEqualsWithDelta($expected, (float) $header->grand_total, 0.01);
             $this->assertEqualsWithDelta($expected, $header->details()->sum('total'), 0.01);
             $header->load('details');
@@ -83,7 +83,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertStringContainsString('Nama Saat Simpan', $html);
             $this->assertStringNotContainsString('Master Sudah Berubah', $html);
             $this->assertEquals(4, $header->snapshot_rumus[0]['nilai']);
-            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000,00', '30.000,00', 'DPP JKN', 'DPP BP Jamsostek', '5.729.880,00', '4.450.000,50', 'BP Jamsostek: PPU', 'KARYAWAN'] as $label) {
+            foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.001', '12.346', '200.001', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123', 'TOTAL JKN', 'TOTAL PPU', '286.494', '144.001', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000', '30.000', 'DPP JKN', 'DPP BP Jamsostek', '5.729.880', '4.450.001', 'BP Jamsostek: PPU', 'KARYAWAN'] as $label) {
                 $this->assertStringContainsString($label, $html);
             }
             $header->details->first()->rincian_bpjs = null;
@@ -134,7 +134,7 @@ class PranotaBpjsSubmissionTest extends TestCase
         $this->assertEquals(1, $header->total_karyawan);
         $this->assertSame('0.00', $saved->total);
         $this->assertSame('ZERO-001', $saved->no_voucher);
-        $this->assertEquals(12500.75, $saved->summaryBurden('pt'));
+        $this->assertEquals(12501, $saved->summaryBurden('pt'));
         $this->assertSame('Nama Lama', $saved->karyawan_pranota->nama_lengkap);
         $this->assertEquals(5500000, $saved->karyawan_pranota->dpp_jkn);
         $this->assertEquals(25, $header->snapshot_rumus[0]['diskon_nilai']);
@@ -142,7 +142,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             'nama_lengkap' => 'Nama Baru', 'dpp_jkn' => 999, 'is_special_case' => false,
         ]));
         $this->assertSame('Nama Lama', $saved->karyawan_pranota->nama_lengkap);
-        $this->assertEquals(12500.75, $saved->summaryBurden('pt'));
+        $this->assertEquals(12501, $saved->summaryBurden('pt'));
         $payload['snapshot_rumus_json'] = json_encode([['nilai' => 99]]);
         $detail['allowance_pt'] = 333.25;
         $detail['ringkasan_bpjs']['pt'] = 333.25;

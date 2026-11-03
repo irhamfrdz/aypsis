@@ -7,7 +7,7 @@
             if (!match) return;
             const [, index, key] = match;
             details[index] ??= {};
-            details[index][key] = key !== 'no_voucher' && field.matches('input[type="text"]') ? parseAmount(field.value) : field.value;
+            details[index][key] = key !== 'no_voucher' && field.matches('input[type="text"]') ? Math.round(parseAmount(field.value)) : field.value;
         });
         Object.entries(details).forEach(([index, detail]) => {
             const employeeField = fields.find(field => field.name === `details[${index}][karyawan_id]`);
@@ -17,7 +17,7 @@
             detail.ringkasan_bpjs = {};
             row.querySelectorAll('[data-allowance]').forEach(cell => {
                 const input = cell.querySelector('input');
-                detail.ringkasan_bpjs[cell.dataset.allowance] = parseAmount(input?.value || '0');
+                detail.ringkasan_bpjs[cell.dataset.allowance] = Math.round(parseAmount(input?.value || '0'));
             });
         });
         let formulaPayload = form.querySelector('[name="snapshot_rumus_json"]');

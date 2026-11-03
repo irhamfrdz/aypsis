@@ -181,6 +181,7 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
+                    $detail = $this->roundDetailAmounts($detail);
                     $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
@@ -388,6 +389,7 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
+                    $detail = $this->roundDetailAmounts($detail);
                     $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
@@ -499,6 +501,25 @@ class PranotaBpjsController extends Controller
      *         "5.200.000,50" → 5200000.5
      *         5200000        → 5200000.0  (sudah number)
      */
+    private function roundDetailAmounts(array $detail): array
+    {
+        $fields = ['bpjs_kesehatan', 'bpjs_ketenagakerjaan', 'jht_biaya', 'jht_hutang',
+            'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang', 'jkk_hutang',
+            'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jht_biaya', 'noncrew_jht_hutang',
+            'noncrew_jkk_tunjangan', 'noncrew_jkm_tunjangan', 'allowance_ppu', 'allowance_bpu',
+            'allowance_jkn', 'allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary'];
+        foreach ($fields as $field) {
+            if (isset($detail[$field]) && $detail[$field] !== '') {
+                $detail[$field] = $this->parseIndonesianNumber($detail[$field]);
+            }
+        }
+        if (isset($detail['ringkasan_bpjs'])) {
+            $detail['ringkasan_bpjs'] = array_map(fn ($amount) => $this->parseIndonesianNumber($amount), $detail['ringkasan_bpjs']);
+        }
+
+        return $detail;
+    }
+
     private function detailSnapshot(array $detail): ?array
     {
         $employee = $detail['snapshot_karyawan'];
@@ -541,6 +562,7 @@ class PranotaBpjsController extends Controller
             if (! is_array($snapshot)) {
                 return null;
             }
+            $snapshot = array_map(fn ($amount) => $this->parseIndonesianNumber($amount), $snapshot);
             $groups = [
                 'jht_biaya' => ['jht_biaya', 'noncrew_jht_biaya'],
                 'jht_hutang' => ['jht_hutang', 'jkk_hutang', 'noncrew_jht_hutang'],
@@ -593,13 +615,13 @@ class PranotaBpjsController extends Controller
     private function parseIndonesianNumber($value): float
     {
         if (is_numeric($value)) {
-            return floatval($value);
+            return round(floatval($value));
         }
         // Hapus titik pemisah ribuan, ganti koma desimal → titik
         $cleaned = str_replace('.', '', (string) $value);
         $cleaned = str_replace(',', '.', $cleaned);
 
-        return floatval($cleaned) ?: 0.0;
+        return round(floatval($cleaned)) ?: 0.0;
     }
 
     private function generateNomorPranota(): string
