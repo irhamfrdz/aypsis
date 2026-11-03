@@ -126,6 +126,13 @@ class KasTruckController extends Controller
                         if ($tbl === 'pembayaran_aktivitas_lains' && Schema::hasColumn($tbl, 'debit_kredit')) {
                             $columns[] = 'debit_kredit';
                         }
+                        if ($tbl === 'pembayaran_aktivitas_lains') {
+                            foreach (['jumlah', 'akun_pph_id', 'pph_nominal', 'pph_persen'] as $column) {
+                                if (Schema::hasColumn($tbl, $column)) {
+                                    $columns[] = $column;
+                                }
+                            }
+                        }
                         $rows = DB::table($tbl)->whereIn('nomor', $referensiList)->get($columns);
                         foreach ($rows as $row) {
                             $key = $row->nomor;
@@ -140,6 +147,26 @@ class KasTruckController extends Controller
                                         }
                                     }
                                 }
+                            }
+                            if ($tbl === 'pembayaran_aktivitas_lains' && ! empty($row->akun_pph_id) && (float) ($row->pph_nominal ?? 0) > 0) {
+                                $hasDetails = ! empty($rincianAkunPalMap[$key]);
+                                if (! $hasDetails && ! empty($row->akun_coa_id) && isset($row->jumlah)) {
+                                    $rincianAkunPalMap[$key][] = [
+                                        'akun_coa_id' => $row->akun_coa_id,
+                                        'nominal' => $row->jumlah,
+                                    ];
+                                }
+                                $pphDirection = $hasDetails || ($row->debit_kredit ?? null) !== 'debit' ? 'kredit' : 'debit';
+                                $pphRate = (float) ($row->pph_persen ?? 0) > 0
+                                    ? ' '.str_replace('.', ',', (string) (float) $row->pph_persen).'%'
+                                    : '';
+                                $rincianAkunPalMap[$key][] = [
+                                    'akun_coa_id' => $row->akun_pph_id,
+                                    'nominal' => $row->pph_nominal,
+                                    'memo' => ($pphDirection === 'kredit' ? 'Potongan PPh' : 'Pengembalian PPh').$pphRate,
+                                    'debit_kredit' => $pphDirection,
+                                ];
+                                $akunPembayaranIds[] = $row->akun_pph_id;
                             }
                             if (! empty($row->nomor_accurate) && ! isset($nomorAccurateMap[$key])) {
                                 $nomorAccurateMap[$key] = $row->nomor_accurate;

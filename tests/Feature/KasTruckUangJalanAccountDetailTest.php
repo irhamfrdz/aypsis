@@ -11,7 +11,7 @@ use Tests\TestCase;
 
 class KasTruckUangJalanAccountDetailTest extends TestCase
 {
-    public function test_report_displays_every_uang_jalan_account_with_its_amount_and_memo(): void
+    public function test_report_displays_uang_jalan_and_activity_payment_accounts_including_pph(): void
     {
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
@@ -39,7 +39,14 @@ class KasTruckUangJalanAccountDetailTest extends TestCase
         Schema::create('pembayaran_aktivitas_lains', function (Blueprint $table) {
             $table->id();
             $table->string('nomor');
+            $table->string('nomor_accurate')->nullable();
+            $table->unsignedBigInteger('akun_coa_id')->nullable();
             $table->unsignedBigInteger('akun_bank_id')->nullable();
+            $table->unsignedBigInteger('akun_pph_id')->nullable();
+            $table->json('akun_details')->nullable();
+            $table->string('debit_kredit')->nullable();
+            $table->decimal('jumlah', 15, 2)->default(0);
+            $table->decimal('pph_persen', 3, 1)->nullable();
             $table->decimal('pph_nominal', 15, 2)->default(0);
             $table->decimal('grand_total', 15, 2)->default(0);
             $table->softDeletes();
@@ -87,5 +94,30 @@ class KasTruckUangJalanAccountDetailTest extends TestCase
         $this->assertEquals([2365000, 1845000], array_column($details, 'nominal'));
         $this->assertSame(['Uang jalan No. Pranota : PUJ-001', 'Uang jalan No. Pranota : PUJ-002'], array_column($details, 'memo'));
         $this->assertSame(['debit', 'debit'], array_column($details, 'debit_kredit'));
+
+        DB::table('akun_coa')->insert(['id' => 4, 'nomor_akun' => '2102.005', 'nama_akun' => 'Utang PPh Kendaraan']);
+        DB::table('coa_transactions')->insert([
+            'coa_id' => 1, 'tanggal_transaksi' => '2026-08-10', 'nomor_referensi' => 'PAL-001',
+            'jenis_transaksi' => 'Pembayaran Aktivitas Lain', 'kredit' => 1399125,
+        ]);
+        DB::table('pembayaran_aktivitas_lains')->insert([
+            'nomor' => 'PAL-001', 'nomor_accurate' => 'BTJ26 0800137', 'akun_coa_id' => 2,
+            'akun_bank_id' => 1, 'akun_pph_id' => 4, 'debit_kredit' => 'kredit',
+            'jumlah' => 1400000, 'pph_persen' => 2.5, 'pph_nominal' => 875, 'grand_total' => 1399125,
+            'akun_details' => json_encode([
+                ['akun_coa_id' => 2, 'nominal' => 1365000, 'memo' => 'perbaikan kendaraan', 'debit_kredit' => 'debit'],
+                ['akun_coa_id' => 2, 'nominal' => 35000, 'memo' => 'jasa perbaikan', 'debit_kredit' => 'debit'],
+            ]),
+        ]);
+
+        $view = app(KasTruckController::class)->view(Request::create('/kas-truck/view'));
+        $payment = $view->getData()['transactions']->firstWhere('nomor_referensi', 'PAL-001');
+        $paymentDetails = $payment->rincian_akun_pembayaran;
+
+        $this->assertCount(3, $paymentDetails);
+        $this->assertSame(['Biaya Trucking', 'Biaya Trucking', 'Utang PPh Kendaraan'], array_column($paymentDetails, 'nama_akun'));
+        $this->assertEquals([1365000, 35000, 875], array_column($paymentDetails, 'nominal'));
+        $this->assertSame(['debit', 'debit', 'kredit'], array_column($paymentDetails, 'debit_kredit'));
+        $this->assertSame('Potongan PPh 2,5%', $paymentDetails[2]['memo']);
     }
 }
