@@ -21,15 +21,6 @@ class PembayaranPranotaBpjsController extends Controller
         $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store']);
     }
 
-    private function bankQuery()
-    {
-        return Coa::where(function ($query) {
-            $query->where('tipe_akun', 'like', '%bank%')
-                ->orWhere('nama_akun', 'like', '%bank%')
-                ->orWhere('nama_akun', 'like', '%kas%');
-        });
-    }
-
     public function index(Request $request)
     {
         $pranotas = PranotaBpjsHeader::with('pembayaran.bank')
@@ -47,10 +38,9 @@ class PembayaranPranotaBpjsController extends Controller
         $pranota = PranotaBpjsHeader::findOrFail($request->integer('pranota_id'));
         abort_unless(in_array($pranota->status, ['draft', 'approved', 'unpaid', 'partial']), 422, 'Pranota tidak dapat dibayar.');
         $groups = (new \App\Services\BpjsPaymentParts)->groups($pranota);
-        $banks = $this->bankQuery()->orderBy('nama_akun')->get();
         $accounts = Coa::orderBy('nomor_akun')->get();
 
-        return view('pembayaran-pranota-bpjs.create', compact('pranota', 'groups', 'banks', 'accounts'));
+        return view('pembayaran-pranota-bpjs.create', compact('pranota', 'groups', 'accounts'));
     }
 
     public function store(Request $request)
@@ -107,8 +97,8 @@ class PembayaranPranotaBpjsController extends Controller
                 $accounts = Coa::whereIn('id', [$data['bank_coa_id'], $data['akun_coa_id']])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
                 $bank = $accounts->get($data['bank_coa_id']);
                 $account = $accounts->get($data['akun_coa_id']);
-                if (! $bank || ! $account || ! $this->bankQuery()->whereKey($bank->id)->exists()) {
-                    throw ValidationException::withMessages(['bank_coa_id' => 'Pilih akun kas/bank yang valid.']);
+                if (! $bank || ! $account) {
+                    throw ValidationException::withMessages(['bank_coa_id' => 'Pilih akun COA yang valid.']);
                 }
                 NomorTerakhir::firstOrCreate(['modul' => 'SIS'], ['nomor_terakhir' => 0, 'keterangan' => 'Nomor Pembayaran']);
                 $sequence = NomorTerakhir::where('modul', 'SIS')->lockForUpdate()->firstOrFail();

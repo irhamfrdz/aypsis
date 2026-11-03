@@ -120,7 +120,7 @@ class PembayaranPranotaBpjsTest extends TestCase
             $this->payload([$zero->id]),
             $this->payload([$deleted->id]),
             array_replace($this->payload([$draft->id]), ['akun_coa_id' => 1]),
-            array_replace($this->payload([$draft->id]), ['bank_coa_id' => 2, 'akun_coa_id' => 1]),
+            array_replace($this->payload([$draft->id]), ['bank_coa_id' => 999, 'akun_coa_id' => 1]),
             array_replace($this->payload([$draft->id]), ['tanggal_pembayaran' => '2026-10-01']),
         ] as $payload) {
             try {
@@ -132,6 +132,16 @@ class PembayaranPranotaBpjsTest extends TestCase
         }
         $this->assertSame(0, PembayaranPranotaBpjs::count());
         $this->assertSame(0, DB::table('coa_transactions')->count());
+    }
+
+    public function test_both_account_fields_accept_accounts_from_coa(): void
+    {
+        $pranota = $this->pranota();
+        $this->pay(array_replace($this->payload([$pranota->id]), ['bank_coa_id' => 2, 'akun_coa_id' => 1]));
+        $payment = PembayaranPranotaBpjs::firstOrFail();
+        $this->assertEquals(2, $payment->bank_coa_id);
+        $this->assertEquals(1, $payment->akun_coa_id);
+        $this->assertEquals($pranota->grand_total, $payment->total_pembayaran);
     }
 
     public function test_types_can_be_paid_separately_without_duplicate_components(): void

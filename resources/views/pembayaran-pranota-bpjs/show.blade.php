@@ -7,8 +7,8 @@
     <div class="bg-white border rounded-xl p-6 grid md:grid-cols-2 gap-5 text-sm">
         <div><p class="text-gray-500">Tanggal Pembayaran</p><p class="font-semibold">{{ $payment->tanggal_pembayaran->format('d/m/Y') }}</p></div>
         <div><p class="text-gray-500">Status</p><p class="text-green-700 font-semibold">Lunas</p></div>
-        <div><p class="text-gray-500">Kas/Bank (Kredit)</p><p>{{ $payment->bank?->nama_akun ?? '-' }}</p></div>
-        <div><p class="text-gray-500">Akun BPJS / Hutang BPJS (Debit)</p><p>{{ $payment->akunCoa?->nama_akun ?? '-' }}</p></div>
+        <div><p class="text-gray-500">Akun Bank</p><p>{{ $payment->bank?->nama_akun ?? '-' }}</p></div>
+        <div><p class="text-gray-500">Bank yang Digunakan</p><p>{{ $payment->akunCoa?->nama_akun ?? '-' }}</p></div>
         <div><p class="text-gray-500">Nomor Accurate</p><p>{{ $payment->nomor_accurate ?? '-' }}</p></div>
         <div><p class="text-gray-500">Dibuat Oleh</p><p>{{ $payment->createdBy?->name ?? '-' }}</p></div>
         <div class="md:col-span-2"><p class="text-gray-500">Keterangan</p><p class="whitespace-pre-line">{{ $payment->keterangan ?? '-' }}</p></div>
