@@ -32,33 +32,33 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function index(Request $request)
     {
-        $payments = PembayaranPranotaBpjs::with('bank')->when($request->filled('search'), function ($query) use ($request) {
-            $search = '%'.$request->input('search').'%';
-            $query->where(function ($query) use ($search) {
-                $query->where('nomor_pembayaran', 'like', $search)
-                    ->orWhere('nomor_accurate', 'like', $search)
-                    ->orWhereHas('pranotas', fn ($q) => $q->where('nomor_pranota', 'like', $search));
-            });
-        })->orderByDesc('id')->paginate(20)->withQueryString();
+        $pranotas = PranotaBpjsHeader::with('pembayaran.bank')
+            ->when($request->filled('search'), fn ($q) => $q->where('nomor_pranota', 'like', '%'.$request->input('search').'%'))
+            ->orderByDesc('tanggal_pranota')->orderByDesc('id')->paginate(20)->withQueryString();
 
-        return view('pembayaran-pranota-bpjs.index', compact('payments'));
+        return view('pembayaran-pranota-bpjs.index', compact('pranotas'));
     }
 
     public function create(Request $request)
     {
-        $pranotas = PranotaBpjsHeader::whereIn('status', ['draft', 'approved', 'unpaid'])
-            ->where('grand_total', '>', 0)->whereDoesntHave('pembayaran')
-            ->orderByDesc('tanggal_pranota')->get();
+        if (! $request->filled('pranota_id')) {
+            return redirect()->route('pembayaran-pranota-bpjs.index');
+        }
+        $pranota = PranotaBpjsHeader::findOrFail($request->integer('pranota_id'));
+        abort_unless(in_array($pranota->status, ['draft', 'approved', 'unpaid', 'partial']), 422, 'Pranota tidak dapat dibayar.');
+        $groups = (new \App\Services\BpjsPaymentParts)->groups($pranota);
         $banks = $this->bankQuery()->orderBy('nama_akun')->get();
         $accounts = Coa::orderBy('nomor_akun')->get();
 
-        return view('pembayaran-pranota-bpjs.create', compact('pranotas', 'banks', 'accounts'));
+        return view('pembayaran-pranota-bpjs.create', compact('pranota', 'groups', 'banks', 'accounts'));
     }
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'pranota_ids' => ['required', 'array', 'min:1'],
+            'group_keys' => ['sometimes', 'required', 'array', 'min:1'],
+            'group_keys.*' => ['required', 'string', 'distinct'],
             'pranota_ids.*' => ['required', 'integer', 'distinct', 'exists:pranota_bpjs_headers,id'],
             'tanggal_pembayaran' => ['required', 'date'],
             'bank_coa_id' => ['required', 'integer', Rule::exists('akun_coa', 'id')],
@@ -74,11 +74,33 @@ class PembayaranPranotaBpjsController extends Controller
                     throw ValidationException::withMessages(['pranota_ids' => 'Pranota tidak ditemukan.']);
                 }
                 foreach ($pranotas as $pranota) {
-                    if (! in_array($pranota->status, ['draft', 'approved', 'unpaid']) || $pranota->pembayaran()->exists() || $pranota->grand_total <= 0) {
+                    if (! in_array($pranota->status, ['draft', 'approved', 'unpaid', 'partial']) || ($pranota->pembayaran()->exists() && ! isset($data['group_keys'])) || $pranota->grand_total <= 0) {
                         throw ValidationException::withMessages(['pranota_ids' => 'Pranota '.$pranota->nomor_pranota.' sudah dibayar, dibatalkan, atau tidak memiliki tagihan.']);
                     }
                     if ($data['tanggal_pembayaran'] < $pranota->tanggal_pranota->format('Y-m-d')) {
                         throw ValidationException::withMessages(['tanggal_pembayaran' => 'Tanggal pembayaran tidak boleh sebelum tanggal pranota.']);
+                    }
+                }
+                $allocations = [];
+                foreach ($pranotas as $pranota) {
+                    if (isset($data['group_keys'])) {
+                        if ($pranotas->count() !== 1) {
+                            throw ValidationException::withMessages(['group_keys' => 'Pilih satu pranota untuk pembayaran terpisah.']);
+                        }
+                        $available = (new \App\Services\BpjsPaymentParts)->groups($pranota);
+                        $selected = array_intersect_key($available, array_flip($data['group_keys']));
+                        if (count($selected) !== count($data['group_keys'])) {
+                            throw ValidationException::withMessages(['group_keys' => 'Tipe sudah dibayar atau tidak tersedia. Muat ulang halaman.']);
+                        }
+                        $parts = array_merge(...array_column(array_values($selected), 'parts'));
+                        $subtotal = round(array_sum(array_column($parts, 'subtotal')), 2);
+                        $paid = round((float) $pranota->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal'), 2);
+                        if ($subtotal <= 0 || $paid + $subtotal > round((float) $pranota->grand_total, 2)) {
+                            throw ValidationException::withMessages(['group_keys' => 'Total bagian tidak sesuai sisa tagihan pranota.']);
+                        }
+                        $allocations[$pranota->id] = compact('subtotal', 'parts', 'paid');
+                    } else {
+                        $allocations[$pranota->id] = ['subtotal' => (float) $pranota->grand_total, 'parts' => [], 'paid' => 0];
                     }
                 }
                 // Lock accounts in a consistent order so concurrent payments preserve balances.
@@ -92,7 +114,7 @@ class PembayaranPranotaBpjsController extends Controller
                 $sequence = NomorTerakhir::where('modul', 'SIS')->lockForUpdate()->firstOrFail();
                 $sequence->increment('nomor_terakhir');
                 $number = 'SIS-'.now()->format('m-y').'-'.str_pad($sequence->nomor_terakhir, 6, '0', STR_PAD_LEFT);
-                $total = round($pranotas->sum('grand_total'), 2);
+                $total = round(array_sum(array_column($allocations, 'subtotal')), 2);
                 $payment = PembayaranPranotaBpjs::create([
                     'nomor_pembayaran' => $number, 'tanggal_pembayaran' => $data['tanggal_pembayaran'],
                     'bank_coa_id' => $bank->id, 'akun_coa_id' => $account->id,
@@ -100,8 +122,13 @@ class PembayaranPranotaBpjsController extends Controller
                     'keterangan' => $data['keterangan'] ?? null, 'created_by' => auth()->id(),
                 ]);
                 foreach ($pranotas as $pranota) {
-                    $payment->pranotas()->attach($pranota->id, ['subtotal' => $pranota->grand_total]);
-                    $pranota->update(['status' => 'paid', 'updated_by' => auth()->id()]);
+                    $allocation = $allocations[$pranota->id];
+                    $payment->pranotas()->attach($pranota->id, ['subtotal' => $allocation['subtotal']]);
+                    foreach ($allocation['parts'] as $part) {
+                        DB::table('pembayaran_pranota_bpjs_parts')->insert($part + ['pembayaran_pranota_bpjs_id' => $payment->id]);
+                    }
+                    $settled = round($allocation['paid'] + $allocation['subtotal'], 2) >= round((float) $pranota->grand_total, 2);
+                    $pranota->update(['status' => $settled ? 'paid' : 'partial', 'updated_by' => auth()->id()]);
                 }
                 if (! $this->journal->recordDoubleEntry(
                     ['coa_id' => $account->id, 'nama_akun' => $account->nama_akun, 'jumlah' => $total],
@@ -128,6 +155,9 @@ class PembayaranPranotaBpjsController extends Controller
     {
         $payment = $pembayaran_pranota_bpj->load(['pranotas', 'bank', 'akunCoa', 'createdBy']);
 
-        return view('pembayaran-pranota-bpjs.show', compact('payment'));
+        $parts = DB::table('pembayaran_pranota_bpjs_parts')->where('pembayaran_pranota_bpjs_id', $payment->id)
+            ->selectRaw('komponen, tipe, SUM(subtotal) as subtotal')->groupBy('komponen', 'tipe')->get();
+
+        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts'));
     }
 }

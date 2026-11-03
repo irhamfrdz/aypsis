@@ -18,5 +18,15 @@
         <tr><td class="p-4">@can('pranota-bpjs-view')<a class="text-blue-600" href="{{ route('pranota-bpjs.show', $pranota) }}">{{ $pranota->nomor_pranota }}</a>@else{{ $pranota->nomor_pranota }}@endcan</td><td class="p-4">{{ sprintf('%02d', $pranota->periode_bulan) }}/{{ $pranota->periode_tahun }}</td><td class="p-4 text-right">Rp {{ number_format($pranota->pivot->subtotal, 2, ',', '.') }}</td></tr>
         @endforeach
     </tbody><tfoot class="bg-green-50 font-bold"><tr><td colspan="2" class="p-4">Total Pembayaran</td><td class="p-4 text-right">Rp {{ number_format($payment->total_pembayaran, 2, ',', '.') }}</td></tr></tfoot></table></div>
+    @if($parts->isNotEmpty())
+    <div class="bg-white border rounded-xl overflow-x-auto">
+        <h2 class="p-4 font-semibold border-b">Rincian Tipe yang Dibayar</h2>
+        <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Komponen</th><th class="p-4">Tipe</th><th class="p-4 text-right">Nominal</th></tr></thead><tbody class="divide-y">
+        @foreach($parts as $part)
+            <tr><td class="p-4">{{ strtoupper($part->komponen) }}</td><td class="p-4">{{ $part->tipe }}</td><td class="p-4 text-right">Rp {{ number_format($part->subtotal, 2, ',', '.') }}</td></tr>
+        @endforeach
+        </tbody></table>
+    </div>
+    @endif
 </div>
 @endsection

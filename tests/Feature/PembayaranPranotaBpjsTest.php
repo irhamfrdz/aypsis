@@ -26,7 +26,13 @@ class PembayaranPranotaBpjsTest extends TestCase
         Schema::table('pranota_bpjs_headers', function (Blueprint $table) {
             $table->json('snapshot_rumus')->nullable();
         });
+        (require database_path('migrations/2026_08_28_112738_create_pranota_bpjs_details_table.php'))->up();
+        Schema::table('pranota_bpjs_details', function (Blueprint $table) {
+            $table->string('tipe_karyawan')->nullable();
+            $table->json('snapshot_bpjs')->nullable();
+        });
         (require database_path('migrations/2026_11_03_100000_create_pembayaran_pranota_bpjs_tables.php'))->up();
+        (require database_path('migrations/2026_11_03_110000_allow_split_bpjs_payments.php'))->up();
         (require database_path('migrations/2025_09_30_141213_create_nomor_terakhir_table.php'))->up();
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
@@ -77,7 +83,7 @@ class PembayaranPranotaBpjsTest extends TestCase
         $this->assertEquals(323457.03, DB::table('coa_transactions')->sum('kredit'));
         $this->assertEquals(676542.97, Coa::find(1)->saldo);
         $this->assertEquals(-676542.97, Coa::find(2)->saldo);
-        $this->assertSame(0, (new PembayaranPranotaBpjsController(new CoaTransactionService))->create(Request::create('/'))->getData()['pranotas']->count());
+        $this->assertTrue((new PembayaranPranotaBpjsController(new CoaTransactionService))->create(Request::create('/'))->isRedirect());
         $locked = $first->fresh();
         $controller = new PranotaBpjsController;
         $controller->update(Request::create('/', 'PUT'), $locked);
@@ -126,6 +132,49 @@ class PembayaranPranotaBpjsTest extends TestCase
         }
         $this->assertSame(0, PembayaranPranotaBpjs::count());
         $this->assertSame(0, DB::table('coa_transactions')->count());
+    }
+
+    public function test_types_can_be_paid_separately_without_duplicate_components(): void
+    {
+        $pranota = $this->pranota('draft', 600);
+        foreach ([['KARY', 'PPU', 100, 200], ['NON KARY', 'BPU', 50, 250]] as [$jknType, $jamType, $jkn, $jam]) {
+            DB::table('pranota_bpjs_details')->insert([
+                'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => 1,
+                'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_jkn' => $jknType, 'tipe_bp_jamsostek' => $jamType]]),
+                'bpjs_kesehatan' => $jkn * 0.8, 'bpjs_ketenagakerjaan' => $jkn * 0.2, 'total' => $jkn + $jam,
+            ]);
+        }
+        $service = new \App\Services\BpjsPaymentParts;
+        $groups = $service->groups($pranota);
+        $this->assertCount(4, $groups);
+        $first = array_key_first($groups);
+        $this->assertSame(100.0, $groups[$first]['amount']);
+        $journal = $this->mock(CoaTransactionService::class);
+        $journal->shouldReceive('recordDoubleEntry')->once()->andReturn(false);
+        $this->pay($this->payload([$pranota->id]) + ['group_keys' => [$first]], $journal);
+        $this->assertSame('draft', $pranota->fresh()->status);
+        $this->assertSame(0, DB::table('pembayaran_pranota_bpjs_parts')->count());
+        $this->assertSame(0, PembayaranPranotaBpjs::count());
+        $this->assertCount(4, $service->groups($pranota->fresh()));
+        $this->pay($this->payload([$pranota->id]) + ['group_keys' => [$first]]);
+        $this->assertSame('partial', $pranota->fresh()->status);
+        $this->assertEquals(100, PembayaranPranotaBpjs::first()->total_pembayaran);
+        $this->assertCount(3, $service->groups($pranota->fresh()));
+        try {
+            $this->pay($this->payload([$pranota->id]) + ['group_keys' => [$first]]);
+            $this->fail('Bagian yang sama tidak boleh dibayar dua kali.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('group_keys', $e->errors());
+        }
+        $remaining = array_keys($service->groups($pranota->fresh()));
+        $this->pay($this->payload([$pranota->id]) + ['group_keys' => $remaining]);
+        $this->assertSame('paid', $pranota->fresh()->status);
+        $this->assertEquals(600, PembayaranPranotaBpjs::sum('total_pembayaran'));
+        $this->assertSame(2, $pranota->pembayaran()->count());
+        $this->assertSame(4, DB::table('pembayaran_pranota_bpjs_parts')->count());
+        $this->assertEquals(600, DB::table('coa_transactions')->sum('debit'));
+        $this->assertEquals(600, DB::table('coa_transactions')->sum('kredit'));
+        $this->assertSame([], $service->groups($pranota->fresh()));
     }
 
     public function test_show_route_binds_payment_and_endpoints_require_permissions(): void

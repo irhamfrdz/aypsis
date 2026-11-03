@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const boxes = Array.from(document.querySelectorAll('input[name="pranota_ids[]"]'));
+    const boxes = Array.from(document.querySelectorAll('input[name="group_keys[]"]'));
     const button = document.getElementById('save-payment');
     const output = document.getElementById('payment-total');
     function updateTotal() {

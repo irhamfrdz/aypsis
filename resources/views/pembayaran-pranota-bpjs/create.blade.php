@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'Buat Pembayaran Pranota BPJS')
-@section('page_title', 'Buat Pembayaran Pranota BPJS')
+@section('title', 'Pisah Pembayaran Pranota BPJS')
+@section('page_title', 'Pisah Pembayaran Pranota BPJS')
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6">
-    <div><h1 class="text-2xl font-bold text-gray-800">Buat Pembayaran Pranota BPJS</h1><p class="text-sm text-gray-500 mt-1">Pilih pranota untuk dilunasi. Nomor pembayaran SIS dibuat otomatis saat disimpan.</p></div>
+    <div><h1 class="text-2xl font-bold text-gray-800">Pisah Pembayaran Pranota BPJS</h1><p class="text-sm text-gray-500 mt-1">Pilih satu atau beberapa tipe JKN / Jamsostek yang akan dibayar. Nomor pembayaran SIS dibuat otomatis saat disimpan.</p></div>
     @include('pembayaran-pranota-bpjs.partials.messages')
     <form method="POST" action="{{ route('pembayaran-pranota-bpjs.store') }}" class="space-y-6">
         @csrf
@@ -15,12 +15,13 @@
             <div class="md:col-span-2"><label for="keterangan" class="block text-sm font-medium mb-2">Keterangan</label><textarea id="keterangan" name="keterangan" maxlength="5000" rows="2" class="w-full rounded-lg border-gray-300">{{ old('keterangan') }}</textarea></div>
         </div>
         <div class="bg-white border rounded-xl overflow-x-auto">
-            <div class="p-4 border-b"><h2 class="font-semibold">Pranota Belum Dibayar</h2><p class="text-sm text-gray-500">Pembayaran penuh sesuai grand total pranota. Pranota yang dilunasi akan dikunci.</p></div>
-            <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Pilih</th><th class="p-4">Nomor Pranota</th><th class="p-4">Tanggal</th><th class="p-4">Periode</th><th class="p-4 text-right">Total Tagihan</th></tr></thead><tbody class="divide-y">
-                @forelse($pranotas as $pranota)
-                <tr><td class="p-4"><input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" data-amount="{{ $pranota->grand_total }}" aria-label="Pilih {{ $pranota->nomor_pranota }}" @checked(in_array($pranota->id, old('pranota_ids', request('pranota_id') ? [request('pranota_id')] : [])))></td><td class="p-4 font-medium">{{ $pranota->nomor_pranota }}</td><td class="p-4">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td><td class="p-4">{{ sprintf('%02d', $pranota->periode_bulan) }}/{{ $pranota->periode_tahun }}</td><td class="p-4 text-right whitespace-nowrap">Rp {{ number_format($pranota->grand_total, 2, ',', '.') }}</td></tr>
+            <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
+            <div class="p-4 border-b"><h2 class="font-semibold">{{ $pranota->nomor_pranota }}</h2><p class="text-sm text-gray-500">Pembayaran hanya untuk tipe yang dipilih. Tipe lainnya dapat dibayar kemudian dari pranota yang sama.</p></div>
+            <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Pilih</th><th class="p-4">Komponen</th><th class="p-4">Tipe</th><th class="p-4">Jumlah Peserta</th><th class="p-4 text-right">Belum Dibayar</th></tr></thead><tbody class="divide-y">
+                @forelse($groups as $group)
+                <tr><td class="p-4"><input type="checkbox" name="group_keys[]" value="{{ $group['key'] }}" data-amount="{{ $group['amount'] }}" aria-label="Pilih {{ strtoupper($group['komponen']) }} {{ $group['tipe'] }}" @checked(in_array($group['key'], old('group_keys', [])))></td><td class="p-4">{{ strtoupper($group['komponen']) }}</td><td class="p-4 font-medium">{{ $group['tipe'] }}</td><td class="p-4">{{ count($group['parts']) }}</td><td class="p-4 text-right">Rp {{ number_format($group['amount'], 2, ',', '.') }}</td></tr>
                 @empty
-                <tr><td colspan="5" class="p-8 text-center text-gray-500">Tidak ada pranota BPJS yang dapat dibayar.</td></tr>
+                <tr><td colspan="5" class="p-8 text-center text-gray-500">Tidak ada bagian tagihan yang dapat dibayar.</td></tr>
                 @endforelse
             </tbody></table>
             <div class="p-4 bg-green-50 text-right font-bold">Total Pembayaran: <output id="payment-total" aria-live="polite">Rp 0,00</output></div>
