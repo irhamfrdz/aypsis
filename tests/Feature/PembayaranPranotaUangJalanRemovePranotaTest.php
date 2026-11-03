@@ -241,6 +241,19 @@ class PembayaranPranotaUangJalanRemovePranotaTest extends TestCase
         $this->assertEquals(2200000, DB::table('pembayaran_pranota_uang_jalans')->where('id', 1)->value('total_tagihan_setelah_penyesuaian'));
     }
 
+    public function test_pranota_account_migration_recovers_when_column_was_added_before_foreign_key_failed(): void
+    {
+        $migration = require database_path('migrations/2026_11_03_120000_link_pembayaran_uang_jalan_akun_items_to_pranota.php');
+        $migration->down();
+        Schema::table('pembayaran_pranota_uang_jalan_akun_items', function (Blueprint $table) {
+            $table->unsignedBigInteger('pranota_uang_jalan_id')->nullable();
+        });
+
+        $migration->up();
+
+        $this->assertTrue(Schema::hasColumn('pembayaran_pranota_uang_jalan_akun_items', 'pranota_uang_jalan_id'));
+    }
+
     public function test_failed_journal_update_restores_the_original_payment(): void
     {
         DB::table('akun_coa')->where('id', 1)->delete();
