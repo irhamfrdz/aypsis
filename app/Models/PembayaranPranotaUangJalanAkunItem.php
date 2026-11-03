@@ -8,12 +8,17 @@ class PembayaranPranotaUangJalanAkunItem extends Model
 {
     protected $table = 'pembayaran_pranota_uang_jalan_akun_items';
 
-    protected $fillable = ['akun_coa_id', 'nominal', 'memo'];
+    protected $fillable = ['akun_coa_id', 'pranota_uang_jalan_id', 'nominal', 'memo'];
 
     protected $casts = ['nominal' => 'decimal:2'];
 
     public function akunCoa()
     {
         return $this->belongsTo(Coa::class, 'akun_coa_id');
+    }
+
+    public function pranotaUangJalan()
+    {
+        return $this->belongsTo(PranotaUangJalan::class, 'pranota_uang_jalan_id');
     }
 }

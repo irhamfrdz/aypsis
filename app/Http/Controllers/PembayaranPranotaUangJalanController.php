@@ -351,8 +351,11 @@ class PembayaranPranotaUangJalanController extends Controller
             ->orderBy('nama_akun')
             ->get();
         $akunBiaya = Coa::orderBy('nama_akun')->get(['id', 'nomor_akun', 'nama_akun']);
+        $defaultAkunBiayaId = $pembayaranPranotaUangJalan->akun_coa_id
+            ?? $akunBiaya->firstWhere('nama_akun', 'Biaya Trucking')?->id
+            ?? $akunBiaya->firstWhere('nama_akun', 'Biaya Uang Jalan Muat')?->id;
 
-        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'pranotaUangJalans', 'akunCoa', 'akunBiaya'));
+        return view('pembayaran-pranota-uang-jalan.edit', compact('pembayaranPranotaUangJalan', 'pranotaUangJalans', 'akunCoa', 'akunBiaya', 'defaultAkunBiayaId'));
     }
 
     /**
@@ -378,6 +381,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'alasan_penyesuaian' => 'nullable|string',
             'bank' => 'required|string|max:255',
             'akun_items' => ['required', 'array', 'min:1'],
+            'akun_items.*.pranota_uang_jalan_id' => ['required', 'integer', 'distinct', 'exists:pranota_uang_jalans,id'],
             'akun_items.*.akun_coa_id' => ['required', 'exists:akun_coa,id'],
             'akun_items.*.nominal' => ['required', 'numeric', 'gt:0'],
             'akun_items.*.memo' => ['nullable', 'string', 'max:2000'],
@@ -410,11 +414,13 @@ class PembayaranPranotaUangJalanController extends Controller
             }
 
             $total = 0;
+            $subtotals = [];
             foreach ($selectedIds as $id) {
                 $pranota = $pranotas->get($id);
                 $subtotal = in_array($id, $addedIds) ? $pranota->total_for_payment
                     : (float) $payment->pranotaUangJalans->firstWhere('id', $id)->pivot->subtotal;
                 $total += (float) $subtotal;
+                $subtotals[$id] = (float) $subtotal;
             }
             $final = $total + (float) ($validated['total_tagihan_penyesuaian'] ?? 0);
             if ($final < 0 || abs($total - (float) $validated['total_pembayaran']) > 0.01
@@ -422,6 +428,20 @@ class PembayaranPranotaUangJalanController extends Controller
                 throw new \RuntimeException('Total pembayaran tidak sesuai dengan pranota yang dipilih.');
             }
             $akunItems = collect($validated['akun_items']);
+            if ($akunItems->count() !== count($selectedIds)
+                || $akunItems->pluck('pranota_uang_jalan_id')->map(fn ($id) => (int) $id)->sort()->values()->all()
+                    !== collect($selectedIds)->sort()->values()->all()) {
+                throw new \RuntimeException('Setiap pranota harus memiliki tepat satu rincian akun biaya.');
+            }
+            $firstPranotaId = (int) $akunItems->first()['pranota_uang_jalan_id'];
+            foreach ($akunItems as $item) {
+                $pranotaId = (int) $item['pranota_uang_jalan_id'];
+                $expected = $subtotals[$pranotaId]
+                    + ($pranotaId === $firstPranotaId ? (float) ($validated['total_tagihan_penyesuaian'] ?? 0) : 0);
+                if (abs((float) $item['nominal'] - $expected) > 0.01) {
+                    throw new \RuntimeException('Nominal akun biaya harus mengikuti subtotal pranota dan penyesuaian pembayaran.');
+                }
+            }
             if (abs($akunItems->sum(fn ($item) => (float) $item['nominal']) - $final) > 0.01) {
                 throw new \RuntimeException('Jumlah nominal seluruh akun biaya harus sama dengan total akhir pembayaran.');
             }
@@ -564,6 +584,20 @@ class PembayaranPranotaUangJalanController extends Controller
         if ($items->isEmpty()) {
             return false;
         }
+        $pranotas = $payment->pranotaUangJalans()->get()->keyBy('id');
+        if ($items->count() === $pranotas->count()
+            && $items->every(fn ($item) => $item->pranota_uang_jalan_id && $pranotas->has($item->pranota_uang_jalan_id))) {
+            foreach ($items as $index => $item) {
+                $nominal = (float) $pranotas->get($item->pranota_uang_jalan_id)->pivot->subtotal
+                    + ($index === 0 ? (float) $payment->total_tagihan_penyesuaian : 0);
+                if ($nominal <= 0) {
+                    throw new \RuntimeException('Nominal akun pranota tidak boleh nol atau negatif. Edit penyesuaian pembayaran.');
+                }
+                $item->update(['nominal' => $nominal]);
+            }
+
+            return true;
+        }
         $first = $items->first();
         $adjusted = (float) $first->nominal + $newTotal - $items->sum(fn ($item) => (float) $item->nominal);
         if ($adjusted <= 0) {
@@ -694,6 +728,7 @@ class PembayaranPranotaUangJalanController extends Controller
                     'total_tagihan_setelah_penyesuaian' => $newFinal,
                     'updated_by' => Auth::id(),
                 ]);
+                $payment->akunItems()->where('pranota_uang_jalan_id', $pranotaUangJalan->id)->delete();
                 $hasAccountItems = $this->adjustFirstAccountItem($payment, $newFinal);
 
                 if (CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)->exists()) {

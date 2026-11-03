@@ -88,6 +88,7 @@ class PembayaranPranotaUangJalanRemovePranotaTest extends TestCase
             $table->timestamps();
         });
         (require database_path('migrations/2026_11_03_000003_create_pembayaran_pranota_uang_jalan_akun_items.php'))->up();
+        (require database_path('migrations/2026_11_03_120000_link_pembayaran_uang_jalan_akun_items_to_pranota.php'))->up();
         Schema::create('coa_transactions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('coa_id');
@@ -189,8 +190,8 @@ class PembayaranPranotaUangJalanRemovePranotaTest extends TestCase
             'bank' => 'Bank Truck',
             'memo_biaya' => 'Biaya perjalanan Oktober',
             'akun_items' => [
-                ['akun_coa_id' => 2, 'nominal' => 1500000, 'memo' => 'Uang jalan utama'],
-                ['akun_coa_id' => 3, 'nominal' => 700000, 'memo' => 'Biaya tambahan'],
+                ['pranota_uang_jalan_id' => 1, 'akun_coa_id' => 2, 'nominal' => 1435000, 'memo' => 'Uang jalan No. Pranota : PUJ-001'],
+                ['pranota_uang_jalan_id' => 2, 'akun_coa_id' => 3, 'nominal' => 765000, 'memo' => 'Uang jalan No. Pranota : PUJ-002'],
             ],
         ]);
 
@@ -199,20 +200,45 @@ class PembayaranPranotaUangJalanRemovePranotaTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
         $this->assertNull(session('error'), session('error') ?? '');
         $this->assertSame('Biaya perjalanan Oktober', DB::table('pembayaran_pranota_uang_jalans')->where('id', 1)->value('memo_biaya'));
-        $this->assertSame(['Uang jalan utama', 'Biaya tambahan'], DB::table('pembayaran_pranota_uang_jalan_akun_items')->orderBy('id')->pluck('memo')->all());
-        $this->assertEquals(1500000, DB::table('coa_transactions')->where('coa_id', 2)->value('debit'));
-        $this->assertEquals(700000, DB::table('coa_transactions')->where('coa_id', 3)->value('debit'));
+        $this->assertSame(['Uang jalan No. Pranota : PUJ-001', 'Uang jalan No. Pranota : PUJ-002'], DB::table('pembayaran_pranota_uang_jalan_akun_items')->orderBy('id')->pluck('memo')->all());
+        $this->assertSame([1, 2], DB::table('pembayaran_pranota_uang_jalan_akun_items')->orderBy('id')->pluck('pranota_uang_jalan_id')->all());
+        $this->assertEquals(1435000, DB::table('coa_transactions')->where('coa_id', 2)->value('debit'));
+        $this->assertEquals(765000, DB::table('coa_transactions')->where('coa_id', 3)->value('debit'));
         $this->assertEquals(2200000, DB::table('coa_transactions')->where('coa_id', 1)->value('kredit'));
         $this->assertEquals(0, DB::table('coa_transactions')->sum('debit') - DB::table('coa_transactions')->sum('kredit'));
-        $this->assertStringContainsString('Memo akun: Biaya tambahan', DB::table('coa_transactions')->where('coa_id', 3)->value('keterangan'));
+        $this->assertStringContainsString('Memo akun: Uang jalan No. Pranota : PUJ-002', DB::table('coa_transactions')->where('coa_id', 3)->value('keterangan'));
 
         app(PembayaranPranotaUangJalanController::class)->removePranota(
             PembayaranPranotaUangJalan::findOrFail(1), PranotaUangJalan::findOrFail(2)
         );
 
-        $this->assertEquals([735000, 700000], DB::table('pembayaran_pranota_uang_jalan_akun_items')->orderBy('id')->pluck('nominal')->all());
+        $this->assertEquals([1435000], DB::table('pembayaran_pranota_uang_jalan_akun_items')->orderBy('id')->pluck('nominal')->all());
+        $this->assertSame([1], DB::table('pembayaran_pranota_uang_jalan_akun_items')->pluck('pranota_uang_jalan_id')->all());
         $this->assertEquals(1435000, DB::table('coa_transactions')->where('coa_id', 1)->value('kredit'));
         $this->assertEquals(0, DB::table('coa_transactions')->sum('debit') - DB::table('coa_transactions')->sum('kredit'));
+    }
+
+    public function test_edit_rejects_account_amounts_that_do_not_match_each_pranota(): void
+    {
+        $request = Request::create('/pembayaran-pranota-uang-jalan/1', 'PUT', [
+            'pranota_uang_jalan_ids' => [1, 2],
+            'tanggal_pembayaran' => '2026-10-15',
+            'jenis_transaksi' => 'Kredit',
+            'total_pembayaran' => 2100000,
+            'total_tagihan_penyesuaian' => 100000,
+            'total_tagihan_setelah_penyesuaian' => 2200000,
+            'bank' => 'Bank Truck',
+            'akun_items' => [
+                ['pranota_uang_jalan_id' => 1, 'akun_coa_id' => 2, 'nominal' => 1500000],
+                ['pranota_uang_jalan_id' => 2, 'akun_coa_id' => 2, 'nominal' => 700000],
+            ],
+        ]);
+
+        app(PembayaranPranotaUangJalanController::class)->update($request, PembayaranPranotaUangJalan::findOrFail(1));
+
+        $this->assertSame(0, DB::table('pembayaran_pranota_uang_jalan_akun_items')->count());
+        $this->assertSame(2, DB::table('coa_transactions')->count());
+        $this->assertEquals(2200000, DB::table('pembayaran_pranota_uang_jalans')->where('id', 1)->value('total_tagihan_setelah_penyesuaian'));
     }
 
     public function test_failed_journal_update_restores_the_original_payment(): void
