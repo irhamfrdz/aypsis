@@ -329,7 +329,9 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         // Load Select2 JS dynamically
-        if (typeof jQuery !== 'undefined') {
+        if (typeof jQuery !== 'undefined' && typeof jQuery.fn.select2 !== 'undefined') {
+            initializeSelect2();
+        } else if (typeof jQuery !== 'undefined') {
             const select2Script = document.createElement('script');
             select2Script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
             select2Script.onload = function() {
@@ -339,6 +341,7 @@
         }
 
         function initializeSelect2() {
+            window.initializePranotaObAkunSelects?.();
             $('.coa-select').select2({
                 width: '100%'
             });

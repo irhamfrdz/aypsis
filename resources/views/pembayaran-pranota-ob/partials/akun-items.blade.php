@@ -47,13 +47,33 @@
         </div>
     @endif
 </div>
+<style>
+    .akun-item-row .select2-container {
+        flex: 1 1 12rem;
+        width: auto !important;
+        min-width: 12rem;
+    }
+</style>
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const section = document.getElementById('akun-items-section');
     const list = document.getElementById('akun-items-list');
+    const rowTemplate = list.querySelector('.akun-item-row').cloneNode(true);
     const dp = Number(section.dataset.dp) || 0;
     const format = value => 'Rp ' + value.toLocaleString('id-ID');
+    function initializeSearchableAccounts(root = section) {
+        if (typeof jQuery === 'undefined' || typeof jQuery.fn.select2 === 'undefined') return;
+
+        jQuery(root).find('.akun-item-select, #akun_dp_id').each(function () {
+            if (jQuery(this).hasClass('select2-hidden-accessible')) return;
+            jQuery(this).select2({
+                width: '100%',
+                placeholder: this.id === 'akun_dp_id' ? '-- Pilih Akun DP --' : '-- Pilih Akun Biaya --'
+            });
+        });
+    }
+    window.initializePranotaObAkunSelects = initializeSearchableAccounts;
     const expected = () => {
         const biayaPranota = document.getElementById('total-biaya');
         if (biayaPranota) {
@@ -84,16 +104,21 @@ document.addEventListener('DOMContentLoaded', function () {
     window.updatePranotaObAkunItems = update;
     document.getElementById('add-akun-item').addEventListener('click', () => {
         autoNominal = false;
-        const row = list.querySelector('.akun-item-row').cloneNode(true);
-        row.querySelector('select').value = '';
-        row.querySelector('input').value = '';
+        const row = rowTemplate.cloneNode(true);
+        row.querySelector('.akun-item-select').value = '';
+        row.querySelector('.akun-item-nominal').value = '';
         row.querySelector('.akun-item-memo').value = '';
         list.appendChild(row);
+        initializeSearchableAccounts(row);
         update();
     });
     list.addEventListener('click', event => {
         if (event.target.closest('.remove-akun-item') && list.children.length > 1) {
-            event.target.closest('.akun-item-row').remove();
+            const row = event.target.closest('.akun-item-row');
+            if (typeof jQuery !== 'undefined' && jQuery(row.querySelector('.akun-item-select')).hasClass('select2-hidden-accessible')) {
+                jQuery(row.querySelector('.akun-item-select')).select2('destroy');
+            }
+            row.remove();
             update();
         }
     });
@@ -103,6 +128,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
     list.addEventListener('change', update);
     document.getElementById('akun_dp_id')?.addEventListener('change', update);
+    if (typeof jQuery !== 'undefined') {
+        jQuery(list).on('change', '.akun-item-select', update);
+        jQuery('#akun_dp_id').on('change', update);
+    }
     document.getElementById('pembayaranForm').addEventListener('submit', event => {
         update();
         const total = [...list.querySelectorAll('.akun-item-nominal')].reduce((sum, input) => sum + (Number(input.value) || 0), 0);
@@ -112,6 +141,7 @@ document.addEventListener('DOMContentLoaded', function () {
             alert('Periksa akun biaya dan nominalnya. Jumlah harus sama dengan total biaya sebelum DP, termasuk penyesuaian.');
         }
     });
+    initializeSearchableAccounts();
     update();
 });
 </script>
