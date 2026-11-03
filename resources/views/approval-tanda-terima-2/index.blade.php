@@ -12,17 +12,20 @@
     #approval-ttsj-dialog { background: #f8fafc; color: #0f172a; }
     #approval-ttsj-dialog > div:first-child { position: sticky; top: 0; z-index: 3; background: #fff; }
     #approval-ttsj-dialog form > div:last-child { position: sticky; bottom: 0; z-index: 3; background: #fff; box-shadow: 0 -4px 16px rgb(15 23 42 / 6%); }
-    #approval-ttsj-dialog fieldset { min-width: 0; padding: 20px; border-color: #dbe2ea; background: #fff; }
-    #approval-ttsj-dialog fieldset legend { padding: 0 8px; font-size: 15px; }
-    #approval-ttsj-dialog fieldset label { display: block; margin-bottom: 7px; color: #334155; font-size: 13px; font-weight: 600; }
-    #approval-ttsj-dialog fieldset input, #approval-ttsj-dialog fieldset textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 44px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 14px; line-height: 20px; }
-    #approval-ttsj-dialog fieldset textarea { min-height: 96px; resize: vertical; }
-    #approval-ttsj-dialog fieldset input:focus, #approval-ttsj-dialog fieldset textarea:focus { outline: 0; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
-    #approval-ttsj-dialog fieldset input::placeholder, #approval-ttsj-dialog fieldset textarea::placeholder { color: #94a3b8; }
-    #approval-ttsj-dialog #approval-ttsj-hs-codes { min-height: 120px; }
+    #approval-ttsj-dialog .ttsj-goods-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgb(15 23 42 / 3%); }
+    #approval-ttsj-dialog .ttsj-goods-row > h4 { grid-column: 1 / -1; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 14px; font-weight: 700; }
+    #approval-ttsj-dialog .ttsj-goods-field { min-width: 0; }
+    #approval-ttsj-dialog .ttsj-goods-field[hidden] { display: none; }
+    #approval-ttsj-dialog .ttsj-goods-field[data-field="nama_barang"] { grid-column: span 2; }
+    #approval-ttsj-dialog .ttsj-goods-field label, #approval-ttsj-dialog .ttsj-goods-note label { display: block; margin-bottom: 7px; color: #475569; font-size: 12px; font-weight: 600; }
+    #approval-ttsj-dialog .ttsj-goods-field input, #approval-ttsj-dialog .ttsj-goods-field textarea, #approval-ttsj-dialog .ttsj-goods-note textarea { box-sizing: border-box; width: 100%; min-width: 0; min-height: 42px; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font-size: 14px; line-height: 20px; }
+    #approval-ttsj-dialog .ttsj-goods-field textarea { min-height: 60px; resize: vertical; }
+    #approval-ttsj-dialog .ttsj-goods-field[data-field="hs_codes"] textarea { min-height: 96px; }
+    #approval-ttsj-dialog .ttsj-goods-field input:focus, #approval-ttsj-dialog .ttsj-goods-field textarea:focus, #approval-ttsj-dialog .ttsj-goods-note textarea:focus { outline: 0; border-color: #6366f1; box-shadow: 0 0 0 3px rgb(99 102 241 / 15%); }
+    #approval-ttsj-dialog .ttsj-goods-field input::placeholder, #approval-ttsj-dialog .ttsj-goods-field textarea::placeholder { color: #94a3b8; }
     @media (max-width: 640px) {
         #approval-ttsj-dialog { width: calc(100vw - 16px); max-height: calc(100dvh - 16px); }
-        #approval-ttsj-dialog fieldset { padding: 16px; }
+        #approval-ttsj-dialog .ttsj-goods-row { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; padding: 16px; }
     }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-combobox { position: relative; }
@@ -567,40 +570,48 @@
         </div>
         <section class="border-t border-gray-200 px-5 py-5 sm:px-6">
             <h3 class="mb-4 text-base font-semibold text-indigo-800">2. Detail Barang Manifest dan Perincian</h3>
-            <div class="grid gap-5 lg:grid-cols-2">
+            <div class="space-y-6">
                 @foreach(['manifest_goods' => 'Detail Barang Manifest', 'goods' => 'Detail Barang Perincian'] as $prefix => $title)
-                    <fieldset class="rounded-xl border border-gray-200 p-4">
-                        <legend class="px-1 font-semibold text-gray-800">{{ $title }}</legend>
-                        <div class="grid gap-3 sm:grid-cols-2">
+                    <section class="{{ $prefix === 'goods' ? 'border-t border-gray-200 pt-6' : '' }}">
+                        <h4 class="mb-2 text-base font-semibold text-gray-900">{{ $title }}</h4>
+                        <p class="mb-4 text-xs text-gray-500">{{ $prefix === 'manifest_goods' ? 'Isi satu barang untuk manifest approval. Satu HS Code per baris.' : 'Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.' }}</p>
+                        <div class="ttsj-goods-row">
+                            <h4>Barang 1</h4>
                             @if($prefix === 'manifest_goods')
-                                <div class="sm:col-span-2">
-                                    <label for="approval-ttsj-hs-codes" class="mb-1 block text-xs font-medium text-gray-600">HS Code (satu per baris)</label>
-                                    <textarea id="approval-ttsj-hs-codes" name="manifest_goods[0][hs_codes]" rows="4" placeholder="Masukkan satu HS Code per baris" class="w-full rounded-lg border-gray-300 text-sm">{{ old('manifest_goods.0.hs_codes') }}</textarea>
+                                <div class="ttsj-goods-field" data-field="hs_codes">
+                                    <label for="approval-ttsj-hs-codes">HS Code</label>
+                                    <textarea id="approval-ttsj-hs-codes" name="manifest_goods[0][hs_codes]" rows="3" placeholder="Contoh: 8479.89 (satu kode per baris)">{{ old('manifest_goods.0.hs_codes') }}</textarea>
+                                    <p class="mt-1 text-xs text-gray-500">Satu HS Code per baris.</p>
                                 </div>
                             @endif
-                            @foreach(['nama_barang' => 'Nama Barang', 'jumlah' => 'Jumlah', 'satuan' => 'Satuan', 'ukuran' => 'Ukuran'] as $field => $label)
-                                <div class="{{ $field === 'nama_barang' ? 'sm:col-span-2' : '' }}">
-                                    <label for="approval-ttsj-{{ $prefix }}-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }} {{ $field === 'ukuran' ? '' : '*' }}</label>
-                                    <input id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" value="{{ old($prefix.'.0.'.$field, $field === 'jumlah' ? 1 : ($field === 'satuan' ? 'unit' : '')) }}" {{ $field === 'ukuran' ? '' : 'required' }} @if($field === 'jumlah') type="number" min="1" @endif class="w-full rounded-lg border-gray-300 text-sm">
+                            @foreach(['jumlah' => 'Jumlah', 'satuan' => 'Satuan', 'nama_barang' => 'Nama barang', 'ukuran' => 'Ukuran'] as $field => $label)
+                                <div class="ttsj-goods-field" data-field="{{ $field }}" @if($field === 'ukuran') data-ttsj-size-field="{{ $prefix }}" @if(!str_contains(strtolower((string) old($prefix.'.0.nama_barang')), 'keramik') && blank(old($prefix.'.0.ukuran'))) hidden @endif @endif>
+                                    <label for="approval-ttsj-{{ $prefix }}-{{ $field }}">{{ $label }} {{ $field === 'ukuran' ? '' : '*' }}</label>
+                                    @if($field === 'nama_barang')
+                                        <textarea id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" rows="2" placeholder="Contoh: Mesin industri" required>{{ old($prefix.'.0.'.$field) }}</textarea>
+                                    @else
+                                        <input id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" value="{{ old($prefix.'.0.'.$field, $field === 'jumlah' ? 1 : ($field === 'satuan' ? 'unit' : '')) }}" {{ $field === 'ukuran' ? '' : 'required' }} @if($field === 'jumlah') type="number" min="1" @elseif($field === 'satuan') placeholder="Contoh: Unit, koli, karton" @endif>
+                                    @endif
                                     @error($prefix.'.0.'.$field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                             @endforeach
                             @if($prefix === 'manifest_goods')
                                 @foreach(['tonase' => 'Tonase', 'meter_kubik' => 'Volume (m³)'] as $field => $label)
-                                    <div>
-                                        <label for="approval-ttsj-manifest-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }}</label>
-                                        <input id="approval-ttsj-manifest-{{ $field }}" name="manifest_goods[0][{{ $field }}]" value="{{ old('manifest_goods.0.'.$field) }}" inputmode="decimal" placeholder="Contoh: 17.665,78" class="w-full rounded-lg border-gray-300 text-sm">
+                                    <div class="ttsj-goods-field" data-field="{{ $field }}">
+                                        <label for="approval-ttsj-manifest-{{ $field }}">{{ $label }}</label>
+                                        <input id="approval-ttsj-manifest-{{ $field }}" name="manifest_goods[0][{{ $field }}]" value="{{ old('manifest_goods.0.'.$field) }}" inputmode="decimal" placeholder="{{ $field === 'tonase' ? 'Contoh: 17.665,78' : 'Contoh: 3.500,25' }}">
                                         @error('manifest_goods.0.'.$field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                     </div>
                                 @endforeach
-                            @else
-                                <div class="sm:col-span-2">
-                                    <label for="approval-ttsj-note" class="mb-1 block text-xs font-medium text-gray-600">Keterangan Barang</label>
-                                    <textarea id="approval-ttsj-note" name="keterangan_barang" rows="4" placeholder="Tambahkan keterangan barang bila diperlukan" class="w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan_barang') }}</textarea>
-                                </div>
                             @endif
                         </div>
-                    </fieldset>
+                        @if($prefix === 'goods')
+                            <div class="ttsj-goods-note mt-4">
+                                <label for="approval-ttsj-note">Keterangan Barang</label>
+                                <textarea id="approval-ttsj-note" name="keterangan_barang" rows="2">{{ old('keterangan_barang') }}</textarea>
+                            </div>
+                        @endif
+                    </section>
                 @endforeach
             </div>
         </section>
@@ -727,15 +738,30 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = document.getElementById('approval-ttsj-shipper-message');
     const selectedId = document.getElementById('approval-ttsj-shipper-id');
     const shipperFields = form.querySelectorAll('[data-ttsj-shipper-field]');
+    function updateGoodsSizeVisibility(prefix) {
+        const name = form.elements.namedItem(`${prefix}[0][nama_barang]`);
+        const size = form.elements.namedItem(`${prefix}[0][ukuran]`);
+        const field = form.querySelector(`[data-ttsj-size-field="${prefix}"]`);
+        if (field) field.hidden = !name.value.toLowerCase().includes('keramik') && !size.value.trim();
+    }
     ['nama_barang', 'jumlah', 'satuan', 'ukuran'].forEach(field => {
         const manifestField = form.elements.namedItem(`manifest_goods[0][${field}]`);
         const perincianField = form.elements.namedItem(`goods[0][${field}]`);
         if (!manifestField || !perincianField) return;
-        perincianField.addEventListener('input', () => { perincianField.dataset.edited = 'true'; });
+        perincianField.addEventListener('input', () => {
+            perincianField.dataset.edited = 'true';
+            if (field === 'nama_barang') updateGoodsSizeVisibility('goods');
+        });
         manifestField.addEventListener('input', () => {
             if (perincianField.dataset.edited !== 'true') perincianField.value = manifestField.value;
+            if (field === 'nama_barang') {
+                updateGoodsSizeVisibility('manifest_goods');
+                updateGoodsSizeVisibility('goods');
+            }
         });
     });
+    updateGoodsSizeVisibility('manifest_goods');
+    updateGoodsSizeVisibility('goods');
     let timer;
     let controller;
 
