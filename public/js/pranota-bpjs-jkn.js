@@ -14,8 +14,7 @@
     }
 
     function isReimbursement(employee) {
-        return compact(employee?.group_jkn) === 'JKNKIS'
-            && ['REUMBERSMENT', 'REIMBURSEMENT'].includes(compact(employee?.tipe_jkn));
+        return compact(employee?.group_jkn) === 'JKNKISREIMBURSEMENT';
     }
 
     function calculate(record, dpp, employee = null) {

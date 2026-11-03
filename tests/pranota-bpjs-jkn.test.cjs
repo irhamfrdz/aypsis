@@ -3,15 +3,21 @@ const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 const { split, syncRow } = globalThis.BpjsJknColumns;
 
-test('JKN-KIS REUMBERSMENT uses full DPP with zero debt even without a percentage formula', () => {
+test('JKN-KIS-REIMBURSEMENT uses full DPP based on group regardless of employee type', () => {
     const { calculate, isReimbursement } = globalThis.BpjsJknColumns;
-    const employee = { group_jkn: ' jkn-kis ', tipe_jkn: ' reumbersment ' };
-    assert.equal(isReimbursement(employee), true);
-    assert.deepEqual(calculate(null, 5729880.25, employee), { contribution: 5729880.25, debt: 0 });
-    assert.deepEqual(calculate({ group_name: 'JKN-KIS', tipe: 'REUMBERSMENT', tunjangan_persen: 4, hutang_persen: 1 }, 5729880.25),
-        { contribution: 5729880.25, debt: 0 });
+    const employee = { group_jkn: ' jkn-kis-reimbursement ', tipe_jkn: 'Crew' };
+    for (const type of ['Crew', 'KANTOR', '', 'REIMBURSEMENT']) {
+        const candidate = { ...employee, tipe_jkn: type };
+        assert.equal(isReimbursement(candidate), true);
+        assert.deepEqual(calculate(null, 87500, candidate), { contribution: 87500, debt: 0 });
+    }
+    assert.deepEqual(calculate({ group_name: 'JKN-KIS-REIMBURSEMENT', tipe: 'Crew', tunjangan_persen: 4, hutang_persen: 1 }, 87500),
+        { contribution: 87500, debt: 0 });
+    const ordinary = { group_jkn: 'JKN-KIS', tipe_jkn: 'REIMBURSEMENT' };
+    assert.equal(isReimbursement(ordinary), false);
+    assert.deepEqual(calculate({ tunjangan_persen: 4, hutang_persen: 1 }, 87500, ordinary),
+        { contribution: 3500, debt: 875 });
     assert.equal(isReimbursement({ ...employee, group_jkn: 'OTHER' }), false);
-    assert.equal(isReimbursement({ ...employee, tipe_jkn: 'KANTOR' }), false);
 });
 
 test('termination label follows refreshed employee data and clears for active or empty rows', () => {
