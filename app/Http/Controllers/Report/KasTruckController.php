@@ -283,12 +283,15 @@ class KasTruckController extends Controller
                     ->get(['pembayaran.nomor_pembayaran', 'pembayaran.jenis_transaksi', 'akun.nama_akun', 'akun.nomor_akun', 'rincian.nominal', 'rincian.memo']);
 
                 foreach ($rincianAkunPranotaOb as $rincian) {
+                    $arahBiaya = strtolower($rincian->jenis_transaksi) === 'debit' ? 'kredit' : 'debit';
                     $rincianAkunPranotaObMap[$rincian->nomor_pembayaran][] = [
                         'nama_akun' => $rincian->nama_akun,
                         'nomor_akun' => $rincian->nomor_akun,
                         'nominal' => $rincian->nominal,
                         'memo' => $rincian->memo,
-                        'debit_kredit' => strtolower($rincian->jenis_transaksi) === 'debit' ? 'kredit' : 'debit',
+                        'debit_kredit' => Coa::isPiutangLainLainName($rincian->nama_akun)
+                            ? ($arahBiaya === 'debit' ? 'kredit' : 'debit')
+                            : $arahBiaya,
                     ];
                 }
 

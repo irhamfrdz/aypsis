@@ -300,4 +300,55 @@ class PembayaranPranotaStockAkunItemsTest extends TestCase
             'debit_kredit' => $line['debit_kredit'],
         ], $transaction->rincian_akun_pembayaran));
     }
+
+    public function test_kas_truck_report_shows_receivable_deduction_as_credit(): void
+    {
+        DB::table('akun_coa')->where('id', 1)->update(['nama_akun' => 'Bank BCA Trucking  - 168 2889 955']);
+        DB::table('akun_coa')->insert(['id' => 4, 'nomor_akun' => '1103.008', 'nama_akun' => 'Piutang Lain-Lain']);
+        Schema::create('pembayaran_pranota_obs', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_pembayaran');
+            $table->string('nomor_accurate')->nullable();
+            $table->string('jenis_transaksi');
+            $table->unsignedBigInteger('akun_coa_id')->nullable();
+            $table->unsignedBigInteger('akun_bank_id');
+            $table->unsignedBigInteger('akun_dp_id')->nullable();
+            $table->decimal('dp_amount', 15, 2)->default(0);
+        });
+        Schema::create('pembayaran_pranota_ob_akun_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('pembayaran_pranota_ob_id');
+            $table->unsignedBigInteger('akun_coa_id');
+            $table->decimal('nominal', 15, 2);
+            $table->text('memo')->nullable();
+        });
+        DB::table('pembayaran_pranota_obs')->insert([
+            'id' => 1,
+            'nomor_pembayaran' => 'PY-OB-REPORT',
+            'jenis_transaksi' => 'credit',
+            'akun_coa_id' => 2,
+            'akun_bank_id' => 1,
+            'akun_dp_id' => 3,
+            'dp_amount' => 1800000,
+        ]);
+        DB::table('pembayaran_pranota_ob_akun_items')->insert([
+            ['pembayaran_pranota_ob_id' => 1, 'akun_coa_id' => 2, 'nominal' => 3520000],
+            ['pembayaran_pranota_ob_id' => 1, 'akun_coa_id' => 4, 'nominal' => 100000],
+        ]);
+        DB::table('coa_transactions')->insert([
+            'coa_id' => 1,
+            'tanggal_transaksi' => '2026-08-11',
+            'nomor_referensi' => 'PY-OB-REPORT',
+            'jenis_transaksi' => 'Pembayaran Pranota OB',
+            'debit' => 0,
+            'kredit' => 1620000,
+        ]);
+
+        $transaction = (new KasTruckController)->view(Request::create('/report/kas-truck/view', 'GET'))
+            ->getData()['transactions']->first();
+
+        $this->assertEquals(1620000, $transaction->kredit);
+        $this->assertSame(['debit', 'kredit', 'kredit'], array_column($transaction->rincian_akun_pembayaran, 'debit_kredit'));
+        $this->assertSame(['Biaya A', 'Piutang Lain-Lain', 'Biaya B'], array_column($transaction->rincian_akun_pembayaran, 'nama_akun'));
+    }
 }

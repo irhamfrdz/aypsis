@@ -12,7 +12,12 @@ class Coa extends Model
 
     public function isPiutangLainLain(): bool
     {
-        return (bool) preg_match('/\bpiutang[\s-]+lain[\s-]+lain\b/i', $this->nama_akun ?? '');
+        return self::isPiutangLainLainName($this->nama_akun);
+    }
+
+    public static function isPiutangLainLainName(?string $namaAkun): bool
+    {
+        return (bool) preg_match('/\bpiutang[\s-]+lain[\s-]+lain\b/i', $namaAkun ?? '');
     }
 
     protected $table = 'akun_coa';
