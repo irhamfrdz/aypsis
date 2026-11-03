@@ -561,6 +561,19 @@
             window.updatePranotaObAkunItems?.();
         }
 
+        window.updatePranotaObReceivableTotal = function (piutang) {
+            const totalBiaya = [...pranotaCheckboxes].reduce((sum, checkbox) => {
+                if (!checkbox.checked) return sum;
+                const amount = checkbox.closest('tr').querySelector('td:nth-child(7)').textContent;
+                return sum + (Number(amount.replace(/[^0-9-]/g, '')) || 0);
+            }, 0);
+            const dp = Number(document.getElementById('akun-items-section').dataset.dp) || 0;
+            const penyesuaian = Number(document.getElementById('total_tagihan_penyesuaian').value.replace(/\./g, '').replace(',', '.')) || 0;
+            const total = totalBiaya - dp - piutang;
+            document.getElementById('total_pembayaran').value = total.toLocaleString('id-ID');
+            document.getElementById('total_tagihan_setelah_penyesuaian').value = (total + penyesuaian).toLocaleString('id-ID');
+        };
+
         // Select all functionality
         selectAllCheckbox.addEventListener('change', function() {
             pranotaCheckboxes.forEach(checkbox => {
@@ -911,10 +924,10 @@
                 return;
             }
             const dp = Number(document.getElementById('akun-items-section').dataset.dp) || 0;
-            const kas = rows.reduce((sum, row) => sum + Number(row.querySelector('input').value), 0) - dp;
+            const kas = rows.reduce((sum, row) => sum + (row.querySelector('select option:checked')?.dataset.piutangLainLain === '1' ? -1 : 1) * Number(row.querySelector('input').value), 0) - dp;
             const biayaSide = direction === 'credit' ? 'DEBIT' : 'KREDIT';
             const kasSide = direction === 'credit' ? 'KREDIT' : 'DEBIT';
-            const lines = rows.map(row => `${biayaSide} ${row.querySelector('select option:checked').textContent.trim()}: Rp ${Number(row.querySelector('input').value).toLocaleString('id-ID')}`);
+            const lines = rows.map(row => `${row.querySelector('select option:checked').dataset.piutangLainLain === '1' ? kasSide : biayaSide} ${row.querySelector('select option:checked').textContent.trim()}: Rp ${Number(row.querySelector('input').value).toLocaleString('id-ID')}`);
             if (dp > 0) lines.push(`${kasSide} Potongan DP (${document.querySelector('#akun_dp_id option:checked')?.textContent.trim() || 'pilih akun'}): Rp ${dp.toLocaleString('id-ID')}`);
             lines.push(`${kasSide} ${bankOption.textContent.trim()}: Rp ${kas.toLocaleString('id-ID')}`);
             journalContent.style.whiteSpace = 'pre-line';

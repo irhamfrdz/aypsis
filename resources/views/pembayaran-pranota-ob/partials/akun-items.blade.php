@@ -10,7 +10,7 @@
     <div class="flex items-center justify-between">
         <div>
             <h4 class="text-sm font-semibold text-gray-800">Rincian Akun Biaya</h4>
-            <p class="text-xs text-gray-500">Isi nominal biaya sebelum potongan DP. Jumlah biaya harus sama dengan total biaya ditambah penyesuaian.@isset($pembayaran) Nominal Piutang Lain-Lain mengurangi pembayaran dari Bank/Kas.@endisset</p>
+            <p class="text-xs text-gray-500">Isi nominal biaya sebelum potongan DP. Jumlah biaya harus sama dengan total biaya ditambah penyesuaian. Nominal Piutang Lain-Lain mengurangi pembayaran dari Bank/Kas.</p>
         </div>
         <button type="button" id="add-akun-item" class="text-xs text-indigo-600 hover:text-indigo-800">+ Tambah Akun</button>
     </div>
@@ -21,7 +21,7 @@
                     <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select {{ $inputClasses }} flex-1 min-w-48" required>
                         <option value="">-- Pilih Akun Biaya --</option>
                         @foreach($akunBiaya as $akun)
-                            <option value="{{ $akun->id }}" data-piutang-lain-lain="{{ isset($pembayaran) && $akun->isPiutangLainLain() ? '1' : '0' }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            <option value="{{ $akun->id }}" data-piutang-lain-lain="{{ $akun->isPiutangLainLain() ? '1' : '0' }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
                         @endforeach
                     </select>
                     <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-item-nominal {{ $inputClasses }} w-40" min="0.01" step="0.01" placeholder="Nominal sebelum DP" value="{{ $row['nominal'] ?? '' }}" required>
@@ -34,7 +34,7 @@
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs border-t pt-2">
         <div>Total akun biaya sebelum DP: <strong id="akun-total">Rp 0</strong></div>
         <div>Potongan DP: <strong>Rp {{ number_format($dpNominal, 0, ',', '.') }}</strong></div>
-        @isset($pembayaran)<div>Potongan Piutang Lain-Lain: <strong id="akun-piutang">Rp 0</strong></div>@endisset
+        <div>Potongan Piutang Lain-Lain: <strong id="akun-piutang">Rp 0</strong></div>
         <div>Yang dibayar dari Bank/Kas: <strong id="akun-kas">Rp 0</strong></div>
     </div>
     @if($dpNominal > 0)

@@ -184,6 +184,51 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->assertStringNotContainsString('Memo:', $entries[2][3]);
     }
 
+    public function test_create_books_driver_debt_once_as_receivable_credit(): void
+    {
+        DB::table('akun_coa')->insert(['id' => 5, 'nama_akun' => 'Piutang Lain-Lain']);
+        DB::table('pembayaran_obs')->insert(['id' => 1, 'dp_amount' => 60000, 'akun_coa_id' => 4]);
+        $entries = [];
+        $service = $this->mock(CoaTransactionService::class);
+        $service->shouldReceive('recordTransaction')->times(4)
+            ->andReturnUsing(function ($nama, $debit, $kredit) use (&$entries) {
+                $entries[] = [$nama, $debit, $kredit];
+
+                return new CoaTransaction;
+            });
+
+        $request = $this->paymentRequest(['1', 'muat_temas:1']);
+        $request->merge([
+            'akun_items' => [
+                ['akun_coa_id' => 1, 'nominal' => 360000],
+                ['akun_coa_id' => 5, 'nominal' => 100000],
+            ],
+            'dp_ids' => [1],
+            'akun_dp_id' => 4,
+            'breakdown_supir' => json_encode([[
+                'nama_supir' => 'SUPIR UJI',
+                'total_biaya' => 360000,
+                'dp' => 60000,
+                'sisa' => 300000,
+                'potongan_utang' => 100000,
+                'potongan_tabungan' => 0,
+                'potongan_bpjs' => 0,
+                'grand_total' => 200000,
+            ]]),
+        ]);
+        (new PembayaranPranotaObController($service))->store($request);
+
+        $payment = PembayaranPranotaOb::firstOrFail();
+        $this->assertEquals(200000, $payment->total_pembayaran);
+        $this->assertEquals(200000, $payment->total_setelah_penyesuaian);
+        $this->assertEquals([
+            ['Biaya OB', 360000, 0],
+            ['Piutang Lain-Lain', 0, 100000],
+            ['Uang Muka OB', 0, 60000],
+            ['Bank', 0, 200000],
+        ], $entries);
+    }
+
     public function test_editing_account_memo_updates_its_journal_line(): void
     {
         $payment = PembayaranPranotaOb::create([

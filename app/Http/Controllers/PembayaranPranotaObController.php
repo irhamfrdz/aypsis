@@ -266,9 +266,14 @@ class PembayaranPranotaObController extends Controller
                 throw new \Exception('Potongan DP tidak boleh melebihi total biaya pranota.');
             }
             $akunItems = collect($request->input('akun_items'));
-            $totalAkun = $akunItems->sum(fn ($item) => (float) $item['nominal']);
+            $coaById = Coa::whereIn('id', $akunItems->pluck('akun_coa_id'))->get()->keyBy('id');
+            $piutang = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? (float) $item['nominal'] : 0);
+            $totalAkun = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? 0 : (float) $item['nominal']);
             if (abs($totalAkun - ($totalBiayaPranota + $penyesuaian)) > 0.01) {
                 throw new \Exception('Jumlah nominal per akun harus sama dengan total biaya pranota ditambah penyesuaian, sebelum potongan DP.');
+            }
+            if ($totalPembayaran + $penyesuaian - $piutang < -0.01) {
+                throw new \Exception('Potongan Piutang Lain-Lain melebihi jumlah yang harus dibayar.');
             }
             if ($dpAmount > 0 && ! $request->filled('akun_dp_id')) {
                 throw new \Exception('Pilih akun potongan DP untuk jurnal.');
@@ -276,7 +281,7 @@ class PembayaranPranotaObController extends Controller
             Log::info('Calculated total pembayaran (after DP)', [
                 'total_biaya' => $totalBiayaPranota,
                 'dp_amount' => $dpAmount,
-                'total_pembayaran' => $totalPembayaran,
+                'total_pembayaran' => $totalPembayaran - $piutang,
             ]);
 
             // Check for duplicate nomor_pembayaran
@@ -303,9 +308,9 @@ class PembayaranPranotaObController extends Controller
                 'bank' => $akunBank->nama_akun,
                 'jenis_transaksi' => $request->debit_kredit,
                 'tanggal_kas' => $request->tanggal_kas,
-                'total_pembayaran' => $totalPembayaran,
+                'total_pembayaran' => $totalPembayaran - $piutang,
                 'penyesuaian' => $penyesuaian,
-                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
+                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian - $piutang,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
