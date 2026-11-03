@@ -31,15 +31,16 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
 
             $this->assertSame('M A N I F E S T    O F    C A R G O', $sheet->getCell('B1')->getValue());
             $this->assertSame('B/L NO.', $sheet->getCell('B5')->getValue());
-            $this->assertSame('TEST-001', $sheet->getCell('AC7')->getValue());
             $this->assertSame('TEST-001', $sheet->getCell('AC8')->getValue());
-            $this->assertSame('AYP', $sheet->getCell('AA7')->getValue());
-            $this->assertSame('FFFCA5A5', $sheet->getStyle('AA7')->getFill()->getStartColor()->getARGB());
-            $this->assertSame('LAINNYA', $sheet->getCell('AA8')->getValue());
-            $this->assertSame(Fill::FILL_NONE, $sheet->getStyle('AA8')->getFill()->getFillType());
+            $this->assertNull($sheet->getCell('AC7')->getValue());
+            $this->assertSame('TEST-001', $sheet->getCell('AC9')->getValue());
+            $this->assertSame('AYP', $sheet->getCell('AA8')->getValue());
+            $this->assertSame('FFFCA5A5', $sheet->getStyle('AA8')->getFill()->getStartColor()->getARGB());
+            $this->assertSame('LAINNYA', $sheet->getCell('AA9')->getValue());
+            $this->assertSame(Fill::FILL_NONE, $sheet->getStyle('AA9')->getFill()->getFillType());
             foreach (['Q', 'T'] as $column) {
-                $this->assertSame(Fill::FILL_SOLID, $sheet->getStyle($column.'7')->getFill()->getFillType());
-                $this->assertSame(Fill::FILL_NONE, $sheet->getStyle($column.'9')->getFill()->getFillType());
+                $this->assertSame(Fill::FILL_SOLID, $sheet->getStyle($column.'8')->getFill()->getFillType());
+                $this->assertSame(Fill::FILL_NONE, $sheet->getStyle($column.'10')->getFill()->getFillType());
             }
             $this->assertSame(70, $sheet->getSheetView()->getZoomScale());
             $this->assertSame('A7', $sheet->getFreezePane());

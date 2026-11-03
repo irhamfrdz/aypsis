@@ -171,14 +171,15 @@ class ApprovalTandaTerimaDuaExcelTest extends TestCase
         $file = $response->getFile()->getPathname();
         try {
             $sheet = IOFactory::load($file)->getSheet(0);
-            $this->assertSame('CONTAINER-1', $sheet->getCell('D7')->getValue());
             $this->assertSame('CONTAINER-1', $sheet->getCell('D8')->getValue());
-            $this->assertSame('Shipper A', $sheet->getCell('Q7')->getValue());
-            $this->assertSame('Shipper B', $sheet->getCell('Q8')->getValue());
-            $this->assertSame('Consignee B', $sheet->getCell('T8')->getValue());
-            $this->assertSame('Barang A', $sheet->getCell('K7')->getValue());
-            $this->assertSame('Barang B Manifest', $sheet->getCell('K8')->getValue());
-            $this->assertSame('Barang B Perincian', $sheet->getCell('N8')->getValue());
+            $this->assertNull($sheet->getCell('D7')->getValue());
+            $this->assertSame('CONTAINER-1', $sheet->getCell('D9')->getValue());
+            $this->assertSame('Shipper A', $sheet->getCell('Q8')->getValue());
+            $this->assertSame('Shipper B', $sheet->getCell('Q9')->getValue());
+            $this->assertSame('Consignee B', $sheet->getCell('T9')->getValue());
+            $this->assertSame('Barang A', $sheet->getCell('K8')->getValue());
+            $this->assertSame('Barang B Manifest', $sheet->getCell('K9')->getValue());
+            $this->assertSame('Barang B Perincian', $sheet->getCell('N9')->getValue());
         } finally {
             @unlink($file);
         }

@@ -27,7 +27,7 @@ class ApprovalTandaTerimaDuaExcelService
         $sheet->removeRow(1, 2);
         $sheet->getSheetView()->setZoomScale(70);
         $sheet->freezePane('A7');
-        $row = 7;
+        $row = 8;
         foreach ($entries as $entry) {
             $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], $entry['override'] ?? null);
             if ($sourceType === 'fcl' && $entry['receipt']->relationLoaded('fclShipperDetails')) {
