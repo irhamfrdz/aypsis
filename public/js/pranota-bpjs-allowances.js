@@ -212,9 +212,9 @@
         });
         Object.entries(totals).forEach(([key, amount]) => {
             const cell = document.getElementById('total-allowance-' + key);
-            if (cell) cell.textContent = 'Rp ' + formatNumber(amount);
+            if (cell) cell.textContent = 'Rp ' + Math.round(amount).toLocaleString('id-ID');
             document.querySelectorAll(`[data-allowance-total="${key}"]`).forEach(summary => {
-                summary.textContent = 'Rp ' + formatNumber(amount);
+                summary.textContent = 'Rp ' + Math.round(amount).toLocaleString('id-ID');
             });
         });
         root.BpjsJournal?.renderFromRows(container);

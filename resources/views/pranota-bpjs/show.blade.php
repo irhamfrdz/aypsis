@@ -81,7 +81,7 @@
             $formatDpp = function ($value) {
                 if ($value === null || $value === '') return '-';
                 $amount = is_numeric($value) ? (float) $value : (float) str_replace(',', '.', str_replace('.', '', (string) $value));
-                return 'Rp ' . number_format($amount, 2, ',', '.');
+                return 'Rp ' . number_format($amount, 0, ',', '.');
             };
             $componentGroups = [
                 'JKN' => ['kis_tunjangan' => 'KIS 4% (TUNJ)', 'kis_biaya' => 'KIS 4% (BIAY)', 'bpjs_ketenagakerjaan' => 'KIS 1% (Hutang)'],
@@ -124,7 +124,7 @@
             $groupTotal = fn ($fields) => $pranota_bpj->details->sum(fn ($detail) => collect($fields)->sum(fn ($field) => $amount($detail, $field)));
         @endphp
         <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-            @foreach(['Total Karyawan' => $pranota_bpj->total_karyawan . ' Orang', 'Total JKN' => 'Rp ' . number_format($pranota_bpj->total_bpjs_kesehatan, 2, ',', '.'), 'Total PPU' => 'Rp ' . number_format($groupTotal($componentFields['PPU']), 2, ',', '.'), 'Total BPU' => 'Rp ' . number_format($groupTotal(array_merge($componentFields['BPU Crew'], $componentFields['BPU Non Crew'])), 2, ',', '.'), 'Grand Total' => 'Rp ' . number_format($pranota_bpj->grand_total, 2, ',', '.')] as $label => $value)
+            @foreach(['Total Karyawan' => $pranota_bpj->total_karyawan . ' Orang', 'Total JKN' => 'Rp ' . number_format($pranota_bpj->total_bpjs_kesehatan, 0, ',', '.'), 'Total PPU' => 'Rp ' . number_format($groupTotal($componentFields['PPU']), 0, ',', '.'), 'Total BPU' => 'Rp ' . number_format($groupTotal(array_merge($componentFields['BPU Crew'], $componentFields['BPU Non Crew'])), 0, ',', '.'), 'Grand Total' => 'Rp ' . number_format($pranota_bpj->grand_total, 0, ',', '.')] as $label => $value)
                 <div class="rounded-xl border border-gray-200 bg-gray-50 p-4"><p class="text-xs font-semibold uppercase text-gray-500">{{ $label }}</p><p class="mt-2 font-bold text-teal-800">{{ $value }}</p></div>
             @endforeach
         </div>
@@ -177,11 +177,11 @@
                                         @if($field === 'no_voucher')
                                             <td class="border border-gray-200 p-3">{{ $detail->no_voucher ?: '-' }}</td>
                                         @else
-                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ number_format($amount($detail, $field), 2, ',', '.') }}</td>
+                                            <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ number_format($amount($detail, $field), 0, ',', '.') }}</td>
                                         @endif
                                     @endforeach
                                 @endforeach
-                                <td class="border border-gray-200 p-3 text-right font-bold text-teal-800">Rp {{ number_format($detail->total, 2, ',', '.') }}</td>
+                                <td class="border border-gray-200 p-3 text-right font-bold text-teal-800">Rp {{ number_format($detail->total, 0, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>
@@ -189,9 +189,9 @@
                         <tr>
                             <td colspan="7" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.') }}</td>@endforeach
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : 'Rp ' . number_format($groupTotal([$field]), 0, ',', '.') }}</td>@endforeach
                             @endforeach
-                            <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
+                            <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 0, ',', '.') }}</td>
                         </tr>
                     </tfoot>
                 </table>

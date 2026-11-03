@@ -146,21 +146,21 @@
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-debt" id="total_ket">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0,00</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-jkn col-group-jkn" id="total_group_jkn">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-cost" id="total_jht_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-debt" id="total_jht_hutang">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkk">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm" id="total_jkm">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-cost" id="total_jp_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-emerald-700 text-sm bpjs-ppu-debt" id="total_jp_hutang">Rp 0</td>
-                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0,00</td>
-                            <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0,00</td>
-<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0,00</td>
-<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0,00</td>
-<td class="bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0,00</td>
-<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0,00</td>
-<td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0,00</td>
-<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0,00</td>
+                            <td class="px-3 py-3 text-right font-mono font-bold bpjs-group-total-ppu col-group-ppu" id="total_group_ppu">Rp 0</td>
+                            <td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-ppu">Rp 0</td>
+<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-bpu">Rp 0</td>
+<td class="bpjs-allowance-green px-3 py-3 text-right font-mono bg-green-50" id="total-allowance-jkn">Rp 0</td>
+<td class="bpjs-allowance-red px-3 py-3 text-right font-mono bg-red-50" id="total-allowance-kary_jht">Rp 0</td>
+<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-kary_jkn">Rp 0</td>
+<td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0</td>
+<td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0</td>
 <td class="px-3 py-3 bg-orange-50"></td>
 <td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
                             <td></td>
@@ -211,6 +211,9 @@ document.addEventListener('DOMContentLoaded', async function() {
     const pendingUpdate = BpjsPerformance.scheduler(() => calculateTotals());
     const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
+    const rupiahFormatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+    const displayNumber = num => rupiahFormatter.format(num || 0);
+
     function formatNumber(num) {
         return amountFormatter.format(num || 0);
     }
@@ -230,7 +233,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         let sumJhtB = 0, sumJhtH = 0, sumJkk = 0, sumJkm = 0, sumJpB = 0, sumJpH = 0;
         
         container.querySelectorAll('tr.detail-row').forEach(row => {
-            BpjsPerformance.updateGroupTotals(row, parseIdNumber, formatNumber);
+            BpjsPerformance.updateGroupTotals(row, parseIdNumber, displayNumber);
             const read = selector => BpjsPerformance.readNumber(row, selector, parseIdNumber);
             const kes = read('.input-kes');
             sumKes += kes;
@@ -245,20 +248,20 @@ document.addEventListener('DOMContentLoaded', async function() {
             sumJpH += read('.input-jp-hutang');
         });
 
-        document.getElementById('total_kes').textContent = 'Rp ' + formatNumber(sumKes - sumKesBiaya);
-        document.getElementById('total_kes_biaya').textContent = 'Rp ' + formatNumber(sumKesBiaya);
-        document.getElementById('total_ket').textContent = 'Rp ' + formatNumber(sumKet);
-        document.getElementById('total_jht_biaya').textContent = 'Rp ' + formatNumber(sumJhtB);
-        document.getElementById('total_jht_hutang').textContent = 'Rp ' + formatNumber(sumJhtH);
-        document.getElementById('total_jkk').textContent = 'Rp ' + formatNumber(sumJkk);
-        document.getElementById('total_jkm').textContent = 'Rp ' + formatNumber(sumJkm);
-        document.getElementById('total_jp_biaya').textContent = 'Rp ' + formatNumber(sumJpB);
-        document.getElementById('total_jp_hutang').textContent = 'Rp ' + formatNumber(sumJpH);
+        document.getElementById('total_kes').textContent = 'Rp ' + displayNumber(sumKes - sumKesBiaya);
+        document.getElementById('total_kes_biaya').textContent = 'Rp ' + displayNumber(sumKesBiaya);
+        document.getElementById('total_ket').textContent = 'Rp ' + displayNumber(sumKet);
+        document.getElementById('total_jht_biaya').textContent = 'Rp ' + displayNumber(sumJhtB);
+        document.getElementById('total_jht_hutang').textContent = 'Rp ' + displayNumber(sumJhtH);
+        document.getElementById('total_jkk').textContent = 'Rp ' + displayNumber(sumJkk);
+        document.getElementById('total_jkm').textContent = 'Rp ' + displayNumber(sumJkm);
+        document.getElementById('total_jp_biaya').textContent = 'Rp ' + displayNumber(sumJpB);
+        document.getElementById('total_jp_hutang').textContent = 'Rp ' + displayNumber(sumJpH);
         
-        document.getElementById('total_group_jkn').textContent = 'Rp ' + formatNumber(sumKes + sumKet);
-        document.getElementById('total_group_ppu').textContent = 'Rp ' + formatNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
+        document.getElementById('total_group_jkn').textContent = 'Rp ' + displayNumber(sumKes + sumKet);
+        document.getElementById('total_group_ppu').textContent = 'Rp ' + displayNumber(sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH);
         const grandTotal = sumKes + sumKet + sumJhtB + sumJhtH + sumJkk + sumJkm + sumJpB + sumJpH;
-        document.getElementById('grand_total').textContent = 'Rp ' + formatNumber(grandTotal);
+        document.getElementById('grand_total').textContent = 'Rp ' + displayNumber(grandTotal);
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
@@ -364,7 +367,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle bpjs-jkn-debt">
                 <input type="text" name="details[${rowCount}][bpjs_ketenagakerjaan]" class="w-full text-right text-sm input-ket font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(valKet)}" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-jkn col-group-jkn row-total-jkn">Rp 0</td>
             <td class="px-4 py-3 align-middle bpjs-ppu-cost">
                 <input type="text" name="details[${rowCount}][jht_biaya]" class="w-full text-right text-sm input-jht-biaya font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jhtB)}" autocomplete="off">
             </td>
@@ -383,16 +386,16 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="px-4 py-3 align-middle bpjs-ppu-debt">
                 <input type="text" name="details[${rowCount}][jp_hutang]" class="w-full text-right text-sm input-jp-hutang font-semibold text-emerald-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatNumber(jpH)}" autocomplete="off">
             </td>
-            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0,00</td>
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0,00</td>
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0,00</td>
-            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0,00</td>
-            <td class="bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0,00</td>
-            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0,00</td>
-            <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
-            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
+            <td class="px-3 py-2 text-right font-mono font-bold whitespace-nowrap bpjs-group-total-ppu col-group-ppu row-total-ppu">Rp 0</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="ppu">Rp 0</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="bpu">Rp 0</td>
+            <td class="bpjs-allowance-green px-3 py-2 text-right font-mono bg-green-50/40 whitespace-nowrap" data-allowance="jkn">Rp 0</td>
+            <td class="bpjs-allowance-red px-3 py-2 text-right font-mono bg-red-50/40 whitespace-nowrap" data-allowance="kary_jht">Rp 0</td>
+            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="kary_jkn">Rp 0</td>
+            <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0</td>
+            <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0</td>
             <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>
-            <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
+            <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${displayNumber(subVal)}</td>
             <td class="px-4 py-3 text-center align-middle">
                 <button type="button" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-all btn-remove mt-1" title="Hapus Baris">
                     <i class="fas fa-trash"></i>
@@ -428,7 +431,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         
         const updateSubtotal = () => {
             BpjsJknColumns.syncRow(tr);
-            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, formatNumber);
+            BpjsPerformance.updateGroupTotals(tr, parseIdNumber, displayNumber);
             const kes = parseIdNumber(inputKes.value);
             const ket = parseIdNumber(inputKet.value);
             const jhtB = parseIdNumber(inputJhtBiaya.value);
@@ -437,7 +440,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             const jkm = parseIdNumber(inputJkm.value);
             const jpB = parseIdNumber(inputJpBiaya.value);
             const jpH = parseIdNumber(inputJpHutang.value);
-            subtotalText.textContent = 'Rp ' + formatNumber(kes + ket + jhtB + jhtH + jkk + jkm + jpB + jpH);
+            subtotalText.textContent = 'Rp ' + displayNumber(kes + ket + jhtB + jhtH + jkk + jkm + jpB + jpH);
             if (!isGenerating) pendingUpdate.schedule();
         };
 
@@ -466,7 +469,7 @@ document.addEventListener('DOMContentLoaded', async function() {
 
         function updateInfoBadgeJkn(kId) {
             const karyawan = findKaryawan(kId);
-            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, formatNumber);
+            BpjsPerformance.updateEmployeeInfo(tr, karyawan, parseIdNumber, displayNumber);
         }
 
         function calculateBpjsForKaryawan(kId, tipeJkn) {
