@@ -52,13 +52,13 @@ class PembayaranPranotaObAntarGudangAkunMemoTest extends TestCase
 
         $journal = [];
         $service = $this->mock(CoaTransactionService::class);
-        $service->shouldReceive('recordTransaction')->times(6)
+        $service->shouldReceive('recordTransaction')->times(10)
             ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan, $coaId) use (&$journal) {
                 $journal[] = ['coa_id' => $coaId, 'debit' => $debit, 'kredit' => $kredit, 'keterangan' => $keterangan];
 
                 return new CoaTransaction;
             });
-        $service->shouldReceive('deleteTransactionByReference')->once()->andReturn(true);
+        $service->shouldReceive('deleteTransactionByReference')->twice()->andReturn(true);
         $controller = new PembayaranPranotaObAntarGudangController($service);
         $data = [
             'nomor_pembayaran' => 'PY-AG-TEST', 'debit_kredit' => 'credit', 'akun_bank_id' => 3,
@@ -86,5 +86,17 @@ class PembayaranPranotaObAntarGudangAkunMemoTest extends TestCase
 
         $this->assertSame('Biaya bongkar revisi', $payment->fresh()->akunItems->last()->memo);
         $this->assertStringContainsString('Biaya bongkar revisi', $journal[4]['keterangan']);
+
+        DB::table('akun_coa')->insert(['id' => 4, 'nama_akun' => 'Piutang Lain-Lain']);
+        $data['akun_items'][] = ['akun_coa_id' => 4, 'nominal' => 100000, 'memo' => 'Potongan utang supir'];
+        $controller->update(Request::create('/pembayaran-pranota-ob-antar-gudang/'.$payment->id, 'PUT', $data), $payment->id);
+
+        $this->assertEquals(2380000, $payment->fresh()->total_pembayaran);
+        $this->assertEquals(2280000, $payment->fresh()->total_setelah_penyesuaian);
+        $this->assertEquals([1, 2, 4, 3], array_slice(array_column($journal, 'coa_id'), -4));
+        $this->assertEquals(2380000, array_sum(array_column(array_slice($journal, -4), 'debit')));
+        $this->assertEquals(2380000, array_sum(array_column(array_slice($journal, -4), 'kredit')));
+        $this->assertEquals(100000, $journal[8]['kredit']);
+        $this->assertEquals(2280000, $journal[9]['kredit']);
     }
 }

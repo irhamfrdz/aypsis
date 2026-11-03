@@ -4,12 +4,13 @@
         : [['akun_coa_id' => $pembayaran->akun_coa_id ?? '', 'nominal' => isset($pembayaran) ? (float) $pembayaran->total_setelah_penyesuaian + (float) $pembayaran->dp_amount : '', 'memo' => '']]);
     $dpNominal = isset($pembayaran) ? (float) $pembayaran->dp_amount : (float) $selectedDps->sum('dp_amount');
     $dpAccountDefault = isset($pembayaran) ? $pembayaran->defaultAkunDpId() : ($selectedDps->pluck('akun_coa_id')->filter()->unique()->count() === 1 ? $selectedDps->pluck('akun_coa_id')->filter()->first() : null);
+    $existingPiutang = isset($pembayaran) ? $pembayaran->akunItems->filter(fn ($item) => $item->akunCoa?->isPiutangLainLain())->sum('nominal') : 0;
 @endphp
-<div class="bg-white border border-gray-200 rounded-lg p-3 space-y-3" id="akun-items-section" data-dp="{{ $dpNominal }}">
+<div class="bg-white border border-gray-200 rounded-lg p-3 space-y-3" id="akun-items-section" data-dp="{{ $dpNominal }}" @isset($pembayaran) data-base-total="{{ (float) $pembayaran->total_pembayaran + $existingPiutang }}" @endisset>
     <div class="flex items-center justify-between">
         <div>
             <h4 class="text-sm font-semibold text-gray-800">Rincian Akun Biaya</h4>
-            <p class="text-xs text-gray-500">Isi nominal per akun sebelum potongan DP. Jumlahnya harus sama dengan total biaya ditambah penyesuaian.</p>
+            <p class="text-xs text-gray-500">Isi nominal biaya sebelum potongan DP. Jumlah biaya harus sama dengan total biaya ditambah penyesuaian.@isset($pembayaran) Nominal Piutang Lain-Lain mengurangi pembayaran dari Bank/Kas.@endisset</p>
         </div>
         <button type="button" id="add-akun-item" class="text-xs text-indigo-600 hover:text-indigo-800">+ Tambah Akun</button>
     </div>
@@ -20,7 +21,7 @@
                     <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select {{ $inputClasses }} flex-1 min-w-48" required>
                         <option value="">-- Pilih Akun Biaya --</option>
                         @foreach($akunBiaya as $akun)
-                            <option value="{{ $akun->id }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            <option value="{{ $akun->id }}" data-piutang-lain-lain="{{ isset($pembayaran) && $akun->isPiutangLainLain() ? '1' : '0' }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
                         @endforeach
                     </select>
                     <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-item-nominal {{ $inputClasses }} w-40" min="0.01" step="0.01" placeholder="Nominal sebelum DP" value="{{ $row['nominal'] ?? '' }}" required>
@@ -31,8 +32,9 @@
         @endforeach
     </div>
     <div class="grid grid-cols-1 md:grid-cols-3 gap-2 text-xs border-t pt-2">
-        <div>Total akun sebelum DP: <strong id="akun-total">Rp 0</strong></div>
+        <div>Total akun biaya sebelum DP: <strong id="akun-total">Rp 0</strong></div>
         <div>Potongan DP: <strong>Rp {{ number_format($dpNominal, 0, ',', '.') }}</strong></div>
+        @isset($pembayaran)<div>Potongan Piutang Lain-Lain: <strong id="akun-piutang">Rp 0</strong></div>@endisset
         <div>Yang dibayar dari Bank/Kas: <strong id="akun-kas">Rp 0</strong></div>
     </div>
     @if($dpNominal > 0)
@@ -75,6 +77,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     window.initializePranotaObAkunSelects = initializeSearchableAccounts;
     const expected = () => {
+        if (section.dataset.baseTotal !== undefined) {
+            const penyesuaian = Number((document.getElementById('penyesuaian')?.value || '0').replace(/\./g, '').replace(',', '.')) || 0;
+            return Number(section.dataset.baseTotal) + dp + penyesuaian;
+        }
         const biayaPranota = document.getElementById('total-biaya');
         if (biayaPranota) {
             const biaya = Number(biayaPranota.textContent.replace(/[^0-9-]/g, '')) || 0;
@@ -95,10 +101,13 @@ document.addEventListener('DOMContentLoaded', function () {
             row.querySelector('.akun-item-nominal').name = `akun_items[${index}][nominal]`;
             row.querySelector('.akun-item-memo').name = `akun_items[${index}][memo]`;
         });
-        const total = rows.reduce((sum, row) => sum + (Number(row.querySelector('.akun-item-nominal').value) || 0), 0);
+        const piutang = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? (Number(row.querySelector('.akun-item-nominal').value) || 0) : 0), 0);
+        const total = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? 0 : (Number(row.querySelector('.akun-item-nominal').value) || 0)), 0);
         document.getElementById('akun-total').textContent = format(total);
-        document.getElementById('akun-kas').textContent = format(total - dp);
+        if (document.getElementById('akun-piutang')) document.getElementById('akun-piutang').textContent = format(piutang);
+        document.getElementById('akun-kas').textContent = format(total - dp - piutang);
         document.getElementById('akun-total').classList.toggle('text-red-600', Math.abs(total - expected()) > 0.01);
+        window.updatePranotaObReceivableTotal?.(piutang);
         window.updatePranotaObJournalPreview?.();
     }
     window.updatePranotaObAkunItems = update;
@@ -134,9 +143,10 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     document.getElementById('pembayaranForm').addEventListener('submit', event => {
         update();
-        const total = [...list.querySelectorAll('.akun-item-nominal')].reduce((sum, input) => sum + (Number(input.value) || 0), 0);
+        const total = [...list.querySelectorAll('.akun-item-row')].reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? 0 : (Number(row.querySelector('.akun-item-nominal').value) || 0)), 0);
+        const piutang = [...list.querySelectorAll('.akun-item-row')].reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? (Number(row.querySelector('.akun-item-nominal').value) || 0) : 0), 0);
         const ids = [...list.querySelectorAll('.akun-item-select')].map(select => select.value);
-        if (Math.abs(total - expected()) > 0.01 || ids.some(id => !id)) {
+        if (Math.abs(total - expected()) > 0.01 || total - dp - piutang < -0.01 || ids.some(id => !id)) {
             event.preventDefault();
             alert('Periksa akun biaya dan nominalnya. Jumlah harus sama dengan total biaya sebelum DP, termasuk penyesuaian.');
         }

@@ -10,6 +10,11 @@ class Coa extends Model
 {
     use Auditable;
 
+    public function isPiutangLainLain(): bool
+    {
+        return (bool) preg_match('/\bpiutang[\s-]+lain[\s-]+lain\b/i', $this->nama_akun ?? '');
+    }
+
     protected $table = 'akun_coa';
 
     protected $fillable = [

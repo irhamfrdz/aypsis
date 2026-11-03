@@ -148,6 +148,12 @@
             window.updateAntarGudangAkunItems?.();
         }
 
+        window.updateAntarGudangBankTotal = function (piutang) {
+            const total = parseFloat(totalTagihanInput.getAttribute('data-amount')) || 0;
+            const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
+            totalSetelahPenyesuaianDisplay.value = formatRupiah(total + penyesuaian - piutang);
+        };
+
         penyesuaianInput.addEventListener('input', recalculate);
     });
 </script>

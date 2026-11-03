@@ -435,12 +435,19 @@ class PembayaranPranotaObController extends Controller
                 }
             } else {
                 // If no breakdown, keep original total
-                $totalPembayaran = $pembayaran->total_pembayaran;
+                $totalPembayaran = (float) $pembayaran->total_pembayaran
+                    + $pembayaran->akunItems()->with('akunCoa')->get()
+                        ->filter(fn ($item) => $item->akunCoa?->isPiutangLainLain())->sum('nominal');
             }
             $akunItems = collect($validated['akun_items']);
-            $totalAkun = $akunItems->sum(fn ($item) => (float) $item['nominal']);
+            $coaById = Coa::whereIn('id', $akunItems->pluck('akun_coa_id'))->get()->keyBy('id');
+            $piutang = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? (float) $item['nominal'] : 0);
+            $totalAkun = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? 0 : (float) $item['nominal']);
             if (abs($totalAkun - ($totalPembayaran + $penyesuaian + (float) $pembayaran->dp_amount)) > 0.01) {
                 throw new \Exception('Jumlah nominal per akun harus sama dengan total tagihan ditambah penyesuaian dan DP.');
+            }
+            if ($totalPembayaran + $penyesuaian - $piutang < -0.01) {
+                throw new \Exception('Potongan Piutang Lain-Lain melebihi jumlah yang harus dibayar.');
             }
             $akunDpId = ! empty($validated['akun_dp_id']) ? $validated['akun_dp_id'] : $pembayaran->defaultAkunDpId();
             if ($pembayaran->dp_amount > 0 && ! $akunDpId) {
@@ -453,9 +460,9 @@ class PembayaranPranotaObController extends Controller
                 'tanggal_kas' => $validated['tanggal_kas'],
                 'bank' => \App\Models\Coa::find($request->akun_bank_id)?->nama_akun ?? ($validated['bank'] ?? null),
                 'jenis_transaksi' => $request->input('debit_kredit', $validated['jenis_transaksi'] ?? null),
-                'total_pembayaran' => $totalPembayaran,
+                'total_pembayaran' => $totalPembayaran - $piutang,
                 'penyesuaian' => $penyesuaian,
-                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
+                'total_setelah_penyesuaian' => $totalPembayaran + $penyesuaian - $piutang,
                 'alasan_penyesuaian' => $validated['alasan_penyesuaian'] ?? null,
                 'keterangan' => $validated['keterangan'] ?? null,
                 'breakdown_supir' => ! empty($breakdownSupir) ? $breakdownSupir : null,
@@ -570,7 +577,8 @@ class PembayaranPranotaObController extends Controller
         $items = $pembayaran->akunItems;
         $legacy = $items->isEmpty();
         $totalKas = (float) ($pembayaran->total_setelah_penyesuaian ?? $pembayaran->total_pembayaran);
-        if ($totalKas < 0 || (! $legacy && abs($items->sum(fn ($item) => (float) $item->nominal) - $totalKas - (float) $pembayaran->dp_amount) > 0.01)) {
+        $piutang = $items->sum(fn ($item) => $item->akunCoa?->isPiutangLainLain() ? (float) $item->nominal : 0);
+        if ($totalKas < 0 || (! $legacy && abs($items->sum(fn ($item) => (float) $item->nominal) - 2 * $piutang - $totalKas - (float) $pembayaran->dp_amount) > 0.01)) {
             throw new \RuntimeException('Rincian akun, potongan DP, dan nominal pembayaran tidak seimbang.');
         }
         $tanggal = $pembayaran->tanggal_kas->format('Y-m-d');
@@ -590,7 +598,7 @@ class PembayaranPranotaObController extends Controller
             if (filled($item->memo ?? null)) {
                 $itemKeterangan .= ' | Memo: '.trim($item->memo);
             }
-            $this->recordJournalLine($akun, (float) $item->nominal, $isCredit, $pembayaran, $tanggal, $itemKeterangan);
+            $this->recordJournalLine($akun, (float) $item->nominal, $akun->isPiutangLainLain() ? ! $isCredit : $isCredit, $pembayaran, $tanggal, $itemKeterangan);
         }
 
         if (! $legacy && (float) $pembayaran->dp_amount > 0) {
@@ -693,7 +701,9 @@ class PembayaranPranotaObController extends Controller
             // Update main payment record
             $penyesuaian = $pembayaranPranotaOb->penyesuaian ?? 0;
             $deductions = collect($finalBreakdown)->sum(fn ($row) => (float) $row['potongan_utang'] + (float) $row['potongan_tabungan'] + (float) $row['potongan_bpjs']);
-            $totalPembayaran = $newTotal - (float) $pembayaranPranotaOb->dp_amount - $deductions;
+            $akunItems = $pembayaranPranotaOb->akunItems()->with('akunCoa')->orderBy('id')->get();
+            $piutang = $akunItems->sum(fn ($item) => $item->akunCoa?->isPiutangLainLain() ? (float) $item->nominal : 0);
+            $totalPembayaran = $newTotal - (float) $pembayaranPranotaOb->dp_amount - $deductions - $piutang;
             $pembayaranPranotaOb->update([
                 'total_pembayaran' => $totalPembayaran,
                 'total_biaya_pranota' => $newTotal,
@@ -701,11 +711,14 @@ class PembayaranPranotaObController extends Controller
                 'breakdown_supir' => $finalBreakdown,
                 'updated_by' => Auth::id(),
             ]);
-            $akunItems = $pembayaranPranotaOb->akunItems()->orderBy('id')->get();
             if ($akunItems->isNotEmpty()) {
                 $selisih = $totalPembayaran + (float) $penyesuaian + (float) $pembayaranPranotaOb->dp_amount
-                    - $akunItems->sum(fn ($item) => (float) $item->nominal);
-                $akunPertama = $akunItems->first();
+                    - $akunItems->sum(fn ($item) => $item->akunCoa?->isPiutangLainLain() ? 0 : (float) $item->nominal)
+                    + $piutang;
+                $akunPertama = $akunItems->first(fn ($item) => ! $item->akunCoa?->isPiutangLainLain());
+                if (! $akunPertama) {
+                    throw new \RuntimeException('Tambahkan akun biaya sebelum memperbarui total.');
+                }
                 if ((float) $akunPertama->nominal + $selisih <= 0) {
                     throw new \RuntimeException('Nominal akun pertama tidak cukup untuk menampung perubahan total. Edit rincian akun secara manual.');
                 }

@@ -366,10 +366,10 @@
                 return;
             }
             const dp = Number(document.getElementById('akun-items-section').dataset.dp) || 0;
-            const kas = rows.reduce((sum, row) => sum + Number(row.querySelector('input').value), 0) - dp;
+            const kas = rows.reduce((sum, row) => sum + (row.querySelector('select option:checked')?.dataset.piutangLainLain === '1' ? -1 : 1) * Number(row.querySelector('input').value), 0) - dp;
             const biayaSide = direction === 'credit' ? 'DEBIT' : 'KREDIT';
             const kasSide = direction === 'credit' ? 'KREDIT' : 'DEBIT';
-            const lines = rows.map(row => `${biayaSide} ${row.querySelector('select option:checked').textContent.trim()}: Rp ${Number(row.querySelector('input').value).toLocaleString('id-ID')}`);
+            const lines = rows.map(row => `${row.querySelector('select option:checked').dataset.piutangLainLain === '1' ? kasSide : biayaSide} ${row.querySelector('select option:checked').textContent.trim()}: Rp ${Number(row.querySelector('input').value).toLocaleString('id-ID')}`);
             if (dp > 0) lines.push(`${kasSide} Potongan DP (${document.querySelector('#akun_dp_id option:checked')?.textContent.trim() || 'pilih akun'}): Rp ${dp.toLocaleString('id-ID')}`);
             lines.push(`${kasSide} ${bankOption.textContent.trim()}: Rp ${kas.toLocaleString('id-ID')}`);
             journalContent.style.whiteSpace = 'pre-line';
@@ -449,15 +449,30 @@
                 totalGrandTotal += item.grand_total || 0;
             });
             
-            document.getElementById('total-pot-utang').textContent = 'Rp ' + totalPotUtang.toLocaleString('id-ID');
-            document.getElementById('total-pot-tabungan').textContent = 'Rp ' + totalPotTabungan.toLocaleString('id-ID');
-            document.getElementById('total-pot-bpjs').textContent = 'Rp ' + totalPotBpjs.toLocaleString('id-ID');
-            document.getElementById('total-grand-total').textContent = 'Rp ' + totalGrandTotal.toLocaleString('id-ID');
+            if (breakdown.length) {
+                document.getElementById('total-pot-utang').textContent = 'Rp ' + totalPotUtang.toLocaleString('id-ID');
+                document.getElementById('total-pot-tabungan').textContent = 'Rp ' + totalPotTabungan.toLocaleString('id-ID');
+                document.getElementById('total-pot-bpjs').textContent = 'Rp ' + totalPotBpjs.toLocaleString('id-ID');
+                document.getElementById('total-grand-total').textContent = 'Rp ' + totalGrandTotal.toLocaleString('id-ID');
+            }
             
             // Update total pembayaran
-            document.getElementById('total_pembayaran').value = totalGrandTotal.toLocaleString('id-ID');
-            updateTotalAkhir();
+            if (breakdown.length) document.getElementById('akun-items-section').dataset.baseTotal = totalGrandTotal;
+            window.updatePranotaObAkunItems?.();
         }
+
+        function updateReceivableTotal(piutang) {
+            if (piutang === undefined) {
+                piutang = [...document.querySelectorAll('.akun-item-row')].reduce((sum, row) =>
+                    sum + (row.querySelector('select option:checked')?.dataset.piutangLainLain === '1' ? Number(row.querySelector('.akun-item-nominal').value) || 0 : 0), 0);
+            }
+            const base = Number(document.getElementById('akun-items-section').dataset.baseTotal) || 0;
+            document.getElementById('total_pembayaran').value = (base - piutang).toLocaleString('id-ID');
+            const penyesuaian = parseFloat(document.getElementById('penyesuaian').value.replace(/\./g, '').replace(',', '.')) || 0;
+            document.getElementById('total_setelah_penyesuaian').value = (base - piutang + penyesuaian).toLocaleString('id-ID');
+            updateJournalPreview();
+        }
+        window.updatePranotaObReceivableTotal = updateReceivableTotal;
         
         // Add event listeners to potongan inputs
         potonganInputs.forEach(input => {

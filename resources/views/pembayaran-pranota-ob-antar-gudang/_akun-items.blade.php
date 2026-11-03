@@ -7,7 +7,7 @@
     <div class="flex justify-between items-start gap-3 mb-3">
         <div>
             <h4 class="text-sm font-semibold text-gray-800">Rincian Akun Biaya</h4>
-            <p class="text-xs text-gray-500">Isi nominal dan memo/catatan untuk setiap akun. Jumlah nominal harus sama dengan grand total bayar.</p>
+            <p class="text-xs text-gray-500">Jumlah akun biaya harus sama dengan tagihan setelah penyesuaian. Piutang Lain-Lain mengurangi pembayaran Bank/Kas dan dicatat di kredit.</p>
         </div>
         <button type="button" id="add-akun-item" class="text-xs font-semibold text-teal-700 hover:text-teal-900 whitespace-nowrap">+ Tambah Akun</button>
     </div>
@@ -19,7 +19,7 @@
                     <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white" required>
                         <option value="">-- Pilih Akun --</option>
                         @foreach($akunBiaya as $akun)
-                            <option value="{{ $akun->id }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                            <option value="{{ $akun->id }}" data-piutang-lain-lain="{{ $akun->isPiutangLainLain() ? '1' : '0' }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -37,14 +37,19 @@
             </div>
         @endforeach
     </div>
-    <div class="mt-3 text-xs text-gray-700">Total rincian akun: <strong id="akun-items-total">Rp 0</strong></div>
+    <div class="mt-3 text-xs text-gray-700">Total akun biaya: <strong id="akun-items-total">Rp 0</strong> · Potongan Piutang Lain-Lain: <strong id="akun-items-piutang">Rp 0</strong></div>
 </div>
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const list = document.getElementById('akun-items-list');
-    const grandTotal = document.getElementById('total_setelah_penyesuaian_display');
-    const expected = () => Number((grandTotal.value || '0').replace(/[^0-9,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+    const tagihan = document.getElementById('total_tagihan_display');
+    const expected = () => {
+        const total = tagihan.dataset.amount !== undefined
+            ? Number(tagihan.dataset.amount)
+            : Number((tagihan.value || '0').replace(/[^0-9,.-]/g, '').replace(/\./g, '').replace(',', '.'));
+        return (total || 0) + (Number(document.getElementById('penyesuaian').value) || 0);
+    };
     let autoNominal = list.children.length === 1 && !list.querySelector('.akun-item-nominal').value;
 
     function updateAkunItems() {
@@ -57,10 +62,13 @@ document.addEventListener('DOMContentLoaded', function () {
             row.querySelector('.akun-item-nominal').name = `akun_items[${index}][nominal]`;
             row.querySelector('.akun-item-memo').name = `akun_items[${index}][memo]`;
         });
-        const total = rows.reduce((sum, row) => sum + (Number(row.querySelector('.akun-item-nominal').value) || 0), 0);
+        const piutang = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? (Number(row.querySelector('.akun-item-nominal').value) || 0) : 0), 0);
+        const total = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? 0 : (Number(row.querySelector('.akun-item-nominal').value) || 0)), 0);
         const display = document.getElementById('akun-items-total');
         display.textContent = 'Rp ' + total.toLocaleString('id-ID');
+        document.getElementById('akun-items-piutang').textContent = 'Rp ' + piutang.toLocaleString('id-ID');
         display.classList.toggle('text-red-600', Math.abs(total - expected()) > 0.01);
+        window.updateAntarGudangBankTotal?.(piutang);
     }
 
     window.updateAntarGudangAkunItems = updateAkunItems;
@@ -86,11 +94,12 @@ document.addEventListener('DOMContentLoaded', function () {
     list.addEventListener('change', updateAkunItems);
     list.closest('form').addEventListener('submit', function (event) {
         const rows = [...list.querySelectorAll('.akun-item-row')];
-        const total = rows.reduce((sum, row) => sum + (Number(row.querySelector('.akun-item-nominal').value) || 0), 0);
+        const piutang = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? (Number(row.querySelector('.akun-item-nominal').value) || 0) : 0), 0);
+        const total = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? 0 : (Number(row.querySelector('.akun-item-nominal').value) || 0)), 0);
         const ids = rows.map(row => row.querySelector('.akun-item-select').value);
-        if (Math.abs(total - expected()) > 0.01 || ids.some(id => !id) || new Set(ids).size !== ids.length) {
+        if (Math.abs(total - expected()) > 0.01 || piutang >= expected() || ids.some(id => !id) || new Set(ids).size !== ids.length) {
             event.preventDefault();
-            alert('Periksa akun biaya dan nominalnya. Jumlah rincian akun harus sama dengan grand total bayar.');
+            alert('Periksa akun biaya dan nominalnya. Jumlah biaya harus sama dengan tagihan setelah penyesuaian, dan potongan piutang harus lebih kecil dari tagihan.');
         }
     });
     updateAkunItems();

@@ -92,8 +92,11 @@ class PembayaranPranotaObAntarGudangController extends Controller
 
             $totalSetelahPenyesuaian = $totalTagihan + $penyesuaian;
             $akunItems = collect($request->input('akun_items'));
-            if ($totalSetelahPenyesuaian <= 0 || abs($akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalSetelahPenyesuaian) > 0.01) {
-                throw new \Exception('Jumlah nominal per akun harus sama dengan grand total bayar.');
+            $coaById = Coa::whereIn('id', $akunItems->pluck('akun_coa_id'))->get()->keyBy('id');
+            $piutang = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? (float) $item['nominal'] : 0);
+            $totalBiaya = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? 0 : (float) $item['nominal']);
+            if ($totalSetelahPenyesuaian <= 0 || abs($totalBiaya - $totalSetelahPenyesuaian) > 0.01 || $piutang >= $totalSetelahPenyesuaian) {
+                throw new \Exception('Jumlah akun biaya harus sama dengan tagihan setelah penyesuaian, dan potongan piutang harus lebih kecil dari tagihan.');
             }
 
             $akunBank = Coa::findOrFail($request->akun_bank_id);
@@ -108,7 +111,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 'tanggal_kas' => $request->tanggal_kas,
                 'total_pembayaran' => $totalTagihan,
                 'penyesuaian' => $penyesuaian,
-                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
+                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian - $piutang,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
@@ -221,8 +224,11 @@ class PembayaranPranotaObAntarGudangController extends Controller
             $penyesuaian = floatval($request->input('penyesuaian', 0));
             $totalSetelahPenyesuaian = floatval($pembayaran->total_pembayaran) + $penyesuaian;
             $akunItems = collect($request->input('akun_items'));
-            if ($totalSetelahPenyesuaian <= 0 || abs($akunItems->sum(fn ($item) => (float) $item['nominal']) - $totalSetelahPenyesuaian) > 0.01) {
-                throw new \Exception('Jumlah nominal per akun harus sama dengan grand total bayar.');
+            $coaById = Coa::whereIn('id', $akunItems->pluck('akun_coa_id'))->get()->keyBy('id');
+            $piutang = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? (float) $item['nominal'] : 0);
+            $totalBiaya = $akunItems->sum(fn ($item) => $coaById[$item['akun_coa_id']]->isPiutangLainLain() ? 0 : (float) $item['nominal']);
+            if ($totalSetelahPenyesuaian <= 0 || abs($totalBiaya - $totalSetelahPenyesuaian) > 0.01 || $piutang >= $totalSetelahPenyesuaian) {
+                throw new \Exception('Jumlah akun biaya harus sama dengan tagihan setelah penyesuaian, dan potongan piutang harus lebih kecil dari tagihan.');
             }
 
             $akunBank = Coa::findOrFail($request->akun_bank_id);
@@ -233,7 +239,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
                 'jenis_transaksi' => $request->debit_kredit,
                 'tanggal_kas' => $request->tanggal_kas,
                 'penyesuaian' => $penyesuaian,
-                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
+                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian - $piutang,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'akun_coa_id' => $akunItems->first()['akun_coa_id'],
@@ -319,7 +325,8 @@ class PembayaranPranotaObAntarGudangController extends Controller
     {
         $items = $pembayaran->akunItems;
         $total = (float) $pembayaran->total_setelah_penyesuaian;
-        if ($total <= 0 || abs($items->sum(fn ($item) => (float) $item->nominal) - $total) > 0.01) {
+        $piutang = $items->sum(fn ($item) => $item->akunCoa?->isPiutangLainLain() ? (float) $item->nominal : 0);
+        if ($total <= 0 || abs($items->sum(fn ($item) => (float) $item->nominal) - 2 * $piutang - $total) > 0.01) {
             throw new \RuntimeException('Rincian akun tidak seimbang dengan total pembayaran.');
         }
 
@@ -334,7 +341,7 @@ class PembayaranPranotaObAntarGudangController extends Controller
             $this->recordJournalLine(
                 $akun,
                 (float) $item->nominal,
-                $debitBiaya,
+                $akun->isPiutangLainLain() ? ! $debitBiaya : $debitBiaya,
                 $pembayaran,
                 $tanggal,
                 $memo === '' ? $keterangan : $keterangan.' | Memo akun: '.$memo

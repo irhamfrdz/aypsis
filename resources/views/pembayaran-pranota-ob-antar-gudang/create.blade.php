@@ -197,6 +197,11 @@
         const totalTagihanDisplay = document.getElementById('total_tagihan_display');
         const penyesuaianInput = document.getElementById('penyesuaian');
         const totalSetelahPenyesuaianDisplay = document.getElementById('total_setelah_penyesuaian_display');
+        window.updateAntarGudangBankTotal = function (piutang) {
+            const total = Number((totalTagihanDisplay.value || '0').replace(/[^0-9,.-]/g, '').replace(/\./g, '').replace(',', '.')) || 0;
+            const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
+            totalSetelahPenyesuaianDisplay.value = `Rp ${(total + penyesuaian - piutang).toLocaleString('id-ID')}`;
+        };
 
         function formatRupiah(amount) {
             return 'Rp ' + new Intl.NumberFormat('id-ID').format(amount);
