@@ -7,6 +7,7 @@ use App\Models\BiayaKapalAir;
 use App\Models\BiayaKapalBarang;
 use App\Models\BiayaKapalLabuhTambat;
 use App\Models\BiayaKapalMeratus;
+use App\Models\BiayaKapalMeratusStage;
 use App\Models\BiayaKapalOperasional;
 use App\Models\BiayaKapalPerijinan;
 use App\Models\BiayaKapalPerijinanKarantina;
@@ -16,7 +17,6 @@ use App\Models\BiayaKapalTanggalBayar;
 use App\Models\BiayaKapalTanto;
 use App\Models\BiayaKapalTemas;
 use App\Models\BiayaKapalTemasStage;
-use App\Models\BiayaKapalMeratusStage;
 use App\Models\BiayaKapalTkbm;
 use App\Models\BiayaKapalTrucking;
 use App\Models\Karyawan;
@@ -1311,8 +1311,9 @@ class BiayaKapalController extends Controller
                 if (empty($validated[$field])) {
                     // Cek batam_shared terlebih dahulu (UI baru)
                     $batamSharedFallback = $request->input('batam_shared', []);
-                    if (!empty($batamSharedFallback[$field])) {
+                    if (! empty($batamSharedFallback[$field])) {
                         $validated[$field] = $batamSharedFallback[$field];
+
                         continue;
                     }
                     foreach ($sectionTypes as $secType) {
@@ -2292,7 +2293,7 @@ class BiayaKapalController extends Controller
                             $allSectionNominals[$sectionIndex] = $nominal + $adjustment;
                         }
                         $grandSubtotal = array_sum($allSectionNominals);
-                        $useBatamShared = !empty($batamShared);
+                        $useBatamShared = ! empty($batamShared);
                         $sharedPphAmountTotal = $useBatamShared ? round($grandSubtotal * $sharedPphPercent / 100) : 0;
 
                         foreach ($sections as $sectionIndex => $section) {

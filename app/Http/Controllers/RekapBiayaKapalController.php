@@ -7,8 +7,8 @@ use App\Models\BiayaKapal;
 use App\Models\Gudang;
 use App\Models\PranotaObMuatTemas;
 use App\Services\RekapBlService;
-use App\Services\RekapUangRitService;
 use App\Services\RekapTruckingService;
+use App\Services\RekapUangRitService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -136,6 +136,7 @@ class RekapBiayaKapalController extends Controller
                     'biaya_cents' => (int) round((float) $detail->subtotal * $selectedRatio * 100),
                     'adjustment_cents' => 0,
                 ]);
+
                 continue;
             }
             $key = $size.'|'.$status;
@@ -237,6 +238,7 @@ class RekapBiayaKapalController extends Controller
                 $rates[$key]['subtotal'] = ($rates[$key]['subtotal'] ?? 0) + (float) $detail->subtotal;
                 $rates[$key]['jumlah'] = ($rates[$key]['jumlah'] ?? 0) + (float) $detail->jumlah;
                 $rates[$key]['label'] = $name;
+
                 continue;
             }
             $rows->push([
@@ -359,6 +361,7 @@ class RekapBiayaKapalController extends Controller
                             'biaya' => ($totalCents - $allocated) / 100,
                         ]);
                     }
+
                     continue;
                 }
             }
@@ -1079,6 +1082,7 @@ class RekapBiayaKapalController extends Controller
                                 ($bucket === 'common' ? $common : $selected)->{$relation}->push($copy);
                             }
                         }
+
                         continue;
                     }
                     $manifestShares = null;
@@ -1235,19 +1239,27 @@ class RekapBiayaKapalController extends Controller
         if ($receiptNumbers->isNotEmpty()) {
             foreach ([\App\Models\TandaTerima::class, \App\Models\TandaTerimaBatam::class] as $receiptModel) {
                 foreach ($receiptModel::whereIn('no_surat_jalan', $receiptNumbers)->get(['no_surat_jalan', 'jenis_barang']) as $receipt) {
-                    if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_surat_jalan] = $receipt->jenis_barang;
+                    if (filled($receipt->jenis_barang)) {
+                        $receiptTypes[$receipt->no_surat_jalan] = $receipt->jenis_barang;
+                    }
                 }
             }
             foreach ([\App\Models\TandaTerimaTanpaSuratJalan::class, \App\Models\TandaTerimaTanpaSuratJalanBatam::class] as $receiptModel) {
                 foreach ($receiptModel::whereIn('nomor_tanda_terima', $receiptNumbers)->get(['nomor_tanda_terima', 'jenis_barang']) as $receipt) {
-                    if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->nomor_tanda_terima] = $receipt->jenis_barang;
+                    if (filled($receipt->jenis_barang)) {
+                        $receiptTypes[$receipt->nomor_tanda_terima] = $receipt->jenis_barang;
+                    }
                 }
             }
             foreach (\App\Models\TandaTerimaTanpaSuratJalan::whereIn('no_tanda_terima', $receiptNumbers)->get(['no_tanda_terima', 'jenis_barang']) as $receipt) {
-                if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+                if (filled($receipt->jenis_barang)) {
+                    $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+                }
             }
             foreach (\App\Models\TandaTerimaTanpaSuratJalanBatam::whereIn('no_tanda_terima', $receiptNumbers)->get(['no_tanda_terima', 'jenis_barang']) as $receipt) {
-                if (filled($receipt->jenis_barang)) $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+                if (filled($receipt->jenis_barang)) {
+                    $receiptTypes[$receipt->no_tanda_terima] = $receipt->jenis_barang;
+                }
             }
         }
         foreach ($manifestRecords as $record) {

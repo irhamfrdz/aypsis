@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Absensi;
 use App\Models\HariLibur;
 use App\Models\Karyawan;
 use App\Models\UangLembur;
@@ -617,6 +616,7 @@ class PerhitunganLemburController extends Controller
                     'tanggal_lembur' => [],
                     'detail' => [],
                 ];
+
                 continue;
             }
 
@@ -781,7 +781,7 @@ class PerhitunganLemburController extends Controller
             $results[$karyawan->id] = [
                 'karyawan_id' => $karyawan->id,
                 'total_jam' => $totalJam,
-                'jam_lembur' => $totalJam . ' Jam',
+                'jam_lembur' => $totalJam.' Jam',
                 'nominal_lembur' => $totalNominal,
                 'uang_makan_lembur' => $totalUangMakanLembur,
                 'nominal_awal' => $grandTotal,

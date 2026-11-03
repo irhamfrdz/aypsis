@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Mobil;
 use App\Models\GpsDailyDistance;
+use App\Models\Mobil;
 use App\Services\GpsIdService;
 use Illuminate\Http\Request;
 

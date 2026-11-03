@@ -2879,6 +2879,7 @@ class ObController extends Controller
             // Check if already processed
             if ($naikKapal->sudah_ob) {
                 DB::rollBack();
+
                 return response()->json([
                     'success' => false,
                     'message' => 'Kontainer ini sudah ditandai OB',

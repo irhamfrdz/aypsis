@@ -20,7 +20,6 @@ return [
             // Pranota
             'pranota.index', 'pranota.show', 'pranota.create', 'pranota.edit',
 
-
             // Laporan
             'laporan.index',
         ],
@@ -36,7 +35,6 @@ return [
             // Pranota operations
             'pranota.index', 'pranota.create',
 
-
             'biaya-bensin-view', 'biaya-bensin-create',
         ],
     ],
@@ -50,7 +48,6 @@ return [
 
             // Full pranota access
             'pranota.index', 'pranota.show', 'pranota.create', 'pranota.edit',
-
 
             'biaya-bensin-view', 'biaya-bensin-create', 'biaya-bensin-update', 'biaya-bensin-delete',
 

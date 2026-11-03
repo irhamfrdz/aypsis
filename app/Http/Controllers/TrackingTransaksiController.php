@@ -8,8 +8,8 @@ use App\Models\Manifest;
 use App\Models\NaikKapal;
 use App\Models\Prospek;
 use App\Models\SuratJalan;
-use App\Models\SuratJalanBongkaranBatam;
 use App\Models\SuratJalanBongkaran;
+use App\Models\SuratJalanBongkaranBatam;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
@@ -93,7 +93,7 @@ class TrackingTransaksiController extends Controller
             foreach ($types as $key => $config) {
                 $records = $config['model']::query()
                     ->where(function ($query) use ($config, $number) {
-                    foreach ($config['columns'] as $column) {
+                        foreach ($config['columns'] as $column) {
                             $query->orWhere($column, 'like', '%'.$number.'%');
                         }
                     })

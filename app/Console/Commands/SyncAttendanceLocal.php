@@ -5,8 +5,8 @@ namespace App\Console\Commands;
 use App\Models\Absensi;
 use App\Models\Karyawan;
 use App\Models\Mesin;
-use App\Services\ZkTecoService;
 use App\Services\AbsensiDeletionGuard;
+use App\Services\ZkTecoService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 

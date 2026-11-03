@@ -21,6 +21,7 @@ class GpsDailyDistanceService
         foreach ($points as $point) {
             if (! $this->validCoordinates($point->lat, $point->lng)) {
                 $previous = null;
+
                 continue;
             }
 

@@ -46,6 +46,7 @@ class PranotaLemburEmployeeService
                 foreach ($detail->tanggal_lembur as $date) {
                     $excluded[$detail->karyawan_id][$date] = true;
                 }
+
                 continue;
             }
             $header = $detail->pranotaLemburKaryawanHeader;
@@ -65,6 +66,7 @@ class PranotaLemburEmployeeService
             if (! $result || $result['total_jam'] <= 0 || empty($result['tanggal_lembur'])) {
                 return null;
             }
+
             return array_merge($result, ['nama_lengkap' => $employee->nama_lengkap, 'nik' => $employee->nik]);
         })->filter()->values();
     }

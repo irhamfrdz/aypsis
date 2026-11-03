@@ -26,6 +26,11 @@ class PranotaBpjsHeader extends Model
         return $this->hasMany(PranotaBpjsDetail::class, 'pranota_bpjs_header_id');
     }
 
+    public function pembayaran()
+    {
+        return $this->belongsToMany(PembayaranPranotaBpjs::class, 'pembayaran_pranota_bpjs_items', 'pranota_bpjs_header_id', 'pembayaran_pranota_bpjs_id')->withPivot('subtotal')->withTimestamps();
+    }
+
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');

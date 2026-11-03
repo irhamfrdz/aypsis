@@ -228,6 +228,8 @@
                                         <i class="fas fa-circle text-amber-400" style="font-size:6px"></i>
                                         Draft
                                     </span>
+                                @elseif($pranota->status == 'paid')
+                                    <span class="inline-flex bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">Lunas</span>
                                 @elseif($pranota->status == 'approved')
                                     <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                                         <i class="fas fa-circle text-green-400" style="font-size:6px"></i>
@@ -244,6 +246,11 @@
                             {{-- Aksi --}}
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1">
+                                    @can('pembayaran-pranota-bpjs-create')
+                                        @if(in_array($pranota->status, ['draft', 'approved', 'unpaid']) && $pranota->grand_total > 0)
+                                            <a href="{{ route('pembayaran-pranota-bpjs.create', ['pranota_id' => $pranota->id]) }}" title="Bayar Pranota" class="inline-flex items-center justify-center w-7 h-7 rounded bg-green-50 text-green-700"><i class="fas fa-money-bill-wave text-xs"></i></a>
+                                        @endif
+                                    @endcan
                                     @can('pranota-bpjs-view')
                                         <a href="{{ route('pranota-bpjs.show', $pranota->id) }}"
                                            title="Detail"

@@ -188,6 +188,7 @@ class RekapBlService
                 if (str_contains($type, 'LCL')) {
                     $container['category'] = 'LCL';
                     $lclContainers->put($number, $container);
+
                     continue;
                 }
                 if (str_contains($type, 'BOOKING') || $bookings->has($number)) {

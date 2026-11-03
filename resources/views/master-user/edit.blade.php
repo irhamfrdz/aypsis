@@ -4547,6 +4547,13 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            <tr class="module-row" data-module="pembayaran-pranota-bpjs">
+                                <td class="module-header"><div class="font-semibold">Pembayaran Pranota BPJS</div><div class="text-xs text-gray-500">Pelunasan pranota BPJS dan riwayat pembayaran</div></td>
+                                @foreach(['view', 'create'] as $action)
+                                <td class="text-center"><input type="checkbox" name="permissions[pembayaran-pranota-bpjs][{{ $action }}]" value="1" class="permission-checkbox" @checked(old('permissions.pembayaran-pranota-bpjs.'.$action, $user && $user->can('pembayaran-pranota-bpjs-'.$action)))></td>
+                                @endforeach
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
                             {{-- Kwitansi --}}
                             <tr class="module-row" data-module="kwitansi">
                                 <td class="module-header">

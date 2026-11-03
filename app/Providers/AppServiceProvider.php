@@ -65,10 +65,12 @@ class AppServiceProvider extends ServiceProvider
                         // Interoperabilitas antara pranota-lolo-batam dan tagihan-lolo-batam
                         if (str_starts_with($permission->name, 'pranota-lolo-batam-')) {
                             $alt = str_replace('pranota-lolo-batam-', 'tagihan-lolo-batam-', $permission->name);
+
                             return $user->permissions()->where('name', $alt)->exists();
                         }
                         if (str_starts_with($permission->name, 'tagihan-lolo-batam-')) {
                             $alt = str_replace('tagihan-lolo-batam-', 'pranota-lolo-batam-', $permission->name);
+
                             return $user->permissions()->where('name', $alt)->exists();
                         }
 

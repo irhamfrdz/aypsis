@@ -18,5 +18,4 @@ class Pembayaran extends Model
         'metode_pembayaran',
         'catatan_pembayaran',
     ];
-
 }

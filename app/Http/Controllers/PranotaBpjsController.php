@@ -362,6 +362,12 @@ class PranotaBpjsController extends Controller
         try {
             DB::beginTransaction();
 
+            $pranota_bpj = PranotaBpjsHeader::whereKey($pranota_bpj->id)->lockForUpdate()->firstOrFail();
+            if ($pranota_bpj->status !== 'draft') {
+                DB::rollBack();
+
+                return redirect()->route('pranota-bpjs.index')->with('error', 'Pranota sudah diproses dan tidak dapat diedit.');
+            }
             $pranota_bpj->update([
                 'tanggal_pranota' => $request->tanggal_pranota,
                 'periode_bulan' => $request->periode_bulan,
@@ -467,6 +473,12 @@ class PranotaBpjsController extends Controller
         try {
             DB::beginTransaction();
             // Hapus permanen detail terlebih dahulu
+            $pranota_bpj = PranotaBpjsHeader::whereKey($pranota_bpj->id)->lockForUpdate()->firstOrFail();
+            if ($pranota_bpj->status !== 'draft') {
+                DB::rollBack();
+
+                return redirect()->route('pranota-bpjs.index')->with('error', 'Pranota sudah diproses dan tidak dapat dihapus.');
+            }
             $pranota_bpj->details()->forceDelete();
             // Hapus permanen header dari database
             $pranota_bpj->forceDelete();

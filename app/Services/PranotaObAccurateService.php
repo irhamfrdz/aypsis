@@ -17,8 +17,7 @@ class PranotaObAccurateService
             ->select('pranota_obs.id', 'pranota_obs.tanggal_ob', 'pranota_obs.no_voyage', 'pranota_ob_items.supir')->get();
         $idsByRow = $sourceRows->groupBy(fn ($row) => $this->key($row))->map(fn ($rows) => $rows->pluck('id')->unique()->all());
         $reportIds = $sourceRows->pluck('id')->unique()->all();
-        $payments = DB::table('pembayaran_pranota_obs')->get()->filter(fn ($payment) =>
-            ! in_array(strtolower($payment->status ?? ''), ['cancelled', 'dibatalkan', 'rejected'])
+        $payments = DB::table('pembayaran_pranota_obs')->get()->filter(fn ($payment) => ! in_array(strtolower($payment->status ?? ''), ['cancelled', 'dibatalkan', 'rejected'])
             && count(array_intersect($reportIds, $this->ids($payment->pranota_ob_ids))) > 0);
         $referencedDpIds = $payments->flatMap(fn ($payment) => $this->ids($payment->pembayaran_ob_ids ?? null, $payment->pembayaran_ob_id ?? null))->unique()->all();
         $dps = DB::table('pembayaran_obs')->where(function ($query) use ($items, $referencedDpIds) {

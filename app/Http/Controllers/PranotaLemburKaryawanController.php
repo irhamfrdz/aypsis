@@ -78,6 +78,7 @@ class PranotaLemburKaryawanController extends Controller
                 $sum = $puml->lemburs()->sum('total_setelah_adjustment');
                 $puml->update(['total_lembur' => $sum, 'grand_total' => $puml->total_uang_makan + $sum]);
             }
+
             return $candidates->count();
         });
         $request->session()->flash('success', $count.' karyawan berhasil ditambahkan ke pranota lembur.');
@@ -139,7 +140,7 @@ class PranotaLemburKaryawanController extends Controller
 
         if ($pranota->pranota_puml_id && in_array(optional($pranota->pranotaPuml)->status, ['approved', 'paid'])) {
             return redirect()->route('pranota-lembur-karyawan.show', $id)
-                ->with('error', 'Pranota tidak dapat diedit karena PUML induk sudah ' . $pranota->pranotaPuml->status . '.');
+                ->with('error', 'Pranota tidak dapat diedit karena PUML induk sudah '.$pranota->pranotaPuml->status.'.');
         }
 
         return view('pranota-lembur-karyawan.edit', compact('pranota'));
@@ -337,7 +338,7 @@ class PranotaLemburKaryawanController extends Controller
             }
 
             // Hapus karyawan yang dikeluarkan dari pranota
-            if (!empty($submittedDetailIds)) {
+            if (! empty($submittedDetailIds)) {
                 \App\Models\PranotaLemburKaryawan::where('pranota_lembur_karyawan_header_id', $pranota->id)
                     ->whereNotIn('id', $submittedDetailIds)
                     ->delete();

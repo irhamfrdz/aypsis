@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
 use App\Models\SuratJalan;
-use App\Models\SuratJalanBongkaran;
 use App\Services\PranotaUangRitEligibility;
 use App\Services\RitSuratJalanService;
 use Carbon\Carbon;

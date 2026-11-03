@@ -50,6 +50,7 @@ class UangMakanController extends Controller
         }
         $departemens = Karyawan::whereNotNull('departemen')->distinct()->pluck('departemen')
             ->map(fn ($departemen) => trim($departemen))->filter()->unique()->sort()->values();
+
         return view('uang-makan.index', compact('uangMakans', 'departemens', 'uangMakansPerDepartemen'));
     }
 

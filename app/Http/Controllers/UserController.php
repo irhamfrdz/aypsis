@@ -760,6 +760,7 @@ class UserController extends Controller
                 'pembayaran-pranota-uang-jalan-batam' => 'pembayaran-pranota-uang-jalan-batam',
                 'pembayaran-pranota-uang-jalan' => 'pembayaran-pranota-uang-jalan',
                 'pembayaran-pranota-lembur' => 'pembayaran-pranota-lembur',
+                'pembayaran-pranota-bpjs' => 'pembayaran-pranota-bpjs',
                 'pembayaran-pranota-stock' => 'pembayaran-pranota-stock',
                 'pembayaran-pranota-rit-kenek' => 'pembayaran-pranota-rit-kenek',
                 'pembayaran-pranota-rit' => 'pembayaran-pranota-rit',
@@ -1282,6 +1283,7 @@ class UserController extends Controller
                 if (in_array($action, ['view', 'create', 'update', 'delete'], true)) {
                     $matrixPermissions['master-type-gaji-karyawan'][$action] = true;
                 }
+
                 continue;
             }
 
@@ -3344,6 +3346,7 @@ class UserController extends Controller
                             $permissionIds[] = $permission->id;
                             $found = true;
                         }
+
                         continue;
                     }
 

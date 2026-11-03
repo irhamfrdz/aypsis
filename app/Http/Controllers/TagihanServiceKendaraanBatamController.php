@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\TagihanServiceKendaraanBatam;
-use App\Models\PranotaTagihanLainLainBatam;
 use App\Models\Mobil;
+use App\Models\PranotaTagihanLainLainBatam;
+use App\Models\TagihanServiceKendaraanBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -42,6 +42,7 @@ class TagihanServiceKendaraanBatamController extends Controller
         }
 
         $tagihan = $query->latest('tanggal_service')->latest('id')->paginate(20)->withQueryString();
+
         return view('tagihan-lain-lain-batam.index', compact('tagihan'));
     }
 

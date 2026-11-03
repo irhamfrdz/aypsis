@@ -22,6 +22,15 @@
 
 return [
     'modules' => [
+        'pembayaran-pranota-bpjs' => [
+            'name' => 'Pembayaran Pranota BPJS',
+            'description' => 'Pelunasan dan riwayat pembayaran pranota BPJS',
+            'required' => true,
+            'sub_modules' => [
+                'pembayaran-pranota-bpjs-view' => 'Lihat Pembayaran Pranota BPJS',
+                'pembayaran-pranota-bpjs-create' => 'Buat Pembayaran Pranota BPJS',
+            ],
+        ],
         'dashboard' => [
             'name' => 'Dashboard',
             'description' => 'Akses halaman dashboard',

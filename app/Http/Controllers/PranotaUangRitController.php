@@ -8,8 +8,8 @@ use App\Models\PranotaUangRit;
 use App\Models\PranotaUangRitSupirDetail;
 use App\Models\SuratJalan;
 use App\Models\SuratJalanBongkaran;
-use App\Services\RitSuratJalanService;
 use App\Services\PranotaUangRitEligibility;
+use App\Services\RitSuratJalanService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -417,11 +417,9 @@ class PranotaUangRitController extends Controller
             $usedNumbers = PranotaUangRitEligibility::usedNumbers();
             $usedRegular = array_fill_keys($usedNumbers['regular'], true);
             $usedBongkaran = array_fill_keys($usedNumbers['bongkaran'], true);
-            $regularUnavailable = $selectedRegular->contains(fn ($suratJalan) =>
-                $suratJalan->status_pembayaran_uang_rit !== SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
+            $regularUnavailable = $selectedRegular->contains(fn ($suratJalan) => $suratJalan->status_pembayaran_uang_rit !== SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR
                 || isset($usedRegular[$suratJalan->no_surat_jalan]));
-            $bongkaranUnavailable = $selectedBongkaran->contains(fn ($suratJalan) =>
-                ! in_array($suratJalan->status_pembayaran_uang_rit, [null, 'belum_bayar'], true)
+            $bongkaranUnavailable = $selectedBongkaran->contains(fn ($suratJalan) => ! in_array($suratJalan->status_pembayaran_uang_rit, [null, 'belum_bayar'], true)
                 || isset($usedBongkaran[$suratJalan->nomor_surat_jalan]));
             $regularLinked = PranotaUangRit::whereNotIn('status', ['cancelled'])
                 ->whereIn('surat_jalan_id', $selectedRegular->pluck('id'))->exists();
