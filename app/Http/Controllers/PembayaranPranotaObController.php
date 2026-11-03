@@ -200,6 +200,7 @@ class PembayaranPranotaObController extends Controller
                 'akun_items' => 'required|array|min:1',
                 'akun_items.*.akun_coa_id' => 'required|distinct|exists:akun_coa,id',
                 'akun_items.*.nominal' => 'required|numeric|gt:0',
+                'akun_items.*.memo' => 'nullable|string|max:2000',
                 'akun_dp_id' => 'nullable|exists:akun_coa,id',
                 'akun_bank_id' => 'required|exists:akun_coa,id',
                 'tanggal_kas' => 'required|date',
@@ -400,6 +401,7 @@ class PembayaranPranotaObController extends Controller
             'akun_items' => 'required|array|min:1',
             'akun_items.*.akun_coa_id' => 'required|distinct|exists:akun_coa,id',
             'akun_items.*.nominal' => 'required|numeric|gt:0',
+            'akun_items.*.memo' => 'nullable|string|max:2000',
             'akun_dp_id' => 'nullable|exists:akun_coa,id',
             'akun_bank_id' => 'required|exists:akun_coa,id',
             'penyesuaian' => 'nullable|string',
@@ -440,7 +442,8 @@ class PembayaranPranotaObController extends Controller
             if (abs($totalAkun - ($totalPembayaran + $penyesuaian + (float) $pembayaran->dp_amount)) > 0.01) {
                 throw new \Exception('Jumlah nominal per akun harus sama dengan total tagihan ditambah penyesuaian dan DP.');
             }
-            if ($pembayaran->dp_amount > 0 && empty($validated['akun_dp_id'])) {
+            $akunDpId = ! empty($validated['akun_dp_id']) ? $validated['akun_dp_id'] : $pembayaran->defaultAkunDpId();
+            if ($pembayaran->dp_amount > 0 && ! $akunDpId) {
                 throw new \Exception('Pilih akun potongan DP untuk jurnal.');
             }
 
@@ -457,7 +460,7 @@ class PembayaranPranotaObController extends Controller
                 'keterangan' => $validated['keterangan'] ?? null,
                 'breakdown_supir' => ! empty($breakdownSupir) ? $breakdownSupir : null,
                 'akun_coa_id' => $akunItems->first()['akun_coa_id'],
-                'akun_dp_id' => $validated['akun_dp_id'] ?? null,
+                'akun_dp_id' => $akunDpId,
                 'akun_bank_id' => $request->akun_bank_id,
                 'updated_by' => Auth::id(),
             ];
@@ -583,7 +586,11 @@ class PembayaranPranotaObController extends Controller
             if (! $akun) {
                 throw new \RuntimeException('Akun biaya pembayaran tidak ditemukan.');
             }
-            $this->recordJournalLine($akun, (float) $item->nominal, $isCredit, $pembayaran, $tanggal, $keterangan);
+            $itemKeterangan = $keterangan;
+            if (filled($item->memo ?? null)) {
+                $itemKeterangan .= ' | Memo: '.trim($item->memo);
+            }
+            $this->recordJournalLine($akun, (float) $item->nominal, $isCredit, $pembayaran, $tanggal, $itemKeterangan);
         }
 
         if (! $legacy && (float) $pembayaran->dp_amount > 0) {

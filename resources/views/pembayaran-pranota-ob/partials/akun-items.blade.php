@@ -1,9 +1,9 @@
 @php
     $rows = old('akun_items', isset($pembayaran) && $pembayaran->akunItems->isNotEmpty()
-        ? $pembayaran->akunItems->map(fn ($item) => ['akun_coa_id' => $item->akun_coa_id, 'nominal' => $item->nominal])->all()
-        : [['akun_coa_id' => $pembayaran->akun_coa_id ?? '', 'nominal' => isset($pembayaran) ? (float) $pembayaran->total_setelah_penyesuaian + (float) $pembayaran->dp_amount : '']]);
+        ? $pembayaran->akunItems->map(fn ($item) => ['akun_coa_id' => $item->akun_coa_id, 'nominal' => $item->nominal, 'memo' => $item->memo])->all()
+        : [['akun_coa_id' => $pembayaran->akun_coa_id ?? '', 'nominal' => isset($pembayaran) ? (float) $pembayaran->total_setelah_penyesuaian + (float) $pembayaran->dp_amount : '', 'memo' => '']]);
     $dpNominal = isset($pembayaran) ? (float) $pembayaran->dp_amount : (float) $selectedDps->sum('dp_amount');
-    $dpAccountDefault = isset($pembayaran) ? $pembayaran->akun_dp_id : ($selectedDps->pluck('akun_coa_id')->filter()->unique()->count() === 1 ? $selectedDps->pluck('akun_coa_id')->filter()->first() : null);
+    $dpAccountDefault = isset($pembayaran) ? $pembayaran->defaultAkunDpId() : ($selectedDps->pluck('akun_coa_id')->filter()->unique()->count() === 1 ? $selectedDps->pluck('akun_coa_id')->filter()->first() : null);
 @endphp
 <div class="bg-white border border-gray-200 rounded-lg p-3 space-y-3" id="akun-items-section" data-dp="{{ $dpNominal }}">
     <div class="flex items-center justify-between">
@@ -15,15 +15,18 @@
     </div>
     <div id="akun-items-list" class="space-y-2">
         @foreach($rows as $index => $row)
-            <div class="akun-item-row flex flex-wrap gap-2 items-center">
-                <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select {{ $inputClasses }} flex-1 min-w-48" required>
-                    <option value="">-- Pilih Akun Biaya --</option>
-                    @foreach($akunBiaya as $akun)
-                        <option value="{{ $akun->id }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
-                    @endforeach
-                </select>
-                <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-item-nominal {{ $inputClasses }} w-40" min="0.01" step="0.01" placeholder="Nominal sebelum DP" value="{{ $row['nominal'] ?? '' }}" required>
-                <button type="button" class="remove-akun-item text-xs text-red-600">Hapus</button>
+            <div class="akun-item-row space-y-2">
+                <div class="flex flex-wrap gap-2 items-center">
+                    <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select {{ $inputClasses }} flex-1 min-w-48" required>
+                        <option value="">-- Pilih Akun Biaya --</option>
+                        @foreach($akunBiaya as $akun)
+                            <option value="{{ $akun->id }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
+                        @endforeach
+                    </select>
+                    <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-item-nominal {{ $inputClasses }} w-40" min="0.01" step="0.01" placeholder="Nominal sebelum DP" value="{{ $row['nominal'] ?? '' }}" required>
+                    <button type="button" class="remove-akun-item text-xs text-red-600">Hapus</button>
+                </div>
+                <textarea name="akun_items[{{ $index }}][memo]" class="akun-item-memo {{ $inputClasses }}" rows="2" maxlength="2000" placeholder="Memo/catatan untuk akun ini (opsional)">{{ $row['memo'] ?? '' }}</textarea>
             </div>
         @endforeach
     </div>
@@ -70,6 +73,7 @@ document.addEventListener('DOMContentLoaded', function () {
         rows.forEach((row, index) => {
             row.querySelector('.akun-item-select').name = `akun_items[${index}][akun_coa_id]`;
             row.querySelector('.akun-item-nominal').name = `akun_items[${index}][nominal]`;
+            row.querySelector('.akun-item-memo').name = `akun_items[${index}][memo]`;
         });
         const total = rows.reduce((sum, row) => sum + (Number(row.querySelector('.akun-item-nominal').value) || 0), 0);
         document.getElementById('akun-total').textContent = format(total);
@@ -83,6 +87,7 @@ document.addEventListener('DOMContentLoaded', function () {
         const row = list.querySelector('.akun-item-row').cloneNode(true);
         row.querySelector('select').value = '';
         row.querySelector('input').value = '';
+        row.querySelector('.akun-item-memo').value = '';
         list.appendChild(row);
         update();
     });

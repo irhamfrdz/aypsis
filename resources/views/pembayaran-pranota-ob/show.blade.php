@@ -92,6 +92,9 @@
                             <dt class="text-sm font-medium text-gray-500">Nominal per Akun Sebelum DP</dt>
                             @foreach($pembayaran->akunItems as $item)
                                 <dd class="text-sm text-gray-900 flex justify-between gap-3"><span>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}</span><span>Rp {{ number_format($item->nominal, 0, ',', '.') }}</span></dd>
+                                @if($item->memo)
+                                    <dd class="text-xs text-gray-600 whitespace-pre-line mb-2">Memo: {{ $item->memo }}</dd>
+                                @endif
                             @endforeach
                         </div>
                         @endif

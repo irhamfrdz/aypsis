@@ -8,7 +8,7 @@ class PembayaranPranotaObAkunItem extends Model
 {
     protected $table = 'pembayaran_pranota_ob_akun_items';
 
-    protected $fillable = ['akun_coa_id', 'nominal'];
+    protected $fillable = ['akun_coa_id', 'nominal', 'memo'];
 
     public function akunCoa()
     {

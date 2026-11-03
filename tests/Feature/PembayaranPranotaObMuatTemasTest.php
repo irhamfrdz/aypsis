@@ -68,6 +68,7 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
             $table->id();
             $table->decimal('dp_amount', 15, 2)->default(0);
             $table->date('tanggal_pembayaran')->nullable();
+            $table->unsignedBigInteger('akun_coa_id')->nullable();
         });
         (require database_path('migrations/2026_10_09_000004_create_pranota_ob_muat_temas_tables.php'))->up();
         (require database_path('migrations/2026_10_09_000005_add_muat_temas_to_pembayaran_pranota_ob.php'))->up();
@@ -79,6 +80,7 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         Gate::define('pembayaran-pranota-ob-delete', fn () => true);
         DB::table('akun_coa')->insert([['id' => 1, 'nama_akun' => 'Biaya OB'], ['id' => 2, 'nama_akun' => 'Bank'], ['id' => 3, 'nama_akun' => 'Biaya Tambahan'], ['id' => 4, 'nama_akun' => 'Uang Muka OB']]);
         (require database_path('migrations/2026_11_02_000001_create_pembayaran_pranota_ob_akun_items_table.php'))->up();
+        (require database_path('migrations/2026_11_03_000001_add_memo_to_pembayaran_pranota_ob_akun_items_table.php'))->up();
         DB::table('pranota_obs')->insert([
             'id' => 1, 'nomor_pranota' => 'OB-001', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001',
             'items' => json_encode([['nomor_kontainer' => 'REGULAR', 'supir' => 'SUPIR UJI', 'biaya' => 100000]]),
@@ -102,6 +104,28 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
             'kapal' => 'KAPAL UJI', 'voyage' => '001', 'pranota_ids' => $ids,
             'total_pembayaran' => 1,
         ]);
+    }
+
+    public function test_dp_account_defaults_to_linked_dp_account_only_when_unambiguous(): void
+    {
+        DB::table('pembayaran_obs')->insert([
+            ['id' => 1, 'dp_amount' => 100000, 'akun_coa_id' => 4],
+            ['id' => 2, 'dp_amount' => 50000, 'akun_coa_id' => 4],
+            ['id' => 3, 'dp_amount' => 50000, 'akun_coa_id' => 3],
+        ]);
+
+        $payment = new PembayaranPranotaOb(['pembayaran_ob_ids' => [1, 2]]);
+        $this->assertSame(4, $payment->defaultAkunDpId());
+
+        $payment->pembayaran_ob_ids = [1, 3];
+        $this->assertNull($payment->defaultAkunDpId());
+
+        $payment->pembayaran_ob_ids = null;
+        $payment->pembayaran_ob_id = 1;
+        $this->assertSame(4, $payment->defaultAkunDpId());
+
+        $payment->akun_dp_id = 3;
+        $this->assertSame(3, $payment->defaultAkunDpId());
     }
 
     public function test_mixed_payment_keeps_same_numeric_ids_separate_and_uses_saved_cost(): void
@@ -137,14 +161,14 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $service = $this->mock(CoaTransactionService::class);
         $service->shouldReceive('recordTransaction')->times(4)
             ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan, $coaId) use (&$entries) {
-                $entries[] = [$coaId, $debit, $kredit];
+                $entries[] = [$coaId, $debit, $kredit, $keterangan];
 
                 return new CoaTransaction;
             });
         $controller = new PembayaranPranotaObController($service);
         $request = $this->paymentRequest(['1', 'muat_temas:1']);
         $request->merge([
-            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 100000], ['akun_coa_id' => 3, 'nominal' => 260000]],
+            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 100000, 'memo' => 'Biaya kontainer Jakarta'], ['akun_coa_id' => 3, 'nominal' => 260000, 'memo' => 'Biaya tambahan']],
             'dp_ids' => [1], 'akun_dp_id' => 4,
         ]);
 
@@ -153,7 +177,49 @@ class PembayaranPranotaObMuatTemasTest extends TestCase
         $this->assertEquals(300000, $payment->total_pembayaran);
         $this->assertEquals(60000, $payment->dp_amount);
         $this->assertEquals([100000, 260000], $payment->akunItems->pluck('nominal')->map(fn ($value) => (int) $value)->all());
-        $this->assertEquals([[1, 100000.0, 0], [3, 260000.0, 0], [4, 0, 60000.0], [2, 0, 300000.0]], $entries);
+        $this->assertSame(['Biaya kontainer Jakarta', 'Biaya tambahan'], $payment->akunItems->pluck('memo')->all());
+        $this->assertEquals([[1, 100000.0, 0], [3, 260000.0, 0], [4, 0, 60000.0], [2, 0, 300000.0]], array_map(fn ($entry) => array_slice($entry, 0, 3), $entries));
+        $this->assertStringContainsString('Memo: Biaya kontainer Jakarta', $entries[0][3]);
+        $this->assertStringContainsString('Memo: Biaya tambahan', $entries[1][3]);
+        $this->assertStringNotContainsString('Memo:', $entries[2][3]);
+    }
+
+    public function test_editing_account_memo_updates_its_journal_line(): void
+    {
+        $payment = PembayaranPranotaOb::create([
+            'nomor_pembayaran' => 'PY-OB-MEMO',
+            'tanggal_kas' => '2026-10-09',
+            'jenis_transaksi' => 'credit',
+            'total_pembayaran' => 100000,
+            'total_setelah_penyesuaian' => 100000,
+            'dp_amount' => 0,
+            'akun_coa_id' => 1,
+            'akun_bank_id' => 2,
+        ]);
+        $payment->akunItems()->create(['akun_coa_id' => 1, 'nominal' => 100000, 'memo' => 'Catatan lama']);
+
+        $journalDescriptions = [];
+        $service = $this->mock(CoaTransactionService::class);
+        $service->shouldReceive('deleteTransactionByReference')->once()->andReturn(true);
+        $service->shouldReceive('recordTransaction')->twice()
+            ->andReturnUsing(function ($nama, $debit, $kredit, $tanggal, $referensi, $jenis, $keterangan) use (&$journalDescriptions) {
+                $journalDescriptions[] = $keterangan;
+
+                return new CoaTransaction;
+            });
+
+        $request = Request::create('/pembayaran-pranota-ob/'.$payment->id, 'PUT', [
+            'tanggal_kas' => '2026-10-09',
+            'debit_kredit' => 'credit',
+            'akun_items' => [['akun_coa_id' => 1, 'nominal' => 100000, 'memo' => 'Catatan baru']],
+            'akun_bank_id' => 2,
+        ]);
+        $response = (new PembayaranPranotaObController($service))->update($request, (string) $payment->id);
+
+        $this->assertEquals(route('pembayaran-pranota-ob.index'), $response->getTargetUrl());
+        $this->assertSame('Catatan baru', $payment->fresh()->akunItems()->first()->memo);
+        $this->assertStringContainsString('Memo: Catatan baru', $journalDescriptions[0]);
+        $this->assertStringNotContainsString('Memo:', $journalDescriptions[1]);
     }
 
     public function test_account_amounts_must_equal_gross_total_before_dp(): void

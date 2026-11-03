@@ -305,10 +305,10 @@
                 @if($pembayaran->akunItems->isNotEmpty())
                 <div class="section-title">Rincian Akun Sebelum DP</div>
                 <table class="ob-table">
-                    <thead><tr><th>Akun</th><th style="text-align: right">Nominal</th></tr></thead>
+                    <thead><tr><th>Akun</th><th>Memo/Catatan</th><th style="text-align: right">Nominal</th></tr></thead>
                     <tbody>
                         @foreach($pembayaran->akunItems as $item)
-                        <tr><td>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}</td><td style="text-align: right">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td></tr>
+                        <tr><td>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}</td><td style="white-space: pre-line">{{ $item->memo }}</td><td style="text-align: right">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td></tr>
                         @endforeach
                     </tbody>
                 </table>

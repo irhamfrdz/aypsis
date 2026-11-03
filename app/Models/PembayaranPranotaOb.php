@@ -119,6 +119,17 @@ class PembayaranPranotaOb extends Model
         return PembayaranOb::whereIn('id', $ids)->get();
     }
 
+    public function defaultAkunDpId(): ?int
+    {
+        if ($this->akun_dp_id) {
+            return (int) $this->akun_dp_id;
+        }
+
+        $akunIds = $this->pembayaranObs->pluck('akun_coa_id')->filter()->unique();
+
+        return $akunIds->count() === 1 ? (int) $akunIds->first() : null;
+    }
+
     /**
      * Get the user who created this payment
      */
