@@ -115,9 +115,29 @@ class ApprovalTandaTerimaDuaController extends Controller
             $senderColumn = $type === 'lcl' ? 'nama_pengirim' : 'pengirim';
             $containerColumn = $type === 'lcl' ? 'nomor_kontainer' : 'no_kontainer';
             if ($searches !== []) {
-                $query->where(function ($query) use ($searches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
+                $containerMatches = [];
+                if (count($searches) === 1) {
+                    $search = $searches[0];
+                    $containerMatches[$search] = (clone $query)->where(function ($containerQuery) use ($search, $containerColumn, $type) {
+                        $containerQuery->where($containerColumn, 'like', "%{$search}%");
+                        if ($type === 'lcl') {
+                            $containerQuery->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
+                        }
+                    })->exists();
+                }
+
+                $query->where(function ($query) use ($searches, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
                     foreach ($searches as $search) {
-                        $query->orWhere(function ($query) use ($search, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
+                        $query->orWhere(function ($query) use ($search, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
+                            if ($containerMatches[$search] ?? false) {
+                                $query->where($containerColumn, 'like', "%{$search}%");
+                                if ($type === 'lcl') {
+                                    $query->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
+                                }
+
+                                return;
+                            }
+
                             $query->where($numberColumn, 'like', "%{$search}%")
                                 ->orWhere($senderColumn, 'like', "%{$search}%")
                                 ->orWhere($containerColumn, 'like', "%{$search}%");
