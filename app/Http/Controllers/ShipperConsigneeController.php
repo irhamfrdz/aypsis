@@ -6,6 +6,7 @@ use App\Exports\ShipperConsigneeDataExport;
 use App\Models\ShipperConsignee;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ShipperConsigneeController extends Controller
@@ -143,6 +144,21 @@ class ShipperConsigneeController extends Controller
 
         return redirect()->route('master.shipper-consignee.index')
             ->with('success', 'Data Shipper / Consignee berhasil dihapus.');
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:50'],
+            'ids.*' => ['required', 'integer', 'distinct', 'exists:shipper_consignees,id'],
+        ]);
+
+        DB::transaction(function () use ($validated) {
+            ShipperConsignee::whereIn('id', $validated['ids'])->get()->each->delete();
+        });
+
+        return redirect()->route('master.shipper-consignee.index', $request->only('search', 'duplicates'))
+            ->with('success', count($validated['ids']).' data Shipper / Consignee berhasil dihapus.');
     }
 
     public function template()

@@ -75,10 +75,25 @@
         </div>
     @endif
 
+    @can('master-shipper-consignee-delete')
+        <form id="shipperBulkDeleteForm" action="{{ route('master.shipper-consignee.bulk-delete', request()->only('search', 'duplicates')) }}" method="POST" class="mb-3">
+            @csrf
+            @method('DELETE')
+            <button type="submit" id="shipperBulkDeleteButton" class="hidden bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg text-sm">
+                Hapus <span id="shipperSelectedCount">0</span> data terpilih
+            </button>
+        </form>
+    @endcan
+
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
+                    @can('master-shipper-consignee-delete')
+                        <th class="py-3 px-3 text-center" scope="col">
+                            <input type="checkbox" id="shipperSelectAll" class="shipper-select-all rounded border-gray-300" aria-label="Pilih semua data pada halaman ini" title="Pilih semua pada halaman ini">
+                        </th>
+                    @endcan
                     <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">No</th>
                     <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Shipper</th>
                     <th class="py-3 px-3 text-left text-[11px] font-bold text-gray-600 uppercase tracking-wider whitespace-nowrap">Address (Shipper)</th>
@@ -99,6 +114,11 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($shipperConsignees as $index => $item)
                     <tr class="hover:bg-gray-50">
+                        @can('master-shipper-consignee-delete')
+                            <td class="py-3 px-3 text-center">
+                                <input type="checkbox" name="ids[]" value="{{ $item->id }}" form="shipperBulkDeleteForm" class="shipper-row-checkbox rounded border-gray-300" aria-label="Pilih data {{ $item->shipper ?: $item->consignee ?: $item->id }}">
+                            </td>
+                        @endcan
                         <td class="py-3 px-3 text-[10px] text-gray-900 whitespace-nowrap">{{ $shipperConsignees->firstItem() + $loop->index }}</td>
                         <td class="py-3 px-3 text-[10px] font-bold text-gray-900 min-w-[150px]">{{ $item->shipper ?: '-' }}</td>
                         <td class="py-3 px-3 text-[10px] text-gray-600 min-w-[220px] max-w-xs">
@@ -216,7 +236,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="15" class="py-8 px-6 text-center text-gray-500">
+                        <td colspan="{{ auth()->user()->can('master-shipper-consignee-delete') ? 16 : 15 }}" class="py-8 px-6 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -383,6 +403,33 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    const bulkForm = document.getElementById('shipperBulkDeleteForm');
+    if (bulkForm) {
+        const checkboxes = Array.from(document.querySelectorAll('.shipper-row-checkbox'));
+        const selectAll = document.getElementById('shipperSelectAll');
+        const deleteButton = document.getElementById('shipperBulkDeleteButton');
+
+        function updateSelection() {
+            const selectedCount = checkboxes.filter(checkbox => checkbox.checked).length;
+            document.getElementById('shipperSelectedCount').textContent = selectedCount;
+            deleteButton.classList.toggle('hidden', selectedCount === 0);
+            selectAll.checked = checkboxes.length > 0 && selectedCount === checkboxes.length;
+            selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+        }
+
+        selectAll.addEventListener('change', function () {
+            checkboxes.forEach(checkbox => checkbox.checked = selectAll.checked);
+            updateSelection();
+        });
+        checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateSelection));
+        bulkForm.addEventListener('submit', function (event) {
+            const selectedCount = checkboxes.filter(checkbox => checkbox.checked).length;
+            if (!selectedCount || !confirm('Hapus ' + selectedCount + ' data Shipper / Consignee yang dipilih?')) {
+                event.preventDefault();
+            }
+        });
+    }
+
     document.querySelectorAll('.btn-view-address').forEach(function (btn) {
         btn.addEventListener('click', function () {
             const title = this.dataset.title || 'Detail Alamat';
