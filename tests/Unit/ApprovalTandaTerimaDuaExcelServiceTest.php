@@ -35,7 +35,7 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
             $this->assertNull($sheet->getCell('AC7')->getValue());
             $this->assertSame('TEST-001', $sheet->getCell('AC9')->getValue());
             $this->assertSame('AYP', $sheet->getCell('AA8')->getValue());
-            $this->assertSame('FFFCA5A5', $sheet->getStyle('AA8')->getFill()->getStartColor()->getARGB());
+            $this->assertSame('FFFF0000', $sheet->getStyle('AA8')->getFill()->getStartColor()->getARGB());
             $this->assertSame('LAINNYA', $sheet->getCell('AA9')->getValue());
             $this->assertSame(Fill::FILL_NONE, $sheet->getStyle('AA9')->getFill()->getFillType());
             foreach (['Q', 'T'] as $column) {

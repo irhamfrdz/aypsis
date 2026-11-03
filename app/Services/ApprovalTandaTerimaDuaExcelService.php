@@ -116,7 +116,7 @@ class ApprovalTandaTerimaDuaExcelService
         if ($documentType === 'AYP') {
             $sheet->getStyle('AA'.$row)->getFill()
                 ->setFillType(Fill::FILL_SOLID)
-                ->getStartColor()->setARGB('FFFCA5A5');
+                ->getStartColor()->setARGB('FFFF0000');
         }
         $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
         $sheet->getStyle('AA'.$row.':AB'.$row)->getAlignment()

@@ -45,7 +45,7 @@
     .approval-shipper-field-preview:disabled { cursor: default; }
     .approval-shipper-name-highlight, .approval-shipper-document-highlight { display: inline-block; max-width: 100%; padding: 2px 6px; border-radius: 4px; font-weight: 700; }
     .approval-shipper-name-highlight { background: #fef08a; color: #713f12; }
-    .approval-shipper-document-highlight { background: #fca5a5; color: #7f1d1d; }
+    .approval-shipper-document-highlight { background: #ff0000; color: #111827; }
     .approval-shipper-field-preview.approval-shipper-name-highlight, .approval-shipper-field-preview.approval-shipper-document-highlight { display: inline-block; width: auto; }
     .approval-goods-dialog { width: min(1000px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     .approval-goods-dialog::backdrop { background: rgb(15 23 42 / 60%); }
