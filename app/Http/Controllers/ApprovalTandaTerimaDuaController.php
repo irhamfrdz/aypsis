@@ -183,7 +183,15 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
         }
 
-        $items = $query->latest('id')->paginate(20)->withQueryString();
+        $items = $query
+            ->leftJoin('approval_tanda_terima_2_orders as approval_order', function ($join) use ($type, $sourceTable) {
+                $join->on('approval_order.source_id', '=', $sourceTable.'.id')
+                    ->where('approval_order.source_type', '=', $type);
+            })
+            ->select($sourceTable.'.*')
+            ->orderByRaw("COALESCE(approval_order.position, {$sourceTable}.id) DESC")
+            ->orderBy($sourceTable.'.id', 'desc')
+            ->paginate(20)->withQueryString();
         $goodsOverrides = ApprovalTandaTerimaDuaGoods::query()
             ->where('source_type', $type)
             ->whereIn('source_id', $items->pluck('id'))
@@ -208,6 +216,37 @@ class ApprovalTandaTerimaDuaController extends Controller
             'incompleteMarks' => $incompleteMarks,
             'exportedMarks' => $exportedMarks,
         ]);
+    }
+
+    public function swapOrder(Request $request, string $sourceType): JsonResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $validated = $request->validate([
+            'dragged_id' => ['required', 'integer', 'min:1', 'different:target_id'],
+            'target_id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        DB::transaction(function () use ($sourceType, $validated): void {
+            $ids = [$validated['dragged_id'], $validated['target_id']];
+            $receipts = self::SOURCES[$sourceType]::query()->whereKey($ids)
+                ->orderBy('id')->lockForUpdate()->get(['id']);
+            abort_unless($receipts->count() === 2, 404);
+
+            $positions = DB::table('approval_tanda_terima_2_orders')
+                ->where('source_type', $sourceType)->whereIn('source_id', $ids)
+                ->pluck('position', 'source_id');
+            $draggedPosition = $positions->get($ids[0], $ids[0]);
+            $targetPosition = $positions->get($ids[1], $ids[1]);
+            $now = now();
+            foreach ([[$ids[0], $targetPosition], [$ids[1], $draggedPosition]] as [$id, $position]) {
+                DB::table('approval_tanda_terima_2_orders')->updateOrInsert(
+                    ['source_type' => $sourceType, 'source_id' => $id],
+                    ['position' => $position, 'created_at' => $now, 'updated_at' => $now]
+                );
+            }
+        });
+
+        return response()->json(['message' => 'Urutan tanda terima berhasil disimpan.']);
     }
 
     public function storeTtsj(Request $request): RedirectResponse

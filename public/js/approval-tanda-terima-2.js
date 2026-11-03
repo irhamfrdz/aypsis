@@ -125,6 +125,84 @@
 (() => {
     'use strict';
 
+    const table = document.querySelector('.approval-receipts-table[data-swap-url]');
+    const tbody = document.getElementById('approval-receipt-rows');
+    const status = document.getElementById('approval-order-status');
+    if (!table || !tbody || !tbody.querySelector('.approval-receipt-handle')) return;
+
+    let dragged = null;
+    let busy = false;
+    const rows = () => Array.from(tbody.querySelectorAll('tr[data-receipt-id]'));
+    const clearDragState = () => {
+        rows().forEach(row => row.classList.remove('approval-dragging', 'approval-drop-target'));
+        dragged = null;
+    };
+
+    async function swapRows(first, second) {
+        if (busy || !first || !second || first === second) return;
+        busy = true;
+        status.textContent = 'Menyimpan urutan...';
+        try {
+            const response = await fetch(table.dataset.swapUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || '',
+                },
+                body: JSON.stringify({dragged_id: first.dataset.receiptId, target_id: second.dataset.receiptId}),
+            });
+            if (!response.ok) throw new Error('Gagal menyimpan urutan. Silakan coba lagi.');
+
+            const marker = document.createComment('receipt-position');
+            first.replaceWith(marker);
+            second.replaceWith(first);
+            marker.replaceWith(second);
+            rows().forEach((row, index) => {
+                const number = row.querySelector('.approval-order-number');
+                if (number) number.textContent = Number(table.dataset.startNumber) + index;
+            });
+            status.textContent = 'Urutan tanda terima berhasil disimpan.';
+        } catch (error) {
+            status.textContent = error.message || 'Gagal menyimpan urutan.';
+        } finally {
+            busy = false;
+            clearDragState();
+        }
+    }
+
+    tbody.querySelectorAll('.approval-receipt-handle').forEach(handle => {
+        handle.addEventListener('dragstart', event => {
+            if (busy) { event.preventDefault(); return; }
+            dragged = handle.closest('tr[data-receipt-id]');
+            event.dataTransfer.effectAllowed = 'move';
+            event.dataTransfer.setData('text/plain', dragged.dataset.receiptId);
+            requestAnimationFrame(() => dragged?.classList.add('approval-dragging'));
+        });
+        handle.addEventListener('dragend', clearDragState);
+    });
+
+    tbody.addEventListener('dragover', event => {
+        const target = event.target.closest('tr[data-receipt-id]');
+        if (!dragged || !target || target === dragged || busy) return;
+        event.preventDefault();
+        event.dataTransfer.dropEffect = 'move';
+        rows().forEach(row => row.classList.toggle('approval-drop-target', row === target));
+    });
+    tbody.addEventListener('drop', event => {
+        const target = event.target.closest('tr[data-receipt-id]');
+        if (!dragged || !target || target === dragged) { clearDragState(); return; }
+        event.preventDefault();
+        const source = dragged;
+        clearDragState();
+        swapRows(source, target);
+    });
+})();
+
+(() => {
+    'use strict';
+
     const bulkForm = document.getElementById('approval-bulk-export-form');
     const bulkClearForm = document.getElementById('approval-bulk-clear-form');
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));

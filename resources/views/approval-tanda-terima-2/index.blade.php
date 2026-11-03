@@ -55,6 +55,10 @@
     .approval-receipts-table > thead > tr > th, .approval-receipts-table > tbody > tr > td { padding: 12px 8px; overflow-wrap: anywhere; }
     .approval-goods-preview { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; max-height: 4.2em; line-height: 1.4; overflow: hidden; overflow-wrap: anywhere; }
     .approval-receipts-table .approval-actions-cell { white-space: normal; text-align: left; }
+    .approval-receipt-handle { cursor: grab; touch-action: none; }
+    .approval-receipt-handle:active { cursor: grabbing; }
+    .approval-receipts-table tbody tr.approval-dragging { opacity: .45; }
+    .approval-receipts-table tbody tr.approval-drop-target { outline: 2px solid #6366f1; outline-offset: -2px; }
     .approval-actions-cell > form, .approval-actions-cell > button { margin: 0 6px 6px 0; vertical-align: top; }
     @media (max-width: 1279px) {
         .approval-receipts-table, .approval-receipts-table > tbody { display: block; width: 100%; }
@@ -162,7 +166,11 @@
 
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-5 py-4">
-            <h2 class="font-semibold text-gray-900">Daftar Tanda Terima</h2>
+            <div>
+                <h2 class="font-semibold text-gray-900">Daftar Tanda Terima</h2>
+                @can('approval-tanda-terima-2-approve')<p class="mt-1 text-xs text-gray-500">Tarik ikon pada kolom No. ke baris lain untuk menukar posisinya.</p>@endcan
+                <p id="approval-order-status" class="text-xs text-indigo-700" role="status" aria-live="polite"></p>
+            </div>
             <div class="flex flex-wrap items-center gap-3">
                 @can('approval-tanda-terima-2-approve')
                     @if($type === 'ttsj')
@@ -188,7 +196,7 @@
             </div>
         </div>
         <div>
-            <table class="approval-receipts-table divide-y divide-gray-200 text-sm">
+            <table class="approval-receipts-table divide-y divide-gray-200 text-sm" data-swap-url="{{ route('approval-tanda-terima-2.swap-order', ['sourceType' => $type]) }}" data-start-number="{{ $items->firstItem() ?? 1 }}">
                 <colgroup>
                     @can('approval-tanda-terima-2-approve')<col style="width:4%">@endcan
                     <col style="width:4%">
@@ -211,7 +219,7 @@
                         <th scope="col" class="px-5 py-3 text-right">Aksi</th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-100">
+                <tbody id="approval-receipt-rows" class="divide-y divide-gray-100">
                     @forelse($items as $item)
                         @php
                             $number = $type === 'fcl' ? $item->no_surat_jalan : ($type === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
@@ -247,11 +255,18 @@
                                 : $goods->take(1)->values();
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
-                        <tr class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
+                        <tr data-receipt-id="{{ $item->id }}" class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
                             @can('approval-tanda-terima-2-approve')
                                 <td class="approval-receipt-select"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
                             @endcan
-                            <td class="approval-receipt-order text-center font-semibold text-gray-700">{{ $items->firstItem() + $loop->index }}</td>
+                            <td class="approval-receipt-order text-center font-semibold text-gray-700">
+                                <span class="inline-flex items-center justify-center gap-1">
+                                    @can('approval-tanda-terima-2-approve')
+                                        <button type="button" draggable="true" class="approval-receipt-handle rounded p-1 text-gray-400 hover:bg-indigo-50 hover:text-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500" aria-label="Tarik untuk menukar posisi tanda terima {{ $number ?: $item->id }}" title="Tarik untuk menukar posisi"><i class="fas fa-grip-vertical" aria-hidden="true"></i></button>
+                                    @endcan
+                                    <span class="approval-order-number">{{ $items->firstItem() + $loop->index }}</span>
+                                </span>
+                            </td>
                             <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
                             <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>

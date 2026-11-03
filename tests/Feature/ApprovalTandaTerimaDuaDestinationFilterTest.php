@@ -105,6 +105,7 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
         });
+        (require database_path('migrations/2026_11_03_110000_create_approval_tanda_terima_2_orders_table.php'))->up();
         Schema::create('approval_tanda_terima_2_fcl_shippers', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('tanda_terima_id');
@@ -183,6 +184,45 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         ]))->getData()['items'];
         $this->assertSame(1, $items->total());
         $this->assertSame('TT-NEW-001', $items->first()->no_tanda_terima);
+    }
+
+    public function test_dragged_receipts_swap_positions_and_keep_the_order_after_reload(): void
+    {
+        $first = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'JB-ORDER-1', 'tanggal_surat_jalan' => '2026-11-01', 'tujuan_pengiriman' => 'Batam',
+        ]);
+        $middle = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'JB-ORDER-2', 'tanggal_surat_jalan' => '2026-11-02', 'tujuan_pengiriman' => 'Batam',
+        ]);
+        $last = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'JB-ORDER-3', 'tanggal_surat_jalan' => '2026-11-03', 'tujuan_pengiriman' => 'Batam',
+        ]);
+        $controller = new ApprovalTandaTerimaDuaController;
+        $request = Request::create('/', 'GET', ['type' => 'fcl', 'destination' => 'batam']);
+        $this->assertSame([$last, $middle, $first], $controller->index($request)->getData()['items']->pluck('id')->all());
+
+        $controller->swapOrder(Request::create('/approval-tanda-terima-2/fcl/swap-order', 'POST', [
+            'dragged_id' => $last, 'target_id' => $first,
+        ]), 'fcl');
+
+        $this->assertSame([$first, $middle, $last], $controller->index($request)->getData()['items']->pluck('id')->all());
+        $this->assertDatabaseHas('approval_tanda_terima_2_orders', [
+            'source_type' => 'fcl', 'source_id' => $last, 'position' => $first,
+        ]);
+
+        $controller->swapOrder(Request::create('/approval-tanda-terima-2/fcl/swap-order', 'POST', [
+            'dragged_id' => $first, 'target_id' => $middle,
+        ]), 'fcl');
+        $this->assertSame([$middle, $first, $last], $controller->index($request)->getData()['items']->pluck('id')->all());
+
+        $ttsjFirst = DB::table('tanda_terima_tanpa_surat_jalan')->insertGetId([
+            'no_tanda_terima' => 'TT-ORDER-1', 'tanggal_tanda_terima' => '2026-11-01', 'tujuan_pengiriman' => 'Batam',
+        ]);
+        $ttsjLast = DB::table('tanda_terima_tanpa_surat_jalan')->insertGetId([
+            'no_tanda_terima' => 'TT-ORDER-2', 'tanggal_tanda_terima' => '2026-11-02', 'tujuan_pengiriman' => 'Batam',
+        ]);
+        $ttsjRequest = Request::create('/', 'GET', ['type' => 'ttsj', 'destination' => 'batam']);
+        $this->assertSame([$ttsjLast, $ttsjFirst], $controller->index($ttsjRequest)->getData()['items']->pluck('id')->all());
     }
 
     public function test_new_ttsj_keeps_manifest_and_perincian_details_separate(): void
