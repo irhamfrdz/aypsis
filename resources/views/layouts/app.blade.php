@@ -912,6 +912,15 @@
             </a>
         </div>
         @endif
+
+        {{-- Pranota Gaji Supir Batam --}}
+        @if($user && ($user->can('pranota-gaji-supir-batam-view') || $isAdmin))
+        <div class="mx-2 mb-3">
+            <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('pranota-gaji-supir-batam.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Pranota Gaji Supir Batam</span>
+            </a>
+        </div>
+        @endif
         
         {{-- Stock Amprahan --}}
         @if($user && $user->can('stock-amprahan-view'))

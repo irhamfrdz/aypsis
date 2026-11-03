@@ -895,6 +895,23 @@
                                 <td><input type="checkbox" name="permissions[gaji-supir-batam][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['gaji-supir-batam']['export']) && $userMatrixPermissions['gaji-supir-batam']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Pranota Gaji Supir Batam --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="inline-block w-3 h-3 bg-teal-100 rounded-full mr-3"></span>
+                                        <div class="text-sm font-medium">Pranota Gaji Supir Batam</div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-gaji-supir-batam][view]" value="1" class="permission-checkbox" @checked(old('permissions') !== null ? old('permissions.pranota-gaji-supir-batam.view') : ($userMatrixPermissions['pranota-gaji-supir-batam']['view'] ?? false))></td>
+                                <td><input type="checkbox" name="permissions[pranota-gaji-supir-batam][create]" value="1" class="permission-checkbox" @checked(old('permissions') !== null ? old('permissions.pranota-gaji-supir-batam.create') : ($userMatrixPermissions['pranota-gaji-supir-batam']['create'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-gaji-supir-batam][delete]" value="1" class="permission-checkbox" @checked(old('permissions') !== null ? old('permissions.pranota-gaji-supir-batam.delete') : ($userMatrixPermissions['pranota-gaji-supir-batam']['delete'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Report Kerja Supir Batam --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

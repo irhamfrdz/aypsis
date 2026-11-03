@@ -265,6 +265,16 @@ return [
                 'gaji-supir-batam-export' => 'Export Gaji Supir Batam',
             ],
         ],
+        'pranota-gaji-supir-batam' => [
+            'name' => 'Pranota Gaji Supir Batam',
+            'description' => 'Menu Pranota Gaji Supir Batam',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-gaji-supir-batam-view' => 'Lihat Pranota Gaji Supir Batam',
+                'pranota-gaji-supir-batam-create' => 'Buat Pranota Gaji Supir Batam',
+                'pranota-gaji-supir-batam-delete' => 'Hapus Pranota Gaji Supir Batam',
+            ],
+        ],
         'report-kerja-supir-batam' => [
             'name' => 'Report Kerja Supir Batam',
             'description' => 'Menu Report Kerja Supir Batam',
@@ -434,6 +444,7 @@ return [
 
         // Gaji Supir Batam - butuh gaji-supir-batam-view
         'gaji-supir-batam' => ['gaji-supir-batam-view'],
+        'pranota-gaji-supir-batam' => ['pranota-gaji-supir-batam-view'],
 
         // Report Kerja Supir Batam - butuh report-kerja-supir-batam-view
         'report-kerja-supir-batam' => ['report-kerja-supir-batam-view'],

@@ -59,4 +59,9 @@ class GajiSupirBatam extends Model
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
+
+    public function pranotaItem()
+    {
+        return $this->hasOne(PranotaGajiSupirBatamItem::class, 'gaji_supir_batam_id');
+    }
 }

@@ -10,6 +10,9 @@
         <p class="mt-1 text-sm text-gray-600">Kelola data gaji supir di wilayah Batam</p>
     </div>
     <div class="flex flex-col sm:flex-row gap-2">
+        @can('pranota-gaji-supir-batam-view')
+            <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="inline-flex items-center rounded-md border border-indigo-300 px-4 py-2.5 text-sm font-medium text-indigo-700 hover:bg-indigo-50">Pranota Gaji Supir</a>
+        @endcan
         @can('gaji-supir-batam-create')
             <a href="{{ route('gaji-supir-batam.create') }}" 
                class="inline-flex items-center px-4 py-2.5 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">

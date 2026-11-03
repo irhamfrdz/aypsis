@@ -522,6 +522,9 @@ class GajiSupirBatamController extends Controller
     public function update(Request $request, $id)
     {
         $gaji = GajiSupirBatam::findOrFail($id);
+        if ($gaji->pranotaItem()->exists()) {
+            return back()->with('error', 'Gaji yang sudah masuk pranota tidak dapat diubah. Hapus pranotanya terlebih dahulu.');
+        }
 
         $validated = $request->validate([
             'karyawan_id' => 'required|exists:karyawans,id',
@@ -590,6 +593,9 @@ class GajiSupirBatamController extends Controller
     public function destroy($id)
     {
         $gaji = GajiSupirBatam::findOrFail($id);
+        if ($gaji->pranotaItem()->exists()) {
+            return back()->with('error', 'Gaji yang sudah masuk pranota tidak dapat dihapus. Hapus pranotanya terlebih dahulu.');
+        }
         $gaji->delete();
 
         return redirect()->route('gaji-supir-batam.index')

@@ -185,6 +185,47 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         $this->assertSame('TT-NEW-001', $items->first()->no_tanda_terima);
     }
 
+    public function test_new_ttsj_keeps_manifest_and_perincian_details_separate(): void
+    {
+        $shipperId = DB::table('shipper_consignees')->insertGetId([
+            'shipper' => 'PT Pengirim', 'consignee' => 'PT Penerima',
+        ]);
+        $request = Request::create('/approval-tanda-terima-2/ttsj', 'POST', [
+            'no_tanda_terima' => 'TT-DETAIL-001',
+            'tanggal_tanda_terima' => '2026-11-02',
+            'shipper_jb_id' => $shipperId,
+            'tujuan_pengiriman' => 'Batam',
+            'keterangan_barang' => 'Dua peti',
+            'manifest_goods' => [[
+                'hs_codes' => "1234.56\n7890.12",
+                'nama_barang' => 'Mesin Manifest',
+                'jumlah' => 3,
+                'satuan' => 'koli',
+                'tonase' => '17.665,78',
+                'meter_kubik' => '3.500,25',
+            ]],
+            'goods' => [[
+                'nama_barang' => 'Mesin Perincian',
+                'jumlah' => 2,
+                'satuan' => 'unit',
+                'ukuran' => 'Besar',
+            ]],
+        ]);
+
+        (new ApprovalTandaTerimaDuaController)->storeTtsj($request);
+
+        $receipt = DB::table('tanda_terima_tanpa_surat_jalan')->where('no_tanda_terima', 'TT-DETAIL-001')->first();
+        $this->assertSame('Mesin Perincian', $receipt->nama_barang);
+        $this->assertSame(2, $receipt->jumlah_barang);
+        $override = \App\Models\ApprovalTandaTerimaDuaGoods::where('source_type', 'ttsj')->where('source_id', $receipt->id)->firstOrFail();
+        $this->assertSame('Mesin Perincian', $override->goods[0]['nama_barang']);
+        $this->assertSame('Besar', $override->goods[0]['ukuran']);
+        $this->assertSame('Mesin Manifest', $override->manifest_goods[0]['nama_barang']);
+        $this->assertSame(['1234.56', '7890.12'], $override->manifest_goods[0]['hs_codes']);
+        $this->assertSame('17.665,78', $override->manifest_goods[0]['tonase']);
+        $this->assertSame('Dua peti', $override->keterangan_barang);
+    }
+
     public function test_old_fcl_receipts_from_the_report_are_hidden_from_approval(): void
     {
         DB::table('tanda_terimas')->insert([

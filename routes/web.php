@@ -4590,6 +4590,20 @@ Route::middleware([
                 'destroy' => 'can:gaji-supir-batam-delete',
             ]);
 
+        Route::get('pranota-gaji-supir-batam/{pranotaGajiSupirBatam}/print', [\App\Http\Controllers\PranotaGajiSupirBatamController::class, 'print'])
+            ->name('pranota-gaji-supir-batam.print')
+            ->middleware('can:pranota-gaji-supir-batam-view');
+        Route::resource('pranota-gaji-supir-batam', \App\Http\Controllers\PranotaGajiSupirBatamController::class)
+            ->only(['index', 'create', 'store', 'show', 'destroy'])
+            ->parameters(['pranota-gaji-supir-batam' => 'pranotaGajiSupirBatam'])
+            ->middleware([
+                'index' => 'can:pranota-gaji-supir-batam-view',
+                'create' => 'can:pranota-gaji-supir-batam-create',
+                'store' => 'can:pranota-gaji-supir-batam-create',
+                'show' => 'can:pranota-gaji-supir-batam-view',
+                'destroy' => 'can:pranota-gaji-supir-batam-delete',
+            ]);
+
         // Report Kerja Supir Batam
         Route::get('report-kerja-supir-batam', [\App\Http\Controllers\ReportKerjaSupirBatamController::class, 'index'])
             ->name('report-kerja-supir-batam.index')

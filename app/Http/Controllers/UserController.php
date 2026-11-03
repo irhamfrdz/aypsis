@@ -797,6 +797,7 @@ class UserController extends Controller
                 'hrd-dashboard' => 'hrd-dashboard',
                 'mesin' => 'mesin',
                 'gaji-supir-batam' => 'gaji-supir-batam',
+                'pranota-gaji-supir-batam' => 'pranota-gaji-supir-batam',
                 'saldo-utang-karyawan' => 'saldo-utang-karyawan',
                 'permohonan-pinjaman-karyawan' => 'permohonan-pinjaman-karyawan',
             ];
@@ -4605,6 +4606,14 @@ class UserController extends Controller
                     }
 
                     if ($module === 'pranota-tagihan-lain-lain-batam' && in_array($action, ['view', 'create', 'delete'])) {
+                        $permission = Permission::where('name', $module.'-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                            $found = true;
+                        }
+                    }
+
+                    if ($module === 'pranota-gaji-supir-batam' && in_array($action, ['view', 'create', 'delete'], true)) {
                         $permission = Permission::where('name', $module.'-'.$action)->first();
                         if ($permission) {
                             $permissionIds[] = $permission->id;
