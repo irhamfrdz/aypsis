@@ -19,6 +19,7 @@ class PembayaranPranotaUangJalan extends Model
         'tanggal_pembayaran',
         'bank',
         'akun_coa_id',
+        'memo_biaya',
         'jenis_transaksi',
         'total_pembayaran',
         'total_tagihan_penyesuaian',
@@ -75,6 +76,11 @@ class PembayaranPranotaUangJalan extends Model
     public function akunCoa()
     {
         return $this->belongsTo(Coa::class, 'akun_coa_id');
+    }
+
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaUangJalanAkunItem::class, 'pembayaran_pranota_uang_jalan_id');
     }
 
     /**

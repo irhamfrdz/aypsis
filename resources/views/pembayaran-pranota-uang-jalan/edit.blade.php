@@ -138,18 +138,6 @@
                                     <option value="Kredit" {{ old('jenis_transaksi', $pembayaranPranotaUangJalan->jenis_transaksi) == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya bertambah, Bank berkurang)</option>
                                 </select>
                             </div>
-                            <div class="md:col-span-2">
-                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-500">*</span></label>
-                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
-                                    <option value="">-- Biaya Uang Jalan Muat (data lama) --</option>
-                                    @foreach($akunBiaya as $akun)
-                                        <option value="{{ $akun->id }}" {{ old('akun_coa_id', $pembayaranPranotaUangJalan->akun_coa_id) == $akun->id ? 'selected' : '' }}>
-                                            {{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                            </div>
                         </div>
                         <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
                             <div class="flex items-start">
@@ -164,6 +152,44 @@
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            @php
+                $akunRows = old('akun_items', $pembayaranPranotaUangJalan->akunItems->isNotEmpty()
+                    ? $pembayaranPranotaUangJalan->akunItems->map(fn ($item) => ['akun_coa_id' => $item->akun_coa_id, 'nominal' => $item->nominal, 'memo' => $item->memo])->all()
+                    : [['akun_coa_id' => $pembayaranPranotaUangJalan->akun_coa_id, 'nominal' => $pembayaranPranotaUangJalan->total_tagihan_setelah_penyesuaian, 'memo' => '']]);
+            @endphp
+            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                <div class="flex items-center justify-between gap-3 mb-2">
+                    <div>
+                        <h4 class="text-sm font-semibold text-gray-800">Rincian Akun Biaya</h4>
+                        <p class="text-xs text-gray-500">Jumlah seluruh akun harus sama dengan Total Akhir.</p>
+                    </div>
+                    <button type="button" id="add-akun-item" class="text-xs font-semibold text-indigo-700">+ Tambah Akun</button>
+                </div>
+                <div id="akun-items-list" class="space-y-3">
+                    @foreach($akunRows as $index => $row)
+                        <div class="akun-item-row rounded-md border border-gray-200 bg-white p-3">
+                            <div class="flex flex-wrap items-center gap-2">
+                                <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select {{ $inputClasses }} flex-1 min-w-48" required>
+                                    <option value="">-- Pilih Akun Biaya --</option>
+                                    @foreach($akunBiaya as $akun)
+                                        <option value="{{ $akun->id }}" @selected((string) ($row['akun_coa_id'] ?? '') === (string) $akun->id)>{{ $akun->nomor_akun ? $akun->nomor_akun.' - ' : '' }}{{ $akun->nama_akun }}</option>
+                                    @endforeach
+                                </select>
+                                <input type="number" name="akun_items[{{ $index }}][nominal]" class="akun-item-nominal {{ $inputClasses }} w-40" min="0.01" step="0.01" value="{{ $row['nominal'] ?? '' }}" placeholder="Nominal" required>
+                                <button type="button" class="remove-akun-item text-xs text-red-600">Hapus</button>
+                            </div>
+                            <textarea name="akun_items[{{ $index }}][memo]" class="akun-item-memo {{ $inputClasses }} mt-2" rows="2" maxlength="2000" placeholder="Memo/catatan akun ini (opsional)">{{ $row['memo'] ?? '' }}</textarea>
+                        </div>
+                    @endforeach
+                </div>
+                <div class="mt-2 text-xs text-gray-700">Total akun biaya: <strong id="akun-items-total">Rp 0</strong></div>
+                @error('akun_items')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                <div class="mt-3">
+                    <label for="memo_biaya" class="{{ $labelClasses }}">Memo Biaya</label>
+                    <textarea name="memo_biaya" id="memo_biaya" class="{{ $inputClasses }}" rows="2" maxlength="2000" placeholder="Memo biaya untuk seluruh pembayaran (opsional)">{{ old('memo_biaya', $pembayaranPranotaUangJalan->memo_biaya) }}</textarea>
                 </div>
             </div>
 
@@ -302,13 +328,6 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            if (window.jQuery && jQuery.fn.select2 && document.getElementById('akun_coa_id')) {
-                jQuery('#akun_coa_id').select2({
-                    width: '100%',
-                    placeholder: '-- Pilih Akun dari COA --',
-                    minimumResultsForSearch: 0
-                });
-            }
                 // Bank search functionality
                 const bankSearch = document.getElementById('bankSearch');
                 const bankSelect = document.getElementById('bank');
@@ -382,6 +401,51 @@
                 const searchPranota = document.getElementById('searchPranota');
                 const tanggalKas = document.getElementById('tanggal_kas');
                 const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
+                const akunList = document.getElementById('akun-items-list');
+                const akunTemplate = akunList.querySelector('.akun-item-row').cloneNode(true);
+
+                function initializeAkunSelect(root) {
+                    if (window.jQuery && jQuery.fn.select2) {
+                        jQuery(root).find('.akun-item-select').select2({ width: '100%' });
+                    }
+                }
+
+                function updateAkunRows() {
+                    const rows = [...akunList.querySelectorAll('.akun-item-row')];
+                    let sum = 0;
+                    rows.forEach((row, index) => {
+                        row.querySelector('.akun-item-select').name = `akun_items[${index}][akun_coa_id]`;
+                        row.querySelector('.akun-item-nominal').name = `akun_items[${index}][nominal]`;
+                        row.querySelector('.akun-item-memo').name = `akun_items[${index}][memo]`;
+                        sum += Number(row.querySelector('.akun-item-nominal').value) || 0;
+                    });
+                    const display = document.getElementById('akun-items-total');
+                    display.textContent = 'Rp ' + sum.toLocaleString('id-ID');
+                    display.classList.toggle('text-red-600', Math.abs(sum - (Number(totalSetelah.value) || 0)) > 0.01);
+                }
+
+                document.getElementById('add-akun-item').addEventListener('click', () => {
+                    const row = akunTemplate.cloneNode(true);
+                    row.querySelector('.akun-item-select').value = '';
+                    row.querySelector('.akun-item-nominal').value = '';
+                    row.querySelector('.akun-item-memo').value = '';
+                    akunList.appendChild(row);
+                    initializeAkunSelect(row);
+                    updateAkunRows();
+                });
+                akunList.addEventListener('click', event => {
+                    const button = event.target.closest('.remove-akun-item');
+                    if (!button || akunList.querySelectorAll('.akun-item-row').length <= 1) return;
+                    const row = button.closest('.akun-item-row');
+                    if (window.jQuery && jQuery(row.querySelector('.akun-item-select')).hasClass('select2-hidden-accessible')) {
+                        jQuery(row.querySelector('.akun-item-select')).select2('destroy');
+                    }
+                    row.remove();
+                    updateAkunRows();
+                });
+                akunList.addEventListener('input', updateAkunRows);
+                akunList.addEventListener('change', updateAkunRows);
+                initializeAkunSelect(akunList);
 
                 function updateTotalSetelah() {
                     const pembayaran = checkboxes.reduce((sum, checkbox) =>
@@ -390,6 +454,7 @@
                     totalPembayaran.value = pembayaran;
                     totalSetelah.value = pembayaran + penyesuaian;
                     selectAll.checked = checkboxes.length > 0 && checkboxes.every(checkbox => checkbox.checked);
+                    updateAkunRows();
                 }
 
                 checkboxes.forEach(checkbox => checkbox.addEventListener('change', updateTotalSetelah));
@@ -424,6 +489,12 @@
                     if (!checkboxes.some(checkbox => checkbox.checked)) {
                         event.preventDefault();
                         alert('Pilih minimal satu pranota uang jalan.');
+                    }
+                    const rows = [...akunList.querySelectorAll('.akun-item-row')];
+                    const sum = rows.reduce((total, row) => total + (Number(row.querySelector('.akun-item-nominal').value) || 0), 0);
+                    if (Math.abs(sum - (Number(totalSetelah.value) || 0)) > 0.01 || rows.some(row => !row.querySelector('.akun-item-select').value)) {
+                        event.preventDefault();
+                        alert('Jumlah nominal seluruh akun biaya harus sama dengan Total Akhir.');
                     }
                 });
                 updateTotalSetelah();
