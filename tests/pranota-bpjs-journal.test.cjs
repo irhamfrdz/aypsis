@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+globalThis.BpjsJournalAccounts = require('../public/js/bpjs-journal-accounts.json');
 require('../public/js/pranota-bpjs-journal.js');
 require('../public/js/pranota-bpjs-filters.js');
 require('../public/js/pranota-bpjs-performance.js');

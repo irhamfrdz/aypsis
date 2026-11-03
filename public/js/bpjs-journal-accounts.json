@@ -1,0 +1,57 @@
+[
+  [
+    "CREW",
+    "Crew",
+    "5501.001 - Biaya Gaji ABK"
+  ],
+  [
+    "HARIAN",
+    "Harian",
+    "6101.005 - Biaya Makan Jakarta"
+  ],
+  [
+    "TRANSFER",
+    "Transfer",
+    "6101.001 - Biaya Gaji Karyawan Tetap Jakarta"
+  ],
+  [
+    "TUNAI",
+    "Tunai",
+    "6101.001 - Biaya Gaji Karyawan Tetap Jakarta"
+  ],
+  [
+    "KANTOR",
+    "Kantor",
+    "6201.001 - Biaya Gaji Karyawan Tetap Batam"
+  ],
+  [
+    "LAPANGAN",
+    "Lapangan",
+    "6201.002 - Biaya Upah Harian Batam"
+  ],
+  [
+    "NONKARYPBM",
+    "Non Kary - PBM",
+    "5501.001 - Biaya Insentif Supir Truck Jakarta"
+  ],
+  [
+    "NONKARYUMKM",
+    "Non Kary - UMKM",
+    "5501.001 - Biaya Insentif Supir Truck Jakarta"
+  ],
+  [
+    "NONKARYUMKMKIS",
+    "Non Kary - UMKM KIS",
+    "5501.001 - Biaya Insentif Supir Truck Jakarta"
+  ],
+  [
+    "NONKARY",
+    "Non Kary",
+    "6101.007 - Biaya Pengobatan Jakarta"
+  ],
+  [
+    "NONKARYUMKMNONPP",
+    "Non Kary - UMKM non PP",
+    "6101.007 - Biaya Pengobatan Jakarta"
+  ]
+]

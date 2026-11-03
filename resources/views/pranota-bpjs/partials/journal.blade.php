@@ -14,3 +14,6 @@
         </table>
     </div>
 </section>
+
+@php($journalAccounts = json_decode(file_get_contents(public_path('js/bpjs-journal-accounts.json')), true))
+<script>window.BpjsJournalAccounts = @json($journalAccounts);</script>

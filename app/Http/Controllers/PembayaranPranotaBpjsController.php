@@ -51,8 +51,8 @@ class PembayaranPranotaBpjsController extends Controller
             'group_keys.*' => ['required', 'string', 'distinct'],
             'pranota_ids.*' => ['required', 'integer', 'distinct', 'exists:pranota_bpjs_headers,id'],
             'tanggal_pembayaran' => ['required', 'date'],
-            'bank_coa_id' => ['required', 'integer', Rule::exists('akun_coa', 'id')],
-            'akun_coa_id' => ['required', 'integer', 'different:bank_coa_id', Rule::exists('akun_coa', 'id')],
+            'bank_coa_id' => ['required_without:group_keys', 'nullable', 'integer', Rule::exists('akun_coa', 'id')],
+            'akun_coa_id' => ['required', 'integer', Rule::exists('akun_coa', 'id')],
             'nomor_accurate' => ['nullable', 'string', 'max:255'],
             'keterangan' => ['nullable', 'string', 'max:5000'],
         ]);
@@ -82,6 +82,7 @@ class PembayaranPranotaBpjsController extends Controller
                         if (count($selected) !== count($data['group_keys'])) {
                             throw ValidationException::withMessages(['group_keys' => 'Tipe sudah dibayar atau tidak tersedia. Muat ulang halaman.']);
                         }
+                        $data['bank_coa_id'] = (new \App\Services\BpjsJournalAccount)->selectedId(array_values($selected));
                         $parts = array_merge(...array_column(array_values($selected), 'parts'));
                         $subtotal = round(array_sum(array_column($parts, 'subtotal')), 2);
                         $paid = round((float) $pranota->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal'), 2);
@@ -92,6 +93,9 @@ class PembayaranPranotaBpjsController extends Controller
                     } else {
                         $allocations[$pranota->id] = ['subtotal' => (float) $pranota->grand_total, 'parts' => [], 'paid' => 0];
                     }
+                }
+                if ((int) $data['bank_coa_id'] === (int) $data['akun_coa_id']) {
+                    throw ValidationException::withMessages(['akun_coa_id' => 'Bank yang digunakan harus berbeda dengan Akun Bank dari jurnal.']);
                 }
                 // Lock accounts in a consistent order so concurrent payments preserve balances.
                 $accounts = Coa::whereIn('id', [$data['bank_coa_id'], $data['akun_coa_id']])->orderBy('id')->lockForUpdate()->get()->keyBy('id');

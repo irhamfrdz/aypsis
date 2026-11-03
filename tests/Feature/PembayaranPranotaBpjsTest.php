@@ -147,13 +147,17 @@ class PembayaranPranotaBpjsTest extends TestCase
     public function test_types_can_be_paid_separately_without_duplicate_components(): void
     {
         $pranota = $this->pranota('draft', 600);
-        foreach ([['KARY', 'PPU', 100, 200], ['NON KARY', 'BPU', 50, 250]] as [$jknType, $jamType, $jkn, $jam]) {
+        foreach ([['Crew', 'Crew', 100, 200], ['LAPANGAN', 'LAPANGAN', 50, 250]] as [$jknType, $jamType, $jkn, $jam]) {
             DB::table('pranota_bpjs_details')->insert([
                 'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => 1,
                 'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_jkn' => $jknType, 'tipe_bp_jamsostek' => $jamType]]),
                 'bpjs_kesehatan' => $jkn * 0.8, 'bpjs_ketenagakerjaan' => $jkn * 0.2, 'total' => $jkn + $jam,
             ]);
         }
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '5501.001', 'nama_akun' => 'Biaya Gaji ABK', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6201.002', 'nama_akun' => 'Biaya Upah Harian Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+        ]);
         $service = new \App\Services\BpjsPaymentParts;
         $groups = $service->groups($pranota);
         $this->assertCount(4, $groups);
@@ -166,7 +170,8 @@ class PembayaranPranotaBpjsTest extends TestCase
         $this->assertSame(0, DB::table('pembayaran_pranota_bpjs_parts')->count());
         $this->assertSame(0, PembayaranPranotaBpjs::count());
         $this->assertCount(4, $service->groups($pranota->fresh()));
-        $this->pay($this->payload([$pranota->id]) + ['group_keys' => [$first]]);
+        $automaticPayload = array_diff_key($this->payload([$pranota->id]), ['bank_coa_id' => true]);
+        $this->pay($automaticPayload + ['group_keys' => [$first]]);
         $this->assertSame('partial', $pranota->fresh()->status);
         $this->assertEquals(100, PembayaranPranotaBpjs::first()->total_pembayaran);
         $this->assertCount(3, $service->groups($pranota->fresh()));
@@ -177,14 +182,40 @@ class PembayaranPranotaBpjsTest extends TestCase
             $this->assertArrayHasKey('group_keys', $e->errors());
         }
         $remaining = array_keys($service->groups($pranota->fresh()));
-        $this->pay($this->payload([$pranota->id]) + ['group_keys' => $remaining]);
+        foreach ($remaining as $key) {
+            $this->pay($this->payload([$pranota->id]) + ['group_keys' => [$key]]);
+        }
         $this->assertSame('paid', $pranota->fresh()->status);
         $this->assertEquals(600, PembayaranPranotaBpjs::sum('total_pembayaran'));
-        $this->assertSame(2, $pranota->pembayaran()->count());
+        $this->assertSame(4, $pranota->pembayaran()->count());
+        $this->assertEquals(3, PembayaranPranotaBpjs::first()->bank_coa_id);
         $this->assertSame(4, DB::table('pembayaran_pranota_bpjs_parts')->count());
         $this->assertEquals(600, DB::table('coa_transactions')->sum('debit'));
         $this->assertEquals(600, DB::table('coa_transactions')->sum('kredit'));
         $this->assertSame([], $service->groups($pranota->fresh()));
+    }
+
+    public function test_journal_account_mapping_and_selection_validation(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '5501.001', 'nama_akun' => 'Biaya Gaji ABK', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6201.002', 'nama_akun' => 'Biaya Upah Harian Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+        ]);
+        $resolver = new \App\Services\BpjsJournalAccount;
+        $this->assertEquals(3, $resolver->resolve('BPU-CREW')->id);
+        $this->assertEquals(3, $resolver->resolve('', 'BPU-CREW')->id);
+        $this->assertEquals(4, $resolver->resolve('lapangan')->id);
+        $this->assertNull($resolver->resolve('Unknown'));
+        $this->assertNull($resolver->resolve('Kantor'));
+        $this->assertSame(3, $resolver->selectedId([['credit_id' => 3], ['credit_id' => 3]]));
+        foreach ([[['credit_id' => null]], [['credit_id' => 3], ['credit_id' => 4]]] as $groups) {
+            try {
+                $resolver->selectedId($groups);
+                $this->fail('Pemetaan akun tidak valid harus ditolak.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('group_keys', $e->errors());
+            }
+        }
     }
 
     public function test_show_route_binds_payment_and_endpoints_require_permissions(): void

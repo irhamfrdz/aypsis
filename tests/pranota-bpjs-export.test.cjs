@@ -2,6 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 require('../public/js/pranota-bpjs-jkn.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
+globalThis.BpjsJournalAccounts = require('../public/js/bpjs-journal-accounts.json');
 require('../public/js/pranota-bpjs-journal.js');
 require('../public/js/pranota-bpjs-export.js');
 

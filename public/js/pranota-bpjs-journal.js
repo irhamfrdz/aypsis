@@ -1,18 +1,6 @@
 (function (root) {
     const compact = value => String(value || '').toUpperCase().replace(/[\s_-]+/g, '');
-    const categories = [
-        ['CREW', 'Crew', '5501.001 - Biaya Gaji ABK'],
-        ['HARIAN', 'Harian', '6101.005 - Biaya Makan Jakarta'],
-        ['TRANSFER', 'Transfer', '6101.001 - Biaya Gaji Karyawan Tetap Jakarta'],
-        ['TUNAI', 'Tunai', '6101.001 - Biaya Gaji Karyawan Tetap Jakarta'],
-        ['KANTOR', 'Kantor', '6201.001 - Biaya Gaji Karyawan Tetap Batam'],
-        ['LAPANGAN', 'Lapangan', '6201.002 - Biaya Upah Harian Batam'],
-        ['NONKARYPBM', 'Non Kary - PBM', '5501.001 - Biaya Insentif Supir Truck Jakarta'],
-        ['NONKARYUMKM', 'Non Kary - UMKM', '5501.001 - Biaya Insentif Supir Truck Jakarta'],
-        ['NONKARYUMKMKIS', 'Non Kary - UMKM KIS', '5501.001 - Biaya Insentif Supir Truck Jakarta'],
-        ['NONKARY', 'Non Kary', '6101.007 - Biaya Pengobatan Jakarta'],
-        ['NONKARYUMKMNONPP', 'Non Kary - UMKM non PP', '6101.007 - Biaya Pengobatan Jakarta'],
-    ];
+    const categories = root.BpjsJournalAccounts;
     const fields = ['bpjs_kesehatan', 'bpjs_ketenagakerjaan', 'jht_biaya', 'jht_hutang',
         'jkk_tunjangan', 'jkm_tunjangan', 'jp_biaya', 'jp_hutang', 'jkk_hutang',
         'bpu_jkk_tunjangan', 'bpu_jkm', 'noncrew_jht_biaya', 'noncrew_jht_hutang',
