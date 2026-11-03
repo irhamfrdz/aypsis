@@ -8,6 +8,7 @@ use Illuminate\Support\Carbon;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Shared\Date as ExcelDate;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -118,6 +119,9 @@ class ApprovalTandaTerimaDuaExcelService
                 ->getStartColor()->setARGB('FFFCA5A5');
         }
         $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
+        $sheet->getStyle('AA'.$row.':AB'.$row)->getAlignment()
+            ->setHorizontal(Alignment::HORIZONTAL_CENTER)
+            ->setVertical(Alignment::VERTICAL_CENTER);
 
         foreach (['F' => 1, 'I' => data_get($manifestGood, 'jumlah'), 'L' => data_get($perincianGood, 'jumlah')] as $column => $value) {
             if (is_numeric($value)) {
