@@ -136,7 +136,7 @@ document.addEventListener('DOMContentLoaded', function () {
         update();
         const total = [...list.querySelectorAll('.akun-item-nominal')].reduce((sum, input) => sum + (Number(input.value) || 0), 0);
         const ids = [...list.querySelectorAll('.akun-item-select')].map(select => select.value);
-        if (Math.abs(total - expected()) > 0.01 || ids.some(id => !id) || new Set(ids).size !== ids.length) {
+        if (Math.abs(total - expected()) > 0.01 || ids.some(id => !id)) {
             event.preventDefault();
             alert('Periksa akun biaya dan nominalnya. Jumlah harus sama dengan total biaya sebelum DP, termasuk penyesuaian.');
         }
