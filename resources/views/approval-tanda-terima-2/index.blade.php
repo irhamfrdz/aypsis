@@ -177,6 +177,9 @@
                         <button id="approval-ttsj-open" type="button" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700"><i class="fas fa-plus" aria-hidden="true"></i>Tambah Tanda Terima</button>
                     @endif
                     <label class="inline-flex items-center gap-2 text-xs font-medium text-gray-700"><input id="approval-select-all" type="checkbox" class="rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih semua tanda terima di halaman ini">Pilih halaman ini</label>
+                    @if($containerQuantityTotal !== null)
+                        <span class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800">Total barang kontainer: {{ number_format($containerQuantityTotal, 0, ',', '.') }}</span>
+                    @endif
                     <form id="approval-bulk-export-form" method="POST" action="{{ route('approval-tanda-terima-2.export-bulk', ['sourceType' => $type]) }}" class="approval-export-form">
                         @csrf
                         <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" disabled>

@@ -183,6 +183,26 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
         }
 
+        $containerQuantityTotal = null;
+        $containerSearch = trim((string) ($filters['search'] ?? ''));
+        if ($containerSearch !== '' && ! preg_match('/[,\r\n]/', $containerSearch)) {
+            $containerColumn = $type === 'lcl' ? 'nomor_kontainer' : 'no_kontainer';
+            $containerQuery = (clone $query)->where(function ($query) use ($type, $containerColumn, $containerSearch) {
+                $query->where($containerColumn, 'like', "%{$containerSearch}%");
+                if ($type === 'lcl') {
+                    $query->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$containerSearch}%"));
+                }
+            });
+
+            if ($containerQuery->exists()) {
+                $containerQuantityTotal = ApprovalTandaTerimaDuaGoods::query()
+                    ->where('source_type', $type)
+                    ->whereIn('source_id', $containerQuery->select("{$sourceTable}.id"))
+                    ->cursor()
+                    ->sum(fn ($goods) => (int) data_get($goods->manifest_goods, '0.jumlah', 0));
+            }
+        }
+
         $items = $query
             ->leftJoin('approval_tanda_terima_2_orders as approval_order', function ($join) use ($type, $sourceTable) {
                 $join->on('approval_order.source_id', '=', $sourceTable.'.id')
@@ -212,6 +232,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'type' => $type,
             'destination' => $destination,
             'items' => $items,
+            'containerQuantityTotal' => $containerQuantityTotal,
             'goodsOverrides' => $goodsOverrides,
             'incompleteMarks' => $incompleteMarks,
             'exportedMarks' => $exportedMarks,

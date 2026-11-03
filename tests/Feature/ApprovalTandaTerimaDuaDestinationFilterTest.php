@@ -225,6 +225,49 @@ class ApprovalTandaTerimaDuaDestinationFilterTest extends TestCase
         $this->assertSame([$ttsjLast, $ttsjFirst], $controller->index($ttsjRequest)->getData()['items']->pluck('id')->all());
     }
 
+    public function test_container_search_totals_manifest_quantities_across_pages(): void
+    {
+        for ($quantity = 1; $quantity <= 21; $quantity++) {
+            $id = DB::table('tanda_terimas')->insertGetId([
+                'no_surat_jalan' => "JB-CONTAINER-{$quantity}",
+                'no_kontainer' => 'TEMU2703707',
+                'tanggal_surat_jalan' => '2026-11-03',
+                'tujuan_pengiriman' => 'Batam',
+            ]);
+            DB::table('approval_tanda_terima_2_goods')->insert([
+                'source_type' => 'fcl',
+                'source_id' => $id,
+                'goods' => '[]',
+                'manifest_goods' => json_encode([['nama_barang' => 'Barang', 'jumlah' => $quantity, 'satuan' => 'unit']]),
+            ]);
+        }
+
+        $otherId = DB::table('tanda_terimas')->insertGetId([
+            'no_surat_jalan' => 'JB-OTHER',
+            'no_kontainer' => 'OTHER1234567',
+            'tanggal_surat_jalan' => '2026-11-03',
+            'tujuan_pengiriman' => 'Batam',
+        ]);
+        DB::table('approval_tanda_terima_2_goods')->insert([
+            'source_type' => 'fcl',
+            'source_id' => $otherId,
+            'goods' => '[]',
+            'manifest_goods' => json_encode([['nama_barang' => 'Barang', 'jumlah' => 1000, 'satuan' => 'unit']]),
+        ]);
+
+        $controller = new ApprovalTandaTerimaDuaController;
+        $view = $controller->index(Request::create('/', 'GET', [
+            'type' => 'fcl', 'destination' => 'batam', 'search' => 'TEMU2703707',
+        ]));
+
+        $this->assertSame(21, $view->getData()['items']->total());
+        $this->assertCount(20, $view->getData()['items']);
+        $this->assertSame(231, $view->getData()['containerQuantityTotal']);
+        $this->assertNull($controller->index(Request::create('/', 'GET', [
+            'type' => 'fcl', 'destination' => 'batam', 'search' => 'JB-OTHER',
+        ]))->getData()['containerQuantityTotal']);
+    }
+
     public function test_new_ttsj_keeps_manifest_and_perincian_details_separate(): void
     {
         $shipperId = DB::table('shipper_consignees')->insertGetId([
