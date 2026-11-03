@@ -443,6 +443,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         ]);
         $ids = array_map('intval', $validated['ids']);
         $query = self::SOURCES[$sourceType]::with('shipperJb')->whereKey($ids);
+        $sourceTable = $query->getModel()->getTable();
         if ($sourceType === 'lcl') {
             $query->with('items', 'kontainerPivot');
         } elseif ($sourceType === 'fcl') {
@@ -450,17 +451,26 @@ class ApprovalTandaTerimaDuaController extends Controller
         } elseif ($sourceType === 'ttsj') {
             $query->with('dimensiItems');
         }
-        $receipts = $query->get()->keyBy('id');
+        $receipts = $query
+            ->leftJoin('approval_tanda_terima_2_orders as approval_order', function ($join) use ($sourceType, $sourceTable) {
+                $join->on('approval_order.source_id', '=', $sourceTable.'.id')
+                    ->where('approval_order.source_type', '=', $sourceType);
+            })
+            ->select($sourceTable.'.*')
+            ->orderByRaw("COALESCE(approval_order.position, {$sourceTable}.id) DESC")
+            ->orderBy($sourceTable.'.id', 'desc')
+            ->get()
+            ->keyBy('id');
         abort_if($receipts->count() !== count($ids), 404);
         if ($sourceType === 'fcl') {
             $receipts->each(fn ($receipt) => $this->ensureFclDetailsComplete($receipt));
         }
         $overrides = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)
             ->whereIn('source_id', $ids)->get()->keyBy('source_id');
-        $entries = array_map(fn ($id) => [
-            'receipt' => $receipts->get($id),
-            'override' => $overrides->get($id),
-        ], $ids);
+        $entries = $receipts->map(fn ($receipt) => [
+            'receipt' => $receipt,
+            'override' => $overrides->get($receipt->id),
+        ])->values()->all();
         $path = $excel->createMany($sourceType, $entries);
 
         $now = now();
