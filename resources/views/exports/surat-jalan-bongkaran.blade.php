@@ -40,8 +40,19 @@
             $consigneeFromManifest = static function ($item) use ($mode) {
                 $manifest = $mode === 'surat_jalan' ? $item->manifest : $item;
 
+                if ($manifest && ! $manifest->shipperJb && $manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty()) {
+                    $detailConsignees = $manifest->shipperDetails->pluck('penerima')
+                        ->filter(fn ($name) => filled($name))
+                        ->unique()
+                        ->implode(', ');
+
+                    if ($detailConsignees !== '') {
+                        return $detailConsignees;
+                    }
+                }
+
                 return $manifest?->shipperJb?->consignee
-                    ?: ($manifest?->shipperConsignee?->consignee ?: $manifest?->penerima);
+                    ?: ($manifest?->penerima ?: $manifest?->shipperConsignee?->consignee);
             };
         @endphp
 

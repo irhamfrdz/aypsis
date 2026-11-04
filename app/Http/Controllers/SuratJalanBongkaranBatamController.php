@@ -496,7 +496,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $mode = $request->get('mode', 'bl');
 
         if ($mode === 'surat_jalan') {
-            $query = SuratJalanBongkaranBatam::with(['manifest.shipperJb', 'manifest.shipperConsignee'])
+            $query = SuratJalanBongkaranBatam::with(['manifest.prospek', 'manifest.shipperJb', 'manifest.shipperConsignee', 'manifest.shipperDetails'])
                 ->leftJoin('manifests', 'surat_jalan_bongkaran_batams.manifest_id', '=', 'manifests.id')
                 ->select('surat_jalan_bongkaran_batams.*')
                 ->where('surat_jalan_bongkaran_batams.lokasi', 'batam');
@@ -538,7 +538,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 ->get();
             $filename = 'Surat_Jalan_Bongkaran_Batam_'.str_replace(' ', '_', $selectedKapal).'_'.str_replace('/', '-', $selectedVoyage).'.xlsx';
         } else {
-            $query = Manifest::with(['shipperJb', 'shipperConsignee']);
+            $query = Manifest::with(['prospek', 'shipperJb', 'shipperConsignee', 'shipperDetails']);
             $query->leftJoin('terms as t', 'manifests.term', '=', 't.kode')
                 ->select('manifests.*', 't.nama_status as term_nama');
             if ($selectedKapal) {
