@@ -229,9 +229,52 @@
                 </div>
             </div>
 
+            @if($manifest->isFclBooking() && $manifest->shipperDetails->isNotEmpty())
+            <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+                <h2 class="text-lg font-semibold text-gray-900 mb-2">Rincian Shipper FCL Booking</h2>
+                <p class="text-sm text-gray-500 mb-5">Setiap shipper yang ditambahkan dari tabel Manifest tersimpan sebagai rincian kontainer. Ubah datanya di bawah ini.</p>
+                @error('shipper_details')
+                    <p class="mb-4 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+                <div class="space-y-5">
+                    @foreach($manifest->shipperDetails as $detail)
+                        <div class="rounded-lg border border-gray-200 p-4">
+                            <h3 class="font-semibold text-gray-800 mb-4">Shipper {{ $loop->iteration }}@if($detail->nomor_tanda_terima) · {{ $detail->nomor_tanda_terima }}@endif</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                @foreach(['pengirim' => 'Shipper', 'alamat_pengirim' => 'Alamat Shipper', 'penerima' => 'Consignee', 'alamat_penerima' => 'Alamat Consignee', 'notify_party' => 'Notify Party', 'alamat_notify_party' => 'Alamat Notify Party'] as $field => $label)
+                                    <div>
+                                        <label for="detail_{{ $detail->id }}_{{ $field }}" class="block text-sm font-medium text-gray-700 mb-1">{{ $label }}</label>
+                                        @if(str_starts_with($field, 'alamat_'))
+                                            <textarea id="detail_{{ $detail->id }}_{{ $field }}" name="shipper_details[{{ $detail->id }}][{{ $field }}]" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">{{ old("shipper_details.{$detail->id}.{$field}", $detail->{$field}) }}</textarea>
+                                        @else
+                                            <input type="text" id="detail_{{ $detail->id }}_{{ $field }}" name="shipper_details[{{ $detail->id }}][{{ $field }}]" value="{{ old("shipper_details.{$detail->id}.{$field}", $detail->{$field}) }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" {{ $field === 'pengirim' ? 'required' : '' }}>
+                                        @endif
+                                        @error("shipper_details.{$detail->id}.{$field}")
+                                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+            @else
+            @php
+                $shipperSource = $manifest->shipperJb;
+                $editPengirim = $shipperSource?->shipper ?? $manifest->pengirim;
+                $editAlamatPengirim = $shipperSource?->alamat_shipper ?? $manifest->alamat_pengirim;
+                $editPenerima = $shipperSource?->consignee ?? $manifest->penerima;
+                $editAlamatPenerima = $shipperSource?->alamat_consignee ?? $manifest->alamat_penerima;
+                $editNotifyParty = $shipperSource?->notify_party_consignee ?? $manifest->notify_party;
+                $editAlamatNotifyParty = $shipperSource?->alamat_notify_party_consignee ?? $manifest->alamat_notify_party;
+            @endphp
             <!-- Informasi Pengirim & Penerima -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Pengirim & Penerima</h2>
+                @if($shipperSource)
+                    <p class="text-sm text-gray-500 mb-4">Data shipper dan consignee yang tampil di tabel berasal dari Approval Tanda Terima 2.</p>
+                @endif
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
                         <div class="flex items-center justify-between mb-2">
@@ -250,15 +293,15 @@
                                 <input type="hidden" name="shipper_id" id="shipper_id" value="{{ old('shipper_id', $manifest->shipper_id ?? '') }}">
                                 <input type="text" id="search_shipper" name="pengirim" placeholder="Search shipper..." autocomplete="off"
                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm"
-                                       value="{{ old('pengirim', $manifest->pengirim) }}">
+                                       value="{{ old('pengirim', $editPengirim) }}">
                                 <select id="pengirim_id" class="hidden">
                                     <option value="">- Pilih Shipper -</option>
-                                    @if($manifest->pengirim)
-                                        <option value="{{ $manifest->pengirim }}" 
-                                                data-alamat="{{ $manifest->alamat_pengirim }}"
-                                                data-edit-url="{{ $manifest->shipper_id ? route('master.shipper-consignee.edit', $manifest->shipper_id) : '#' }}"
+                                    @if($editPengirim)
+                                        <option value="{{ $editPengirim }}"
+                                                data-alamat="{{ $editAlamatPengirim }}"
+                                                data-edit-url="{{ ($shipperSource?->id ?? $manifest->shipper_id) ? route('master.shipper-consignee.edit', $shipperSource?->id ?? $manifest->shipper_id) : '#' }}"
                                                 selected>
-                                            {{ $manifest->pengirim }}
+                                            {{ $editPengirim }}
                                         </option>
                                     @endif
                                 </select>
@@ -272,7 +315,7 @@
                     <div>
                         <label for="alamat_pengirim" class="block text-sm font-medium text-gray-700 mb-2">Alamat Pengirim</label>
                         <textarea name="alamat_pengirim" id="alamat_pengirim" rows="1"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_pengirim', $manifest->alamat_pengirim) }}</textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_pengirim', $editAlamatPengirim) }}</textarea>
                     </div>
 
                     <div>
@@ -291,11 +334,11 @@
                             <div class="dropdown-container-consignee">
                                 <input type="text" name="penerima" id="search_consignee" placeholder="Search consignee..." autocomplete="off"
                                        class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-purple-500 bg-white text-sm"
-                                       value="{{ old('penerima', $manifest->penerima) }}">
+                                       value="{{ old('penerima', $editPenerima) }}">
                                 <select id="penerima_id" class="hidden">
                                     <option value="">- Pilih Consignee -</option>
-                                    @if(old('penerima', $manifest->penerima))
-                                        <option value="{{ old('penerima', $manifest->penerima) }}" selected>{{ old('penerima', $manifest->penerima) }}</option>
+                                    @if(old('penerima', $editPenerima))
+                                        <option value="{{ old('penerima', $editPenerima) }}" selected>{{ old('penerima', $editPenerima) }}</option>
                                     @endif
                                 </select>
                                 <div id="dropdown_options_consignee" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
@@ -306,15 +349,21 @@
                     </div>
 
                     <div>
+                        <label for="alamat_penerima" class="block text-sm font-medium text-gray-700 mb-2">Alamat Consignee</label>
+                        <textarea name="alamat_penerima" id="alamat_penerima" rows="2"
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_penerima', $editAlamatPenerima) }}</textarea>
+                    </div>
+
+                    <div>
                         <label for="notify_party" class="block text-sm font-medium text-gray-700 mb-2">NOTIFY PARTY</label>
-                        <input type="text" name="notify_party" id="notify_party" value="{{ old('notify_party', $manifest->notify_party) }}"
+                        <input type="text" name="notify_party" id="notify_party" value="{{ old('notify_party', $editNotifyParty) }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                     </div>
 
                     <div>
                         <label for="alamat_notify_party" class="block text-sm font-medium text-gray-700 mb-2">Alamat Notify Party</label>
                         <textarea name="alamat_notify_party" id="alamat_notify_party" rows="1"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_notify_party', $manifest->alamat_notify_party) }}</textarea>
+                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('alamat_notify_party', $editAlamatNotifyParty) }}</textarea>
                     </div>
 
 
@@ -332,6 +381,7 @@
                     </div>
                 </div>
             </div>
+            @endif
 
             <!-- Action Buttons -->
             <div class="flex justify-end gap-3">
@@ -557,6 +607,17 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Initialize Prospek Dropdown for both regular and FCL Booking manifests.
+    initSearchableDropdown({
+        containerSelector: '.dropdown-container-prospek',
+        searchInputId: 'search_prospek',
+        selectElementId: 'prospek_id',
+        optionsContainerId: 'dropdown_options_prospek',
+        apiUrl: '/api/manifests/search-prospeks'
+    });
+
+    if (!document.getElementById('search_shipper')) return;
+
     // Initialize Shipper Dropdown
     const editLink = document.getElementById('edit_shipper_link');
     function updateEditLink() {
@@ -643,15 +704,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Optional: You can auto-fill alamat if needed, like shipper
             updateEditConsigneeLink();
         }
-    });
-
-    // Initialize Prospek Dropdown
-    initSearchableDropdown({
-        containerSelector: '.dropdown-container-prospek',
-        searchInputId: 'search_prospek',
-        selectElementId: 'prospek_id',
-        optionsContainerId: 'dropdown_options_prospek',
-        apiUrl: '/api/manifests/search-prospeks'
     });
 
     // Initial state for edit link

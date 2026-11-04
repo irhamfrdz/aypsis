@@ -300,6 +300,7 @@ class ManifestController extends Controller
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
+            'alamat_penerima' => 'nullable|string',
             'alamat_pengiriman' => 'nullable|string',
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
@@ -349,7 +350,7 @@ class ManifestController extends Controller
      */
     public function edit(string $id)
     {
-        $manifest = Manifest::findOrFail($id);
+        $manifest = Manifest::with(['prospek', 'shipperJb', 'shipperDetails'])->findOrFail($id);
         // Load current prospek plus a few others
         $prospeks = \App\Models\Prospek::where('id', $manifest->prospek_id)
             ->union(\App\Models\Prospek::orderBy('pt_pengirim')->limit(20))
@@ -399,10 +400,19 @@ class ManifestController extends Controller
             'pengirim' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
             'penerima' => 'nullable|string|max:255',
+            'alamat_penerima' => 'nullable|string',
             'alamat_pengiriman' => 'nullable|string',
             'notify_party' => 'nullable|string|max:255',
             'alamat_notify_party' => 'nullable|string',
             'contact_person' => 'nullable|string|max:255',
+            'shipper_details' => 'nullable|array',
+            'shipper_details.*' => 'array:pengirim,alamat_pengirim,penerima,alamat_penerima,notify_party,alamat_notify_party',
+            'shipper_details.*.pengirim' => 'required|string|max:255',
+            'shipper_details.*.alamat_pengirim' => 'nullable|string',
+            'shipper_details.*.penerima' => 'nullable|string|max:255',
+            'shipper_details.*.alamat_penerima' => 'nullable|string',
+            'shipper_details.*.notify_party' => 'nullable|string|max:255',
+            'shipper_details.*.alamat_notify_party' => 'nullable|string',
             'tonnage' => 'nullable|numeric|min:0|decimal:0,3',
             'tonnage_perincian' => 'nullable|numeric',
             'volume' => 'nullable|numeric',
@@ -428,7 +438,23 @@ class ManifestController extends Controller
             }
         }
 
-        $manifest->update($validated);
+        $shipperDetails = $validated['shipper_details'] ?? [];
+        unset($validated['shipper_details']);
+
+        DB::transaction(function () use ($manifest, $validated, $shipperDetails) {
+            if ($shipperDetails && ! $manifest->isFclBooking()) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'shipper_details' => 'Rincian shipper hanya tersedia untuk FCL Booking.',
+                ]);
+            }
+
+            foreach ($shipperDetails as $detailId => $fields) {
+                $detail = $manifest->shipperDetails()->findOrFail($detailId);
+                $detail->update(array_merge($fields, ['updated_by' => Auth::id()]));
+            }
+
+            $manifest->update($validated);
+        });
 
         $listQuery = array_intersect_key($request->query(), array_flip([
             'nama_kapal', 'no_voyage', 'page', 'search', 'tipe_kontainer', 'size_kontainer', 'tanpa_size',
