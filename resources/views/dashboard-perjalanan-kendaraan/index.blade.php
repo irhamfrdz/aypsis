@@ -199,6 +199,7 @@
                                                                     <th class="px-3 py-2">Barang/Servis</th>
                                                                     <th class="px-3 py-2">Tipe</th>
                                                                     <th class="px-3 py-2">Jumlah</th>
+                                                                    <th class="px-3 py-2 text-right">Biaya</th>
                                                                     <th class="px-3 py-2">Posisi</th>
                                                                     <th class="px-3 py-2">No. Bukti</th>
                                                                     <th class="px-3 py-2">Keterangan</th>
@@ -211,6 +212,7 @@
                                                                         <td class="px-3 py-2 font-medium">{{ $usage['nama_barang'] }}</td>
                                                                         <td class="px-3 py-2">{{ $usage['type_barang'] ?: '-' }}</td>
                                                                         <td class="whitespace-nowrap px-3 py-2">{{ number_format((float) $usage['jumlah'], 2, ',', '.') }} {{ $usage['satuan'] }}</td>
+                                                                        <td class="whitespace-nowrap px-3 py-2 text-right font-semibold">Rp {{ number_format((float) $usage['biaya'], 0, ',', '.') }}</td>
                                                                         <td class="px-3 py-2">{{ $usage['posisi'] }}</td>
                                                                         <td class="px-3 py-2">{{ $usage['nomor_bukti'] ?: '-' }}</td>
                                                                         <td class="px-3 py-2">{{ $usage['keterangan'] ?: '-' }}</td>

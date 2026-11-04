@@ -36,6 +36,7 @@ class VehicleAmprahanUsageService
                 'nama_barang' => $stock?->nama_barang ?: ($stock?->masterNamaBarangAmprahan?->nama_barang ?: '-'),
                 'type_barang' => $stock?->type_barang,
                 'jumlah' => $usage->jumlah,
+                'biaya' => (float) $usage->jumlah * (float) ($stock?->harga_satuan ?? 0),
                 'satuan' => $stock?->satuan,
                 'keterangan' => $usage->keterangan,
                 'nomor_bukti' => $stock?->nomor_bukti,
