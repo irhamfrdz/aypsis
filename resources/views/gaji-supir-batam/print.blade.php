@@ -202,6 +202,12 @@
             <td>Potongan Biaya Bensin @if(isset($totalLiter) && $totalLiter > 0) (Total: {{ str_replace('.', ',', $totalLiter) }} L / Rp {{ number_format($totalBiaya, 0, ',', '.') }}) @endif</td>
             <td class="text-right font-bold">Rp {{ number_format($gaji->biaya_bensin ?? 0, 0, ',', '.') }}</td>
         </tr>
+        @if($gaji->is_potongan_5_persen)
+        <tr>
+            <td>Potongan 5% dari Gaji Bersih</td>
+            <td class="text-right font-bold">Rp {{ number_format($gaji->nominal_potongan_5_persen, 0, ',', '.') }}</td>
+        </tr>
+        @endif
         <tr>
             <td class="font-bold">Total Gaji Bersih</td>
             <td class="text-right font-bold">Rp {{ number_format($gaji->total_gaji, 0, ',', '.') }}</td>
