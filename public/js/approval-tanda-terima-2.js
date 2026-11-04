@@ -89,17 +89,23 @@
                         .forEach(formatNumberInput);
                 }
             });
-            if (fieldPrefix === 'goods' && section.dataset.savedOverride === 'true') {
-                const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows').children;
+            if (fieldPrefix === 'goods') {
+                const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows')?.children ?? [];
+                const hasSavedOverride = section.dataset.savedOverride === 'true';
                 Array.from(rows.children).forEach((row, index) => {
                     const manifestRow = manifestRows[index];
-                    const manifestName = manifestRow?.querySelector('[data-field="nama_barang"] textarea')?.value.trim();
-                    if (!manifestName) return;
-                    row.querySelectorAll('td[data-field] input, td[data-field] textarea').forEach(input => {
-                        const field = input.name.match(/\[([^\]]+)\]$/)?.[1];
+                    if (!manifestRow) return;
+                    ['nama_barang', 'jumlah', 'satuan'].forEach(field => {
+                        const input = row.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
                         const sourceInput = manifestRow.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
-                        if (sourceInput && input.value !== sourceInput.value) input.dataset.manuallyEdited = 'true';
+                        if (!input || !sourceInput) return;
+                        if (hasSavedOverride && input.value.trim() && input.value !== sourceInput.value) {
+                            input.dataset.manuallyEdited = 'true';
+                        } else if (sourceInput.value.trim()) {
+                            input.value = sourceInput.value;
+                        }
                     });
+                    toggleUkuranField(row);
                 });
             }
 
