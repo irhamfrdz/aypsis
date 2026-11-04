@@ -59,6 +59,10 @@ class ManifestExcelService
         $itemName = $detail?->nama_barang ?: $manifest->nama_barang;
         $quantity = $detail?->kuantitas ?? $manifest->kuantitas;
         $unit = $detail?->satuan ?: $manifest->satuan;
+        $perincian = $detail ? null : data_get($manifest->perincian_barang, '0');
+        $perincianName = data_get($perincian, 'nama_barang') ?: $itemName;
+        $perincianQuantity = data_get($perincian, 'jumlah') ?? $quantity;
+        $perincianUnit = data_get($perincian, 'satuan') ?: $unit;
         $date = $detail?->penerimaan ?: $manifest->tanggal_berangkat ?: $manifest->penerimaan;
         $number = $detail?->nomor_tanda_terima ?: $manifest->nomor_tanda_terima_display;
         $shipperValues = [
@@ -85,8 +89,8 @@ class ManifestExcelService
             'H' => $this->containerDescription($manifest),
             'J' => $unit,
             'K' => $itemName,
-            'M' => $unit,
-            'N' => $itemName,
+            'M' => $perincianUnit,
+            'N' => $perincianName,
             'Q' => $shipperValues['shipper'],
             'R' => $shipperValues['alamat_shipper'],
             'S' => $shipperValues['npwp_shipper'],
@@ -122,7 +126,7 @@ class ManifestExcelService
             $sheet->getStyle('AA'.$row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
         }
 
-        foreach (['F' => 1, 'I' => $quantity, 'L' => $quantity] as $column => $value) {
+        foreach (['F' => 1, 'I' => $quantity, 'L' => $perincianQuantity] as $column => $value) {
             if (is_numeric($value)) {
                 $sheet->setCellValue($column.$row, (int) $value);
             }

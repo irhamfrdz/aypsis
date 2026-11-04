@@ -112,9 +112,38 @@
             <h2 class="text-lg font-semibold text-gray-900 mb-4 pb-3 border-b">Informasi Barang</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-500 mb-1">Nama Barang</label>
+                    <label class="block text-sm font-medium text-gray-500 mb-1">Barang Manifest</label>
                     <p class="text-base text-gray-900 whitespace-pre-line">{{ $manifest->nama_barang ?? '-' }}</p>
                 </div>
+                @if($manifest->perincian_barang)
+                    <div class="md:col-span-2">
+                        <label class="block text-sm font-medium text-gray-500 mb-2">Detail Barang Perincian</label>
+                        <div class="overflow-x-auto rounded-lg border border-gray-200">
+                            <table class="min-w-full text-sm">
+                                <thead class="bg-gray-50 text-left text-gray-600">
+                                    <tr>
+                                        <th class="px-3 py-2">Nama Barang</th>
+                                        <th class="px-3 py-2">Jumlah</th>
+                                        <th class="px-3 py-2">Satuan</th>
+                                        <th class="px-3 py-2">Ukuran</th>
+                                        <th class="px-3 py-2">Keterangan</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="divide-y divide-gray-200">
+                                    @foreach($manifest->perincian_barang as $barang)
+                                        <tr>
+                                            <td class="px-3 py-2">{{ $barang['nama_barang'] ?? '-' }}</td>
+                                            <td class="px-3 py-2">{{ $barang['jumlah'] ?? '-' }}</td>
+                                            <td class="px-3 py-2">{{ $barang['satuan'] ?? '-' }}</td>
+                                            <td class="px-3 py-2">{{ $barang['ukuran'] ?? '-' }}</td>
+                                            <td class="px-3 py-2">{{ $barang['keterangan_barang'] ?? '-' }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                @endif
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Tonnage</label>
                     <p class="text-base text-gray-900">{{ $manifest->tonnage_input ?? '-' }}</p>

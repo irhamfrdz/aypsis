@@ -13,6 +13,19 @@ use Illuminate\Support\Facades\DB;
 
 class ManifestController extends Controller
 {
+    private function normalizePerincianBarang(array $rows): ?array
+    {
+        foreach ($rows as $index => $item) {
+            if (blank($item['nama_barang'] ?? null) && collect($item)->contains(fn ($value) => filled($value))) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    "perincian_barang.{$index}.nama_barang" => 'Nama barang perincian wajib diisi jika rincian lainnya diisi.',
+                ]);
+            }
+        }
+
+        return collect($rows)->filter(fn ($item) => filled($item['nama_barang'] ?? null))->values()->all() ?: null;
+    }
+
     public function __construct()
     {
         $this->middleware('permission:manifest-view')->only(['index', 'show', 'export', 'printDocument']);
@@ -95,6 +108,7 @@ class ManifestController extends Controller
                     ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
                     ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                     ->orWhere('nama_barang', 'LIKE', "%{$search}%")
+                    ->orWhere('perincian_barang', 'LIKE', "%{$search}%")
                     ->orWhere('pengirim', 'LIKE', "%{$search}%")
                     ->orWhere('penerima', 'LIKE', "%{$search}%")
                     ->orWhereHas('shipperJb', function ($shipper) use ($search) {
@@ -191,6 +205,7 @@ class ManifestController extends Controller
                     ->orWhere('nomor_kontainer', 'LIKE', "%{$search}%")
                     ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                     ->orWhere('nama_barang', 'LIKE', "%{$search}%")
+                    ->orWhere('perincian_barang', 'LIKE', "%{$search}%")
                     ->orWhere('pengirim', 'LIKE', "%{$search}%")
                     ->orWhere('penerima', 'LIKE', "%{$search}%")
                     ->orWhereHas('shipperJb', function ($shipper) use ($search) {
@@ -260,6 +275,13 @@ class ManifestController extends Controller
             'nama_kapal' => 'nullable|string|max:255',
             'tanggal_berangkat' => 'nullable|date',
             'nama_barang' => 'nullable|string',
+            'perincian_barang' => 'nullable|array|max:1',
+            'perincian_barang.*' => 'array',
+            'perincian_barang.*.nama_barang' => 'nullable|string|max:255',
+            'perincian_barang.*.jumlah' => 'nullable|integer|min:0',
+            'perincian_barang.*.satuan' => 'nullable|string|max:100',
+            'perincian_barang.*.ukuran' => 'nullable|string|max:255',
+            'perincian_barang.*.keterangan_barang' => 'nullable|string|max:2000',
 
             'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
@@ -282,6 +304,7 @@ class ManifestController extends Controller
 
         $validated['created_by'] = Auth::id();
         $validated['updated_by'] = Auth::id();
+        $validated['perincian_barang'] = $this->normalizePerincianBarang($validated['perincian_barang'] ?? []);
 
         if (! empty($validated['pengirim'])) {
             $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $validated['pengirim'])->orWhere('nickname1', $validated['pengirim'])->first();
@@ -351,6 +374,13 @@ class ManifestController extends Controller
             'nama_kapal' => 'nullable|string|max:255',
             'tanggal_berangkat' => 'nullable|date',
             'nama_barang' => 'nullable|string',
+            'perincian_barang' => 'nullable|array|max:1',
+            'perincian_barang.*' => 'array',
+            'perincian_barang.*.nama_barang' => 'nullable|string|max:255',
+            'perincian_barang.*.jumlah' => 'nullable|integer|min:0',
+            'perincian_barang.*.satuan' => 'nullable|string|max:100',
+            'perincian_barang.*.ukuran' => 'nullable|string|max:255',
+            'perincian_barang.*.keterangan_barang' => 'nullable|string|max:2000',
 
             'shipper_id' => 'nullable|integer',
             'pengirim' => 'nullable|string|max:255',
@@ -376,6 +406,7 @@ class ManifestController extends Controller
         }
 
         $validated['updated_by'] = Auth::id();
+        $validated['perincian_barang'] = $this->normalizePerincianBarang($validated['perincian_barang'] ?? []);
 
         if (! empty($validated['pengirim'])) {
             $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $validated['pengirim'])->orWhere('nickname1', $validated['pengirim'])->first();

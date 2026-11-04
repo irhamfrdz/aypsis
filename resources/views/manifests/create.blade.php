@@ -148,6 +148,7 @@
                         <textarea name="nama_barang" id="nama_barang" rows="3"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('nama_barang') }}</textarea>
                     </div>
+                    @include('manifests.partials.perincian-barang-form')
 
                     <div>
                         <label for="tonnage" class="block text-sm font-medium text-gray-700 mb-2">Tonnage</label>

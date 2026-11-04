@@ -11,6 +11,7 @@ use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Services\ApprovalTandaTerimaDuaExcelService;
+use App\Services\ManifestApprovalGoodsSync;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -763,9 +764,12 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         self::SOURCES[$sourceType]::findOrFail($id);
-        $this->saveApprovalGoods($sourceType, $id, $this->validateApprovalGoods($request));
+        DB::transaction(function () use ($sourceType, $id, $request) {
+            $this->saveApprovalGoods($sourceType, $id, $this->validateApprovalGoods($request));
+            app(ManifestApprovalGoodsSync::class)->syncSource($sourceType, $id);
+        });
 
-        return back()->with('success', 'Detail barang approval berhasil disimpan tanpa mengubah data tanda terima asli.');
+        return back()->with('success', 'Detail barang approval berhasil disimpan dan Manifest terkait diperbarui.');
     }
 
     private function validateApprovalGoods(Request $request): array

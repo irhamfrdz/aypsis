@@ -182,6 +182,7 @@ class SyncNaikKapalToManifest extends Command
                                         $existingManifest->save();
                                     }
                                 }
+                                app(\App\Services\ManifestApprovalGoodsSync::class)->syncManifest($existingManifest);
                             } else {
                                 $lastManifest = Manifest::whereNotNull('nomor_bl')->orderBy('id', 'desc')->first();
                                 if ($lastManifest && $lastManifest->nomor_bl) {
@@ -305,6 +306,7 @@ class SyncNaikKapalToManifest extends Command
                             $existingManifest->save();
                         }
                     }
+                    app(\App\Services\ManifestApprovalGoodsSync::class)->syncManifest($existingManifest);
                 } else {
                     // Create new
                     Manifest::create($manifestData);

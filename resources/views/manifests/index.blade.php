@@ -246,7 +246,7 @@
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Tipe & Size</th>
-                            <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Nama Barang</th>
+                            <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Barang Manifest / Perincian</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">Kuantitas</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider w-32">SHIPPER</th>
                             <th class="px-2 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider w-32">ALAMAT PENGIRIM</th>
@@ -332,7 +332,15 @@
                                 {{ $manifest->tipe_kontainer }}<br><span class="text-gray-500">{{ $manifest->size_kontainer }}'</span>
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
-                                {{ $manifest->nama_barang }}
+                                <div class="font-semibold">{{ $manifest->nama_barang }}</div>
+                                @foreach($manifest->perincian_barang ?? [] as $barang)
+                                    <div class="mt-1 text-[10px] text-gray-600">
+                                        Perincian: {{ $barang['nama_barang'] ?? '-' }}
+                                        @if(isset($barang['jumlah']) || !empty($barang['satuan']))
+                                            ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
+                                        @endif
+                                    </div>
+                                @endforeach
                             </td>
                             <td class="px-2 py-3">
                                 @can('manifest-edit')

@@ -419,7 +419,7 @@
                                     </div>
                                     <p class="mx-5 mt-4 rounded-lg bg-indigo-50 px-3 py-2 text-xs text-indigo-800">
                                         {{ $goodsOverride ? 'Periksa atau perbarui detail barang manifest dan perincian.' : 'Lengkapi detail barang manifest dan perincian untuk approval.' }}
-                                        Kolom bertanda * wajib diisi. Perubahan hanya berlaku pada versi approval.
+                                        Kolom bertanda * wajib diisi. Barang Manifest dan Perincian akan digunakan pada Manifest terkait.
                                     </p>
                                     @can('approval-tanda-terima-2-approve')
                                         <form method="POST" action="{{ route('approval-tanda-terima-2.update-goods', ['sourceType' => $type, 'id' => $item->id]) }}">

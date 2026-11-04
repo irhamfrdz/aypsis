@@ -8,6 +8,11 @@ class Manifest extends Model
 {
     private bool $applyingShipperJb = false;
 
+    protected static function booted(): void
+    {
+        static::created(fn (self $manifest) => app(\App\Services\ManifestApprovalGoodsSync::class)->syncManifest($manifest));
+    }
+
     protected $fillable = [
         'nomor_bl',
         'nomor_urut',
@@ -28,6 +33,7 @@ class Manifest extends Model
         'nama_kapal',
         'tanggal_berangkat',
         'nama_barang',
+        'perincian_barang',
 
         'pengirim',
         'alamat_pengirim',
@@ -69,6 +75,7 @@ class Manifest extends Model
         'volume' => 'decimal:3',
         'volume_perincian' => 'decimal:3',
         'kuantitas' => 'integer',
+        'perincian_barang' => 'array',
         'tanggal_mulai_berlayar' => 'date',
         'tanggal_berlabuh' => 'date',
         'tanggal_sandar' => 'date',
