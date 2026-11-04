@@ -100,11 +100,19 @@ class PranotaGajiSupirBatamController extends Controller
                     'gaji_pokok' => $items->sum(fn ($item) => (float) ($item->gaji?->gaji_pokok ?? 0)),
                     'uang_malam_libur' => $items->sum(fn ($item) => (float) ($item->gaji?->uang_malam_libur ?? 0)),
                     'biaya_bensin' => $items->sum(fn ($item) => (float) ($item->gaji?->biaya_bensin ?? 0)),
+                    'has_potongan_5_persen' => $items->contains(fn ($item) => (bool) ($item->gaji?->is_potongan_5_persen ?? false)),
+                    'potongan_5_persen' => $items->sum(fn ($item) => ($item->gaji?->is_potongan_5_persen ?? false)
+                        ? (float) ($item->gaji?->nominal_potongan_5_persen ?? 0) : 0),
                     'total_gaji' => $items->sum(fn ($item) => (float) $item->total_gaji),
                 ];
             })->values();
+        $showPotongan = $drivers->contains(fn ($driver) => $driver->has_potongan_5_persen);
 
-        return view('pranota-gaji-supir-batam.print', ['pranota' => $pranotaGajiSupirBatam, 'drivers' => $drivers]);
+        return view('pranota-gaji-supir-batam.print', [
+            'pranota' => $pranotaGajiSupirBatam,
+            'drivers' => $drivers,
+            'showPotongan' => $showPotongan,
+        ]);
     }
 
     public function destroy(PranotaGajiSupirBatam $pranotaGajiSupirBatam)

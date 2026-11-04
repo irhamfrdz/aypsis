@@ -54,7 +54,9 @@
         <table>
             <thead><tr>
                 <th style="width:4%">No</th><th style="width:9%">NIK</th><th style="width:18%">Supir</th>
-                <th>Uang Jalan</th><th>Uang Lembur</th><th>Uang Bensin</th><th>BPJS</th><th>PPH</th><th>Gaji Bersih</th>
+                <th>Uang Jalan</th><th>Uang Lembur</th><th>Uang Bensin</th>
+                @if($showPotongan)<th>Potongan 5%</th>@endif
+                <th>BPJS</th><th>PPH</th><th>Gaji Bersih</th>
             </tr></thead>
             <tbody>
                 @foreach($drivers as $driver)
@@ -65,6 +67,9 @@
                         <td class="text-right">Rp {{ number_format((float) $driver->gaji_pokok, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format((float) $driver->uang_malam_libur, 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format((float) $driver->biaya_bensin, 0, ',', '.') }}</td>
+                        @if($showPotongan)
+                            <td class="text-right">@if($driver->has_potongan_5_persen)Rp {{ number_format((float) $driver->potongan_5_persen, 0, ',', '.') }}@endif</td>
+                        @endif
                         <td class="text-right"></td>
                         <td class="text-right"></td>
                         <td class="text-right">Rp {{ number_format((float) $driver->total_gaji, 0, ',', '.') }}</td>
@@ -72,7 +77,7 @@
                 @endforeach
             </tbody>
             <tfoot><tr class="total-row">
-                <td colspan="8" class="text-right">Total Pranota</td>
+                <td colspan="{{ $showPotongan ? 9 : 8 }}" class="text-right">Total Pranota</td>
                 <td class="text-right">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</td>
             </tr></tfoot>
         </table>
