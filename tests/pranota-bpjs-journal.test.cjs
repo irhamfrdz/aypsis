@@ -107,40 +107,45 @@ test('live journal follows visible employees and component filters, refreshes af
     try {
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '142');
+        // Grand total keeps decimal precision; row0: KES=100 KET=25 JHT=10+5 JKK=1 JKM=1 = 142,00
+        assert.equal(totals.grand_total.textContent, '142,00');
         assert.equal(body.children[0].children[1].textContent, '100');
         assert.equal(body.children[1].children[2].textContent, '10');
         input.value = '200.25';
         BpjsAllowances.update(container, Number, String);
         assert.equal(body.children.length, 11);
-        assert.equal(totals.grand_total.textContent, '242');
+        // 200.25 + 25 + 10 + 5 + 1 + 1 = 242.25 (precise)
+        assert.equal(totals.grand_total.textContent, '242,25');
         container.bpjsJournalFilter = { records: [
             { jenis: 'jkn', group_name: 'JKN-KIS', tipe: 'CREW' },
             { jenis: 'jamsostek', group_name: 'PPU', tipe: 'Harian' },
         ], group: 'JKN-KIS', tipe: 'all' };
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '225');
+        // JKN-KIS filter: only KES (200.25) + KET (25) match = 225.25
+        assert.equal(totals.grand_total.textContent, '225,25');
         assert.equal(body.children[1].children[2].textContent, '-');
         container.bpjsJournalFilter.group = 'all';
         container.bpjsJournalFilter.tipe = 'Harian';
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '17');
+        // Harian filter: only Jamsostek (10+5+1+1=17) matches = 17.00
+        assert.equal(totals.grand_total.textContent, '17,00');
         assert.equal(body.children[0].children[1].textContent, '-');
         assert.equal(body.children[1].children[3].textContent, '5');
         // Filtering must not alter the underlying employee contributions.
         assert.equal(rows[0].bpjsJournalRecord.amounts.bpjs_kesehatan, 200.25);
         rows[0].classList.contains = () => true;
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '0');
+        assert.equal(totals.grand_total.textContent, '0,00');
         assert.equal(totals.debit.textContent, '0');
         container.bpjsJournalFilter.group = container.bpjsJournalFilter.tipe = 'all';
         rows.forEach(item => { item.classList.contains = () => false; });
         BpjsAllowances.update(container, Number, String);
-        assert.equal(totals.grand_total.textContent, '485');
+        // Both rows visible: 2 × 242.25 = 484.50 (precise grand total)
+        assert.equal(totals.grand_total.textContent, '484,50');
     } finally { globalThis.document = previousDocument; }
 });
 
-test('journal rounds rendered subgroup amounts and totals to whole rupiah', () => {
+test('journal rounds subgroup row amounts and column totals to whole rupiah, but grand total keeps decimal precision', () => {
     const previousDocument = globalThis.document;
     const node = () => ({ children: [], appendChild(child) { this.children.push(child); },
         replaceChildren(fragment) { this.children = fragment.children; } });
@@ -153,7 +158,8 @@ test('journal rounds rendered subgroup amounts and totals to whole rupiah', () =
     globalThis.document = { querySelector: () => section, createElement: node, createDocumentFragment: node };
 
     try {
-        // TIPE KANTOR with nominal 397.110,60 must round to 397.111
+        // TIPE KANTOR nominal 397.110,60: per-row tunjangan rounds to 397.111,
+        // column total also rounds to 397.111, but grand_total keeps full decimal precision
         BpjsJournal.render([{
             employee: { group_jkn: 'JKN-KIS', tipe_jkn: 'Kantor' },
             amounts: { bpjs_kesehatan: 397110.60, bpjs_ketenagakerjaan: 0 },
@@ -163,7 +169,8 @@ test('journal rounds rendered subgroup amounts and totals to whole rupiah', () =
         assert.ok(kantorRow);
         assert.equal(kantorRow.children[1].textContent, '397.111');
         assert.equal(totals.tunjangan.textContent, '397.111');
-        assert.equal(totals.grand_total.textContent, '397.111');
+        // Grand total must NOT be rounded -- keep the precise decimal value
+        assert.equal(totals.grand_total.textContent, '397.110,60');
     } finally {
         globalThis.document = previousDocument;
     }

@@ -61,6 +61,7 @@
         if (!section) return;
         const journal = calculate(records);
         const formatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
+        const preciseFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const fragment = document.createDocumentFragment();
         journal.rows.forEach(row => {
             const tr = document.createElement('tr');
@@ -81,7 +82,11 @@
         });
         section.querySelector('[data-journal-rows]').replaceChildren(fragment);
         Object.entries(journal.totals).forEach(([key, amount]) => {
-            section.querySelector('[data-journal-total="' + key + '"]').textContent = formatter.format(Math.round(amount));
+            // Grand total ditampilkan dengan desimal presisi, kolom lain dibulatkan ke rupiah utuh
+            const text = key === 'grand_total'
+                ? preciseFormatter.format(amount)
+                : formatter.format(Math.round(amount));
+            section.querySelector('[data-journal-total="' + key + '"]').textContent = text;
         });
     }
     function renderFromRows(container) {
