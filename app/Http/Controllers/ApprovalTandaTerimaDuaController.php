@@ -68,9 +68,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             'search' => 'nullable|string|max:300',
             'status' => 'nullable|in:belum,sudah,belum_lengkap',
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
+            'manifest_status' => 'nullable|in:belum,sudah,semua',
         ]);
         $type = $filters['type'] ?? 'fcl';
         $destination = $filters['destination'] ?? 'batam';
+        $manifestStatus = $filters['manifest_status'] ?? 'belum';
         $query = self::SOURCES[$type]::query()->with('shipperJb');
         if ($type === 'lcl') {
             $query->with(['kontainerPivot', 'items']);
@@ -80,10 +82,8 @@ class ApprovalTandaTerimaDuaController extends Controller
             $query->with('dimensiItems');
         }
 
-        // A receipt that already has a manifest no longer needs approval here.
-        if ($type === 'fcl') {
-            $query->whereDoesntHave('prospeks.manifests');
-            // Old receipts that should not enter the Approval Tanda Terima 2 queue.
+        // Old receipts that should not enter the Approval Tanda Terima 2 queue.
+        if ($type === 'fcl' && $manifestStatus === 'belum') {
             $query->whereNotIn('no_surat_jalan', ['JB0033973', 'JB0033887']);
         }
 
@@ -97,7 +97,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         $numberColumns = $type === 'ttsj'
             ? ['no_tanda_terima', 'nomor_tanda_terima']
             : [$this->numberColumn($type)];
-        $query->whereNotExists(function ($manifestQuery) use ($sourceTable, $numberColumns) {
+        $manifestByNumber = function ($manifestQuery) use ($sourceTable, $numberColumns) {
             $manifestQuery->selectRaw('1')->from('manifests')
                 ->where(function ($numbers) use ($sourceTable, $numberColumns) {
                     foreach ($numberColumns as $column) {
@@ -108,7 +108,21 @@ class ApprovalTandaTerimaDuaController extends Controller
                         });
                     }
                 });
-        });
+        };
+
+        if ($manifestStatus === 'belum') {
+            if ($type === 'fcl') {
+                $query->whereDoesntHave('prospeks.manifests');
+            }
+            $query->whereNotExists($manifestByNumber);
+        } elseif ($manifestStatus === 'sudah') {
+            $query->where(function ($query) use ($type, $manifestByNumber) {
+                $query->whereExists($manifestByNumber);
+                if ($type === 'fcl') {
+                    $query->orWhereHas('prospeks.manifests');
+                }
+            });
+        }
 
         if ($request->filled('search')) {
             $searches = array_values(array_filter(array_map('trim', preg_split('/[,\r\n]+/', $filters['search']))));
@@ -257,6 +271,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         return view('approval-tanda-terima-2.index', [
             'type' => $type,
             'destination' => $destination,
+            'manifestStatus' => $manifestStatus,
             'items' => $items,
             'containerQuantityTotal' => $containerQuantityTotal,
             'goodsOverrides' => $goodsOverrides,
