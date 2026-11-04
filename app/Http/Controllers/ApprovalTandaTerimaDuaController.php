@@ -554,11 +554,13 @@ class ApprovalTandaTerimaDuaController extends Controller
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $item = self::SOURCES[$sourceType]::findOrFail($id);
         [$shipper, $fields] = $this->validateShipperSelection($request);
+        $withGoods = $request->boolean('save_goods');
+        $goods = $withGoods ? $this->validateApprovalGoods($request) : null;
         if ($sourceType === 'fcl') {
             abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
         }
 
-        DB::transaction(function () use ($item, $sourceType, $shipper, $fields) {
+        DB::transaction(function () use ($item, $sourceType, $shipper, $fields, $goods, $id) {
             $shipper = $this->saveShipperEdits($shipper, $fields);
             $item->update(['shipper_jb_id' => $shipper->id]);
 
@@ -585,9 +587,14 @@ class ApprovalTandaTerimaDuaController extends Controller
                 $manifest->updated_by = auth()->id();
                 $manifest->save();
             }
+            if ($goods !== null) {
+                $this->saveApprovalGoods($sourceType, $id, $goods);
+            }
         });
 
-        return back()->with('success', 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
+        return back()->with('success', $withGoods
+            ? 'Shipper dan detail barang approval berhasil disimpan.'
+            : 'Shipper JB tanda terima dan manifest terkait berhasil disimpan.');
     }
 
     private function validateShipperSelection(Request $request): array
@@ -728,6 +735,13 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         self::SOURCES[$sourceType]::findOrFail($id);
+        $this->saveApprovalGoods($sourceType, $id, $this->validateApprovalGoods($request));
+
+        return back()->with('success', 'Detail barang approval berhasil disimpan tanpa mengubah data tanda terima asli.');
+    }
+
+    private function validateApprovalGoods(Request $request): array
+    {
         $manifestInput = $request->input('manifest_goods');
         if (is_array($manifestInput)) {
             $request->merge(['manifest_goods' => collect($manifestInput)
@@ -754,6 +768,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             'keterangan_barang' => 'nullable|string|max:2000',
         ]);
 
+        return $validated;
+    }
+
+    private function saveApprovalGoods(string $sourceType, int $id, array $validated): void
+    {
         $goodsFields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'keterangan_barang'];
         $manifestFields = ['nama_barang', 'jumlah', 'satuan', 'ukuran', 'meter_kubik', 'tonase', 'keterangan_barang'];
         $goods = collect($validated['goods'])->values()->map(fn ($good) => collect($goodsFields)
@@ -787,8 +806,6 @@ class ApprovalTandaTerimaDuaController extends Controller
                 'updated_by' => auth()->id(),
             ]
         );
-
-        return back()->with('success', 'Detail barang approval berhasil disimpan tanpa mengubah data tanda terima asli.');
     }
 
     private function formatManifestNumber(string $value): string

@@ -5,7 +5,7 @@
 
 @push('styles')
 <style>
-    #approval-shipper-dialog { width: min(900px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
+    #approval-shipper-dialog { width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-shipper-dialog::backdrop { background: rgb(15 23 42 / 60%); }
     #approval-ttsj-dialog { width: min(1100px, calc(100vw - 24px)); max-height: calc(100vh - 32px); border: 0; border-radius: 16px; padding: 0; overflow-y: auto; }
     #approval-ttsj-dialog::backdrop { background: rgb(15 23 42 / 60%); }
@@ -352,17 +352,20 @@
                                         </button>
                                     </form>
                                 @endcan
-                                <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                                    data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
-                                    <i class="fas fa-box-open" aria-hidden="true"></i>{{ $type === 'fcl' ? 'Barang Shipper Utama' : 'Detail Barang' }}
-                                </button>
+                                @cannot('approval-tanda-terima-2-approve')
+                                    <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                        data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
+                                        <i class="fas fa-box-open" aria-hidden="true"></i>{{ $type === 'fcl' ? 'Barang Shipper Utama' : 'Detail Barang' }}
+                                    </button>
+                                @endcannot
                                 @can('approval-tanda-terima-2-approve')
                                     <button type="button" class="approval-shipper-open inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
+                                        data-goods-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
                                         data-shipper="{{ $item->shipperJb?->shipper }}">
-                                        <i class="fas fa-pen-to-square" aria-hidden="true"></i>{{ $item->shipper_jb_id ? 'Ubah Shipper' : 'Pilih Shipper' }}
+                                        <i class="fas fa-pen-to-square" aria-hidden="true"></i>Input Approval
                                     </button>
                                     @if($type === 'fcl' && $item->shipper_jb_id)
                                         <button type="button" class="approval-shipper-open ml-2 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
@@ -636,6 +639,7 @@
         @csrf
         @method('PUT')
         <input type="hidden" id="approval-shipper-id" name="shipper_jb_id">
+        <input type="hidden" id="approval-save-goods" name="save_goods" value="1" disabled>
         <div class="space-y-4 px-5 py-5 sm:px-6">
             <div>
                 <div class="mb-1 flex items-center justify-between gap-3">
@@ -700,6 +704,10 @@
                 @endforeach
             </div>
             <p id="approval-shipper-help" class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
+        </div>
+        <div id="approval-shipper-goods" class="approval-goods-dialog w-full border-t border-gray-200 px-5 py-5 sm:px-6" hidden>
+            <h3 class="mb-2 text-base font-semibold text-gray-900">Detail Barang Manifest dan Perincian</h3>
+            <p class="mb-4 text-xs text-gray-500">Isi barang manifest dan perincian dalam approval yang sama.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" class="approval-shipper-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>

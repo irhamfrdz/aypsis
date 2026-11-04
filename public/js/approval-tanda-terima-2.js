@@ -1,9 +1,8 @@
 (() => {
     'use strict';
 
-    document.querySelectorAll('.approval-goods-open').forEach(button => {
-        const dialog = document.getElementById(button.dataset.dialogId);
-        if (!dialog) return;
+    document.querySelectorAll('dialog.approval-goods-dialog[id]').forEach(dialog => {
+        let opener;
         const form = dialog.querySelector('form');
         const labels = { nama_barang: 'Nama barang *', hs_codes: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
             ukuran: 'Ukuran keramik', meter_kubik: 'Volume (m³)',
@@ -64,11 +63,20 @@
             });
             toggleUkuranField(perincianRow);
         }
-        button.addEventListener('click', () => dialog.showModal());
+        document.querySelectorAll(`.approval-goods-open[data-dialog-id="${dialog.id}"]`).forEach(button => {
+            button.addEventListener('click', () => {
+                const approvalButton = button.closest('tr[data-receipt-id]')?.querySelector('.approval-shipper-open[data-goods-dialog-id]');
+                if (approvalButton) approvalButton.click();
+                else {
+                    opener = button;
+                    dialog.showModal();
+                }
+            });
+        });
         dialog.querySelectorAll('.approval-goods-close').forEach(closeButton => {
             closeButton.addEventListener('click', () => dialog.close());
         });
-        dialog.addEventListener('close', () => button.focus());
+        dialog.addEventListener('close', () => opener?.focus());
 
         dialog.querySelectorAll('.approval-goods-section').forEach(section => {
             const rows = section.querySelector('.approval-goods-rows');
@@ -382,6 +390,10 @@
     const help = document.getElementById('approval-shipper-help');
     const previewFields = dialog.querySelectorAll('[data-shipper-field]');
     const previewButtons = dialog.querySelectorAll('[data-shipper-preview]');
+    const goodsHost = document.getElementById('approval-shipper-goods');
+    const saveGoods = document.getElementById('approval-save-goods');
+    let goodsContent;
+    let goodsParent;
     let timer;
     let pendingSearch;
     let generation = 0;
@@ -558,12 +570,21 @@
         button.addEventListener('click', () => {
             stopSearch();
             stopDetails();
+            if (goodsContent && goodsParent) goodsParent.append(goodsContent);
+            goodsContent = null;
+            goodsParent = null;
             opener = button;
             form.action = button.dataset.updateUrl;
             const isAdditional = button.dataset.additional === 'true';
             const isEditingAdditional = button.dataset.mode === 'edit-additional';
-            title.textContent = isEditingAdditional ? 'Ubah Shipper Tambahan' : (isAdditional ? 'Tambah Shipper Manifest JB' : 'Pilih Shipper Manifest JB');
-            save.textContent = isEditingAdditional ? 'Simpan Shipper Tambahan' : (isAdditional ? 'Tambah Shipper' : 'Simpan Shipper');
+            const goodsDialog = button.dataset.goodsDialogId && document.getElementById(button.dataset.goodsDialogId);
+            goodsContent = goodsDialog?.querySelector('.overflow-x-auto') || null;
+            goodsParent = goodsContent?.parentElement || null;
+            goodsHost.hidden = !goodsContent;
+            saveGoods.disabled = !goodsContent;
+            if (goodsContent) goodsHost.append(goodsContent);
+            title.textContent = isEditingAdditional ? 'Ubah Shipper Tambahan' : (isAdditional ? 'Tambah Shipper Manifest JB' : 'Input Approval Shipper dan Barang');
+            save.textContent = isEditingAdditional ? 'Simpan Shipper Tambahan' : (isAdditional ? 'Tambah Shipper' : 'Simpan Approval');
             help.textContent = isAdditional || isEditingAdditional
                 ? 'Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk shipper tambahan ini; shipper utama dan data master asli tetap tersedia.'
                 : 'Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.';
@@ -637,6 +658,11 @@
     dialog.addEventListener('close', () => {
         stopSearch();
         stopDetails();
+        if (goodsContent && goodsParent) goodsParent.append(goodsContent);
+        goodsContent = null;
+        goodsParent = null;
+        goodsHost.hidden = true;
+        saveGoods.disabled = true;
         opener?.focus();
     });
     dialog.querySelectorAll('.approval-shipper-close').forEach(button => {
@@ -646,6 +672,11 @@
         if (!selectedId.value) {
             event.preventDefault();
             search.focus();
+            return;
+        }
+        if (goodsContent && !goodsContent.querySelector('[data-field-prefix="goods"] .approval-goods-rows tr')) {
+            event.preventDefault();
+            alert('Isi barang perincian sebelum menyimpan.');
             return;
         }
         save.disabled = true;
