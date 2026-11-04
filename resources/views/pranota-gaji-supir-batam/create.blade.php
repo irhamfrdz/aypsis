@@ -22,14 +22,28 @@
                     <th class="px-4 py-3"><input type="checkbox" id="select-all-gaji" aria-label="Pilih semua gaji"></th><th class="px-4 py-3">Supir</th><th class="px-4 py-3">Periode</th><th class="px-4 py-3 text-right">Gaji Pokok</th><th class="px-4 py-3 text-right">Gaji Bersih</th>
                 </tr></thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($gajiList as $gaji)
-                        <tr>
-                            <td class="px-4 py-3"><input type="checkbox" name="gaji_ids[]" value="{{ $gaji->id }}" data-gaji-checkbox data-total="{{ $gaji->total_gaji }}" @checked(in_array($gaji->id, old('gaji_ids', []))) class="rounded border-gray-300 text-indigo-600"></td>
-                            <td class="px-4 py-3"><span class="font-medium">{{ $gaji->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</span><span class="block text-xs text-gray-500">{{ $gaji->karyawan?->plat ?: '-' }}</span></td>
-                            <td class="whitespace-nowrap px-4 py-3">{{ $gaji->periode_text }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $gaji->gaji_pokok, 0, ',', '.') }}</td>
-                            <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $gaji->total_gaji, 0, ',', '.') }}</td>
+                    @forelse($gajiGroups as $group)
+                        @php
+                            $first = $group->first();
+                            $oldIds = array_map('intval', old('gaji_ids', []));
+                            $groupIds = $group->pluck('id')->map(fn ($id) => (int) $id)->all();
+                            $selectedCount = count(array_intersect($oldIds, $groupIds));
+                        @endphp
+                        <tr class="bg-gray-50">
+                            <td class="px-4 py-3"><input type="checkbox" data-gaji-group-checkbox data-total="{{ $group->sum(fn ($gaji) => (float) $gaji->total_gaji) }}" data-group-id="{{ $loop->index }}" @checked($selectedCount === $group->count()) class="rounded border-gray-300 text-indigo-600"></td>
+                            <td colspan="2" class="px-4 py-3 font-semibold">Periode: {{ $first->periode_text }} <span class="font-normal text-gray-500">({{ $group->count() }} supir)</span></td>
+                            <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->gaji_pokok), 0, ',', '.') }}</td>
+                            <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->total_gaji), 0, ',', '.') }}</td>
                         </tr>
+                        @foreach($group as $gaji)
+                            <tr>
+                                <td class="px-4 py-2 pl-8"><input type="checkbox" name="gaji_ids[]" value="{{ $gaji->id }}" data-gaji-checkbox data-group-id="{{ $loop->parent->index }}" data-total="{{ $gaji->total_gaji }}" @checked(in_array((int) $gaji->id, $oldIds, true)) class="rounded border-gray-300 text-indigo-600"></td>
+                                <td class="px-4 py-2"><span class="font-medium">{{ $gaji->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</span><span class="block text-xs text-gray-500">{{ $gaji->karyawan?->plat ?: '-' }}</span></td>
+                                <td class="whitespace-nowrap px-4 py-2">{{ $gaji->periode_text }}</td>
+                                <td class="whitespace-nowrap px-4 py-2 text-right">Rp {{ number_format((float) $gaji->gaji_pokok, 0, ',', '.') }}</td>
+                                <td class="whitespace-nowrap px-4 py-2 text-right font-semibold">Rp {{ number_format((float) $gaji->total_gaji, 0, ',', '.') }}</td>
+                            </tr>
+                        @endforeach
                     @empty
                         <tr><td colspan="5" class="px-4 py-10 text-center text-gray-500">Tidak ada gaji PENDING yang tersedia. <a href="{{ route('gaji-supir-batam.index') }}" class="text-indigo-700 hover:underline">Lihat daftar gaji</a></td></tr>
                     @endforelse
@@ -48,6 +62,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const boxes = [...document.querySelectorAll('[data-gaji-checkbox]')];
+    const groups = [...document.querySelectorAll('[data-gaji-group-checkbox]')];
     const all = document.getElementById('select-all-gaji');
     const update = () => {
         const selected = boxes.filter(box => box.checked);
@@ -55,8 +70,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('selected-total').textContent = new Intl.NumberFormat('id-ID', {style: 'currency', currency: 'IDR', maximumFractionDigits: 0}).format(selected.reduce((sum, box) => sum + Number(box.dataset.total), 0));
         all.checked = boxes.length > 0 && selected.length === boxes.length;
         all.indeterminate = selected.length > 0 && selected.length < boxes.length;
+        groups.forEach(group => {
+            const members = boxes.filter(box => box.dataset.groupId === group.dataset.groupId);
+            const checked = members.filter(box => box.checked).length;
+            group.checked = members.length > 0 && checked === members.length;
+            group.indeterminate = checked > 0 && checked < members.length;
+        });
     };
     boxes.forEach(box => box.addEventListener('change', update));
+    groups.forEach(group => group.addEventListener('change', () => {
+        boxes.filter(box => box.dataset.groupId === group.dataset.groupId).forEach(box => box.checked = group.checked);
+        update();
+    }));
     all.addEventListener('change', () => { boxes.forEach(box => box.checked = all.checked); update(); });
     update();
 });

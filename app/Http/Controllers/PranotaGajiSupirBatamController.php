@@ -26,7 +26,13 @@ class PranotaGajiSupirBatamController extends Controller
             ->whereDoesntHave('pranotaItem')
             ->orderBy('tanggal_mulai')->orderBy('id')->get();
 
-        return view('pranota-gaji-supir-batam.create', compact('gajiList'));
+        $gajiGroups = $gajiList->groupBy(fn ($gaji) => implode('|', [
+            $gaji->tanggal_mulai?->toDateString() ?? '',
+            $gaji->periode_bulan,
+            $gaji->tanggal_selesai?->toDateString() ?? '',
+        ]));
+
+        return view('pranota-gaji-supir-batam.create', compact('gajiList', 'gajiGroups'));
     }
 
     public function store(Request $request)
