@@ -183,12 +183,6 @@
                     </div>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-export-excel" title="Export seluruh baris dan kolom, termasuk data yang tersembunyi oleh filter"
-                        style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
-                        class="inline-flex items-center gap-1.5 px-3.5 py-2 text-white text-xs font-bold rounded-lg shadow-sm hover:opacity-90 transition-all cursor-pointer">
-                        <i class="fas fa-file-excel text-sm text-white"></i>
-                        <span>Export Excel Lengkap</span>
-                    </button>
                     <button type="button" id="btn-refresh-bpjs" title="Ambil data BPJS terbaru, hitung ulang tabel, dan tambahkan karyawan baru"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-lg transition-all">
                         <i class="fas fa-sync-alt text-xs" aria-hidden="true"></i>
@@ -258,12 +252,6 @@
 
                 {{-- Counter / Status Badge & Action --}}
                 <div class="flex items-center gap-2">
-                    <button type="button" id="btn-export-excel-2" title="Export seluruh baris dan kolom, termasuk data yang tersembunyi oleh filter"
-                        style="background-color: #0d6938 !important; color: #ffffff !important; border: 1px solid #094c28 !important;"
-                        class="inline-flex items-center gap-1.5 px-3 py-1.5 text-white text-xs font-bold rounded-lg shadow-xs hover:opacity-90 transition-all cursor-pointer">
-                        <i class="fas fa-file-excel text-xs text-white"></i>
-                        <span>Export Excel Lengkap</span>
-                    </button>
                     <span id="filter-status-badge" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[11px] font-semibold bg-gray-100 text-gray-600">
                         <i class="fas fa-users text-xs"></i>
                         <span id="filter-count-text">0 Karyawan</span>
@@ -451,9 +439,6 @@
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
-<script src="{{ asset('js/pranota-bpjs-export.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-export.js')) }}"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const container = document.getElementById('detail-container');
@@ -1478,70 +1463,6 @@ document.addEventListener('DOMContentLoaded', function() {
             applyFilter();
         }
     });
-
-    async function exportToExcel() {
-        if (isGenerating || isRefreshing) return;
-        if (typeof ExcelJS === 'undefined') {
-            alert('Library ExcelJS sedang dimuat, silakan coba beberapa saat lagi.');
-            return;
-        }
-        pendingSearch.flush();
-        pendingUpdate.flush();
-        BpjsAllowances.update(container, parseIdNumber, formatNumber);
-        const records = BpjsExcelExport.collectRows(container.querySelectorAll('tr.detail-row'), parseIdNumber);
-        if (!records.length) {
-            alert('Belum ada karyawan yang dipilih untuk diekspor.');
-            return;
-        }
-        const buttons = [document.getElementById('btn-export-excel'), document.getElementById('btn-export-excel-2')];
-        buttons.forEach(button => { if (button) { button.disabled = true; button.setAttribute('aria-busy', 'true'); } });
-        try {
-            const tanggal = document.getElementById('tanggal_pranota').value;
-            const bulan = document.getElementById('periode_bulan').value;
-            const tahun = document.getElementById('periode_tahun').value;
-            const workbook = BpjsExcelExport.buildWorkbook(ExcelJS, records, {
-                'Tanggal Pranota': tanggal,
-                'Periode Bulan': bulan,
-                'Periode Tahun': tahun,
-                'Keterangan': document.getElementById('keterangan').value,
-                'Filter Group di Layar': filterGroupSelect?.value || 'all',
-                'Filter Tipe di Layar': filterCabangSelect?.value || 'all',
-                'Pencarian di Layar': searchKaryawanInput?.value || '',
-                'Waktu Export': new Date().toLocaleString('id-ID'),
-                'Sumber Data': 'Nilai terkini pada form pranota BPJS',
-                'Cakupan Rumus': 'Seluruh master rumus yang dimuat pada form',
-            }, rumusBpjs);
-            const buffer = await workbook.xlsx.writeBuffer();
-            const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-            const filename = `Pranota_BPJS_Lengkap_${tahun}_${bulan}_${tanggal}.xlsx`;
-            if (typeof saveAs !== 'undefined') {
-                saveAs(blob, filename);
-            } else {
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = filename;
-                document.body.appendChild(link);
-                link.click();
-                link.remove();
-                setTimeout(() => window.URL.revokeObjectURL(url), 1000);
-            }
-        } catch (error) {
-            console.error('Export pranota BPJS gagal', error);
-            alert('Export Excel gagal. Silakan coba kembali.');
-        } finally {
-            buttons.forEach(button => { if (button) { button.disabled = false; button.removeAttribute('aria-busy'); } });
-        }
-    }
-
-    const btnExport = document.getElementById('btn-export-excel');
-    if (btnExport) {
-        btnExport.addEventListener('click', exportToExcel);
-    }
-    const btnExport2 = document.getElementById('btn-export-excel-2');
-    if (btnExport2) {
-        btnExport2.addEventListener('click', exportToExcel);
-    }
 
     // Inisialisasi awal
     populateGroupFilterOptions();
