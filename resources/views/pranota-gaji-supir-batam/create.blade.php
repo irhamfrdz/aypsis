@@ -28,15 +28,22 @@
                             $oldIds = array_map('intval', old('gaji_ids', []));
                             $groupIds = $group->pluck('id')->map(fn ($id) => (int) $id)->all();
                             $selectedCount = count(array_intersect($oldIds, $groupIds));
+                            $groupKey = 'periode-'.$loop->index;
                         @endphp
                         <tr class="bg-gray-50">
                             <td class="px-4 py-3"><input type="checkbox" data-gaji-group-checkbox data-total="{{ $group->sum(fn ($gaji) => (float) $gaji->total_gaji) }}" data-group-id="{{ $loop->index }}" @checked($selectedCount === $group->count()) class="rounded border-gray-300 text-indigo-600"></td>
-                            <td colspan="2" class="px-4 py-3 font-semibold">Periode: {{ $first->periode_text }} <span class="font-normal text-gray-500">({{ $group->count() }} supir)</span></td>
+                            <td class="px-4 py-3 font-semibold">
+                                <button type="button" data-period-toggle aria-expanded="false" aria-controls="{{ $groupKey }}" class="inline-flex items-center gap-2 text-left hover:text-indigo-700">
+                                    <span data-period-icon aria-hidden="true">＋</span>
+                                    <span>Periode: {{ $first->periode_text }} <span class="font-normal text-gray-500">({{ $group->count() }} supir)</span></span>
+                                </button>
+                            </td>
+                            <td class="px-4 py-3 text-xs text-gray-500">Klik untuk tampilkan/sembunyikan</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->gaji_pokok), 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->total_gaji), 0, ',', '.') }}</td>
                         </tr>
                         @foreach($group as $gaji)
-                            <tr>
+                            <tr data-period-row="{{ $groupKey }}" class="hidden">
                                 <td class="px-4 py-2 pl-8"><input type="checkbox" name="gaji_ids[]" value="{{ $gaji->id }}" data-gaji-checkbox data-group-id="{{ $loop->parent->index }}" data-total="{{ $gaji->total_gaji }}" @checked(in_array((int) $gaji->id, $oldIds, true)) class="rounded border-gray-300 text-indigo-600"></td>
                                 <td class="px-4 py-2"><span class="font-medium">{{ $gaji->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</span><span class="block text-xs text-gray-500">{{ $gaji->karyawan?->plat ?: '-' }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-2">{{ $gaji->periode_text }}</td>
@@ -63,6 +70,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const boxes = [...document.querySelectorAll('[data-gaji-checkbox]')];
     const groups = [...document.querySelectorAll('[data-gaji-group-checkbox]')];
+    const toggles = [...document.querySelectorAll('[data-period-toggle]')];
     const all = document.getElementById('select-all-gaji');
     const update = () => {
         const selected = boxes.filter(box => box.checked);
@@ -81,6 +89,13 @@ document.addEventListener('DOMContentLoaded', () => {
     groups.forEach(group => group.addEventListener('change', () => {
         boxes.filter(box => box.dataset.groupId === group.dataset.groupId).forEach(box => box.checked = group.checked);
         update();
+    }));
+    toggles.forEach(toggle => toggle.addEventListener('click', () => {
+        const expanded = toggle.getAttribute('aria-expanded') === 'true';
+        toggle.setAttribute('aria-expanded', String(!expanded));
+        document.querySelectorAll('[data-period-row="' + toggle.getAttribute('aria-controls') + '"]')
+            .forEach(row => row.classList.toggle('hidden', expanded));
+        toggle.querySelector('[data-period-icon]').textContent = expanded ? '＋' : '−';
     }));
     all.addEventListener('change', () => { boxes.forEach(box => box.checked = all.checked); update(); });
     update();
