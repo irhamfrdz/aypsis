@@ -88,8 +88,23 @@ class PranotaGajiSupirBatamController extends Controller
     public function print(PranotaGajiSupirBatam $pranotaGajiSupirBatam)
     {
         $pranotaGajiSupirBatam->load('items.gaji.karyawan', 'creator');
+        $drivers = $pranotaGajiSupirBatam->items
+            ->groupBy(fn ($item) => $item->gaji?->karyawan_id ?? 'missing-'.$item->gaji_supir_batam_id)
+            ->map(function ($items) {
+                $first = $items->first();
+                $gaji = $first->gaji;
 
-        return view('pranota-gaji-supir-batam.print', ['pranota' => $pranotaGajiSupirBatam]);
+                return (object) [
+                    'nik' => $gaji?->karyawan?->nik,
+                    'nama' => $gaji?->karyawan?->nama_lengkap ?: 'Supir tidak tersedia',
+                    'gaji_pokok' => $items->sum(fn ($item) => (float) ($item->gaji?->gaji_pokok ?? 0)),
+                    'uang_malam_libur' => $items->sum(fn ($item) => (float) ($item->gaji?->uang_malam_libur ?? 0)),
+                    'biaya_bensin' => $items->sum(fn ($item) => (float) ($item->gaji?->biaya_bensin ?? 0)),
+                    'total_gaji' => $items->sum(fn ($item) => (float) $item->total_gaji),
+                ];
+            })->values();
+
+        return view('pranota-gaji-supir-batam.print', ['pranota' => $pranotaGajiSupirBatam, 'drivers' => $drivers]);
     }
 
     public function destroy(PranotaGajiSupirBatam $pranotaGajiSupirBatam)

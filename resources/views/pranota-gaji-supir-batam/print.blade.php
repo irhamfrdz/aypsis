@@ -49,7 +49,7 @@
         <div class="info-section">
             <div>TANGGAL PRANOTA: {{ $pranota->tanggal_pranota->format('d M Y') }}</div>
             <div class="info-number">{{ $pranota->nomor_pranota }}</div>
-            <div>Jumlah supir: {{ $pranota->items->count() }}</div>
+            <div>Jumlah supir: {{ $drivers->count() }}</div>
         </div>
         <table>
             <thead><tr>
@@ -57,18 +57,17 @@
                 <th>Uang Jalan</th><th>Uang Lembur</th><th>Uang Bensin</th><th>BPJS</th><th>PPH</th><th>Gaji Bersih</th>
             </tr></thead>
             <tbody>
-                @foreach($pranota->items as $item)
-                    @php($gaji = $item->gaji)
+                @foreach($drivers as $driver)
                     <tr>
                         <td class="text-center">{{ $loop->iteration }}</td>
-                        <td class="text-center">{{ $gaji?->karyawan?->nik ?: '-' }}</td>
-                        <td>{{ $gaji?->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->gaji_pokok ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->uang_malam_libur ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->biaya_bensin ?? 0), 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $driver->nik ?: '-' }}</td>
+                        <td>{{ $driver->nama }}</td>
+                        <td class="text-right">Rp {{ number_format((float) $driver->gaji_pokok, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format((float) $driver->uang_malam_libur, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format((float) $driver->biaya_bensin, 0, ',', '.') }}</td>
                         <td class="text-right"></td>
                         <td class="text-right"></td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->total_gaji ?? $item->total_gaji), 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format((float) $driver->total_gaji, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
