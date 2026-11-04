@@ -136,9 +136,22 @@ class ManifestController extends Controller
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
-        $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-            ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
-            ->orderBy('created_at', 'desc')
+        $manifests = $query->orderByRaw("CASE
+                WHEN UPPER(COALESCE(manifests.tipe_kontainer, '')) LIKE '%LCL%'
+                    OR UPPER(COALESCE(manifests.size_kontainer, '')) LIKE '%LCL%' THEN 0
+                WHEN UPPER(TRIM(COALESCE(manifests.tipe_kontainer, ''))) = 'FCL BOOKING'
+                    OR EXISTS (
+                        SELECT 1 FROM prospek
+                        WHERE prospek.id = manifests.prospek_id
+                            AND UPPER(TRIM(COALESCE(prospek.tipe, ''))) = 'FCL BOOKING'
+                    ) THEN 1
+                WHEN UPPER(COALESCE(manifests.tipe_kontainer, '')) LIKE '%CARGO%'
+                    OR UPPER(COALESCE(manifests.size_kontainer, '')) LIKE '%CARGO%' THEN 3
+                ELSE 2
+            END")
+            ->orderByRaw('CASE WHEN manifests.nomor_urut IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('manifests.nomor_urut')
+            ->orderBy('manifests.id')
             ->paginate(20);
 
         // Store selection in session
