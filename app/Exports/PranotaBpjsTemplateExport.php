@@ -4,22 +4,22 @@ namespace App\Exports;
 
 use App\Models\PranotaBpjsDetail;
 use App\Models\PranotaBpjsHeader;
-use Maatwebsite\Excel\Concerns\FromArray;
-use Maatwebsite\Excel\Concerns\WithCustomStartCell;
+use Illuminate\Contracts\Support\Responsable;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
-use Maatwebsite\Excel\Concerns\WithEvents;
-use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
-class PranotaBpjsTemplateExport implements FromArray, WithCustomStartCell, WithEvents, WithColumnFormatting
+class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
 {
     private Worksheet $template;
 
     private array $rows = [];
+
+    private string $fileName;
 
     public function __construct(private readonly PranotaBpjsHeader $pranota)
     {
@@ -27,20 +27,21 @@ class PranotaBpjsTemplateExport implements FromArray, WithCustomStartCell, WithE
         $spreadsheet = IOFactory::load($path);
         $this->template = $spreadsheet->getSheetByName('Sheet1') ?? $spreadsheet->getSheet(0);
         $this->template->setTitle('Rincian BPJS');
+        $this->fileName = 'BPJS_'.$pranota->periode_tahun.'_'.str_pad($pranota->periode_bulan, 2, '0', STR_PAD_LEFT).'_'.$pranota->nomor_pranota.'.xlsx';
 
         foreach ($this->pranota->details as $index => $detail) {
             $this->rows[] = $this->mapDetail($detail, $index + 1);
         }
     }
 
-    public function array(): array
+    public function toResponse($request): BinaryFileResponse
     {
-        return $this->rows;
-    }
+        $this->writeRowsIntoTemplate();
+        $temporaryPath = tempnam(sys_get_temp_dir(), 'bpjs-export-');
+        $writer = IOFactory::createWriter($this->template->getParent(), 'Xlsx');
+        $writer->save($temporaryPath);
 
-    public function startCell(): string
-    {
-        return 'A2';
+        return response()->download($temporaryPath, $this->fileName)->deleteFileAfterSend(true);
     }
 
     public function columnFormats(): array
@@ -55,32 +56,35 @@ class PranotaBpjsTemplateExport implements FromArray, WithCustomStartCell, WithE
         ];
     }
 
-    public function registerEvents(): array
+    private function writeRowsIntoTemplate(): void
     {
-        return [
-            AfterSheet::class => function (AfterSheet $event): void {
-                $sheet = $event->sheet->getDelegate();
-                foreach ($this->rows as $index => $row) {
-                    $excelRow = $index + 2;
-                    $sheet->fromArray([$row], null, 'A'.$excelRow, true);
-                    foreach (['B', 'D', 'E', 'AL'] as $column) {
-                        $cell = $row[$this->columnIndex($column) - 1] ?? null;
-                        if ($cell !== null && $cell !== '') {
-                            $sheet->setCellValueExplicit($column.$excelRow, (string) $cell, DataType::TYPE_STRING);
-                        }
-                    }
-                }
+        $sheet = $this->template;
+        $firstDataRow = 2;
+        $lastTemplateRow = $sheet->getHighestDataRow();
+        if ($lastTemplateRow >= $firstDataRow) {
+            $sheet->removeRow($firstDataRow, $lastTemplateRow - $firstDataRow + 1);
+        }
 
-                $lastRow = max(2, count($this->rows) + 1);
-                $sheet->setAutoFilter('A1:BB'.$lastRow);
-                $sheet->freezePane('A2');
-                $sheet->setSelectedCell('A1');
-                $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
-                $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
-                $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 1);
-                $sheet->setTitle('Rincian BPJS');
-            },
-        ];
+        foreach ($this->rows as $index => $row) {
+            $excelRow = $firstDataRow + $index;
+            foreach ($row as $columnIndex => $value) {
+                $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex + 1);
+                if (in_array($column, ['B', 'D', 'E', 'AL'], true) && $value !== null && $value !== '') {
+                    $sheet->setCellValueExplicit($column.$excelRow, (string) $value, DataType::TYPE_STRING);
+                } else {
+                    $sheet->setCellValue($column.$excelRow, $value);
+                }
+            }
+        }
+
+        $lastRow = max(2, count($this->rows) + 1);
+        $sheet->setAutoFilter('A1:BB'.$lastRow);
+        $sheet->freezePane('A2');
+        $sheet->setSelectedCell('A1');
+        $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
+        $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 1);
+        $sheet->setTitle('Rincian BPJS');
     }
 
     private function columnIndex(string $column): int

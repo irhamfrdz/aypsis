@@ -7,7 +7,6 @@ use App\Models\PranotaBpjsHeader;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
-use PhpOffice\PhpSpreadsheet\IOFactory;
 use Tests\TestCase;
 
 class PranotaBpjsExcelExportTest extends TestCase
@@ -42,21 +41,14 @@ class PranotaBpjsExcelExportTest extends TestCase
             'tunjangan_manual' => ['ppu' => 3000, 'bpu' => 9000], 'no_voucher' => '0001/VC-BPJS',
         ]);
 
-        $export = new PranotaBpjsTemplateExport($header->load('details'));
-        $spreadsheet = IOFactory::load(base_path('BPJS 26 11.xlsx'));
-        $sheet = $spreadsheet->getSheetByName('Sheet1');
-        $sheet->setTitle('Rincian BPJS');
-        foreach ($export->array() as $index => $row) {
-            $sheet->fromArray([$row], null, 'A'.($index + 2), true);
-            foreach (['B', 'D', 'E', 'AL'] as $column) {
-                $value = $row[\PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($column) - 1] ?? null;
-                if ($value !== null && $value !== '') {
-                    $sheet->setCellValueExplicit($column.($index + 2), (string) $value, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                }
-            }
-        }
+        $response = (new PranotaBpjsTemplateExport($header->load('details')))->toResponse(request());
+        $path = $response->getFile()->getPathname();
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+        $sheet = $spreadsheet->getSheetByName('Rincian BPJS');
 
+        $this->assertNotNull($sheet);
         $this->assertSame('NIK. KARY.', $sheet->getCell('B1')->getValue());
+        $this->assertSame('NAMA KARYAWAN', $sheet->getCell('C1')->getValue());
         $this->assertSame('ABDULLAH', $sheet->getCell('C2')->getValue());
         $this->assertSame('0012', $sheet->getCell('B2')->getValue());
         $this->assertSame('3202160607820012', $sheet->getCell('D2')->getValue());
@@ -64,7 +56,7 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertSame(100000.8, $sheet->getCell('M2')->getValue());
         $this->assertSame(229195.2, $sheet->getCell('AA2')->getValue());
         $this->assertSame('0001/VC-BPJS', $sheet->getCell('AL2')->getValue());
-        $this->assertSame('Rincian BPJS', $sheet->getTitle());
+        @unlink($path);
     }
 
     private function createPranotaSchema(): void
