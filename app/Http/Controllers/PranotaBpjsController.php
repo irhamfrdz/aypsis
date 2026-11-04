@@ -6,6 +6,8 @@ use App\Models\Karyawan;
 use App\Models\KaryawanTidakTetap;
 use App\Models\PranotaBpjsDetail;
 use App\Models\PranotaBpjsHeader;
+use App\Exports\PranotaBpjsTemplateExport;
+use Maatwebsite\Excel\Facades\Excel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -16,6 +18,7 @@ class PranotaBpjsController extends Controller
     {
         $this->middleware('auth');
         $this->middleware('permission:pranota-bpjs-view')->only(['index', 'show']);
+        $this->middleware('permission:pranota-bpjs-view')->only(['exportExcel']);
         $this->middleware('permission:pranota-bpjs-create')->only(['create', 'store']);
         $this->middleware('permission:pranota-bpjs-update')->only(['edit', 'update']);
         $this->middleware('permission:pranota-bpjs-delete')->only(['destroy']);
@@ -262,6 +265,14 @@ class PranotaBpjsController extends Controller
         $pranota_bpj->load('details.karyawan', 'createdBy');
 
         return view('pranota-bpjs.show', compact('pranota_bpj'));
+    }
+
+    public function exportExcel(PranotaBpjsHeader $pranota_bpj)
+    {
+        $pranota_bpj->load('details.karyawan', 'createdBy');
+        $filename = 'BPJS_'.$pranota_bpj->periode_tahun.'_'.str_pad($pranota_bpj->periode_bulan, 2, '0', STR_PAD_LEFT).'_'.$pranota_bpj->nomor_pranota.'.xlsx';
+
+        return Excel::download(new PranotaBpjsTemplateExport($pranota_bpj), $filename);
     }
 
     public function edit(PranotaBpjsHeader $pranota_bpj)

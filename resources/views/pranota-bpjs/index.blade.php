@@ -246,6 +246,11 @@
                             {{-- Aksi --}}
                             <td class="px-4 py-3">
                                 <div class="flex items-center justify-center gap-1">
+                                    @can('pranota-bpjs-view')
+                                        <a href="{{ route('pranota-bpjs.export-excel', $pranota->id) }}" title="Export Excel" class="inline-flex items-center justify-center w-7 h-7 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors">
+                                            <i class="fas fa-file-excel text-xs"></i>
+                                        </a>
+                                    @endcan
                                     @can('pembayaran-pranota-bpjs-create')
                                         @if(in_array($pranota->status, ['draft', 'approved', 'unpaid']) && $pranota->grand_total > 0)
                                             <a href="{{ route('pembayaran-pranota-bpjs.create', ['pranota_id' => $pranota->id]) }}" title="Bayar Pranota" class="inline-flex items-center justify-center w-7 h-7 rounded bg-green-50 text-green-700"><i class="fas fa-money-bill-wave text-xs"></i></a>
