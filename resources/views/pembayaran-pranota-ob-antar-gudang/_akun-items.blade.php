@@ -3,6 +3,18 @@
         ? $pembayaran->akunItems->map(fn ($item) => ['akun_coa_id' => $item->akun_coa_id, 'nominal' => $item->nominal, 'memo' => $item->memo])->all()
         : [['akun_coa_id' => $pembayaran->akun_coa_id ?? '', 'nominal' => isset($pembayaran) ? $pembayaran->total_setelah_penyesuaian : '', 'memo' => '']]);
 @endphp
+@push('styles')
+<style>
+    .akun-item-row .select2-container { width: 100% !important; }
+    .akun-item-row .select2-selection--single {
+        height: 38px !important;
+        border: 1px solid #d1d5db !important;
+        border-radius: 0.375rem !important;
+    }
+    .akun-item-row .select2-selection__rendered { line-height: 36px !important; font-size: 0.875rem; }
+    .akun-item-row .select2-selection__arrow { height: 36px !important; }
+</style>
+@endpush
 <div class="border border-gray-200 rounded-lg p-4 mb-6" id="akun-items-section">
     <div class="flex justify-between items-start gap-3 mb-3">
         <div>
@@ -17,7 +29,7 @@
                 <div class="md:col-span-5">
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Akun Biaya</label>
                     <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-select block w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-white" required>
-                        <option value="">-- Pilih Akun --</option>
+                        <option value="">-- Cari nomor atau nama akun --</option>
                         @foreach($akunBiaya as $akun)
                             <option value="{{ $akun->id }}" data-piutang-lain-lain="{{ $akun->isPiutangLainLain() ? '1' : '0' }}" {{ (string) ($row['akun_coa_id'] ?? '') === (string) $akun->id ? 'selected' : '' }}>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
                         @endforeach
@@ -43,6 +55,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const list = document.getElementById('akun-items-list');
+    const rowTemplate = list.querySelector('.akun-item-row').cloneNode(true);
     const tagihan = document.getElementById('total_tagihan_display');
     const expected = () => {
         const total = tagihan.dataset.amount !== undefined
@@ -51,6 +64,18 @@ document.addEventListener('DOMContentLoaded', function () {
         return (total || 0) + (Number(document.getElementById('penyesuaian').value) || 0);
     };
     let autoNominal = list.children.length === 1 && !list.querySelector('.akun-item-nominal').value;
+
+    function initializeAkunSearch(row) {
+        if (window.jQuery && jQuery.fn.select2) {
+            jQuery(row).find('.akun-item-select').select2({
+                width: '100%',
+                placeholder: '-- Cari nomor atau nama akun --',
+                allowClear: true
+            });
+        }
+    }
+
+    list.querySelectorAll('.akun-item-row').forEach(initializeAkunSearch);
 
     function updateAkunItems() {
         const rows = [...list.querySelectorAll('.akun-item-row')];
@@ -74,16 +99,22 @@ document.addEventListener('DOMContentLoaded', function () {
     window.updateAntarGudangAkunItems = updateAkunItems;
     document.getElementById('add-akun-item').addEventListener('click', function () {
         autoNominal = false;
-        const row = list.querySelector('.akun-item-row').cloneNode(true);
+        const row = rowTemplate.cloneNode(true);
         row.querySelector('select').value = '';
         row.querySelector('input').value = '';
         row.querySelector('textarea').value = '';
         list.appendChild(row);
+        initializeAkunSearch(row);
         updateAkunItems();
     });
     list.addEventListener('click', function (event) {
         if (event.target.closest('.remove-akun-item') && list.children.length > 1) {
-            event.target.closest('.akun-item-row').remove();
+            const row = event.target.closest('.akun-item-row');
+            const select = row.querySelector('.akun-item-select');
+            if (window.jQuery && jQuery.fn.select2 && jQuery(select).data('select2')) {
+                jQuery(select).select2('destroy');
+            }
+            row.remove();
             updateAkunItems();
         }
     });
@@ -91,7 +122,11 @@ document.addEventListener('DOMContentLoaded', function () {
         if (event.target.classList.contains('akun-item-nominal')) autoNominal = false;
         updateAkunItems();
     });
-    list.addEventListener('change', updateAkunItems);
+    if (window.jQuery) {
+        jQuery(list).on('change', '.akun-item-select', updateAkunItems);
+    } else {
+        list.addEventListener('change', updateAkunItems);
+    }
     list.closest('form').addEventListener('submit', function (event) {
         const rows = [...list.querySelectorAll('.akun-item-row')];
         const piutang = rows.reduce((sum, row) => sum + (row.querySelector('.akun-item-select option:checked')?.dataset.piutangLainLain === '1' ? (Number(row.querySelector('.akun-item-nominal').value) || 0) : 0), 0);
