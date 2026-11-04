@@ -42,7 +42,7 @@
         @foreach($fclItems as $index => $item)
             <tr>
                 <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
-                <td style="border: 1px solid #000000; text-align: center;">{{ $item->nomor_urut ?? $item->nomor_bl }}</td>
+                <td style="border: 1px solid #000000; text-align: center;">{{ $mode === 'surat_jalan' ? ($item->manifest?->nomor_bl ?? '-') : ($item->nomor_bl ?? '-') }}</td>
                 <td style="border: 1px solid #000000;">{{ $item->nomor_kontainer }}</td>
                 <td style="border: 1px solid #000000;">{{ $item->penerima }}</td>
                 <td style="border: 1px solid #000000; text-align: center;">{{ $item->size_kontainer }}"</td>
@@ -70,7 +70,7 @@
             @foreach($lclItems as $index => $item)
                 <tr>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
-                    <td style="border: 1px solid #000000; text-align: center;">{{ $item->nomor_urut ?? $item->nomor_bl }}</td>
+                    <td style="border: 1px solid #000000; text-align: center;">{{ $mode === 'surat_jalan' ? ($item->manifest?->nomor_bl ?? '-') : ($item->nomor_bl ?? '-') }}</td>
                     <td style="border: 1px solid #000000;">{{ $item->nomor_kontainer }}</td>
                     <td style="border: 1px solid #000000;">{{ $item->penerima }}</td>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $item->size_kontainer }}"</td>
