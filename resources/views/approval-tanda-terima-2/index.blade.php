@@ -322,7 +322,12 @@
                                 @if($type === 'fcl' && $item->fclShipperDetails->isNotEmpty())
                                     <div class="mt-2 space-y-1 border-t border-gray-200 pt-2 text-xs">
                                         @foreach($item->fclShipperDetails as $detail)
-                                            @php($detailShipperFields = array_replace($detail->shipperJb?->getAttributes() ?? [], $shipperOverrides->get($item->id.'|detail:'.$detail->id)?->fields ?? []))
+                                            @php
+                                                $detailShipperFields = array_replace(
+                                                    $detail->shipperJb?->getAttributes() ?? [],
+                                                    $shipperOverrides->get($item->id.'|detail:'.$detail->id)?->fields ?? []
+                                                );
+                                            @endphp
                                             <div class="font-medium text-indigo-800">{{ $loop->iteration + 1 }}. {{ $detailShipperFields['shipper'] ?? '-' }} <span class="font-normal text-gray-500">→ {{ $detailShipperFields['consignee'] ?? '-' }}</span></div>
                                         @endforeach
                                     </div>
