@@ -17,11 +17,11 @@
         <div class="bg-white border rounded-xl overflow-x-auto">
             <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
             <div class="p-4 border-b"><h2 class="font-semibold">{{ $pranota->nomor_pranota }}</h2><p class="text-sm text-gray-500">Pembayaran hanya untuk tipe yang dipilih. Tipe lainnya dapat dibayar kemudian dari pranota yang sama.</p></div>
-            <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Pilih</th><th class="p-4">Komponen</th><th class="p-4">Tipe</th><th class="p-4">Jumlah Peserta</th><th class="p-4 text-right">Belum Dibayar</th></tr></thead><tbody class="divide-y">
+            <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Pilih</th><th class="p-4">Group JKN / Group BP Jamsostek</th><th class="p-4">Cabang BPJS</th><th class="p-4">Tipe</th><th class="p-4">Jumlah Peserta</th><th class="p-4 text-right">Belum Dibayar</th></tr></thead><tbody class="divide-y">
                 @forelse($groups as $group)
-                <tr><td class="p-4"><input type="checkbox" name="group_keys[]" value="{{ $group['key'] }}" data-amount="{{ $group['amount'] }}" data-credit-id="{{ $group['credit_id'] }}" data-credit-label="{{ $group['credit_label'] }}" aria-label="Pilih {{ strtoupper($group['komponen']) }} {{ $group['tipe'] }}" @checked(in_array($group['key'], old('group_keys', [])))></td><td class="p-4">{{ strtoupper($group['komponen']) }}</td><td class="p-4 font-medium">{{ $group['tipe'] }}</td><td class="p-4">{{ count($group['parts']) }}</td><td class="p-4 text-right">Rp {{ number_format($group['amount'], 2, ',', '.') }}</td></tr>
+                <tr><td class="p-4"><input type="checkbox" name="group_keys[]" value="{{ $group['key'] }}" data-amount="{{ $group['amount'] }}" data-credit-id="{{ $group['credit_id'] }}" data-credit-label="{{ $group['credit_label'] }}" aria-label="Pilih {{ $group['group'] }} {{ $group['cabang_bpjs'] }} {{ $group['tipe'] }}" @checked(in_array($group['key'], old('group_keys', [])))></td><td class="p-4"><span class="text-xs text-gray-500">{{ $group['komponen'] === 'jkn' ? 'Group JKN' : 'Group BP Jamsostek' }}</span><br>{{ $group['group'] }}</td><td class="p-4">{{ $group['cabang_bpjs'] }}</td><td class="p-4 font-medium">{{ $group['tipe'] }}</td><td class="p-4">{{ count($group['parts']) }}</td><td class="p-4 text-right">Rp {{ number_format($group['amount'], 2, ',', '.') }}</td></tr>
                 @empty
-                <tr><td colspan="5" class="p-8 text-center text-gray-500">Tidak ada bagian tagihan yang dapat dibayar.</td></tr>
+                <tr><td colspan="6" class="p-8 text-center text-gray-500">Tidak ada bagian tagihan yang dapat dibayar.</td></tr>
                 @endforelse
             </tbody></table>
             <div class="p-4 bg-green-50 text-right font-bold">Total Pembayaran: <output id="payment-total" aria-live="polite">Rp 0,00</output></div>
