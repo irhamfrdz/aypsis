@@ -66,9 +66,9 @@
                         <td class="text-right">Rp {{ number_format((float) ($gaji?->gaji_pokok ?? 0), 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format((float) ($gaji?->uang_malam_libur ?? 0), 0, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format((float) ($gaji?->biaya_bensin ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->potongan_bpjs ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format((float) ($gaji?->nominal_potongan_5_persen ?? 0), 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format((float) $item->total_gaji, 0, ',', '.') }}</td>
+                        <td class="text-right"></td>
+                        <td class="text-right"></td>
+                        <td class="text-right">Rp {{ number_format((float) ($gaji?->total_gaji ?? $item->total_gaji), 0, ',', '.') }}</td>
                     </tr>
                 @endforeach
             </tbody>
