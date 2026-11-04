@@ -544,17 +544,22 @@
             const records = await response.json();
             if (currentGeneration !== detailsGeneration || !dialog.open) return;
 
-            const current = Array.isArray(records) ? records[0] : null;
+            let current = Array.isArray(records) ? records[0] : null;
             if (!current) {
                 search.value = '';
                 selection.textContent = 'Shipper saat ini tidak ditemukan di master. Cari shipper lain.';
                 showPreview(null);
                 fetchShippers();
             } else {
+                try {
+                    const savedOverrides = JSON.parse(opener?.dataset.shipperOverrides || '{}');
+                    current = {...current, ...savedOverrides, real_id: current.real_id, text: current.text};
+                } catch { /* Ignore malformed page data and keep the master values. */ }
                 const previousName = search.value;
                 selectedId.value = current.real_id;
                 search.value = current.text;
-                selection.textContent = 'Shipper saat ini: ' + current.text + '. Anda dapat mengedit data di bawah atau memilih shipper lain.';
+                const displayName = [current.shipper, current.consignee].filter(Boolean).join(' - ') || current.text;
+                selection.textContent = 'Shipper saat ini: ' + displayName + '. Anda dapat mengedit data di bawah atau memilih shipper lain.';
                 showPreview(current);
                 save.disabled = false;
                 if (previousName !== current.text) fetchShippers();

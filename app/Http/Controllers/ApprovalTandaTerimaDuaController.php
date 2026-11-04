@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ApprovalTandaTerimaDuaFclShipper;
 use App\Models\ApprovalTandaTerimaDuaGoods;
+use App\Models\ApprovalTandaTerimaDuaShipperOverride;
 use App\Models\Manifest;
 use App\Models\ShipperConsignee;
 use App\Models\TandaTerima;
@@ -237,6 +238,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             ->whereIn('source_id', $items->pluck('id'))
             ->get()
             ->keyBy('source_id');
+        $shipperOverrides = ApprovalTandaTerimaDuaShipperOverride::query()
+            ->where('source_type', $type)
+            ->whereIn('source_id', $items->pluck('id'))
+            ->get()
+            ->keyBy(fn ($override) => $override->source_id.'|'.$override->context);
         $incompleteMarks = DB::table('approval_tanda_terima_2_incomplete_marks')
             ->where('source_type', $type)
             ->whereIn('source_id', $items->pluck('id'))
@@ -254,6 +260,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'items' => $items,
             'containerQuantityTotal' => $containerQuantityTotal,
             'goodsOverrides' => $goodsOverrides,
+            'shipperOverrides' => $shipperOverrides,
             'incompleteMarks' => $incompleteMarks,
             'exportedMarks' => $exportedMarks,
         ]);
@@ -363,16 +370,15 @@ class ApprovalTandaTerimaDuaController extends Controller
         unset($data['manifest_goods'], $data['goods']);
 
         DB::transaction(function () use ($data, $number, $shipper, $shipperFields, $manifest, $perincian, $request) {
-            $shipper = $this->saveShipperEdits($shipper, $shipperFields);
             $receipt = TandaTerimaTanpaSuratJalan::create([
                 ...$data,
                 'shipper_jb_id' => $shipper->id,
-                'pengirim' => $shipper->shipper,
-                'penerima' => $shipper->consignee,
-                'alamat_pengirim' => $shipper->alamat_shipper,
-                'alamat_penerima' => $shipper->alamat_consignee,
-                'notify_party' => $shipper->notify_party_consignee,
-                'alamat_notify_party' => $shipper->alamat_notify_party_consignee,
+                'pengirim' => $shipperFields['shipper'] ?? $shipper->shipper,
+                'penerima' => $shipperFields['consignee'] ?? $shipper->consignee,
+                'alamat_pengirim' => $shipperFields['alamat_shipper'] ?? $shipper->alamat_shipper,
+                'alamat_penerima' => $shipperFields['alamat_consignee'] ?? $shipper->alamat_consignee,
+                'notify_party' => $shipperFields['notify_party_consignee'] ?? $shipper->notify_party_consignee,
+                'alamat_notify_party' => $shipperFields['alamat_notify_party_consignee'] ?? $shipper->alamat_notify_party_consignee,
                 'no_tanda_terima' => $number,
                 'nomor_tanda_terima' => $number,
                 'nama_barang' => $perincian['nama_barang'],
@@ -382,6 +388,7 @@ class ApprovalTandaTerimaDuaController extends Controller
                 'status' => 'draft',
                 'created_by' => $request->user()?->name,
             ]);
+            $this->saveShipperApprovalOverride('ttsj', $receipt->id, 'main', $shipper, $shipperFields);
             ApprovalTandaTerimaDuaGoods::create([
                 'source_type' => 'ttsj',
                 'source_id' => $receipt->id,
@@ -414,7 +421,9 @@ class ApprovalTandaTerimaDuaController extends Controller
             $item->load('dimensiItems');
         }
         $override = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)->where('source_id', $id)->first();
-        $path = $excel->create($sourceType, $item, $override);
+        $shipperOverride = ApprovalTandaTerimaDuaShipperOverride::where('source_type', $sourceType)
+            ->where('source_id', $id)->where('context', 'main')->first()?->fields;
+        $path = $excel->create($sourceType, $item, $override, $shipperOverride);
 
         $now = now();
         try {
@@ -473,9 +482,15 @@ class ApprovalTandaTerimaDuaController extends Controller
         }
         $overrides = ApprovalTandaTerimaDuaGoods::where('source_type', $sourceType)
             ->whereIn('source_id', $ids)->get()->keyBy('source_id');
+        $shipperOverrides = ApprovalTandaTerimaDuaShipperOverride::where('source_type', $sourceType)
+            ->whereIn('source_id', $ids)->get()->groupBy('source_id');
         $entries = $receipts->map(fn ($receipt) => [
             'receipt' => $receipt,
             'override' => $overrides->get($receipt->id),
+            'shipper_override' => $shipperOverrides->get($receipt->id, collect())->firstWhere('context', 'main')?->fields,
+            'detail_shipper_overrides' => $shipperOverrides->get($receipt->id, collect())
+                ->filter(fn ($row) => str_starts_with($row->context, 'detail:'))
+                ->keyBy('context')->map(fn ($row) => $row->fields)->all(),
         ])->values()->all();
         $path = $excel->createMany($sourceType, $entries);
 
@@ -561,7 +576,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         }
 
         DB::transaction(function () use ($item, $sourceType, $shipper, $fields, $goods, $id) {
-            $shipper = $this->saveShipperEdits($shipper, $fields);
+            $this->saveShipperApprovalOverride($sourceType, $item->id, 'main', $shipper, $fields);
             $item->update(['shipper_jb_id' => $shipper->id]);
 
             $number = $item->{$this->numberColumn($sourceType)};
@@ -627,18 +642,12 @@ class ApprovalTandaTerimaDuaController extends Controller
         return [$shipper, $fields];
     }
 
-    private function saveShipperEdits(ShipperConsignee $shipper, array $fields): ShipperConsignee
+    private function saveShipperApprovalOverride(string $sourceType, int $sourceId, string $context, ShipperConsignee $shipper, array $fields): void
     {
-        $hasChanges = collect($fields)->contains(
-            fn ($value, $field) => (string) ($shipper->{$field} ?? '') !== (string) ($value ?? '')
+        ApprovalTandaTerimaDuaShipperOverride::updateOrCreate(
+            ['source_type' => $sourceType, 'source_id' => $sourceId, 'context' => $context],
+            ['shipper_jb_id' => $shipper->id, 'fields' => $fields, 'updated_by' => auth()->id()]
         );
-        if ($hasChanges) {
-            $shipper = $shipper->replicate();
-            $shipper->fill($fields);
-            $shipper->save();
-        }
-
-        return $shipper;
     }
 
     public function addFclShipper(Request $request, int $id): RedirectResponse
@@ -650,12 +659,12 @@ class ApprovalTandaTerimaDuaController extends Controller
         abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
 
         DB::transaction(function () use ($item, $shipper, $fields) {
-            $shipper = $this->saveShipperEdits($shipper, $fields);
-            ApprovalTandaTerimaDuaFclShipper::create([
+            $detail = ApprovalTandaTerimaDuaFclShipper::create([
                 'tanda_terima_id' => $item->id,
                 'shipper_jb_id' => $shipper->id,
                 'updated_by' => auth()->id(),
             ]);
+            $this->saveShipperApprovalOverride('fcl', $item->id, 'detail:'.$detail->id, $shipper, $fields);
         });
 
         return back()->with('success', 'Shipper tambahan ditambahkan. Lengkapi rincian barangnya sebelum ekspor.');
@@ -669,8 +678,8 @@ class ApprovalTandaTerimaDuaController extends Controller
         abort_if((int) $item->shipper_jb_id === (int) $shipper->id, 422, 'Shipper ini sudah menjadi shipper utama.');
         abort_if($item->fclShipperDetails()->whereKeyNot($detail->id)->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
 
-        DB::transaction(function () use ($detail, $shipper, $fields) {
-            $shipper = $this->saveShipperEdits($shipper, $fields);
+        DB::transaction(function () use ($detail, $shipper, $fields, $id) {
+            $this->saveShipperApprovalOverride('fcl', $id, 'detail:'.$detail->id, $shipper, $fields);
             $detail->update(['shipper_jb_id' => $shipper->id, 'updated_by' => auth()->id()]);
         });
 
@@ -715,7 +724,11 @@ class ApprovalTandaTerimaDuaController extends Controller
 
     public function removeFclShipper(int $id, int $detailId): RedirectResponse
     {
-        ApprovalTandaTerimaDuaFclShipper::where('tanda_terima_id', $id)->findOrFail($detailId)->delete();
+        DB::transaction(function () use ($id, $detailId) {
+            ApprovalTandaTerimaDuaFclShipper::where('tanda_terima_id', $id)->findOrFail($detailId)->delete();
+            ApprovalTandaTerimaDuaShipperOverride::where('source_type', 'fcl')
+                ->where('source_id', $id)->where('context', 'detail:'.$detailId)->delete();
+        });
 
         return back()->with('success', 'Shipper tambahan dihapus.');
     }
@@ -841,6 +854,8 @@ class ApprovalTandaTerimaDuaController extends Controller
 
         DB::transaction(function () use ($item, $sourceType, $shipperId) {
             $item->update(['shipper_jb_id' => null]);
+            ApprovalTandaTerimaDuaShipperOverride::where('source_type', $sourceType)
+                ->where('source_id', $item->id)->where('context', 'main')->delete();
 
             $number = $item->{$this->numberColumn($sourceType)};
             if ($sourceType === 'ttsj' && blank($number)) {

@@ -248,6 +248,8 @@
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
                             $goodsOverride = $goodsOverrides->get($item->id);
+                            $shipperApprovalOverride = $shipperOverrides->get($item->id.'|main');
+                            $shipperFields = array_replace($item->shipperJb?->getAttributes() ?? [], $shipperApprovalOverride?->fields ?? []);
                             $manifestGood = collect($goodsOverride?->manifest_goods ?? [])->first();
                             $manifestQuantity = data_get($manifestGood, 'jumlah');
                             $manifestUnit = data_get($manifestGood, 'satuan');
@@ -312,15 +314,16 @@
                             <td data-label="Shipper Perincian" class="text-gray-700">{{ $sender ?: '-' }}</td>
                             <td data-label="Shipper Manifest JB">
                                 @if($item->shipperJb)
-                                    <div class="font-medium text-gray-900">{{ $type === 'fcl' ? 'Utama: ' : '' }}{{ $item->shipperJb->shipper }}</div>
-                                    @if($item->shipperJb->consignee)<div class="mt-0.5 text-xs text-gray-500">Consignee: {{ $item->shipperJb->consignee }}</div>@endif
+                                    <div class="font-medium text-gray-900">{{ $type === 'fcl' ? 'Utama: ' : '' }}{{ $shipperFields['shipper'] ?? $item->shipperJb->shipper }}</div>
+                                    @if($shipperFields['consignee'] ?? $item->shipperJb->consignee)<div class="mt-0.5 text-xs text-gray-500">Consignee: {{ $shipperFields['consignee'] ?? $item->shipperJb->consignee }}</div>@endif
                                 @else
                                     <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-50 px-2.5 py-1 text-xs font-medium text-amber-700"><span class="h-1.5 w-1.5 rounded-full bg-amber-500"></span>Belum dipilih</span>
                                 @endif
                                 @if($type === 'fcl' && $item->fclShipperDetails->isNotEmpty())
                                     <div class="mt-2 space-y-1 border-t border-gray-200 pt-2 text-xs">
                                         @foreach($item->fclShipperDetails as $detail)
-                                            <div class="font-medium text-indigo-800">{{ $loop->iteration + 1 }}. {{ $detail->shipperJb?->shipper }} <span class="font-normal text-gray-500">→ {{ $detail->shipperJb?->consignee ?: '-' }}</span></div>
+                                            @php($detailShipperFields = array_replace($detail->shipperJb?->getAttributes() ?? [], $shipperOverrides->get($item->id.'|detail:'.$detail->id)?->fields ?? []))
+                                            <div class="font-medium text-indigo-800">{{ $loop->iteration + 1 }}. {{ $detailShipperFields['shipper'] ?? '-' }} <span class="font-normal text-gray-500">→ {{ $detailShipperFields['consignee'] ?? '-' }}</span></div>
                                         @endforeach
                                     </div>
                                 @endif
@@ -364,7 +367,8 @@
                                         data-goods-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
-                                        data-shipper="{{ $item->shipperJb?->shipper }}">
+                                        data-shipper="{{ $shipperFields['shipper'] ?? $item->shipperJb?->shipper }}"
+                                        data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'>
                                         <i class="fas fa-pen-to-square" aria-hidden="true"></i>Input Approval
                                     </button>
                                     @if($type === 'fcl' && $item->shipper_jb_id)
@@ -385,7 +389,7 @@
                                 @if($type === 'fcl' && $item->fclShipperDetails->isNotEmpty())
                                     <div class="mt-3 space-y-2 border-t border-gray-200 pt-3">
                                         @foreach($item->fclShipperDetails as $detail)
-                                            @include('approval-tanda-terima-2._fcl-shipper-detail', ['detail' => $detail, 'item' => $item])
+                                            @include('approval-tanda-terima-2._fcl-shipper-detail', ['detail' => $detail, 'item' => $item, 'shipperApprovalOverride' => $shipperOverrides->get($item->id.'|detail:'.$detail->id)])
                                         @endforeach
                                     </div>
                                 @endif

@@ -2,10 +2,11 @@
     $manifest = $detail->manifest_goods ?? [];
     $perincian = $detail->goods ?? [];
     $goodsDialogId = 'approval-goods-fcl-additional-'.$detail->id;
+    $shipperFields = array_replace($detail->shipperJb?->getAttributes() ?? [], $shipperApprovalOverride?->fields ?? []);
 @endphp
 <div class="rounded-lg border border-indigo-200 bg-indigo-50 p-3 text-sm">
     <div class="font-semibold text-indigo-800">
-        {{ $detail->shipperJb?->shipper ?: 'Shipper tidak ditemukan' }} → {{ $detail->shipperJb?->consignee ?: '-' }}
+        {{ $shipperFields['shipper'] ?? 'Shipper tidak ditemukan' }} → {{ $shipperFields['consignee'] ?? '-' }}
     </div>
     <p class="mt-1 text-xs text-gray-600">{{ data_get($manifest, 'nama_barang') ?: '(barang belum diisi)' }}</p>
     @can('approval-tanda-terima-2-approve')
@@ -14,6 +15,7 @@
                 data-update-url="{{ route('approval-tanda-terima-2.fcl-shippers.update', ['id' => $item->id, 'detailId' => $detail->id]) }}"
                 data-number="{{ $item->no_surat_jalan }}" data-sender="{{ $item->pengirim }}"
                 data-shipper-id="{{ $detail->shipper_jb_id }}" data-shipper="{{ $detail->shipperJb?->shipper }}"
+                data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'
                 data-mode="edit-additional">
                 <i class="fas fa-pen-to-square mr-1" aria-hidden="true"></i>Ubah Shipper Tambahan
             </button>
@@ -33,7 +35,7 @@
                     <h2 id="{{ $goodsDialogId }}-title" class="text-lg font-semibold text-gray-900">Barang Shipper Tambahan</h2>
                     <p class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500">
                         <span>Tanda terima: {{ $item->no_surat_jalan ?: 'Tanpa nomor' }}</span>
-                        <span>Shipper: {{ $detail->shipperJb?->shipper ?: '-' }}</span>
+                        <span>Shipper: {{ $shipperFields['shipper'] ?? '-' }}</span>
                     </p>
                 </div>
                 <button type="button" class="approval-goods-close rounded-lg px-2 py-1 text-xl text-gray-500 hover:bg-gray-100" aria-label="Tutup">&times;</button>

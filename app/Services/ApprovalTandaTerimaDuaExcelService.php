@@ -14,9 +14,9 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ApprovalTandaTerimaDuaExcelService
 {
-    public function create(string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override = null): string
+    public function create(string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override = null, ?array $shipperOverride = null): string
     {
-        return $this->createMany($sourceType, [['receipt' => $receipt, 'override' => $override]]);
+        return $this->createMany($sourceType, [['receipt' => $receipt, 'override' => $override, 'shipper_override' => $shipperOverride]]);
     }
 
     public function createMany(string $sourceType, array $entries): string
@@ -29,10 +29,12 @@ class ApprovalTandaTerimaDuaExcelService
         $sheet->freezePane('A7');
         $row = 8;
         foreach ($entries as $entry) {
-            $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], $entry['override'] ?? null);
+            $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], $entry['override'] ?? null, null, $entry['shipper_override'] ?? null);
             if ($sourceType === 'fcl' && $entry['receipt']->relationLoaded('fclShipperDetails')) {
                 foreach ($entry['receipt']->fclShipperDetails as $detail) {
-                    $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], null, $detail);
+                    $detailContext = 'detail:'.$detail->id;
+                    $detailOverride = $entry['detail_shipper_overrides'][$detailContext] ?? null;
+                    $this->fillRow($sheet, $row++, $sourceType, $entry['receipt'], null, $detail, $detailOverride);
                 }
             }
         }
@@ -53,7 +55,7 @@ class ApprovalTandaTerimaDuaExcelService
         return $path;
     }
 
-    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override, ?\App\Models\ApprovalTandaTerimaDuaFclShipper $detail = null): void
+    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, string $sourceType, Model $receipt, ?ApprovalTandaTerimaDuaGoods $override, ?\App\Models\ApprovalTandaTerimaDuaFclShipper $detail = null, ?array $shipperOverride = null): void
     {
         $sourceGood = $this->sourceGood($sourceType, $receipt);
         $manifestGood = $detail?->manifest_goods ?? $override?->manifest_goods[0] ?? $sourceGood;
@@ -61,6 +63,7 @@ class ApprovalTandaTerimaDuaExcelService
         $hsCodes = data_get($manifestGood, 'hs_codes');
         $hsCodes = is_array($hsCodes) ? $hsCodes : (filled(data_get($manifestGood, 'hs_code')) ? [data_get($manifestGood, 'hs_code')] : []);
         $shipper = $detail?->shipperJb ?? $receipt->shipperJb;
+        $shipperValues = array_replace($shipper?->getAttributes() ?? [], $shipperOverride ?? []);
         $number = match ($sourceType) {
             'fcl' => $receipt->no_surat_jalan,
             'lcl' => $receipt->nomor_tanda_terima,
@@ -83,18 +86,18 @@ class ApprovalTandaTerimaDuaExcelService
             'K' => data_get($manifestGood, 'nama_barang'),
             'M' => data_get($perincianGood, 'satuan'),
             'N' => data_get($perincianGood, 'nama_barang'),
-            'Q' => $shipper?->shipper ?: $sender,
-            'R' => $shipper?->alamat_shipper ?: $receipt->alamat_pengirim,
-            'S' => $shipper?->npwp_shipper,
-            'T' => $shipper?->consignee ?: $receiver,
-            'U' => $shipper?->alamat_consignee ?: $receipt->alamat_penerima,
-            'V' => $shipper?->npwp_consignee,
-            'W' => $shipper?->notify_party_consignee ?: $receipt->notify_party,
-            'X' => $shipper?->alamat_notify_party_consignee ?: $receipt->alamat_notify_party,
-            'Y' => $shipper?->npwp_notify_party_consignee,
-            'Z' => $shipper?->delivery_address_contact_person,
-            'AA' => $shipper?->document_ppftz_03,
-            'AB' => $shipper?->condition,
+            'Q' => ($shipperValues['shipper'] ?? null) ?: $sender,
+            'R' => ($shipperValues['alamat_shipper'] ?? null) ?: $receipt->alamat_pengirim,
+            'S' => $shipperValues['npwp_shipper'] ?? null,
+            'T' => ($shipperValues['consignee'] ?? null) ?: $receiver,
+            'U' => ($shipperValues['alamat_consignee'] ?? null) ?: $receipt->alamat_penerima,
+            'V' => $shipperValues['npwp_consignee'] ?? null,
+            'W' => ($shipperValues['notify_party_consignee'] ?? null) ?: $receipt->notify_party,
+            'X' => ($shipperValues['alamat_notify_party_consignee'] ?? null) ?: $receipt->alamat_notify_party,
+            'Y' => $shipperValues['npwp_notify_party_consignee'] ?? null,
+            'Z' => $shipperValues['delivery_address_contact_person'] ?? null,
+            'AA' => $shipperValues['document_ppftz_03'] ?? null,
+            'AB' => $shipperValues['condition'] ?? null,
             'AC' => $number,
             'AG' => $receipt->tipe_kontainer ?: ($receipt->size_kontainer ?: $receipt->size),
         ];
@@ -103,7 +106,7 @@ class ApprovalTandaTerimaDuaExcelService
                 $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
             }
         }
-        $documentType = strtoupper(trim(preg_replace('/[\s_-]+/', ' ', (string) ($shipper?->document_ppftz_03 ?? ''))));
+        $documentType = strtoupper(trim(preg_replace('/[\s_-]+/', ' ', (string) ($shipperValues['document_ppftz_03'] ?? ''))));
         foreach (['Q', 'T'] as $column) {
             $fill = $sheet->getStyle($column.$row)->getFill();
             if ($documentType === 'NON FAKTUR') {
