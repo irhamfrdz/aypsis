@@ -1,20 +1,35 @@
 [data-allowance] { min-width: 220px; padding: 12px 16px !important; vertical-align: middle; border-left: 1px solid #ffedd5; }
-.bpjs-journal { margin: 24px 0; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; }
-.bpjs-journal-table { width: 100%; min-width: 920px; border-collapse: collapse; font-size: 12px; }
-.bpjs-journal-table :is(th, td) { border: 1px solid #d1d5db; padding: 9px 12px; }
-.bpjs-journal-table th { text-align: left; font-weight: 600; }
-.bpjs-journal-table thead th { background: #f8fafc; }
+.bpjs-journal { margin: 28px 0; padding: 22px; border: 1px solid #dbe3ef; border-radius: 14px; background: linear-gradient(180deg, #fff 0%, #fbfdff 100%); box-shadow: 0 8px 24px rgb(15 23 42 / 5%); }
+.bpjs-journal h3 { display: flex; align-items: center; gap: 10px; letter-spacing: -.02em; }
+.bpjs-journal h3::before { width: 4px; height: 22px; border-radius: 999px; background: #4f46e5; content: ""; }
+.bpjs-journal > p { max-width: 920px; line-height: 1.65; }
+.bpjs-journal .overflow-x-auto { border: 1px solid #dbe3ef; border-radius: 10px; }
+.bpjs-journal-table { width: 100%; min-width: 920px; border-collapse: separate; border-spacing: 0; font-size: 12px; color: #334155; }
+.bpjs-journal-table :is(th, td) { border: 0; border-bottom: 1px solid #e5eaf1; padding: 11px 14px; }
+.bpjs-journal-table th { text-align: left; font-weight: 650; }
+.bpjs-journal-table thead th { position: sticky; top: 0; z-index: 1; background: #f1f5f9; color: #475569; font-size: 10px; letter-spacing: .07em; text-transform: uppercase; }
+.bpjs-journal-table thead th:first-child { border-top-left-radius: 9px; }
+.bpjs-journal-table thead th:last-child { border-top-right-radius: 9px; }
 .bpjs-journal-table td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
 .bpjs-journal-table td:last-child { text-align: left; }
 .bpjs-journal-table tfoot td:last-child { text-align: right; }
-.bpjs-journal-table tbody th { white-space: nowrap; font-weight: 400; }
-.bpjs-journal-table .bpjs-journal-tunjangan { color: #166534; }
-.bpjs-journal-table .bpjs-journal-biaya { color: #1e40af; }
-.bpjs-journal-table .bpjs-journal-hutang { color: #854d0e; }
-.bpjs-journal-table .bpjs-journal-total-green { background: #92d050; color: #111827; font-weight: 700; }
-.bpjs-journal-table .bpjs-journal-total-blue { background: #9dc3e6; color: #111827; font-weight: 700; }
-.bpjs-journal-table .bpjs-journal-total-yellow { background: #ffff00; color: #111827; font-weight: 700; }
-@media print { .bpjs-journal { break-inside: avoid; padding: 8px; } .bpjs-journal-table { min-width: 0; print-color-adjust: exact; } }
+.bpjs-journal-table tbody th { white-space: nowrap; font-weight: 500; color: #1e293b; }
+.bpjs-journal-table tbody tr:nth-child(even) { background: #f8fafc; }
+.bpjs-journal-table tbody tr:hover { background: #eef2ff; }
+.bpjs-journal-table tbody tr:last-child :is(th, td) { border-bottom-color: #cbd5e1; }
+.bpjs-journal-table .bpjs-journal-tunjangan { color: #047857; }
+.bpjs-journal-table .bpjs-journal-biaya { color: #1d4ed8; }
+.bpjs-journal-table .bpjs-journal-hutang { color: #b45309; }
+.bpjs-journal-table .bpjs-journal-total-green { background: #ecfdf5; color: #065f46; font-weight: 750; }
+.bpjs-journal-table .bpjs-journal-total-blue { background: #eff6ff; color: #1e40af; font-weight: 750; }
+.bpjs-journal-table .bpjs-journal-total-yellow { background: #fffbeb; color: #92400e; font-weight: 750; }
+.bpjs-journal-table tfoot th, .bpjs-journal-table tfoot td { border-top: 1px solid #dbe3ef; border-bottom: 0; }
+.bpjs-journal-table tfoot tr:first-child th { border-bottom-left-radius: 8px; }
+.bpjs-journal-table tfoot tr:first-child td:last-child { border-bottom-right-radius: 8px; }
+.bpjs-journal-table tfoot tr:first-child td:last-child span { font-size: 14px; }
+.bpjs-journal-table tfoot tr + tr th, .bpjs-journal-table tfoot tr + tr td { border-top: 6px solid #fff; }
+@media (max-width: 640px) { .bpjs-journal { padding: 16px; } }
+@media print { .bpjs-journal { break-inside: avoid; padding: 8px; border-color: #cbd5e1; box-shadow: none; } .bpjs-journal .overflow-x-auto { overflow: visible !important; } .bpjs-journal-table { min-width: 0; print-color-adjust: exact; } .bpjs-journal-table thead th { position: static; } .bpjs-journal-table :is(th, td) { padding: 6px 8px; } }
 .bpjs-group-total-jkn { background: #e0e7ff; color: #3730a3; }
 :is(th, td).bpjs-jkn-contribution { background: #f0fdf4; color: #166534; }
 :is(th, td).bpjs-jkn-debt { background: #fefce8; color: #854d0e; }
