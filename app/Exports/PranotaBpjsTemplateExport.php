@@ -12,6 +12,7 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class PranotaBpjsTemplateExport implements FromArray, WithCustomStartCell, WithEvents, WithColumnFormatting
@@ -74,7 +75,7 @@ class PranotaBpjsTemplateExport implements FromArray, WithCustomStartCell, WithE
                 $sheet->setAutoFilter('A1:BB'.$lastRow);
                 $sheet->freezePane('A2');
                 $sheet->setSelectedCell('A1');
-                $sheet->getPageSetup()->setOrientation(Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+                $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
                 $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
                 $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 1);
                 $sheet->setTitle('Rincian BPJS');
