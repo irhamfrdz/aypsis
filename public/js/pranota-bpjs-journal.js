@@ -60,7 +60,7 @@
         const section = document.querySelector('[data-bpjs-journal]');
         if (!section) return;
         const journal = calculate(records);
-        const formatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const formatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
         const fragment = document.createDocumentFragment();
         journal.rows.forEach(row => {
             const tr = document.createElement('tr');
@@ -71,7 +71,7 @@
             for (const key of ['tunjangan', 'biaya', 'hutang']) {
                 const td = document.createElement('td');
                 td.className = 'bpjs-journal-' + key;
-                td.textContent = row[key] ? formatter.format(row[key]) : '-';
+                td.textContent = row[key] ? formatter.format(Math.round(row[key])) : '-';
                 tr.appendChild(td);
             }
             const account = document.createElement('td');
@@ -81,7 +81,7 @@
         });
         section.querySelector('[data-journal-rows]').replaceChildren(fragment);
         Object.entries(journal.totals).forEach(([key, amount]) => {
-            section.querySelector('[data-journal-total="' + key + '"]').textContent = formatter.format(amount);
+            section.querySelector('[data-journal-total="' + key + '"]').textContent = formatter.format(Math.round(amount));
         });
     }
     function renderFromRows(container) {
