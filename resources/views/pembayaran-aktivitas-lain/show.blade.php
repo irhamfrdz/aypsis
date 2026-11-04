@@ -132,7 +132,11 @@
                                 <div class="mt-2 overflow-hidden rounded-lg border border-gray-200">
                                     @foreach($pembayaranAktivitasLain->kendaraan_details as $detail)
                                         <div class="flex justify-between gap-4 px-3 py-2 text-sm {{ !$loop->last ? 'border-b border-gray-200' : '' }}">
-                                            <span class="text-gray-700">{{ $detail['nomor_polisi'] }}</span>
+                                            <span class="text-gray-700">{{ $detail['nomor_polisi'] }}
+                                                @if(!empty($detail['memo']))
+                                                    <span class="block text-xs text-gray-500 whitespace-pre-wrap">{{ $detail['memo'] }}</span>
+                                                @endif
+                                            </span>
                                             <span class="font-semibold text-gray-900">Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</span>
                                         </div>
                                     @endforeach

@@ -304,6 +304,7 @@
                     @error('kendaraan_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     @error('kendaraan_details.*.nomor_polisi')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                     @error('kendaraan_details.*.nominal')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
+                    @error('kendaraan_details.*.memo')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror
                 </div>
 
                 <!-- Nomor Voyage (Hidden by default) -->
@@ -718,11 +719,11 @@ function initializeSelect2() {
     const nomorPolisiListSelect = document.getElementById('nomor_polisi_list_select');
     const kendaraanKirDetailsField = document.getElementById('kendaraan_kir_details_field');
     const kendaraanKirDetailsContainer = document.getElementById('kendaraan_kir_details_container');
-    const initialKirDetails = new Map(@json(old('kendaraan_details', $pembayaranAktivitasLain->kendaraan_details ?: [])).map(item => [item.nomor_polisi, item.nominal]));
+    const initialKirDetails = new Map(@json(old('kendaraan_details', $pembayaranAktivitasLain->kendaraan_details ?: [])).map(item => [item.nomor_polisi, { nominal: item.nominal, memo: item.memo || '' }]));
     // Pembayaran lama dengan satu kendaraan belum memiliki rincian biaya.
     @if($pembayaranAktivitasLain->sub_jenis_kendaraan === 'Lain Lain' && empty($pembayaranAktivitasLain->kendaraan_details) && count((array) $selectedNomorPolisiList) === 1)
     if (!initialKirDetails.has(@json($selectedNomorPolisiList[0]))) {
-        initialKirDetails.set(@json($selectedNomorPolisiList[0]), @json($pembayaranAktivitasLain->jumlah));
+        initialKirDetails.set(@json($selectedNomorPolisiList[0]), { nominal: @json($pembayaranAktivitasLain->jumlah), memo: '' });
     }
     @endif
     const nomorVoyageField = document.getElementById('nomor_voyage_field');
@@ -969,13 +970,14 @@ function initializeSelect2() {
         }
 
         kendaraanKirDetailsContainer.querySelectorAll('.kir-nominal').forEach(input => {
-            initialKirDetails.set(input.dataset.nomorPolisi, input.value);
+            const memo = input.closest('.vehicle-detail-row').querySelector('.kir-memo').value;
+            initialKirDetails.set(input.dataset.nomorPolisi, { nominal: input.value, memo });
         });
         kendaraanKirDetailsContainer.innerHTML = '';
 
         Array.from(nomorPolisiListSelect.selectedOptions).forEach((option, index) => {
             const row = document.createElement('div');
-            row.className = 'grid grid-cols-1 md:grid-cols-2 gap-2 items-center rounded-md border border-gray-200 bg-gray-50 p-3';
+            row.className = 'vehicle-detail-row grid grid-cols-1 md:grid-cols-2 gap-2 items-center rounded-md border border-gray-200 bg-gray-50 p-3';
 
             const vehicle = document.createElement('div');
             vehicle.className = 'text-sm font-medium text-gray-700';
@@ -997,13 +999,22 @@ function initializeSelect2() {
             amount.step = '1';
             amount.required = true;
             amount.placeholder = 'Biaya kendaraan';
-            amount.value = initialKirDetails.get(option.value) || '';
+            amount.value = initialKirDetails.get(option.value)?.nominal || '';
             amount.dataset.nomorPolisi = option.value;
             amount.className = 'kir-nominal w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right';
             amount.addEventListener('input', calculateKirTotal);
 
+            const memo = document.createElement('input');
+            memo.type = 'text';
+            memo.name = `kendaraan_details[${index}][memo]`;
+            memo.maxLength = 500;
+            memo.placeholder = 'Memo biaya kendaraan (opsional)';
+            memo.setAttribute('aria-label', `Memo biaya ${option.textContent.trim()}`);
+            memo.value = initialKirDetails.get(option.value)?.memo || '';
+            memo.className = 'kir-memo md:col-span-2 w-full px-3 py-2 border border-gray-300 rounded-md text-sm';
+
             amountWrapper.append(prefix, hidden, amount);
-            row.append(vehicle, amountWrapper);
+            row.append(vehicle, amountWrapper, memo);
             kendaraanKirDetailsContainer.appendChild(row);
         });
 

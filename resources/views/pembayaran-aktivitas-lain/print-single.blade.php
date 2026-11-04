@@ -268,7 +268,7 @@
                     @foreach($pembayaranAktivitasLain->kendaraan_details as $detail)
                     <tr>
                         <td>{{ $loop->first ? 'Kendaraan / Biaya' : '' }}</td>
-                        <td>: {{ $detail['nomor_polisi'] }} — Rp {{ number_format($detail['nominal'], 0, ',', '.') }}</td>
+                        <td>: {{ $detail['nomor_polisi'] }} — Rp {{ number_format($detail['nominal'], 0, ',', '.') }}@if(!empty($detail['memo']))<br><small>Memo: {{ $detail['memo'] }}</small>@endif</td>
                     </tr>
                     @endforeach
                 @elseif($pembayaranAktivitasLain->nomor_polisi)
