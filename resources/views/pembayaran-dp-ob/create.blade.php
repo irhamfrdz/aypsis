@@ -395,6 +395,9 @@
                                 <div id="jumlah-inputs">
                                     <!-- Dynamic inputs akan ditambahkan di sini -->
                                 </div>
+                                <div id="total-pembayaran-display" class="mt-3 rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-sm font-semibold text-blue-900">
+                                    Total Uang Muka: <span id="total-pembayaran-nominal">Rp 0</span>
+                                </div>
                                 <div id="no-supir-message" class="text-gray-500 text-sm italic">
                                     Pilih supir terlebih dahulu untuk mengisi jumlah Uang Muka
                                 </div>
@@ -575,6 +578,8 @@ function updateSupirDisplay() {
             }
         });
     }
+
+    updateTotalPaymentDisplay();
 }
 
 function removeSupir(supirId) {
@@ -711,6 +716,8 @@ function formatCurrency(input, supirId) {
     } else {
         input.value = '';
     }
+
+    updateTotalPaymentDisplay();
 }
 
 // Handle jenis transaksi selection
@@ -900,6 +907,13 @@ function getTotalPayment() {
         totalAmount += amount;
     });
     return totalAmount;
+}
+
+function updateTotalPaymentDisplay() {
+    const totalElement = document.getElementById('total-pembayaran-nominal');
+    if (!totalElement) return;
+
+    totalElement.textContent = `Rp ${formatNumber(getTotalPayment()) || '0'}`;
 }
 
 // Function to update Journal Preview
