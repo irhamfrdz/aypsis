@@ -209,10 +209,14 @@
                                 <div id="akun-items" class="space-y-3">
                                     @foreach($akunItems as $index => $item)
                                         <div class="akun-item grid grid-cols-1 md:grid-cols-3 gap-2">
-                                            <select name="akun_items[{{ $index }}][akun_coa_id]" required class="akun-item-coa w-full px-3 py-2 border rounded-md text-sm">
-                                                <option value="">-- Pilih Akun Biaya --</option>
-                                                @foreach($akunBiayaList as $akun)<option value="{{ $akun->id }}" {{ ($item['akun_coa_id'] ?? '') == $akun->id ? 'selected' : '' }}>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>@endforeach
-                                            </select>
+                                            <div class="relative akun-item-account">
+                                                <input type="text" class="akun-item-search w-full px-3 py-2 border rounded-md text-sm" placeholder="-- Cari Akun Biaya --" autocomplete="off">
+                                                <div class="akun-item-dropdown absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white text-sm shadow-lg"></div>
+                                                <select name="akun_items[{{ $index }}][akun_coa_id]" required class="akun-item-coa hidden">
+                                                    <option value="">-- Pilih Akun Biaya --</option>
+                                                    @foreach($akunBiayaList as $akun)<option value="{{ $akun->id }}" {{ ($item['akun_coa_id'] ?? '') == $akun->id ? 'selected' : '' }}>{{ $akun->kode_nomor }} - {{ $akun->nama_akun }}</option>@endforeach
+                                                </select>
+                                            </div>
                                             <input type="number" min="0.01" step="0.01" name="akun_items[{{ $index }}][nominal]" value="{{ $item['nominal'] ?? '' }}" required placeholder="Nominal" class="akun-item-nominal w-full px-3 py-2 border rounded-md text-sm">
                                             <div class="flex gap-2"><input type="text" name="akun_items[{{ $index }}][memo]" value="{{ $item['memo'] ?? '' }}" placeholder="Memo/catatan akun (opsional)" class="w-full px-3 py-2 border rounded-md text-sm"><button type="button" class="remove-akun-item text-red-600">Hapus</button></div>
                                         </div>
@@ -824,88 +828,67 @@ function initKasSearch() {
 
 // Initialize Akun Biaya searchable dropdown (vanilla JS)
 function initAkunBiayaSearch() {
-    const select = document.getElementById('akun_coa_id');
-    const input = document.getElementById('akun_biaya_search');
-    const dropdown = document.getElementById('akun_biaya_dropdown');
-    if (!select || !input || !dropdown) return;
+    const container = document.getElementById('akun-items');
+    if (!container) return;
 
-    function buildList() {
+    const closeDropdowns = except => container.querySelectorAll('.akun-item-dropdown').forEach(dropdown => {
+        if (dropdown !== except) dropdown.classList.add('hidden');
+    });
+
+    const buildList = (row, term = '') => {
+        const select = row.querySelector('.akun-item-coa');
+        const dropdown = row.querySelector('.akun-item-dropdown');
         dropdown.innerHTML = '';
-        let any = false;
-        Array.from(select.options).forEach(opt => {
-            if (!opt.value) return;
-            const item = document.createElement('div');
-            item.className = 'px-3 py-2 cursor-pointer hover:bg-gray-100 text-gray-800';
-            item.textContent = opt.textContent.trim();
-            item.dataset.value = opt.value;
-            item.addEventListener('click', function(e) {
-                e.stopPropagation();
-                select.value = this.dataset.value;
-                input.value = this.textContent;
+        const matches = Array.from(select.options).filter(option => option.value && option.textContent.toLowerCase().includes(term.toLowerCase()));
+        if (!matches.length) {
+            dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500">Tidak ada akun</div>';
+        }
+        matches.forEach(option => {
+            const item = document.createElement('button');
+            item.type = 'button';
+            item.className = 'block w-full px-3 py-2 text-left text-gray-800 hover:bg-gray-100';
+            item.textContent = option.textContent.trim();
+            item.addEventListener('click', () => {
+                select.value = option.value;
+                row.querySelector('.akun-item-search').value = option.textContent.trim();
                 dropdown.classList.add('hidden');
                 select.dispatchEvent(new Event('change', { bubbles: true }));
             });
             dropdown.appendChild(item);
-            any = true;
         });
-        if (!any) dropdown.innerHTML = '<div class="px-3 py-2 text-gray-500">Tidak ada akun</div>';
-    }
+    };
 
-    buildList();
-
-    // Filter on input
-    input.addEventListener('input', function() {
-        const term = this.value.toLowerCase();
-        Array.from(dropdown.children).forEach(child => {
-            if (child.textContent.toLowerCase().includes(term)) {
-                child.style.display = 'block';
-            } else {
-                child.style.display = 'none';
-            }
-        });
-        dropdown.classList.remove('hidden');
+    container.querySelectorAll('.akun-item').forEach(row => {
+        const select = row.querySelector('.akun-item-coa');
+        const selected = select?.selectedOptions[0];
+        if (selected?.value) row.querySelector('.akun-item-search').value = selected.textContent.trim();
     });
 
-    // Toggle dropdown on click
-    input.addEventListener('click', function(e) {
-        e.stopPropagation();
-        buildList();
-        dropdown.classList.toggle('hidden');
-        if (!dropdown.classList.contains('hidden')) input.focus();
+    container.addEventListener('focusin', event => {
+        if (!event.target.matches('.akun-item-search')) return;
+        const row = event.target.closest('.akun-item');
+        closeDropdowns(row.querySelector('.akun-item-dropdown'));
+        buildList(row, event.target.value);
+        row.querySelector('.akun-item-dropdown').classList.remove('hidden');
     });
-
-    // Close when clicking outside
-    document.addEventListener('click', function(e) {
-        if (!e.target.closest('#akun_biaya_dropdown') && !e.target.closest('#akun_biaya_search')) {
-            dropdown.classList.add('hidden');
+    container.addEventListener('input', event => {
+        if (!event.target.matches('.akun-item-search')) return;
+        const row = event.target.closest('.akun-item');
+        row.querySelector('.akun-item-coa').value = '';
+        buildList(row, event.target.value);
+        row.querySelector('.akun-item-dropdown').classList.remove('hidden');
+    });
+    container.addEventListener('keydown', event => {
+        if (!event.target.matches('.akun-item-search') || event.key !== 'Enter') return;
+        const firstOption = event.target.closest('.akun-item').querySelector('.akun-item-dropdown button');
+        if (firstOption) {
+            event.preventDefault();
+            firstOption.click();
         }
     });
-
-    // Keyboard navigation
-    let idx = -1;
-    input.addEventListener('keydown', function(e) {
-        const items = Array.from(dropdown.children).filter(ch => ch.style.display !== 'none');
-        if (e.key === 'ArrowDown') {
-            e.preventDefault();
-            idx = Math.min(idx + 1, items.length - 1);
-            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
-            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
-        } else if (e.key === 'ArrowUp') {
-            e.preventDefault();
-            idx = Math.max(idx - 1, 0);
-            items.forEach((it,i)=> it.classList.toggle('bg-blue-50', i===idx));
-            if (items[idx]) items[idx].scrollIntoView({ block: 'nearest' });
-        } else if (e.key === 'Enter') {
-            e.preventDefault();
-            if (items[idx]) items[idx].click();
-        }
+    document.addEventListener('click', event => {
+        if (!container.contains(event.target)) closeDropdowns();
     });
-
-    // Initialize display from old value if exists
-    if (select.value) {
-        const opt = select.options[select.selectedIndex];
-        if (opt) input.value = opt.textContent.trim();
-    }
 }
 
 // Function to calculate total payment across all supirs
@@ -1024,7 +1007,7 @@ function initAkunItems() {
         const index = container.querySelectorAll('.akun-item').length;
         const row = document.createElement('div');
         row.className = 'akun-item grid grid-cols-1 md:grid-cols-3 gap-2';
-        row.innerHTML = `<select name="akun_items[${index}][akun_coa_id]" required class="akun-item-coa w-full px-3 py-2 border rounded-md text-sm"><option value="">-- Pilih Akun Biaya --</option>${options.map(o => `<option value="${o.id}">${o.label}</option>`).join('')}</select><input type="number" min="0.01" step="0.01" name="akun_items[${index}][nominal]" required placeholder="Nominal" class="w-full px-3 py-2 border rounded-md text-sm"><div class="flex gap-2"><input type="text" name="akun_items[${index}][memo]" placeholder="Memo/catatan akun (opsional)" class="w-full px-3 py-2 border rounded-md text-sm"><button type="button" class="remove-akun-item text-red-600">Hapus</button></div>`;
+        row.innerHTML = `<div class="relative akun-item-account"><input type="text" class="akun-item-search w-full px-3 py-2 border rounded-md text-sm" placeholder="-- Cari Akun Biaya --" autocomplete="off"><div class="akun-item-dropdown absolute z-50 mt-1 hidden max-h-60 w-full overflow-y-auto rounded-md border border-gray-300 bg-white text-sm shadow-lg"></div><select name="akun_items[${index}][akun_coa_id]" required class="akun-item-coa hidden"><option value="">-- Pilih Akun Biaya --</option>${options.map(o => `<option value="${o.id}">${o.label}</option>`).join('')}</select></div><input type="number" min="0.01" step="0.01" name="akun_items[${index}][nominal]" required placeholder="Nominal" class="w-full px-3 py-2 border rounded-md text-sm"><div class="flex gap-2"><input type="text" name="akun_items[${index}][memo]" placeholder="Memo/catatan akun (opsional)" class="w-full px-3 py-2 border rounded-md text-sm"><button type="button" class="remove-akun-item text-red-600">Hapus</button></div>`;
         container.appendChild(row);
     });
     container.addEventListener('click', e => {
