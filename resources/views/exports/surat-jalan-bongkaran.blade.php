@@ -36,6 +36,13 @@
             $lclItems = $data->filter(function($item) {
                 return strtolower($item->tipe_kontainer) === 'lcl';
             })->values();
+
+            $consigneeFromManifest = static function ($item) use ($mode) {
+                $manifest = $mode === 'surat_jalan' ? $item->manifest : $item;
+
+                return $manifest?->shipperJb?->consignee
+                    ?: ($manifest?->shipperConsignee?->consignee ?: $manifest?->penerima);
+            };
         @endphp
 
         {{-- FCL Items --}}
@@ -44,7 +51,7 @@
                 <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
                 <td style="border: 1px solid #000000; text-align: center;">{{ $mode === 'surat_jalan' ? ($item->manifest?->nomor_bl ?? '-') : ($item->nomor_bl ?? '-') }}</td>
                 <td style="border: 1px solid #000000;">{{ $item->nomor_kontainer }}</td>
-                <td style="border: 1px solid #000000;">{{ $item->penerima }}</td>
+                <td style="border: 1px solid #000000;">{{ $consigneeFromManifest($item) ?: '-' }}</td>
                 <td style="border: 1px solid #000000; text-align: center;">{{ $item->size_kontainer }}"</td>
                 <td style="border: 1px solid #000000;"></td>
                 <td style="border: 1px solid #000000;"></td>
@@ -72,7 +79,7 @@
                     <td style="border: 1px solid #000000; text-align: center;">{{ $index + 1 }}</td>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $mode === 'surat_jalan' ? ($item->manifest?->nomor_bl ?? '-') : ($item->nomor_bl ?? '-') }}</td>
                     <td style="border: 1px solid #000000;">{{ $item->nomor_kontainer }}</td>
-                    <td style="border: 1px solid #000000;">{{ $item->penerima }}</td>
+                    <td style="border: 1px solid #000000;">{{ $consigneeFromManifest($item) ?: '-' }}</td>
                     <td style="border: 1px solid #000000; text-align: center;">{{ $item->size_kontainer }}"</td>
                     <td style="border: 1px solid #000000;"></td>
                     <td style="border: 1px solid #000000;"></td>
