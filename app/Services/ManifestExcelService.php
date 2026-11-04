@@ -18,19 +18,47 @@ class ManifestExcelService
     {
         $workbook = IOFactory::load(resource_path('templates/approval_tanda_terima_2.xlsx'));
         $sheet = $workbook->getSheet(0);
-        $sheet->removeRow(1, 2);
         $sheet->getSheetView()->setZoomScale(70);
-        $sheet->freezePane('A7');
+        $sheet->freezePane('A9');
 
-        $row = 8;
-        foreach ($manifests as $manifest) {
-            $this->fillRow($sheet, $row++, $manifest);
+        $sorted = collect($manifests)->sort(function (Manifest $a, Manifest $b) {
+            $rank = $this->exportRank($a) <=> $this->exportRank($b);
+            if ($rank !== 0) {
+                return $rank;
+            }
+
+            return (($a->nomor_urut === null) <=> ($b->nomor_urut === null))
+                ?: ((int) $a->nomor_urut <=> (int) $b->nomor_urut)
+                ?: ($a->id <=> $b->id);
+        })->values();
+        $lclGroups = $sorted->filter(fn (Manifest $manifest) => $this->exportRank($manifest) === 0)
+            ->groupBy(fn (Manifest $manifest) => $this->lclGroupKey($manifest));
+        $writtenLcl = [];
+        $row = 9;
+        foreach ($sorted as $manifest) {
+            if ($this->exportRank($manifest) === 0) {
+                $key = $this->lclGroupKey($manifest);
+                if (isset($writtenLcl[$key])) {
+                    continue;
+                }
+                $writtenLcl[$key] = true;
+                $this->fillLclContainerRow($sheet, $row++, $manifest);
+                foreach ($lclGroups[$key] as $item) {
+                    $this->fillRow($sheet, $row++, $item, null, 'lcl_item');
+                }
+                continue;
+            }
 
             if ($manifest->isFclBooking()) {
+                $hasDetails = $manifest->shipperDetails->isNotEmpty();
+                $this->fillRow($sheet, $row++, $manifest, null, $hasDetails ? 'booking_parent' : 'standard');
                 foreach ($manifest->shipperDetails as $detail) {
-                    $this->fillRow($sheet, $row++, $manifest, $detail);
+                    $this->fillRow($sheet, $row++, $manifest, $detail, 'booking_detail');
                 }
+                continue;
             }
+
+            $this->fillRow($sheet, $row++, $manifest);
         }
 
         while ($workbook->getSheetCount() > 1) {
@@ -50,7 +78,50 @@ class ManifestExcelService
         return $path;
     }
 
-    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, Manifest $manifest, ?ManifestShipperDetail $detail = null): void
+    private function exportRank(Manifest $manifest): int
+    {
+        $type = strtoupper(trim((string) $manifest->tipe_kontainer));
+        $size = strtoupper(trim((string) $manifest->size_kontainer));
+
+        if (str_contains($type, 'LCL') || str_contains($size, 'LCL')) {
+            return 0;
+        }
+        if ($manifest->isFclBooking()) {
+            return 1;
+        }
+        if (str_contains($type, 'CARGO') || str_contains($size, 'CARGO')) {
+            return 3;
+        }
+
+        return 2;
+    }
+
+    private function lclGroupKey(Manifest $manifest): string
+    {
+        $number = strtoupper(trim((string) $manifest->nomor_kontainer));
+
+        return $number !== '' ? $number : 'manifest:'.$manifest->id;
+    }
+
+    private function fillLclContainerRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, Manifest $manifest): void
+    {
+        foreach (['D' => $manifest->nomor_kontainer, 'E' => $manifest->no_seal,
+            'G' => 'Unit', 'H' => $this->containerDescription($manifest),
+            'AF' => 'Unit', 'AG' => $this->containerLabel($manifest).' / LCL'] as $column => $value) {
+            if (filled($value)) {
+                $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
+            }
+        }
+        $sheet->setCellValue('F'.$row, 1);
+        $sheet->setCellValue('AE'.$row, 1);
+    }
+
+    private function containerLabel(Manifest $manifest): string
+    {
+        return str_replace(' stc :', '', $this->containerDescription($manifest));
+    }
+
+    private function fillRow(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, int $row, Manifest $manifest, ?ManifestShipperDetail $detail = null, string $layout = 'standard'): void
     {
         $shipper = $detail?->shipperConsignee ?? $manifest->shipperJb ?? $manifest->shipperConsignee;
         $sender = $detail?->pengirim ?: $manifest->pengirim;
@@ -104,8 +175,28 @@ class ManifestExcelService
             'AA' => $shipperValues['document_ppftz_03'],
             'AB' => $shipperValues['condition'],
             'AC' => $number,
-            'AG' => $manifest->tipe_kontainer ?: $manifest->size_kontainer,
+            'AG' => $layout === 'booking_parent'
+                ? $this->containerLabel($manifest).' / FCL +'
+                : ($manifest->tipe_kontainer ?: $manifest->size_kontainer),
         ];
+
+        if ($layout === 'booking_parent' || ($layout === 'standard' && $this->exportRank($manifest) === 2)) {
+            $values['AF'] = 'Unit';
+        }
+
+        if ($layout === 'lcl_item') {
+            foreach (['D', 'E', 'G', 'H', 'AG'] as $column) {
+                unset($values[$column]);
+            }
+        } elseif ($layout === 'booking_parent') {
+            foreach (['M', 'N', 'AC'] as $column) {
+                unset($values[$column]);
+            }
+        } elseif ($layout === 'booking_detail') {
+            foreach (['C', 'D', 'E', 'G', 'H', 'J', 'K', 'AG'] as $column) {
+                unset($values[$column]);
+            }
+        }
 
         foreach ($values as $column => $value) {
             if (filled($value)) {
@@ -126,12 +217,23 @@ class ManifestExcelService
             $sheet->getStyle('AA'.$row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFFF0000');
         }
 
-        foreach (['F' => 1, 'I' => $quantity, 'L' => $perincianQuantity] as $column => $value) {
+        $numbers = ['F' => 1, 'I' => $quantity, 'L' => $perincianQuantity];
+        if ($layout === 'lcl_item') {
+            unset($numbers['F']);
+        } elseif ($layout === 'booking_parent') {
+            unset($numbers['L']);
+        } elseif ($layout === 'booking_detail') {
+            unset($numbers['F'], $numbers['I']);
+        }
+        foreach ($numbers as $column => $value) {
             if (is_numeric($value)) {
                 $sheet->setCellValue($column.$row, (int) $value);
             }
         }
-        foreach (['O' => $detail?->tonnage ?: $manifest->tonnage_perincian ?: $manifest->tonnage, 'P' => $detail?->volume ?: $manifest->volume_perincian ?: $manifest->volume] as $column => $value) {
+        if ($layout === 'booking_parent' || ($layout === 'standard' && $this->exportRank($manifest) === 2)) {
+            $sheet->setCellValue('AE'.$row, 1);
+        }
+        foreach ($layout === 'booking_detail' ? [] : ['O' => $detail?->tonnage ?: $manifest->tonnage_perincian ?: $manifest->tonnage, 'P' => $detail?->volume ?: $manifest->volume_perincian ?: $manifest->volume] as $column => $value) {
             $numberValue = $this->indonesianNumber($value);
             if ($numberValue !== null) {
                 $sheet->setCellValue($column.$row, $numberValue);
@@ -140,7 +242,7 @@ class ManifestExcelService
         }
         $sheet->getStyle('C'.$row)->getAlignment()->setWrapText(true);
         $sheet->getStyle('AA'.$row.':AB'.$row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-        if ($date) {
+        if ($date && $layout !== 'booking_parent') {
             $sheet->setCellValue('AD'.$row, ExcelDate::PHPToExcel(Carbon::parse($date)));
         }
     }

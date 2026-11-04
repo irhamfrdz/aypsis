@@ -231,9 +231,9 @@ class ManifestController extends Controller
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
-        $manifests = $query->orderByRaw("FIELD(UPPER(tipe_kontainer), 'FCL', 'LCL', 'CARGO') ASC")
-            ->orderByRaw('ISNULL(nomor_urut), nomor_urut ASC')
-            ->orderBy('created_at', 'desc')
+        $manifests = $query->orderByRaw('CASE WHEN nomor_urut IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('nomor_urut')
+            ->orderByDesc('created_at')
             ->get();
 
         $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
