@@ -2,15 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Exports\ManifestMultipleExport;
 use App\Models\Manifest;
 use App\Models\ManifestShipperDetail;
 use App\Models\Prospek;
+use App\Services\ManifestExcelService;
 use App\Services\WaBroadcastRecipientService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Maatwebsite\Excel\Facades\Excel;
 
 class ManifestController extends Controller
 {
@@ -168,7 +167,7 @@ class ManifestController extends Controller
     /**
      * Export manifest data to Excel
      */
-    public function export(Request $request)
+    public function export(Request $request, ManifestExcelService $excel)
     {
         $namaKapal = $request->get('nama_kapal');
         $noVoyage = $request->get('no_voyage');
@@ -181,7 +180,7 @@ class ManifestController extends Controller
         $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
         $noVoyage = trim($noVoyage);
 
-        $query = Manifest::with(['prospek.tandaTerima'])->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+        $query = Manifest::with(['prospek.tandaTerima', 'shipperJb', 'shipperConsignee', 'shipperDetails.shipperConsignee'])->whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage);
 
         // Search
@@ -193,7 +192,12 @@ class ManifestController extends Controller
                     ->orWhere('nomor_tanda_terima', 'LIKE', "%{$search}%")
                     ->orWhere('nama_barang', 'LIKE', "%{$search}%")
                     ->orWhere('pengirim', 'LIKE', "%{$search}%")
-                    ->orWhere('penerima', 'LIKE', "%{$search}%");
+                    ->orWhere('penerima', 'LIKE', "%{$search}%")
+                    ->orWhereHas('shipperJb', function ($shipper) use ($search) {
+                        $shipper->where('shipper', 'LIKE', "%{$search}%")
+                            ->orWhere('consignee', 'LIKE', "%{$search}%")
+                            ->orWhere('notify_party_consignee', 'LIKE', "%{$search}%");
+                    });
             });
         }
 
@@ -203,8 +207,12 @@ class ManifestController extends Controller
             $query->whereRaw('UPPER(tipe_kontainer) = ?', [strtoupper($tipe)]);
         }
 
-        // Filter by size kontainer
-        if ($request->filled('size_kontainer')) {
+        if ($request->boolean('tanpa_size')) {
+            $query->where(function ($q) {
+                $q->whereNull('size_kontainer')
+                    ->orWhereRaw("TRIM(size_kontainer) = ''");
+            });
+        } elseif ($request->filled('size_kontainer')) {
             $query->where('size_kontainer', $request->size_kontainer);
         }
 
@@ -215,7 +223,11 @@ class ManifestController extends Controller
 
         $filename = 'Manifest_'.str_replace(' ', '_', $namaKapal).'_'.str_replace('/', '-', $noVoyage).'.xlsx';
 
-        return Excel::download(new ManifestMultipleExport($manifests), $filename);
+        $path = $excel->create($manifests);
+
+        return response()->download($path, $filename, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ])->deleteFileAfterSend(true);
     }
 
     /**
