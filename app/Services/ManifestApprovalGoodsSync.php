@@ -54,7 +54,7 @@ class ManifestApprovalGoodsSync
             if ($sourceType === 'fcl') {
                 $query->orWhereHas('prospek', fn ($prospek) => $prospek->where('tanda_terima_id', $sourceId));
             }
-        })->get()->each(fn (Manifest $manifest) => $manifest->update($fields));
+        })->get()->each(fn (Manifest $manifest) => $manifest->updateQuietly($fields));
     }
 
     public function syncManifest(Manifest $manifest): void
@@ -97,7 +97,7 @@ class ManifestApprovalGoodsSync
         if ($override) {
             $fields = $this->fields($override);
             if ($fields) {
-                $manifest->update($fields);
+                $manifest->updateQuietly($fields);
             }
         }
     }

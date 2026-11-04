@@ -10,7 +10,7 @@ class Manifest extends Model
 
     protected static function booted(): void
     {
-        static::created(fn (self $manifest) => app(\App\Services\ManifestApprovalGoodsSync::class)->syncManifest($manifest));
+        static::saved(fn (self $manifest) => app(\App\Services\ManifestApprovalGoodsSync::class)->syncManifest($manifest));
     }
 
     protected $fillable = [
