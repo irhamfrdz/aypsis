@@ -268,6 +268,9 @@ class ManifestExcelService
         if ($value === '') {
             return null;
         }
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
         if (str_contains($value, ',')) {
             $value = str_replace(',', '.', str_replace('.', '', $value));
         } elseif (preg_match('/^\d{1,3}(?:\.\d{3})+$/', $value)) {

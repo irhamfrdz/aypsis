@@ -154,11 +154,11 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Volume</label>
-                    <p class="text-base text-gray-900">{{ $manifest->volume ?? '-' }}</p>
+                    <p class="text-base text-gray-900">{{ $manifest->volume !== null ? rtrim(rtrim(number_format((float) $manifest->volume, 3, ',', '.'), '0'), ',') : '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Volume/Kubikasi Perincian</label>
-                    <p class="text-base text-gray-900">{{ $manifest->volume_perincian ?? '-' }}</p>
+                    <p class="text-base text-gray-900">{{ $manifest->volume_perincian !== null ? rtrim(rtrim(number_format((float) $manifest->volume_perincian, 3, ',', '.'), '0'), ',') : '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-500 mb-1">Satuan</label>

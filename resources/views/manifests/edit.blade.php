@@ -184,7 +184,7 @@
 
                     <div>
                         <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">Volume</label>
-                        <input type="number" step="0.001" name="volume" id="volume" value="{{ old('volume', $manifest->volume) }}"
+                        <input type="number" step="0.001" name="volume" id="volume" value="{{ old('volume', $manifest->volume !== null ? rtrim(rtrim($manifest->volume, '0'), '.') : '') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                     </div>
 
@@ -196,7 +196,7 @@
 
                     <div>
                         <label for="volume_perincian" class="block text-sm font-medium text-gray-700 mb-2">Volume/Kubikasi Perincian</label>
-                        <input type="number" step="0.001" name="volume_perincian" id="volume_perincian" value="{{ old('volume_perincian', $manifest->volume_perincian) }}"
+                        <input type="number" step="0.001" name="volume_perincian" id="volume_perincian" value="{{ old('volume_perincian', $manifest->volume_perincian !== null ? rtrim(rtrim($manifest->volume_perincian, '0'), '.') : '') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
                     </div>
 
