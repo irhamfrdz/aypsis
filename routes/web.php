@@ -3148,6 +3148,9 @@ Route::middleware([
         Route::get('biaya-bensin/approval', [BiayaBensinController::class, 'approvalList'])
             ->name('biaya-bensin.approval')
             ->middleware('can:biaya-bensin-view');
+        Route::get('biaya-bensin/export-excel', [BiayaBensinController::class, 'exportExcel'])
+            ->name('biaya-bensin.export-excel')
+            ->middleware('can:biaya-bensin-view');
         Route::post('biaya-bensin/{id}/approve', [BiayaBensinController::class, 'approve'])
             ->name('biaya-bensin.approve')
             ->middleware('can:biaya-bensin-update');

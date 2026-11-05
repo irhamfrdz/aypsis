@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\BiayaBensinRangeExport;
 use App\Models\AuditLog;
 use App\Models\BiayaBensin;
 use App\Models\Karyawan;
@@ -9,6 +10,7 @@ use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BiayaBensinController extends Controller
 {
@@ -52,6 +54,22 @@ class BiayaBensinController extends Controller
         $supirs = $this->supirOptions();
 
         return view('biaya-bensin.index', compact('items', 'supirs'));
+    }
+
+    public function exportExcel(Request $request)
+    {
+        $validated = $request->validate([
+            'export_start_date' => 'required|date_format:Y-m-d',
+            'export_end_date' => 'required|date_format:Y-m-d|after_or_equal:export_start_date',
+        ]);
+
+        $startDate = $validated['export_start_date'];
+        $endDate = $validated['export_end_date'];
+
+        return Excel::download(
+            new BiayaBensinRangeExport($startDate, $endDate),
+            "biaya-bensin-{$startDate}-sampai-{$endDate}.xlsx"
+        );
     }
 
     /**

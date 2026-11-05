@@ -3,7 +3,7 @@
 @section('content')
 <div class="container mx-auto px-4 py-6">
     <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
+    <div class="flex flex-wrap justify-between items-center gap-4 mb-6">
         <div>
             <h1 class="text-3xl font-bold text-gray-900">
                 <i class="fas fa-gas-pump mr-2 text-amber-600"></i>
@@ -11,7 +11,13 @@
             </h1>
             <p class="text-gray-600 mt-1">Kelola pencatatan biaya bensin kendaraan</p>
         </div>
-        <div class="flex items-center space-x-3">
+        <div class="flex flex-wrap items-center gap-3">
+            @can('biaya-bensin-view')
+                <button type="button" id="open-export-modal"
+                        class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
+                    <i class="fas fa-file-excel mr-2"></i> Download Excel
+                </button>
+            @endcan
             @can('biaya-bensin-update')
                 <a href="{{ route('biaya-bensin.approval') }}" 
                    class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-medium rounded-lg shadow-sm transition-colors duration-200">
@@ -42,6 +48,33 @@
             <span>{{ session('success') }}</span>
         </div>
     @endif
+
+    @can('biaya-bensin-view')
+    <div id="export-modal" class="{{ $errors->has('export_start_date') || $errors->has('export_end_date') ? '' : 'hidden' }} fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="export-modal-title">
+        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div class="mb-5 flex items-center justify-between">
+                <h2 id="export-modal-title" class="text-lg font-bold text-gray-800">Download Excel Biaya Bensin</h2>
+                <button type="button" data-close-export class="text-gray-500 hover:text-gray-800" aria-label="Tutup formulir ekspor"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="{{ route('biaya-bensin.export-excel') }}" method="GET" class="space-y-4">
+                <div>
+                    <label for="export-start-date" class="mb-1 block text-sm font-medium text-gray-700">Dari Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" id="export-start-date" name="export_start_date" value="{{ old('export_start_date', request('start_date', now()->startOfMonth()->toDateString())) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-amber-500">
+                    @error('export_start_date')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="export-end-date" class="mb-1 block text-sm font-medium text-gray-700">Sampai Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" id="export-end-date" name="export_end_date" value="{{ old('export_end_date', request('end_date', now()->toDateString())) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-amber-500 focus:ring-amber-500">
+                    @error('export_end_date')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" data-close-export class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"><i class="fas fa-download mr-1"></i> Download</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endcan
 
     <!-- Search Form -->
     <form method="GET" action="{{ route('biaya-bensin.index') }}" class="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -226,6 +259,21 @@
 
 @push('scripts')
 <script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('export-modal');
+        const openButton = document.getElementById('open-export-modal');
+        if (!modal || !openButton) return;
+
+        function closeModal() { modal.classList.add('hidden'); }
+        openButton.addEventListener('click', function () {
+            modal.classList.remove('hidden');
+            document.getElementById('export-start-date').focus();
+        });
+        modal.querySelectorAll('[data-close-export]').forEach(button => button.addEventListener('click', closeModal));
+        modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+    });
+
     function confirmDelete(url) {
         if(confirm('Apakah Anda yakin ingin menghapus catatan ini?')) {
             var form = document.getElementById('delete-form');
