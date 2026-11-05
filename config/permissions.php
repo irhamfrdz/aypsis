@@ -22,6 +22,17 @@
 
 return [
     'modules' => [
+        'invoice-kas-pinang' => [
+            'name' => 'Invoice Kas Pinang',
+            'description' => 'Pencatatan kas internal cabang Pinang',
+            'required' => true,
+            'sub_modules' => [
+                'invoice-kas-pinang-view' => 'Lihat dan cetak Invoice Kas Pinang',
+                'invoice-kas-pinang-create' => 'Buat Invoice Kas Pinang',
+                'invoice-kas-pinang-update' => 'Ubah Invoice Kas Pinang',
+                'invoice-kas-pinang-delete' => 'Hapus Invoice Kas Pinang',
+            ],
+        ],
         'surat-jalan-bongkaran-tanjung-pinang' => [
             'name' => 'Surat Jalan Bongkaran Tanjung Pinang',
             'description' => 'Kelola surat jalan bongkaran Tanjung Pinang',

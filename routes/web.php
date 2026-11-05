@@ -6691,6 +6691,18 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
         ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
 
+// Invoice Kas Pinang routes
+Route::prefix('invoice-kas-pinang')->name('invoice-kas-pinang.')->middleware('auth')->group(function () {
+    $controller = \App\Http\Controllers\InvoiceKasPinangController::class;
+    Route::get('/', [$controller, 'index'])->name('index')->middleware('can:invoice-kas-pinang-view');
+    Route::get('/create', [$controller, 'create'])->name('create')->middleware('can:invoice-kas-pinang-create');
+    Route::post('/', [$controller, 'store'])->name('store')->middleware('can:invoice-kas-pinang-create');
+    Route::get('/{invoiceKasPinang}/edit', [$controller, 'edit'])->name('edit')->middleware('can:invoice-kas-pinang-update');
+    Route::put('/{invoiceKasPinang}', [$controller, 'update'])->name('update')->middleware('can:invoice-kas-pinang-update');
+    Route::delete('/{invoiceKasPinang}', [$controller, 'destroy'])->name('destroy')->middleware('can:invoice-kas-pinang-delete');
+    Route::get('/{invoiceKasPinang}/print', [$controller, 'print'])->name('print')->middleware('can:invoice-kas-pinang-view');
+});
+
 // Invoice Aktivitas Lain routes
 Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middleware(['auth'])->group(function () {
     Route::get('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'index'])->name('index')
