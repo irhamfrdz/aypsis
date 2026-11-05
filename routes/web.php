@@ -3269,6 +3269,12 @@ Route::middleware([
         Route::get('report-biaya-agen/show', [\App\Http\Controllers\Report\BiayaAgenController::class, 'show'])
             ->name('report.biaya-agen.show')
             ->middleware('can:biaya-kapal-view');
+        Route::get('report-biaya-agen/print', [\App\Http\Controllers\Report\BiayaAgenController::class, 'print'])
+            ->name('report.biaya-agen.print')
+            ->middleware('can:biaya-kapal-view');
+        Route::get('report-biaya-agen/export', [\App\Http\Controllers\Report\BiayaAgenController::class, 'export'])
+            ->name('report.biaya-agen.export')
+            ->middleware('can:biaya-kapal-view');
 
         Route::get('rekap-biaya-asset', [\App\Http\Controllers\RekapBiayaAssetController::class, 'index'])
             ->name('rekap-biaya-asset.index')

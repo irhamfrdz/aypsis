@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Report;
 
+use App\Exports\BiayaAgenReportExport;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
+use Maatwebsite\Excel\Facades\Excel;
 
 class BiayaAgenController extends Controller
 {
@@ -41,6 +43,23 @@ class BiayaAgenController extends Controller
     }
 
     public function show(Request $request)
+    {
+        return view('report.biaya-agen.show', $this->reportData($request));
+    }
+
+    public function print(Request $request)
+    {
+        return view('report.biaya-agen.print', $this->reportData($request));
+    }
+
+    public function export(Request $request)
+    {
+        $data = $this->reportData($request);
+
+        return Excel::download(new BiayaAgenReportExport($data), 'report-biaya-agen-'.now()->format('Ymd-His').'.xlsx');
+    }
+
+    private function reportData(Request $request): array
     {
         $input = $request->all();
         if (is_string($input['jenis_biaya'] ?? null)) {
@@ -105,6 +124,6 @@ class BiayaAgenController extends Controller
             'grand_total' => $rows->sum('grand_total'),
         ];
 
-        return view('report.biaya-agen.show', compact('rows', 'summary', 'validated'));
+        return compact('rows', 'summary', 'validated');
     }
 }

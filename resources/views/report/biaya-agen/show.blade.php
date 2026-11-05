@@ -21,7 +21,11 @@
                 @endif
             </div>
         </div>
-        <span class="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">{{ $rows->count() }} item</span>
+        <div class="flex flex-wrap items-center gap-2">
+            <span class="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">{{ $rows->count() }} item</span>
+            <a href="{{ route('report.biaya-agen.export', $validated) }}" class="inline-flex items-center gap-2 rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700"><i class="fas fa-file-excel" aria-hidden="true"></i> Download Excel</a>
+            <a href="{{ route('report.biaya-agen.print', $validated) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"><i class="fas fa-print" aria-hidden="true"></i> Print</a>
+        </div>
     </div>
 
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
