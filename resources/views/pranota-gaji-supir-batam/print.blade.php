@@ -35,10 +35,11 @@
             tr { break-inside: avoid; }
         }
     </style>
+    <link rel="stylesheet" href="{{ asset('css/pranota-gaji-supir-batam.css') }}?v={{ filemtime(public_path('css/pranota-gaji-supir-batam.css')) }}">
 </head>
-<body>
+<body class="pg-print">
     <div class="print-toolbar">
-        <h2>Print Pranota Gaji Supir Batam - {{ $pranota->nomor_pranota }}</h2>
+        <h2>{{ $pranota->nomor_pranota }} · Pranota Gaji Supir Batam</h2>
         <div class="toolbar-actions">
             <button type="button" onclick="window.print()" class="btn btn-print">Cetak</button>
             <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="btn btn-back">Kembali</a>

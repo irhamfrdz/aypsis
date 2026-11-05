@@ -3,20 +3,27 @@
 @section('title', 'Buat Pranota Gaji Supir Batam')
 @section('page_title', 'Buat Pranota Gaji Supir Batam')
 
+@include('pranota-gaji-supir-batam.partials.styles')
+
 @section('content')
-<div class="mx-auto max-w-6xl px-4 py-6">
-    <div class="mb-6 flex items-center justify-between gap-3">
-        <div><h1 class="text-2xl font-bold text-gray-900">Buat Pranota Gaji Supir Batam</h1><p class="mt-1 text-sm text-gray-600">Pilih gaji berstatus PENDING yang akan digabungkan.</p></div>
-        <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="text-sm font-medium text-indigo-700 hover:underline">Kembali</a>
+<div class="pg-shell">
+    <div class="pg-header">
+        <div><p class="pg-eyebrow">Payroll / Supir Batam</p><h1>Buat Pranota</h1><p class="pg-subtitle">Pilih gaji yang akan dibayarkan, lalu periksa potongan sebelum menyimpan.</p></div>
+        <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="pg-btn">Kembali</a>
     </div>
     @if($errors->any())<div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
     <form id="pranota-gaji-form" method="POST" action="{{ route('pranota-gaji-supir-batam.store') }}" class="space-y-5">
         @csrf
-        <div class="grid gap-4 rounded-xl border bg-white p-5 shadow-sm sm:grid-cols-2">
+        <section class="pg-card">
+        <div class="pg-card-heading"><h2>1. Informasi Pranota</h2><p>Tentukan tanggal dan catatan pembayaran.</p></div>
+        <div class="pg-fields">
             <div><label for="tanggal_pranota" class="mb-1 block text-sm font-medium">Tanggal Pranota <span class="text-red-600">*</span></label><input id="tanggal_pranota" name="tanggal_pranota" type="date" value="{{ old('tanggal_pranota', now()->toDateString()) }}" required class="w-full rounded-lg border-gray-300 text-sm"></div>
-            <div><label for="keterangan" class="mb-1 block text-sm font-medium">Keterangan</label><input id="keterangan" name="keterangan" value="{{ old('keterangan') }}" maxlength="2000" class="w-full rounded-lg border-gray-300 text-sm"></div>
+            <div><label for="keterangan" class="mb-1 block text-sm font-medium">Keterangan <span class="text-gray-400 font-normal">(opsional)</span></label><input id="keterangan" name="keterangan" value="{{ old('keterangan') }}" placeholder="Tambahkan catatan pranota" maxlength="2000" class="w-full rounded-lg border-gray-300 text-sm"></div>
         </div>
-        <div class="overflow-x-auto rounded-xl border bg-white shadow-sm">
+        </section>
+        <section class="pg-card">
+        <div class="pg-card-heading"><h2>2. Pilih Gaji Supir</h2><p>{{ $gajiList->count() }} gaji tersedia · Hanya gaji PENDING yang belum masuk pranota.</p></div>
+        <div class="pg-table-scroll" tabindex="0" role="region" aria-label="Pilih gaji supir">
             <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600"><tr>
                     <th class="px-4 py-3"><input type="checkbox" id="select-all-gaji" aria-label="Pilih semua gaji"></th><th class="px-4 py-3">Supir</th><th class="px-4 py-3">Periode</th><th class="px-4 py-3 text-right">Gaji Pokok</th><th class="px-4 py-3 text-right">Gaji Bersih</th>
@@ -30,7 +37,7 @@
                             $selectedCount = count(array_intersect($oldIds, $groupIds));
                             $groupKey = 'periode-'.$loop->index;
                         @endphp
-                        <tr class="bg-gray-50">
+                        <tr class="pg-period">
                             <td class="px-4 py-3"><input type="checkbox" data-gaji-group-checkbox data-total="{{ $group->sum(fn ($gaji) => (float) $gaji->total_gaji) }}" data-group-id="{{ $loop->index }}" @checked($selectedCount === $group->count()) class="rounded border-gray-300 text-indigo-600"></td>
                             <td class="px-4 py-3 font-semibold">
                                 <button type="button" data-period-toggle aria-expanded="false" aria-controls="{{ $groupKey }}" class="inline-flex items-center gap-2 text-left hover:text-indigo-700">
@@ -38,7 +45,7 @@
                                     <span>Periode: {{ $first->periode_text }} <span class="font-normal text-gray-500">({{ $group->count() }} supir)</span></span>
                                 </button>
                             </td>
-                            <td class="px-4 py-3 text-xs text-gray-500">Klik untuk tampilkan/sembunyikan</td>
+                            <td class="px-4 py-3 text-xs text-gray-500">Rincian per supir</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->gaji_pokok), 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group->sum(fn ($gaji) => (float) $gaji->total_gaji), 0, ',', '.') }}</td>
                         </tr>
@@ -57,19 +64,21 @@
                 </tbody>
             </table>
         </div>
-        <div class="flex flex-wrap items-center justify-between gap-3 rounded-xl border bg-white p-4 shadow-sm">
-            <p class="text-sm font-semibold">Dipilih: <span id="selected-count">0</span> gaji · Total: <span id="selected-total">Rp 0</span></p>
-            <button type="submit" @disabled($gajiList->isEmpty()) class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">Simpan Pranota</button>
+        </section>
+        <div class="pg-selection">
+            <div><p><strong id="selected-count">0</strong> gaji dipilih · <span id="selected-total">Rp 0</span></p><p class="pg-subtitle">Sebelum potongan BPJS dan PPh.</p></div>
+            <button type="submit" @disabled($gajiList->isEmpty()) class="pg-btn pg-btn-primary">Lanjutkan ke Potongan <i class="fas fa-arrow-right" aria-hidden="true"></i></button>
         </div>
         <dialog id="pph-dialog" aria-labelledby="pph-title" class="w-full max-w-2xl rounded-xl p-0 shadow-xl" style="max-height:85vh">
             <div class="p-5">
-                <h2 id="pph-title" class="text-lg font-bold">Isi PPh Setiap Supir</h2>
-                <p class="mt-1 mb-4 text-sm text-gray-600">PPh dan BPJS mengurangi gaji bersih. BPJS diambil dari JHT 2% (Hutang) pada pranota BPJS terbaru dengan NIK dan nama yang sama. Potongan diambil sekali per supir, meskipun beberapa periode dipilih. Isi PPh 0 jika tidak ada.</p>
+                <p class="pg-eyebrow">Langkah Terakhir</p>
+                <h2 id="pph-title">Periksa Potongan Gaji</h2>
+                <p class="mt-1 mb-4 text-sm text-gray-600">BPJS diambil otomatis dari JHT 2% (Hutang) terbaru. Isi PPh setiap supir, atau 0 jika tidak ada. Potongan dihitung sekali per supir.</p>
                 <div id="pph-fields" class="space-y-3"></div>
                 <p id="pph-net-total" class="mt-4 font-semibold" aria-live="polite"></p>
                 <div class="mt-5 flex justify-end gap-3">
-                    <button id="pph-cancel" type="button" class="rounded-lg border px-4 py-2">Kembali</button>
-                    <button id="pph-confirm" type="button" class="rounded-lg bg-indigo-600 px-4 py-2 text-white">Konfirmasi &amp; Simpan Pranota</button>
+                    <button id="pph-cancel" type="button" class="pg-btn">Kembali</button>
+                    <button id="pph-confirm" type="button" class="pg-btn pg-btn-primary">Simpan Pranota</button>
                 </div>
             </div>
         </dialog>

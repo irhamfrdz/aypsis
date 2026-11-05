@@ -49,6 +49,9 @@ document.addEventListener('DOMContentLoaded', () => {
             source.textContent = 'BPJS JHT 2% (Hutang): ' + money(bpjs.amount)
                 + (bpjs.number ? ' · ' + bpjs.number : ' · Tidak ditemukan data yang cocok');
             const input = document.createElement('input');
+            const inputLabel = document.createElement('span');
+            inputLabel.className = 'block mb-1 text-xs font-medium text-gray-600';
+            inputLabel.textContent = 'PPh (Rp)';
             input.type = 'number';
             input.name = 'pph[' + id + ']';
             input.min = '0';
@@ -59,7 +62,7 @@ document.addEventListener('DOMContentLoaded', () => {
             input.className = 'w-full rounded-lg border-gray-300 text-sm';
             input.setAttribute('aria-label', 'Nominal PPh ' + employee.name);
             input.addEventListener('input', () => { amounts.set(id, input.value); updateTotal(); });
-            label.append(title, source, input);
+            label.append(title, source, inputLabel, input);
             fields.append(label);
         });
         updateTotal();
