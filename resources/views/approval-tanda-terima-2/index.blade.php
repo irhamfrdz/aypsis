@@ -380,7 +380,7 @@
                                     <button type="button" class="approval-shipper-open inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
                                         data-goods-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}"
-                                        data-number="{{ $number }}" data-sender="{{ $sender }}"
+                                        data-number="{{ $number }}" data-sender="{{ $sender }}" data-container-number="{{ $containerNumber }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
                                         data-shipper="{{ $shipperFields['shipper'] ?? $item->shipperJb?->shipper }}"
                                         data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'>
@@ -389,7 +389,7 @@
                                     @if($type === 'fcl' && $item->shipper_jb_id)
                                         <button type="button" class="approval-shipper-open ml-2 inline-flex items-center gap-2 rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-50"
                                             data-update-url="{{ route('approval-tanda-terima-2.fcl-shippers.store', ['id' => $item->id]) }}"
-                                            data-number="{{ $number }}" data-sender="{{ $sender }}" data-additional="true">
+                                            data-number="{{ $number }}" data-sender="{{ $sender }}" data-container-number="{{ $containerNumber }}" data-additional="true">
                                             <i class="fas fa-plus" aria-hidden="true"></i>Tambah Shipper
                                         </button>
                                     @endif

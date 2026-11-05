@@ -621,7 +621,7 @@
             save.disabled = true;
             search.value = button.dataset.shipper || '';
             document.getElementById('approval-shipper-context').textContent =
-                'Tanda terima: ' + (button.dataset.number || '-') + ' · Pengirim: ' + (button.dataset.sender || '-');
+                'Tanda terima: ' + (button.dataset.number || '-') + ' · Pengirim: ' + (button.dataset.sender || '-') + ' · Nomor kontainer: ' + (button.dataset.containerNumber || '-');
             selection.textContent = button.dataset.shipperId
                 ? 'Memuat data shipper terbaru...'
                 : 'Pilih shipper dari hasil pencarian.';

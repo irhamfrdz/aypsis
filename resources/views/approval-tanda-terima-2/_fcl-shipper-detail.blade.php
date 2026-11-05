@@ -13,7 +13,7 @@
         <div class="mt-3 flex flex-wrap gap-2">
             <button type="button" class="approval-shipper-open rounded-lg border border-indigo-200 bg-white px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100"
                 data-update-url="{{ route('approval-tanda-terima-2.fcl-shippers.update', ['id' => $item->id, 'detailId' => $detail->id]) }}"
-                data-number="{{ $item->no_surat_jalan }}" data-sender="{{ $item->pengirim }}"
+                data-number="{{ $item->no_surat_jalan }}" data-sender="{{ $item->pengirim }}" data-container-number="{{ $item->no_kontainer }}"
                 data-shipper-id="{{ $detail->shipper_jb_id }}" data-shipper="{{ $detail->shipperJb?->shipper }}"
                 data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'
                 data-mode="edit-additional">
