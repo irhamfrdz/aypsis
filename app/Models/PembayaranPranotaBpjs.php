@@ -10,7 +10,7 @@ class PembayaranPranotaBpjs extends Model
 
     protected $guarded = ['id'];
 
-    protected $casts = ['tanggal_pembayaran' => 'date', 'total_pembayaran' => 'decimal:2'];
+    protected $casts = ['tanggal_pembayaran' => 'date', 'total_pembayaran' => 'decimal:2', 'bank_allocations' => 'array'];
 
     public function pranotas()
     {

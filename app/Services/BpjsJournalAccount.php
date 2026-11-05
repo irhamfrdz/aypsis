@@ -41,4 +41,18 @@ class BpjsJournalAccount
 
         return (int) reset($ids);
     }
+
+    public function selectedAmounts(array $groups): array
+    {
+        $cents = [];
+        foreach ($groups as $group) {
+            $id = $group['credit_id'] ?? null;
+            if (! $id || !is_numeric($group['amount'] ?? null) || $group['amount'] <= 0) {
+                throw ValidationException::withMessages(['group_keys' => 'Akun jurnal atau nominal tipe yang dipilih belum valid.']);
+            }
+            $cents[$id] = ($cents[$id] ?? 0) + (int) round($group['amount'] * 100);
+        }
+
+        return array_map(fn ($amount) => $amount / 100, $cents);
+    }
 }

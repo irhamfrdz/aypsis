@@ -26,11 +26,16 @@ class BpjsPaymentParts
                     continue;
                 }
                 $employee = $detail->karyawan_pranota;
-                $type = trim((string) ($component === 'jkn' ? $employee?->tipe_jkn : $employee?->tipe_bp_jamsostek)) ?: 'Tanpa tipe';
+                $type = mb_strtoupper(preg_replace('/\s+/u', ' ', trim((string) ($component === 'jkn' ? $employee?->tipe_jkn : $employee?->tipe_bp_jamsostek)))) ?: 'Tanpa tipe';
                 $fallback = (string) ($component === 'jkn' ? $employee?->group_jkn : $employee?->group_bp_jamsostek);
                 $groupName = trim($fallback) ?: 'Tanpa group';
-                $branch = trim((string) ($employee?->cabang_bpjs)) ?: 'Tanpa cabang';
-                $key = $component.'-'.hash('sha256', mb_strtoupper($groupName.'|'.$type.'|'.$branch));
+                $branch = trim((string) ($detail->karyawan?->cabang_bpjs));
+                if ($branch === '') {
+                    $branch = trim((string) ($employee?->cabang_bpjs));
+                }
+                $branch = $branch !== '' ? $branch : 'Tanpa cabang';
+                // A payment choice represents one type within a group, across all branches.
+                $key = $component.'-'.hash('sha256', mb_strtoupper($groupName.'|'.$type));
                 $lookup = $type.':'.$fallback;
                 if (! array_key_exists($lookup, $creditAccounts)) {
                     $creditAccounts[$lookup] = $resolver->resolve($type === 'Tanpa tipe' ? '' : $type, $fallback);
@@ -38,6 +43,7 @@ class BpjsPaymentParts
                 $credit = $creditAccounts[$lookup];
                 $groups[$key] ??= ['key' => $key, 'komponen' => $component, 'group' => $groupName, 'cabang_bpjs' => $branch,
                     'tipe' => $type, 'amount' => 0, 'parts' => [],
+                    'selection_key' => $component.'-'.hash('sha256', mb_strtoupper($groupName)), 'employees' => [],
                     'credit_id' => $credit?->id, 'credit_label' => $credit ? $credit->nomor_akun.' - '.$credit->nama_akun : 'Akun jurnal belum tersedia di COA'];
                 if ($groups[$key]['credit_id'] !== $credit?->id) {
                     $groups[$key]['credit_id'] = null;
@@ -46,6 +52,11 @@ class BpjsPaymentParts
                 $groups[$key]['amount'] = round($groups[$key]['amount'] + $amount, 2);
                 $groups[$key]['parts'][] = ['pranota_bpjs_header_id' => $pranota->id, 'pranota_bpjs_detail_id' => $detail->id,
                     'komponen' => $component, 'tipe' => $type, 'subtotal' => $amount];
+                $groups[$key]['employees'][] = [
+                    'key' => $detail->id.':'.$component, 'cabang_bpjs' => $branch,
+                    'nik' => $employee?->nik ?: '-', 'nama' => $employee?->nama_lengkap ?: 'Karyawan tidak tersedia',
+                    'amount' => $amount,
+                ];
             }
         }
 

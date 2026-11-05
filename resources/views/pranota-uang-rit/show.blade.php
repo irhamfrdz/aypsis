@@ -129,6 +129,45 @@
             </div>
         </div>
 
+        @php
+            $supirDenganPotonganBpjs = $supirDetails->filter(fn ($detail) => (float) $detail->bpjs > 0);
+            $totalBpjsRincian = $supirDetails->sum(fn ($detail) => (float) $detail->bpjs);
+            $bpjsTidakSesuai = (int) round((float) $pranotaUangRit->total_bpjs * 100) !== (int) round($totalBpjsRincian * 100);
+        @endphp
+        <section class="mt-4 rounded-lg border border-gray-200 bg-white" aria-labelledby="bpjs-supir-title">
+            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 bg-gray-50 px-4 py-3">
+                <h2 id="bpjs-supir-title" class="text-sm font-semibold text-gray-800">Supir dengan Potongan BPJS</h2>
+                <span class="text-sm text-gray-600">{{ $supirDenganPotonganBpjs->count() }} supir · Rp {{ number_format($totalBpjsRincian, 0, ',', '.') }}</span>
+            </div>
+            @if($supirDenganPotonganBpjs->isNotEmpty())
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600">
+                            <tr>
+                                <th scope="col" class="px-4 py-2">Nama Supir</th>
+                                <th scope="col" class="px-4 py-2 text-right">Potongan BPJS</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-100">
+                            @foreach($supirDenganPotonganBpjs as $detail)
+                                <tr>
+                                    <td class="px-4 py-2 font-medium text-gray-900">{{ $detail->supir_nama }}</td>
+                                    <td class="px-4 py-2 text-right text-gray-900">Rp {{ number_format($detail->bpjs, 0, ',', '.') }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <p class="px-4 py-3 text-sm text-gray-600">Tidak ada supir yang tercatat mendapat potongan BPJS pada rincian pranota ini.</p>
+            @endif
+            @if($bpjsTidakSesuai)
+                <p class="border-t border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900" role="alert">
+                    Total BPJS pranota Rp {{ number_format($pranotaUangRit->total_bpjs, 0, ',', '.') }} tidak sesuai dengan jumlah potongan pada rincian supir Rp {{ number_format($totalBpjsRincian, 0, ',', '.') }}. Periksa pranota ini sebelum pembayaran.
+                </p>
+            @endif
+        </section>
+
         <!-- Detail Surat Jalan -->
         <div class="bg-white border border-gray-200 rounded-lg overflow-hidden mt-4">
             <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
