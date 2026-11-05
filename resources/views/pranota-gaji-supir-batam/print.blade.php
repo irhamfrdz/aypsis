@@ -71,7 +71,7 @@
                             <td class="text-right">@if($driver->has_potongan_5_persen)Rp {{ number_format((float) $driver->potongan_5_persen, 0, ',', '.') }}@endif</td>
                         @endif
                         <td class="text-right"></td>
-                        <td class="text-right"></td>
+                        <td class="text-right">Rp {{ number_format((float) $driver->pph, 2, ',', '.') }}</td>
                         <td class="text-right">Rp {{ number_format((float) $driver->total_gaji, 0, ',', '.') }}</td>
                     </tr>
                 @endforeach

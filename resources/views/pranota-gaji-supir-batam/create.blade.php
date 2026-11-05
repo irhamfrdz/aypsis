@@ -10,7 +10,7 @@
         <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="text-sm font-medium text-indigo-700 hover:underline">Kembali</a>
     </div>
     @if($errors->any())<div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach</div>@endif
-    <form method="POST" action="{{ route('pranota-gaji-supir-batam.store') }}" class="space-y-5">
+    <form id="pranota-gaji-form" method="POST" action="{{ route('pranota-gaji-supir-batam.store') }}" class="space-y-5">
         @csrf
         <div class="grid gap-4 rounded-xl border bg-white p-5 shadow-sm sm:grid-cols-2">
             <div><label for="tanggal_pranota" class="mb-1 block text-sm font-medium">Tanggal Pranota <span class="text-red-600">*</span></label><input id="tanggal_pranota" name="tanggal_pranota" type="date" value="{{ old('tanggal_pranota', now()->toDateString()) }}" required class="w-full rounded-lg border-gray-300 text-sm"></div>
@@ -44,7 +44,7 @@
                         </tr>
                         @foreach($group as $gaji)
                             <tr data-period-row="{{ $groupKey }}" class="hidden">
-                                <td class="px-4 py-2 pl-8"><input type="checkbox" name="gaji_ids[]" value="{{ $gaji->id }}" data-gaji-checkbox data-group-id="{{ $loop->parent->index }}" data-total="{{ $gaji->total_gaji }}" @checked(in_array((int) $gaji->id, $oldIds, true)) class="rounded border-gray-300 text-indigo-600"></td>
+                                <td class="px-4 py-2 pl-8"><input type="checkbox" name="gaji_ids[]" value="{{ $gaji->id }}" data-gaji-checkbox data-employee-id="{{ $gaji->karyawan_id }}" data-employee-name="{{ $gaji->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}" data-group-id="{{ $loop->parent->index }}" data-total="{{ $gaji->total_gaji }}" @checked(in_array((int) $gaji->id, $oldIds, true)) class="rounded border-gray-300 text-indigo-600"></td>
                                 <td class="px-4 py-2"><span class="font-medium">{{ $gaji->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</span><span class="block text-xs text-gray-500">{{ $gaji->karyawan?->plat ?: '-' }}</span></td>
                                 <td class="whitespace-nowrap px-4 py-2">{{ $gaji->periode_text }}</td>
                                 <td class="whitespace-nowrap px-4 py-2 text-right">Rp {{ number_format((float) $gaji->gaji_pokok, 0, ',', '.') }}</td>
@@ -61,11 +61,26 @@
             <p class="text-sm font-semibold">Dipilih: <span id="selected-count">0</span> gaji · Total: <span id="selected-total">Rp 0</span></p>
             <button type="submit" @disabled($gajiList->isEmpty()) class="rounded-lg bg-indigo-600 px-5 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50">Simpan Pranota</button>
         </div>
+        <dialog id="pph-dialog" aria-labelledby="pph-title" class="w-full max-w-2xl rounded-xl p-0 shadow-xl" style="max-height:85vh">
+            <div class="p-5">
+                <h2 id="pph-title" class="text-lg font-bold">Isi PPh Setiap Supir</h2>
+                <p class="mt-1 mb-4 text-sm text-gray-600">PPh mengurangi gaji bersih. Isi 0 jika tidak ada potongan. Supir dengan beberapa periode cukup diisi sekali.</p>
+                <div id="pph-fields" class="space-y-3"></div>
+                <p id="pph-net-total" class="mt-4 font-semibold" aria-live="polite"></p>
+                <div class="mt-5 flex justify-end gap-3">
+                    <button id="pph-cancel" type="button" class="rounded-lg border px-4 py-2">Kembali</button>
+                    <button id="pph-confirm" type="button" class="rounded-lg bg-indigo-600 px-4 py-2 text-white">Konfirmasi &amp; Simpan Pranota</button>
+                </div>
+            </div>
+        </dialog>
+        <p id="gaji-selection-error" class="hidden text-sm text-red-600" role="alert">Pilih minimal satu gaji terlebih dahulu.</p>
     </form>
 </div>
 @endsection
 
 @push('scripts')
+<script>window.pranotaGajiOldPph = {{ Illuminate\Support\Js::from(old('pph', [])) }};</script>
+<script src="{{ asset('js/pranota-gaji-supir-batam-pph.js') }}?v={{ filemtime(public_path('js/pranota-gaji-supir-batam-pph.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const boxes = [...document.querySelectorAll('[data-gaji-checkbox]')];

@@ -17,13 +17,14 @@
     </div>
     <div class="overflow-x-auto rounded-xl border bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
-            <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600"><tr><th class="px-4 py-3">No.</th><th class="px-4 py-3">Supir</th><th class="px-4 py-3">Periode</th><th class="px-4 py-3 text-right">Gaji Bersih</th><th class="px-4 py-3">Status Bayar</th><th class="px-4 py-3">Slip</th></tr></thead>
+            <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600"><tr><th class="px-4 py-3">No.</th><th class="px-4 py-3">Supir</th><th class="px-4 py-3">Periode</th><th class="px-4 py-3 text-right">PPh</th><th class="px-4 py-3 text-right">Gaji Bersih Setelah PPh</th><th class="px-4 py-3">Status Bayar</th><th class="px-4 py-3">Slip</th></tr></thead>
             <tbody class="divide-y divide-gray-100">
                 @foreach($pranota->items as $item)
                     <tr>
                         <td class="px-4 py-3">{{ $loop->iteration }}</td>
                         <td class="px-4 py-3 font-medium">{{ $item->gaji?->karyawan?->nama_lengkap ?: 'Supir tidak tersedia' }}</td>
                         <td class="whitespace-nowrap px-4 py-3">{{ $item->gaji?->periode_text ?: '-' }}</td>
+                        <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $item->pph, 2, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_gaji, 0, ',', '.') }}</td>
                         <td class="px-4 py-3">{{ $item->gaji?->status_pembayaran ?: '-' }}</td>
                         <td class="px-4 py-3">
@@ -36,7 +37,7 @@
                     </tr>
                 @endforeach
             </tbody>
-            <tfoot class="bg-gray-50"><tr><td colspan="3" class="px-4 py-3 text-right font-bold">Total</td><td class="px-4 py-3 text-right font-bold">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</td><td colspan="2"></td></tr></tfoot>
+            <tfoot class="bg-gray-50"><tr><td colspan="3" class="px-4 py-3 text-right font-bold">Total</td><td class="px-4 py-3 text-right font-bold">Rp {{ number_format((float) $pranota->items->sum('pph'), 2, ',', '.') }}</td><td class="px-4 py-3 text-right font-bold">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</td><td colspan="2"></td></tr></tfoot>
         </table>
     </div>
 </div>

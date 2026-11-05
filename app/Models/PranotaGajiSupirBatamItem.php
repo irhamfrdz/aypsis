@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 
 class PranotaGajiSupirBatamItem extends Model
 {
-    protected $fillable = ['pranota_id', 'gaji_supir_batam_id', 'total_gaji'];
+    protected $fillable = ['pranota_id', 'gaji_supir_batam_id', 'total_gaji', 'pph'];
 
-    protected $casts = ['total_gaji' => 'decimal:2'];
+    protected $casts = ['total_gaji' => 'decimal:2', 'pph' => 'decimal:2'];
 
     public function gaji()
     {

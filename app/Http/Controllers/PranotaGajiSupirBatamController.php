@@ -42,6 +42,8 @@ class PranotaGajiSupirBatamController extends Controller
             'keterangan' => ['nullable', 'string', 'max:2000'],
             'gaji_ids' => ['required', 'array', 'min:1'],
             'gaji_ids.*' => ['required', 'integer', 'distinct', 'exists:gaji_supir_batams,id'],
+            'pph' => ['required', 'array'],
+            'pph.*' => ['required', 'numeric', 'min:0', 'max:9999999999999.99', 'decimal:0,2'],
         ]);
 
         $pranota = DB::transaction(function () use ($validated, $request) {
@@ -55,19 +57,35 @@ class PranotaGajiSupirBatamController extends Controller
                 ]);
             }
 
+            $remainingPph = [];
+            foreach ($gajiList->groupBy('karyawan_id') as $employeeId => $salaries) {
+                $pph = $validated['pph'][$employeeId] ?? null;
+                if ($pph === null || round((float) $pph * 100) > round((float) $salaries->sum('total_gaji') * 100)) {
+                    throw ValidationException::withMessages([
+                        'pph.'.$employeeId => 'Isi PPh setiap supir, maksimal sebesar total gaji supir yang dipilih.',
+                    ]);
+                }
+                $remainingPph[$employeeId] = (int) round((float) $pph * 100);
+            }
+
             $pranota = PranotaGajiSupirBatam::create([
                 'nomor_pranota' => 'TEMP-'.(string) \Illuminate\Support\Str::uuid(),
                 'tanggal_pranota' => $validated['tanggal_pranota'],
-                'total_gaji' => $gajiList->sum(fn ($gaji) => (float) $gaji->total_gaji),
+                'total_gaji' => ($gajiList->sum(fn ($gaji) => (int) round((float) $gaji->total_gaji * 100)) - array_sum($remainingPph)) / 100,
                 'keterangan' => $validated['keterangan'] ?? null,
                 'created_by' => $request->user()?->id,
             ]);
             $pranota->update(['nomor_pranota' => sprintf('PGSB/%s/%05d', $pranota->tanggal_pranota->format('Y'), $pranota->id)]);
 
             foreach ($gajiList as $gaji) {
+                // Allocate one deduction per driver across their selected periods.
+                $salaryCents = (int) round((float) $gaji->total_gaji * 100);
+                $pphCents = min($remainingPph[$gaji->karyawan_id], max(0, $salaryCents));
+                $remainingPph[$gaji->karyawan_id] -= $pphCents;
                 $pranota->items()->create([
                     'gaji_supir_batam_id' => $gaji->id,
-                    'total_gaji' => $gaji->total_gaji,
+                    'total_gaji' => ($salaryCents - $pphCents) / 100,
+                    'pph' => $pphCents / 100,
                 ]);
             }
 
@@ -104,6 +122,7 @@ class PranotaGajiSupirBatamController extends Controller
                     'potongan_5_persen' => $items->sum(fn ($item) => ($item->gaji?->is_potongan_5_persen ?? false)
                         ? (float) ($item->gaji?->nominal_potongan_5_persen ?? 0) : 0),
                     'total_gaji' => $items->sum(fn ($item) => (float) $item->total_gaji),
+                    'pph' => $items->sum(fn ($item) => (float) $item->pph),
                 ];
             })->values();
         $showPotongan = $drivers->contains(fn ($driver) => $driver->has_potongan_5_persen);
