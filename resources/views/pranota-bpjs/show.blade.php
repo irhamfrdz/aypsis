@@ -180,7 +180,9 @@
                     </thead>
                     <tbody>
                         @foreach($pranota_bpj->details as $index => $detail)
-                            @php($employee = $detail->karyawan_pranota)
+                            @php
+                                $employee = $detail->karyawan_pranota;
+                            @endphp
                             <tr class="bpjs-detail-row hover:bg-gray-50" data-name="{{ $employee?->nama_lengkap ?? '' }}" data-groups="{{ implode('|', array_filter([$employee?->group_jkn, $employee?->group_bp_jamsostek])) }}" data-types="{{ implode('|', array_filter([$employee?->tipe_jkn, $employee?->tipe_bp_jamsostek])) }}">
                                 <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
                                 <td class="border border-gray-200 p-3" style="min-width:220px">
