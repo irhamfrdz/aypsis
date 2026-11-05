@@ -4,6 +4,8 @@
     document.querySelectorAll('dialog.approval-goods-dialog[id]').forEach(dialog => {
         let opener;
         const form = dialog.querySelector('form');
+        const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows');
+        const perincianRows = dialog.querySelector('[data-field-prefix="goods"] .approval-goods-rows');
         const labels = { nama_barang: 'Nama barang *', hs_codes: 'HS Code', jumlah: 'Jumlah', satuan: 'Satuan',
             ukuran: 'Ukuran keramik', meter_kubik: 'Volume (m³)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
@@ -90,16 +92,16 @@
                 }
             });
             if (fieldPrefix === 'goods') {
-                const manifestRows = dialog.querySelector('[data-field-prefix="manifest_goods"] .approval-goods-rows')?.children ?? [];
                 const hasSavedOverride = section.dataset.savedOverride === 'true';
                 Array.from(rows.children).forEach((row, index) => {
-                    const manifestRow = manifestRows[index];
+                    const manifestRow = manifestRows?.children[index];
                     if (!manifestRow) return;
                     ['nama_barang', 'jumlah', 'satuan'].forEach(field => {
                         const input = row.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
                         const sourceInput = manifestRow.querySelector(`td[data-field="${field}"] input, td[data-field="${field}"] textarea`);
                         if (!input || !sourceInput) return;
-                        if (hasSavedOverride && input.value.trim() && input.value !== sourceInput.value) {
+                        const hasSeparateValue = input.value.trim() && !(field === 'jumlah' && Number(input.value) === 0);
+                        if (hasSavedOverride && hasSeparateValue && input.value !== sourceInput.value) {
                             input.dataset.manuallyEdited = 'true';
                         } else if (sourceInput.value.trim()) {
                             input.value = sourceInput.value;
@@ -119,9 +121,8 @@
                 } else if (fieldPrefix === 'manifest_goods') {
                     const manifestRow = event.target.closest('tr');
                     const rowIndex = Array.from(rows.children).indexOf(manifestRow);
-                    const perincianRows = dialog.querySelector('[data-field-prefix="goods"] .approval-goods-rows');
-                    const changedField = event.target.name.match(/\[([^\]]+)\]$/)?.[1];
-                    if (perincianRows.children[rowIndex]) {
+                    const changedField = event.target.name?.match(/\[([^\]]+)\]$/)?.[1];
+                    if (perincianRows?.children[rowIndex]) {
                         copyManifestToPerincian(manifestRow, perincianRows.children[rowIndex], changedField);
                     }
                 }
