@@ -67,6 +67,21 @@ class KasTruckUangJalanAccountDetailTest extends TestCase
             $table->decimal('nominal', 15, 2);
             $table->text('memo')->nullable();
         });
+        Schema::create('pembayaran_pranota_ongkos_truks', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_pembayaran');
+            $table->string('nomor_accurate')->nullable();
+            $table->string('bank');
+            $table->string('jenis_transaksi');
+            $table->softDeletes();
+        });
+        Schema::create('pembayaran_pranota_ongkos_truk_akun_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('pembayaran_pranota_ongkos_truk_id');
+            $table->unsignedBigInteger('akun_coa_id');
+            $table->decimal('nominal', 15, 2);
+            $table->string('memo')->nullable();
+        });
 
         DB::table('akun_coa')->insert([
             ['id' => 1, 'nomor_akun' => null, 'nama_akun' => 'Bank BCA Trucking  - 168 2889 955'],
@@ -119,5 +134,29 @@ class KasTruckUangJalanAccountDetailTest extends TestCase
         $this->assertEquals([1365000, 35000, 875], array_column($paymentDetails, 'nominal'));
         $this->assertSame(['debit', 'debit', 'kredit'], array_column($paymentDetails, 'debit_kredit'));
         $this->assertSame('Potongan PPh 2,5%', $paymentDetails[2]['memo']);
+
+        DB::table('akun_coa')->insert(['id' => 5, 'nomor_akun' => '5101.031', 'nama_akun' => 'Biaya Ongkos Truk Tambahan']);
+        DB::table('coa_transactions')->insert([
+            'coa_id' => 1, 'tanggal_transaksi' => '2026-08-12', 'nomor_referensi' => 'SIS-08-26-000925',
+            'jenis_transaksi' => 'Pembayaran Pranota Ongkos Truk', 'kredit' => 100000,
+        ]);
+        DB::table('pembayaran_pranota_ongkos_truks')->insert([
+            'id' => 1, 'nomor_pembayaran' => 'SIS-08-26-000925', 'nomor_accurate' => 'BTJ26 0800143',
+            'bank' => 'Bank BCA Trucking  - 168 2889 955', 'jenis_transaksi' => 'Kredit',
+        ]);
+        DB::table('pembayaran_pranota_ongkos_truk_akun_items')->insert([
+            ['pembayaran_pranota_ongkos_truk_id' => 1, 'akun_coa_id' => 2, 'nominal' => 60000, 'memo' => 'Ongkos utama'],
+            ['pembayaran_pranota_ongkos_truk_id' => 1, 'akun_coa_id' => 5, 'nominal' => 40000, 'memo' => 'Ongkos tambahan'],
+        ]);
+
+        $view = app(KasTruckController::class)->view(Request::create('/kas-truck/view'));
+        $truckPayment = $view->getData()['transactions']->firstWhere('nomor_referensi', 'SIS-08-26-000925');
+        $truckDetails = $truckPayment->rincian_akun_pembayaran;
+
+        $this->assertCount(2, $truckDetails);
+        $this->assertSame(['Biaya Trucking', 'Biaya Ongkos Truk Tambahan'], array_column($truckDetails, 'nama_akun'));
+        $this->assertEquals([60000, 40000], array_column($truckDetails, 'nominal'));
+        $this->assertSame(['Ongkos utama', 'Ongkos tambahan'], array_column($truckDetails, 'memo'));
+        $this->assertSame(['debit', 'debit'], array_column($truckDetails, 'debit_kredit'));
     }
 }

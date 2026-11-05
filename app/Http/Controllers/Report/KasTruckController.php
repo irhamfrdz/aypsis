@@ -101,6 +101,7 @@ class KasTruckController extends Controller
             $akunPembayaranIds = [];
             $rincianAkunStockMap = [];
             $rincianAkunUangJalanMap = [];
+            $rincianAkunOngkosTrukMap = [];
             $rincianAkunObMap = [];
             $rincianAkunPranotaObMap = [];
             $rincianAkunPalMap = [];
@@ -302,6 +303,26 @@ class KasTruckController extends Controller
                 }
             }
 
+            if (! empty($referensiList) && Schema::hasTable('pembayaran_pranota_ongkos_truk_akun_items')) {
+                $rincianAkunOngkosTruk = DB::table('pembayaran_pranota_ongkos_truk_akun_items as rincian')
+                    ->join('pembayaran_pranota_ongkos_truks as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_pranota_ongkos_truk_id')
+                    ->join('akun_coa as akun', 'akun.id', '=', 'rincian.akun_coa_id')
+                    ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
+                    ->whereNull('pembayaran.deleted_at')
+                    ->orderBy('rincian.id')
+                    ->get(['pembayaran.nomor_pembayaran', 'pembayaran.jenis_transaksi', 'akun.nama_akun', 'akun.nomor_akun', 'rincian.nominal', 'rincian.memo']);
+
+                foreach ($rincianAkunOngkosTruk as $rincian) {
+                    $rincianAkunOngkosTrukMap[$rincian->nomor_pembayaran][] = [
+                        'nama_akun' => $rincian->nama_akun,
+                        'nomor_akun' => $rincian->nomor_akun,
+                        'nominal' => $rincian->nominal,
+                        'memo' => $rincian->memo,
+                        'debit_kredit' => $rincian->jenis_transaksi === 'Debit' ? 'kredit' : 'debit',
+                    ];
+                }
+            }
+
             if (! empty($referensiList) && Schema::hasTable('pembayaran_ob_akun_items')) {
                 $rincianAkunOb = DB::table('pembayaran_ob_akun_items as rincian')
                     ->join('pembayaran_obs as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_ob_id')
@@ -404,6 +425,8 @@ class KasTruckController extends Controller
                     }, $rincianAkunPalMap[$t->nomor_referensi]);
                 } elseif ($t->jenis_transaksi === 'Pembayaran Pranota Uang Jalan' && ! empty($rincianAkunUangJalanMap[$t->nomor_referensi])) {
                     $t->rincian_akun_pembayaran = $rincianAkunUangJalanMap[$t->nomor_referensi];
+                } elseif ($t->jenis_transaksi === 'Pembayaran Pranota Ongkos Truk' && ! empty($rincianAkunOngkosTrukMap[$t->nomor_referensi])) {
+                    $t->rincian_akun_pembayaran = $rincianAkunOngkosTrukMap[$t->nomor_referensi];
                 } elseif ($t->jenis_transaksi === 'Pembayaran Pranota OB' && ! empty($rincianAkunPranotaObMap[$t->nomor_referensi])) {
                     $t->rincian_akun_pembayaran = $rincianAkunPranotaObMap[$t->nomor_referensi];
                 } elseif (! empty($rincianAkunObMap[$t->nomor_referensi])) {
