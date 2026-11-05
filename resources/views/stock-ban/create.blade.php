@@ -1024,7 +1024,8 @@
                 const isCat = selectedText.includes('cat');
                 const isMajun = selectedText.includes('majun');
                 const isThinner = selectedText.includes('thinner');
-                const isBulk = usesMasterStock || isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner;
+                const isAccuGsN70 = selectedText.trim().replace(/\s+/g, ' ') === 'accu gs n-70';
+                const isBulk = usesMasterStock || isBanDalam || isBanPerut || isLockKontainer || isRingVelg || isVelg || isCat || isMajun || isThinner || isAccuGsN70;
                 const isBanLuar = selectedText.includes('ban luar');
                 const isBanLuarValmet = selectedText.includes('ban luar valmet');
                 const penerimaContainer = document.getElementById('penerima-container');
@@ -1095,7 +1096,7 @@
                     mobilContainer.classList.add('hidden');
                     
                     // Specific logic for Ban Dalam, Ban Perut, Cat, Majun, Thinner, Ring Velg, and Velg: User requested no brand label
-                    if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg) {
+                    if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg || isAccuGsN70) {
                         merkContainer.classList.add('hidden');
                     } else {
                         merkContainer.classList.remove('hidden');
@@ -1121,7 +1122,7 @@
                         const label = ukuranContainer.querySelector('label');
                         const input = ukuranContainer.querySelector('input');
                         
-                        if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner) {
+                        if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isAccuGsN70) {
                             ukuranContainer.classList.add('hidden');
                         } else {
                             ukuranContainer.classList.remove('hidden');
@@ -1135,7 +1136,9 @@
                         }
                     }
 
-                    if (usesMasterStock) {
+                    if (isAccuGsN70) {
+                        typeSelect.appendChild(new Option('Unit', 'unit', true, true));
+                    } else if (usesMasterStock) {
                         const masterType = selectedOption.dataset.type.trim() || 'pcs';
                         typeSelect.appendChild(new Option(masterType, masterType, true, true));
                     } else if (isBanDalam || isBanPerut) {

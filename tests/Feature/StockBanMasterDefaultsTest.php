@@ -85,4 +85,20 @@ class StockBanMasterDefaultsTest extends TestCase
             $this->assertSame('pail', $stock->type);
         }
     }
+
+    public function test_accu_gs_n70_uses_entered_stock_and_price_with_unit_type(): void
+    {
+        $master = NamaStockBan::withoutEvents(fn () => NamaStockBan::create([
+            'nama' => 'ACCU GS N-70', 'status' => 'active', 'kuantitas' => 50, 'type' => 'pcs',
+        ]));
+
+        $stock = $this->createStock($master, [
+            'qty' => 4, 'harga_beli' => 1250000, 'type' => 'pcs', 'ukuran' => 'stale hidden value',
+        ]);
+
+        $this->assertSame(4, $stock->qty);
+        $this->assertSame('unit', $stock->type);
+        $this->assertSame(1250000, (int) $stock->harga_beli);
+        $this->assertNull($stock->ukuran);
+    }
 }
