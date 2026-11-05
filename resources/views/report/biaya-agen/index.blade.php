@@ -50,6 +50,15 @@
                     @endforeach
                 </select>
             </div>
+            <div class="mt-4">
+                <label for="jenis_biaya_kapal" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
+                <select id="jenis_biaya_kapal" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Semua jenis biaya</option>
+                    @foreach($jenisBiayas as $jenisBiaya)
+                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
+                    @endforeach
+                </select>
+            </div>
 
             <div class="mt-auto pt-6">
                 <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
@@ -80,6 +89,15 @@
                     <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-800">Sampai tanggal <span class="text-red-600">*</span></label>
                     <input id="end_date" name="end_date" type="date" value="{{ old('end_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
                 </div>
+            </div>
+            <div class="mt-4">
+                <label for="jenis_biaya_tanggal" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
+                <select id="jenis_biaya_tanggal" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Semua jenis biaya</option>
+                    @foreach($jenisBiayas as $jenisBiaya)
+                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
+                    @endforeach
+                </select>
             </div>
             <p class="mt-3 text-xs leading-5 text-gray-500">Menggunakan tanggal invoice vendor. Jika kosong, tanggal biaya kapal yang digunakan.</p>
 
@@ -121,6 +139,15 @@
                     <label for="end_date_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Sampai tanggal <span class="text-red-600">*</span></label>
                     <input id="end_date_gabungan" name="end_date" type="date" value="{{ old('end_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
                 </div>
+            </div>
+            <div class="mt-4">
+                <label for="jenis_biaya_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
+                <select id="jenis_biaya_gabungan" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Semua jenis biaya</option>
+                    @foreach($jenisBiayas as $jenisBiaya)
+                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
+                    @endforeach
+                </select>
             </div>
             <div class="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-xs leading-5 text-gray-500">Tanggal invoice vendor digunakan; jika kosong, tanggal biaya kapal.</p>

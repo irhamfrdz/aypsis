@@ -25,7 +25,19 @@ class BiayaAgenController extends Controller
             ->sort(SORT_NATURAL | SORT_FLAG_CASE)
             ->values();
 
-        return view('report.biaya-agen.index', compact('kapals'));
+        $jenisBiayas = DB::table('biaya_kapal_air as rincian')
+            ->join('biaya_kapals as invoice', 'invoice.id', '=', 'rincian.biaya_kapal_id')
+            ->whereNull('invoice.deleted_at')
+            ->whereNotNull('rincian.type_keterangan')
+            ->whereRaw("TRIM(rincian.type_keterangan) <> ''")
+            ->distinct()
+            ->pluck('rincian.type_keterangan')
+            ->map(fn ($jenisBiaya) => trim($jenisBiaya))
+            ->unique(fn ($jenisBiaya) => mb_strtolower($jenisBiaya))
+            ->sort(SORT_NATURAL | SORT_FLAG_CASE)
+            ->values();
+
+        return view('report.biaya-agen.index', compact('kapals', 'jenisBiayas'));
     }
 
     public function show(Request $request)
@@ -35,6 +47,7 @@ class BiayaAgenController extends Controller
             'kapal' => ['required_if:mode,kapal,gabungan', 'nullable', 'string', 'max:255'],
             'start_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date'],
             'end_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date', 'after_or_equal:start_date'],
+            'jenis_biaya' => ['nullable', 'string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -61,6 +74,10 @@ class BiayaAgenController extends Controller
                 $validated['start_date'],
                 $validated['end_date'],
             ]);
+        }
+
+        if (! empty($validated['jenis_biaya'])) {
+            $query->whereRaw('LOWER(TRIM(rincian.type_keterangan)) = ?', [mb_strtolower(trim($validated['jenis_biaya']))]);
         }
 
         $rows = $query
