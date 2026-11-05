@@ -527,6 +527,20 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertSame(0, DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->count());
     }
 
+    public function test_create_rejects_credit_direction_on_vehicle_expense_account(): void
+    {
+        $this->withoutMiddleware();
+
+        $expense = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $payload = $this->vehiclePayload('batam');
+        $payload['akun_details'] = [['akun_coa_id' => $expense, 'debit_kredit' => 'kredit', 'nominal' => 100]];
+
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertSessionHasErrors('akun_details');
+
+        $this->assertSame(0, PembayaranAktivitasLain::count());
+    }
+
     public function test_vehicle_pph_two_point_five_percent_uses_only_service_memos_and_allows_manual_amount(): void
     {
         $this->withoutMiddleware();

@@ -1000,14 +1000,6 @@ function initializeSelect2() {
 
             // Clear all dynamic inputs
             clearTipePenyesuaianInputs();
-            // Clear jumlah if not adjustment payment
-            const jumlahDisplay = document.getElementById('jumlah_input_display');
-            const jumlahValue = document.getElementById('jumlah_input_value');
-            if (jumlahDisplay && jumlahValue && !jumlahDisplay.readOnly) {
-                jumlahDisplay.value = '';
-                jumlahValue.value = '';
-                jumlahDisplay.dispatchEvent(new Event('input'));
-            }
         }
         
         // Update jumlah field state (read-only for adjustment payments)
@@ -1128,7 +1120,6 @@ function initializeSelect2() {
         const jenisPenyesuaian = document.getElementById('jenis_penyesuaian_select').value;
         const tipePenyesuaianField = document.getElementById('tipe_penyesuaian_field');
         const jumlahDisplay = document.getElementById('jumlah_input_display');
-        const jumlahValue = document.getElementById('jumlah_input_value');
         
         if (jenisPenyesuaian === 'pengembalian penuh') {
             // Sembunyikan tipe penyesuaian
@@ -1177,18 +1168,28 @@ function initializeSelect2() {
             jumlahDisplay.classList.remove('bg-gray-100', 'cursor-not-allowed');
             // Remove indicator if exists
             jumlahDisplay.parentNode.querySelectorAll('.auto-calc-indicator').forEach(el => el.remove());
-        } else {
+        } else if (jenisPenyesuaian) {
             // Tampilkan tipe penyesuaian
             tipePenyesuaianField.classList.remove('hidden');
             tipePenyesuaianField.style.display = '';
             // Initialize dynamic input fields for tipe penyesuaian
-            initializeTipePenyesuaianInputs();
+            if (initialTipePenyesuaianDetails.length) {
+                initializeTipePenyesuaianInputsFromData(initialTipePenyesuaianDetails);
+                initialTipePenyesuaianDetails = [];
+            } else {
+                initializeTipePenyesuaianInputs();
+            }
             // Hitung total dari nominal tipe penyesuaian
             calculateTotalJumlah();
+        } else {
+            tipePenyesuaianField.classList.add('hidden');
+            clearTipePenyesuaianInputs();
         }
     }
 
     // Functions for dynamic tipe penyesuaian inputs
+    let initialTipePenyesuaianDetails = Object.values(@json(old('tipe_penyesuaian_detail', [])));
+
     function initializeTipePenyesuaianInputs() {
         const container = document.getElementById('tipe_penyesuaian_container');
         const addBtn = document.getElementById('add_tipe_penyesuaian_btn');
@@ -1203,6 +1204,17 @@ function initializeSelect2() {
 
         // Add at least one input by default
         addTipePenyesuaianInput();
+    }
+
+    function initializeTipePenyesuaianInputsFromData(data) {
+        const container = document.getElementById('tipe_penyesuaian_container');
+        const addBtn = document.getElementById('add_tipe_penyesuaian_btn');
+
+        container.innerHTML = '';
+        addBtn.onclick = function() {
+            addTipePenyesuaianInput();
+        };
+        data.forEach(item => addTipePenyesuaianInput(item.tipe, item.nominal));
     }
 
     function clearTipePenyesuaianInputs() {
@@ -1350,6 +1362,7 @@ function initializeSelect2() {
                 jumlahDisplay.classList.add('bg-gray-100', 'cursor-not-allowed');
                 
                 // Add visual indicator
+                jumlahDisplay.parentNode.querySelectorAll('.auto-calc-indicator').forEach(el => el.remove());
                 let indicator = document.createElement('p');
                 indicator.className = 'auto-calc-indicator text-xs text-blue-600 mt-1';
                 indicator.innerHTML = '🔄 Jumlah dihitung otomatis dari total nominal tipe penyesuaian';
