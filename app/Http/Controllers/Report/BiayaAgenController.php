@@ -42,12 +42,18 @@ class BiayaAgenController extends Controller
 
     public function show(Request $request)
     {
-        $validator = Validator::make($request->all(), [
+        $input = $request->all();
+        if (is_string($input['jenis_biaya'] ?? null)) {
+            $input['jenis_biaya'] = trim($input['jenis_biaya']) === '' ? [] : [$input['jenis_biaya']];
+        }
+
+        $validator = Validator::make($input, [
             'mode' => ['required', Rule::in(['kapal', 'tanggal', 'gabungan'])],
             'kapal' => ['required_if:mode,kapal,gabungan', 'nullable', 'string', 'max:255'],
             'start_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date'],
             'end_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date', 'after_or_equal:start_date'],
-            'jenis_biaya' => ['nullable', 'string', 'max:255'],
+            'jenis_biaya' => ['nullable', 'array'],
+            'jenis_biaya.*' => ['string', 'max:255'],
         ]);
 
         if ($validator->fails()) {
@@ -55,6 +61,12 @@ class BiayaAgenController extends Controller
         }
 
         $validated = $validator->validated();
+        $validated['jenis_biaya'] = collect($validated['jenis_biaya'] ?? [])
+            ->map(fn ($jenisBiaya) => trim($jenisBiaya))
+            ->filter()
+            ->unique(fn ($jenisBiaya) => mb_strtolower($jenisBiaya))
+            ->values()
+            ->all();
 
         $query = DB::table('biaya_kapal_air as rincian')
             ->join('biaya_kapals as invoice', 'invoice.id', '=', 'rincian.biaya_kapal_id')
@@ -76,8 +88,8 @@ class BiayaAgenController extends Controller
             ]);
         }
 
-        if (! empty($validated['jenis_biaya'])) {
-            $query->whereRaw('LOWER(TRIM(rincian.type_keterangan)) = ?', [mb_strtolower(trim($validated['jenis_biaya']))]);
+        if ($validated['jenis_biaya'] !== []) {
+            $query->whereIn(DB::raw('LOWER(TRIM(rincian.type_keterangan))'), array_map(fn ($jenisBiaya) => mb_strtolower($jenisBiaya), $validated['jenis_biaya']));
         }
 
         $rows = $query

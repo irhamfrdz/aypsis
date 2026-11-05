@@ -17,7 +17,7 @@
                     <span>Periode: <strong class="text-gray-900">{{ \Carbon\Carbon::parse($validated['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($validated['end_date'])->format('d/m/Y') }}</strong></span>
                 @endif
                 @if(!empty($validated['jenis_biaya']))
-                    <span>Jenis biaya: <strong class="text-gray-900">{{ $validated['jenis_biaya'] }}</strong></span>
+                    <span>Jenis biaya: <strong class="text-gray-900">{{ implode(', ', $validated['jenis_biaya']) }}</strong></span>
                 @endif
             </div>
         </div>

@@ -51,13 +51,7 @@
                 </select>
             </div>
             <div class="mt-4">
-                <label for="jenis_biaya_kapal" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
-                <select id="jenis_biaya_kapal" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                    <option value="">Semua jenis biaya</option>
-                    @foreach($jenisBiayas as $jenisBiaya)
-                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
-                    @endforeach
-                </select>
+                @include('report.biaya-agen._jenis-biaya-filter')
             </div>
 
             <div class="mt-auto pt-6">
@@ -91,13 +85,7 @@
                 </div>
             </div>
             <div class="mt-4">
-                <label for="jenis_biaya_tanggal" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
-                <select id="jenis_biaya_tanggal" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                    <option value="">Semua jenis biaya</option>
-                    @foreach($jenisBiayas as $jenisBiaya)
-                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
-                    @endforeach
-                </select>
+                @include('report.biaya-agen._jenis-biaya-filter')
             </div>
             <p class="mt-3 text-xs leading-5 text-gray-500">Menggunakan tanggal invoice vendor. Jika kosong, tanggal biaya kapal yang digunakan.</p>
 
@@ -141,13 +129,7 @@
                 </div>
             </div>
             <div class="mt-4">
-                <label for="jenis_biaya_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Jenis biaya</label>
-                <select id="jenis_biaya_gabungan" name="jenis_biaya" class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                    <option value="">Semua jenis biaya</option>
-                    @foreach($jenisBiayas as $jenisBiaya)
-                        <option value="{{ $jenisBiaya }}" @selected(old('jenis_biaya') === $jenisBiaya)>{{ $jenisBiaya }}</option>
-                    @endforeach
-                </select>
+                @include('report.biaya-agen._jenis-biaya-filter')
             </div>
             <div class="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <p class="text-xs leading-5 text-gray-500">Tanggal invoice vendor digunakan; jika kosong, tanggal biaya kapal.</p>

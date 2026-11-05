@@ -93,6 +93,15 @@ class ReportBiayaAgenTest extends TestCase
         ]))->getData();
         $this->assertSame([1], $allFilters['rows']->pluck('id')->all());
 
+        $multipleTypes = $controller->show(Request::create('/report-biaya-agen/show', 'GET', [
+            'mode' => 'gabungan', 'kapal' => 'Kapal A',
+            'jenis_biaya' => [' jasa pandu ', 'Jasa Pandu', 'Biaya Labuh'],
+            'start_date' => '2026-10-02', 'end_date' => '2026-10-05',
+        ]))->getData();
+        $this->assertSame([1, 2], $multipleTypes['rows']->pluck('id')->all());
+        $this->assertSame(['jasa pandu', 'Biaya Labuh'], $multipleTypes['validated']['jenis_biaya']);
+        $this->assertEquals(304, $multipleTypes['summary']['grand_total']);
+
         try {
             $controller->show(Request::create('/report-biaya-agen/show', 'GET', [
                 'mode' => 'gabungan', 'kapal' => 'Kapal A',
