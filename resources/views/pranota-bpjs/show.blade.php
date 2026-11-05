@@ -285,7 +285,8 @@
 </style>
 <script src="{{ asset('js/pranota-bpjs-journal.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-journal.js')) }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', () => BpjsJournal.render(@json($journalRecords)));
+const bpjsJournalRecords = {{ Illuminate\Support\Js::from($journalRecords) }};
+document.addEventListener('DOMContentLoaded', () => BpjsJournal.render(bpjsJournalRecords));
 document.addEventListener('DOMContentLoaded', () => {
     const search = document.getElementById('bpjs-detail-search');
     const groupFilter = document.getElementById('bpjs-detail-group-filter');

@@ -1,4 +1,4 @@
-@extends('layouts.app')
+    @extends('layouts.app')
 
 @section('title', 'Master Data ABK')
 @section('page_title', 'Master Data ABK')

@@ -3,6 +3,7 @@ const test = require('node:test');
 const fs = require('node:fs');
 require('../public/js/pranota-bpjs-filters.js');
 require('../public/js/pranota-bpjs-jamsostek.js');
+globalThis.formatRounded = num => Math.round(num || 0).toLocaleString('id-ID');
 const calculator = globalThis.BpjsJamsostek;
 
 const crew = {
