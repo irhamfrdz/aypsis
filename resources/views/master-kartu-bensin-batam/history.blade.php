@@ -12,6 +12,12 @@
         </a>
     </div>
 
+    @if(session('success'))
+    <div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800" role="status">
+        {{ session('success') }}
+    </div>
+    @endif
+
     <!-- Card Info Header Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
         <div class="bg-gradient-to-r from-blue-800 to-indigo-900 px-6 py-5 text-white">
@@ -32,6 +38,11 @@
                     <div class="text-3xl font-extrabold mt-1 text-green-400">
                         Rp {{ number_format($card->saldo ?? 0, 0, ',', '.') }}
                     </div>
+                    @can('master-kartu-bensin-batam-edit')
+                    <button type="button" id="open-topup-modal" class="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600">
+                        <i class="fas fa-plus-circle"></i> Top Up Saldo
+                    </button>
+                    @endcan
                     <div class="mt-2 flex items-center justify-end gap-2 text-xs">
                         @if($card->status == 'aktif')
                         <span class="px-2 py-0.5 bg-green-500/20 text-green-300 border border-green-500/30 rounded-full font-semibold">
@@ -53,6 +64,39 @@
             </div>
         </div>
     </div>
+
+    @can('master-kartu-bensin-batam-edit')
+    <div id="topup-modal" class="{{ $errors->any() ? '' : 'hidden' }} fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="topup-modal-title">
+        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div class="mb-5 flex items-center justify-between">
+                <h2 id="topup-modal-title" class="text-lg font-bold text-gray-800">Top Up Saldo</h2>
+                <button type="button" data-close-topup class="text-gray-500 hover:text-gray-800" aria-label="Tutup formulir top up"><i class="fas fa-times"></i></button>
+            </div>
+            <form action="{{ route('master-kartu-bensin-batam.topup', $card->id) }}" method="POST" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="topup-tanggal" class="mb-1 block text-sm font-medium text-gray-700">Tanggal <span class="text-red-500">*</span></label>
+                    <input type="date" id="topup-tanggal" name="tanggal" value="{{ old('tanggal', date('Y-m-d')) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                    @error('tanggal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="topup-nominal" class="mb-1 block text-sm font-medium text-gray-700">Nominal (Rp) <span class="text-red-500">*</span></label>
+                    <input type="number" id="topup-nominal" name="nominal" value="{{ old('nominal') }}" min="1" step="1" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nominal top up">
+                    @error('nominal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
+                    <label for="topup-keterangan" class="mb-1 block text-sm font-medium text-gray-700">Keterangan <span class="text-red-500">*</span></label>
+                    <textarea id="topup-keterangan" name="keterangan" rows="3" maxlength="1000" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan keterangan top up">{{ old('keterangan') }}</textarea>
+                    @error('keterangan')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" data-close-topup class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="rounded-lg bg-green-600 px-4 py-2 text-sm font-semibold text-white hover:bg-green-700">Simpan Top Up</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    @endcan
 
     <!-- History Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -139,3 +183,22 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modal = document.getElementById('topup-modal');
+        const openButton = document.getElementById('open-topup-modal');
+        if (!modal || !openButton) return;
+
+        function closeModal() { modal.classList.add('hidden'); }
+        openButton.addEventListener('click', function () {
+            modal.classList.remove('hidden');
+            document.getElementById('topup-tanggal').focus();
+        });
+        modal.querySelectorAll('[data-close-topup]').forEach(button => button.addEventListener('click', closeModal));
+        modal.addEventListener('click', event => { if (event.target === modal) closeModal(); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') closeModal(); });
+    });
+</script>
+@endpush

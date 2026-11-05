@@ -3549,6 +3549,9 @@ Route::middleware([
         Route::get('master-kartu-bensin-batam/{id}/history', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'history'])
             ->name('master-kartu-bensin-batam.history')
             ->middleware('can:master-kartu-bensin-batam-view');
+        Route::post('master-kartu-bensin-batam/{id}/topup', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'topup'])
+            ->name('master-kartu-bensin-batam.topup')
+            ->middleware('can:master-kartu-bensin-batam-edit');
 
         // 💳 Master Kartu Bensin Batam with permissions
         Route::resource('master-kartu-bensin-batam', \App\Http\Controllers\MasterKartuBensinBatamController::class)

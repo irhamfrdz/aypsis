@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class MasterKartuBensinBatamController extends Controller
 {
@@ -165,5 +166,34 @@ class MasterKartuBensinBatamController extends Controller
         $histories = $card->histories()->with('createdBy')->latest()->paginate(25);
 
         return view('master-kartu-bensin-batam.history', compact('card', 'histories'));
+    }
+
+    public function topup(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date_format:Y-m-d',
+            'nominal' => 'required|integer|min:1',
+            'keterangan' => 'required|string|max:1000',
+        ]);
+
+        DB::transaction(function () use ($validated, $id) {
+            $card = MasterKartuBensinBatam::lockForUpdate()->findOrFail($id);
+            $saldoSebelum = $card->saldo;
+            $saldoSesudah = round((float) $saldoSebelum + (float) $validated['nominal'], 2);
+
+            $card->update(['saldo' => $saldoSesudah, 'updated_by' => auth()->id()]);
+            $card->histories()->create([
+                'tanggal' => $validated['tanggal'],
+                'tipe' => 'bertambah',
+                'nominal' => $validated['nominal'],
+                'saldo_sebelum' => $saldoSebelum,
+                'saldo_sesudah' => $saldoSesudah,
+                'keterangan' => $validated['keterangan'],
+                'created_by' => auth()->id(),
+            ]);
+        });
+
+        return redirect()->route('master-kartu-bensin-batam.history', $id)
+            ->with('success', 'Top up saldo kartu bensin berhasil disimpan.');
     }
 }
