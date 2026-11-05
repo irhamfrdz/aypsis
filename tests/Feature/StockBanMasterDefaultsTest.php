@@ -101,4 +101,16 @@ class StockBanMasterDefaultsTest extends TestCase
         $this->assertSame(1250000, (int) $stock->harga_beli);
         $this->assertNull($stock->ukuran);
     }
+
+    public function test_lock_kontainer_ignores_hidden_ukuran(): void
+    {
+        $master = NamaStockBan::withoutEvents(fn () => NamaStockBan::create([
+            'nama' => 'LOCK KONTAINER', 'status' => 'active',
+        ]));
+
+        $stock = $this->createStock($master, ['qty' => 3, 'type' => 'pcs', 'ukuran' => 'stale value']);
+
+        $this->assertSame(3, $stock->qty);
+        $this->assertNull($stock->ukuran);
+    }
 }

@@ -1019,6 +1019,7 @@
                 const isBanDalam = selectedText.includes('ban dalam');
                 const isBanPerut = selectedText.includes('ban perut');
                 const isLockKontainer = selectedText.includes('lock kontainer');
+                document.getElementById('merk_id').disabled = isLockKontainer;
                 const isRingVelg = selectedText.includes('ring velg');
                 const isVelg = selectedText.includes('velg'); // Covers 'velg' and 'ring velg', but keep distinct vars if needed
                 const isCat = selectedText.includes('cat');
@@ -1096,7 +1097,7 @@
                     mobilContainer.classList.add('hidden');
                     
                     // Specific logic for Ban Dalam, Ban Perut, Cat, Majun, Thinner, Ring Velg, and Velg: User requested no brand label
-                    if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isRingVelg || isVelg || isAccuGsN70) {
+                    if (usesMasterStock || isBanDalam || isBanPerut || isLockKontainer || isCat || isMajun || isThinner || isRingVelg || isVelg || isAccuGsN70) {
                         merkContainer.classList.add('hidden');
                     } else {
                         merkContainer.classList.remove('hidden');
@@ -1122,7 +1123,7 @@
                         const label = ukuranContainer.querySelector('label');
                         const input = ukuranContainer.querySelector('input');
                         
-                        if (usesMasterStock || isBanDalam || isBanPerut || isCat || isMajun || isThinner || isAccuGsN70) {
+                        if (usesMasterStock || isBanDalam || isBanPerut || isLockKontainer || isCat || isMajun || isThinner || isAccuGsN70) {
                             ukuranContainer.classList.add('hidden');
                         } else {
                             ukuranContainer.classList.remove('hidden');
@@ -1202,7 +1203,7 @@
                 const ukuranInput = document.querySelector('input[name="ukuran"]');
                 const ukuranValmetSelect = document.getElementById('ukuran-valmet');
                 ukuranInput.classList.toggle('hidden', isBanLuarValmet);
-                ukuranInput.disabled = isBanLuarValmet;
+                ukuranInput.disabled = isBanLuarValmet || isLockKontainer;
                 ukuranValmetSelect.classList.toggle('hidden', !isBanLuarValmet);
                 ukuranValmetSelect.disabled = !isBanLuarValmet;
             }
