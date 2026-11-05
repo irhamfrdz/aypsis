@@ -18,7 +18,7 @@ class PembayaranPranotaBpjsController extends Controller
     public function __construct(private CoaTransactionService $journal)
     {
         $this->middleware('can:pembayaran-pranota-bpjs-view')->only(['index', 'show']);
-        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store']);
+        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update']);
     }
 
     public function index(Request $request)
@@ -160,8 +160,8 @@ class PembayaranPranotaBpjsController extends Controller
                 }
                 foreach ($bankAllocations as $allocation) {
                     if (! $this->journal->recordDoubleEntry(
-                        ['coa_id' => $account->id, 'nama_akun' => $account->nama_akun, 'jumlah' => $allocation['subtotal']],
                         ['coa_id' => $allocation['coa_id'], 'nama_akun' => $allocation['nama_akun'], 'jumlah' => $allocation['subtotal']],
+                        ['coa_id' => $account->id, 'nama_akun' => $account->nama_akun, 'jumlah' => $allocation['subtotal']],
                         $data['tanggal_pembayaran'], $number, 'Pembayaran Pranota BPJS', 'Pembayaran Pranota BPJS - '.$number
                     )) {
                         throw new \RuntimeException('Jurnal pembayaran gagal dicatat.');
@@ -179,6 +179,14 @@ class PembayaranPranotaBpjsController extends Controller
         }
 
         return redirect()->route('pembayaran-pranota-bpjs.index')->with('success', 'Pembayaran '.$payment->nomor_pembayaran.' berhasil disimpan.');
+    }
+
+    public function update(Request $request, PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        $data = $request->validate(['nomor_accurate' => ['nullable', 'string', 'max:255']]);
+        $pembayaran_pranota_bpj->update(['nomor_accurate' => $data['nomor_accurate'] ?? null]);
+
+        return redirect()->route('pembayaran-pranota-bpjs.show', $pembayaran_pranota_bpj)->with('success', 'Nomor Accurate berhasil disimpan.');
     }
 
     public function show(PembayaranPranotaBpjs $pembayaran_pranota_bpj)

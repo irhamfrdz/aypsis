@@ -82,8 +82,8 @@ class PembayaranPranotaBpjsTest extends TestCase
         $this->assertSame('paid', $second->fresh()->status);
         $this->assertEquals(323457.03, DB::table('coa_transactions')->sum('debit'));
         $this->assertEquals(323457.03, DB::table('coa_transactions')->sum('kredit'));
-        $this->assertEquals(676542.97, Coa::find(1)->saldo);
-        $this->assertEquals(-676542.97, Coa::find(2)->saldo);
+        $this->assertEquals(1323457.03, Coa::find(1)->saldo);
+        $this->assertEquals(-1323457.03, Coa::find(2)->saldo);
         $this->assertTrue((new PembayaranPranotaBpjsController(new CoaTransactionService))->create(Request::create('/'))->isRedirect());
         $locked = $first->fresh();
         $controller = new PranotaBpjsController;
@@ -372,10 +372,12 @@ class PembayaranPranotaBpjsTest extends TestCase
         $this->assertCount(2, $payment->bank_allocations);
         $this->assertSame('300.00', $payment->total_pembayaran);
         $this->assertEquals(300, array_sum(array_column($payment->bank_allocations, 'subtotal')));
-        $this->assertEquals(100, DB::table('coa_transactions')->where('coa_id', 3)->sum('kredit'));
-        $this->assertEquals(200, DB::table('coa_transactions')->where('coa_id', 4)->sum('kredit'));
-        $this->assertEquals(300, DB::table('coa_transactions')->where('coa_id', 1)->sum('debit'));
-        $this->assertEquals(1000300, Coa::find(1)->saldo);
+        $this->assertEquals(100, DB::table('coa_transactions')->where('coa_id', 3)->sum('debit'));
+        $this->assertEquals(200, DB::table('coa_transactions')->where('coa_id', 4)->sum('debit'));
+        $this->assertEquals(300, DB::table('coa_transactions')->where('coa_id', 1)->sum('kredit'));
+        $this->assertEquals(100, Coa::find(3)->saldo);
+        $this->assertEquals(200, Coa::find(4)->saldo);
+        $this->assertEquals(999700, Coa::find(1)->saldo);
         $this->assertSame('paid', $pranota->fresh()->status);
     }
 
