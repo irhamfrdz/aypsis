@@ -327,6 +327,52 @@ class PranotaLemburController extends Controller
     }
 
     /**
+     * Remove one surat jalan from a draft pranota and recalculate its totals.
+     */
+    public function removeSuratJalan(PranotaLembur $pranotaLembur, string $type, int $id)
+    {
+        $user = Auth::user();
+
+        if (! $user->can('pranota-lembur-update')) {
+            abort(403, 'Unauthorized');
+        }
+
+        $column = match ($type) {
+            'muat' => 'surat_jalan_id',
+            'bongkaran' => 'surat_jalan_bongkaran_id',
+            default => abort(404),
+        };
+
+        return DB::transaction(function () use ($pranotaLembur, $column, $id, $user) {
+            $pranota = PranotaLembur::whereKey($pranotaLembur->id)->lockForUpdate()->firstOrFail();
+
+            if ($pranota->status !== PranotaLembur::STATUS_DRAFT) {
+                return back()->with('error', 'Surat jalan hanya dapat dikeluarkan dari pranota berstatus Draft.');
+            }
+
+            $items = DB::table('pranota_lembur_surat_jalan')
+                ->where('pranota_lembur_id', $pranota->id);
+
+            $item = (clone $items)->where($column, $id)->first(['id']);
+
+            if (! $item) {
+                return back()->with('error', 'Surat jalan tidak ditemukan dalam pranota ini.');
+            }
+
+            DB::table('pranota_lembur_surat_jalan')->where('id', $item->id)->delete();
+
+            $totalBiaya = (clone $items)->sum('total_biaya');
+            $pranota->update([
+                'total_biaya' => $totalBiaya,
+                'total_setelah_adjustment' => round((float) $totalBiaya + (float) $pranota->adjustment, 2),
+                'updated_by' => $user->id,
+            ]);
+
+            return back()->with('success', 'Surat jalan berhasil dikeluarkan dari pranota.');
+        });
+    }
+
+    /**
      * Print pranota lembur
      */
     public function print(PranotaLembur $pranotaLembur)
@@ -360,6 +406,10 @@ class PranotaLemburController extends Controller
 
         if ($pranotaLembur->status !== PranotaLembur::STATUS_DRAFT) {
             return back()->with('error', 'Hanya pranota dengan status Draft yang bisa di-submit');
+        }
+
+        if (! DB::table('pranota_lembur_surat_jalan')->where('pranota_lembur_id', $pranotaLembur->id)->exists()) {
+            return back()->with('error', 'Pranota harus memiliki setidaknya satu surat jalan sebelum di-submit.');
         }
 
         $pranotaLembur->update([

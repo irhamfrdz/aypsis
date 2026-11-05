@@ -75,6 +75,10 @@
 
         <!-- Table Surat Jalan -->
         <div class="mb-6">
+            @php
+                $canRemoveSuratJalan = $pranotaLembur->status === \App\Models\PranotaLembur::STATUS_DRAFT
+                    && auth()->user()->can('pranota-lembur-update');
+            @endphp
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Daftar Surat Jalan</h3>
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
@@ -90,6 +94,9 @@
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Biaya Lembur</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Biaya Nginap</th>
                             <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                            @if($canRemoveSuratJalan)
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -109,6 +116,17 @@
                             <td class="px-4 py-3 text-right">Rp {{ number_format($sj->pivot->biaya_lembur, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right">Rp {{ number_format($sj->pivot->biaya_nginap, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($sj->pivot->total_biaya, 0, ',', '.') }}</td>
+                            @if($canRemoveSuratJalan)
+                                <td class="px-4 py-3 text-right">
+                                    <form method="POST" action="{{ route('pranota-lembur.surat-jalan.remove', [$pranotaLembur->id, 'muat', $sj->id]) }}" onsubmit="return confirm('Keluarkan surat jalan ini dari pranota?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center gap-1 rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" aria-label="Keluarkan surat jalan {{ $sj->no_surat_jalan }}">
+                                            <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Keluarkan
+                                        </button>
+                                    </form>
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
                         @foreach($pranotaLembur->suratJalanBongkarans as $sj)
@@ -126,13 +144,30 @@
                             <td class="px-4 py-3 text-right">Rp {{ number_format($sj->pivot->biaya_lembur, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right">Rp {{ number_format($sj->pivot->biaya_nginap, 0, ',', '.') }}</td>
                             <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($sj->pivot->total_biaya, 0, ',', '.') }}</td>
+                            @if($canRemoveSuratJalan)
+                                <td class="px-4 py-3 text-right">
+                                    <form method="POST" action="{{ route('pranota-lembur.surat-jalan.remove', [$pranotaLembur->id, 'bongkaran', $sj->id]) }}" onsubmit="return confirm('Keluarkan surat jalan ini dari pranota?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="inline-flex items-center gap-1 rounded-md border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-700 hover:bg-red-50" aria-label="Keluarkan surat jalan {{ $sj->nomor_surat_jalan }}">
+                                            <i class="fas fa-right-from-bracket" aria-hidden="true"></i> Keluarkan
+                                        </button>
+                                    </form>
+                                </td>
+                            @endif
                         </tr>
                         @endforeach
+                        @if($pranotaLembur->suratJalans->isEmpty() && $pranotaLembur->suratJalanBongkarans->isEmpty())
+                            <tr>
+                                <td colspan="{{ $canRemoveSuratJalan ? 11 : 10 }}" class="px-4 py-8 text-center text-gray-500">Belum ada surat jalan dalam pranota ini.</td>
+                            </tr>
+                        @endif
                     </tbody>
                     <tfoot class="bg-gray-50">
                         <tr>
                             <td colspan="9" class="px-4 py-3 text-right font-semibold">Total Biaya:</td>
                             <td class="px-4 py-3 text-right font-bold text-lg">{{ $pranotaLembur->formatted_total_biaya }}</td>
+                            @if($canRemoveSuratJalan)<td></td>@endif
                         </tr>
                         @if($pranotaLembur->adjustment != 0)
                         <tr>
@@ -145,10 +180,12 @@
                             <td class="px-4 py-3 text-right font-bold text-lg {{ $pranotaLembur->adjustment > 0 ? 'text-green-600' : 'text-red-600' }}">
                                 Rp {{ number_format($pranotaLembur->adjustment, 0, ',', '.') }}
                             </td>
+                            @if($canRemoveSuratJalan)<td></td>@endif
                         </tr>
                         <tr>
                             <td colspan="9" class="px-4 py-3 text-right font-semibold">Grand Total:</td>
                             <td class="px-4 py-3 text-right font-bold text-xl text-blue-600">{{ $pranotaLembur->formatted_total_setelah_adjustment }}</td>
+                            @if($canRemoveSuratJalan)<td></td>@endif
                         </tr>
                         @endif
                     </tfoot>

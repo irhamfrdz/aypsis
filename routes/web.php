@@ -4695,6 +4695,12 @@ Route::middleware([
             ->name('pranota-lembur.show')
             ->middleware('can:pranota-lembur-view');
 
+        Route::delete('pranota-lembur/{pranotaLembur}/surat-jalan/{type}/{id}', [\App\Http\Controllers\PranotaLemburController::class, 'removeSuratJalan'])
+            ->name('pranota-lembur.surat-jalan.remove')
+            ->middleware('can:pranota-lembur-update')
+            ->whereIn('type', ['muat', 'bongkaran'])
+            ->whereNumber('id');
+
         // Pranota Lembur - print
         Route::get('pranota-lembur/{pranotaLembur}/print', [\App\Http\Controllers\PranotaLemburController::class, 'print'])
             ->name('pranota-lembur.print')
