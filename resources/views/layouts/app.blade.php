@@ -725,7 +725,7 @@
                 </div>
                 @endif
                 <div>
-                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'pranota-puml.*', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*', 'report-kerja-supir-batam.*', 'report-gaji-supir-batam.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
+                    <a href="{{ route('rekap.index') }}" class="w-full flex items-center py-3 px-4 rounded-lg text-sm font-semibold {{ Request::routeIs('rekap.index', 'pranota-puml.*', 'report.tanda-terima-jakarta.*', 'report.uang-jalan.*', 'report.pranota-uang-jalan.*', 'report.surat_jalan.*', 'report.pranota-ob.*', 'report.biaya-agen.*', 'report-kerja-supir-batam.*', 'report-gaji-supir-batam.*') ? 'bg-blue-50 text-blue-700' : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900' }}" @if(Request::routeIs('rekap.index')) aria-current="page" @endif>
                         Rekap dan Laporan
                     </a>
                 </div>

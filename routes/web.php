@@ -3263,6 +3263,13 @@ Route::middleware([
             ->name('rekap-biaya-kapal.get-bls')
             ->middleware('can:biaya-kapal-view');
 
+        Route::get('report-biaya-agen', [\App\Http\Controllers\Report\BiayaAgenController::class, 'index'])
+            ->name('report.biaya-agen.index')
+            ->middleware('can:biaya-kapal-view');
+        Route::get('report-biaya-agen/show', [\App\Http\Controllers\Report\BiayaAgenController::class, 'show'])
+            ->name('report.biaya-agen.show')
+            ->middleware('can:biaya-kapal-view');
+
         Route::get('rekap-biaya-asset', [\App\Http\Controllers\RekapBiayaAssetController::class, 'index'])
             ->name('rekap-biaya-asset.index')
             ->middleware('can:rekap-biaya-asset-view');
