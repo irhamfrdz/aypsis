@@ -48,6 +48,7 @@
         ['category' => 'Aktiva', 'label' => 'Rekap Biaya Kapal', 'route' => 'rekap-biaya-kapal.index', 'permission' => 'biaya-kapal-view'],
         ['category' => 'Aktiva', 'label' => 'Rekap Biaya Asset', 'route' => 'rekap-biaya-asset.index', 'permission' => 'rekap-biaya-asset-view'],
         ['category' => 'Aktiva', 'label' => 'Rekap Pemakaian Barang', 'route' => 'rekap-pemakaian-barang.index', 'permission' => 'rekap-pemakaian-barang-view'],
+        ['category' => 'Aktiva', 'label' => 'Rekap Pemakaian Ban', 'route' => 'rekap-pemakaian-ban.index', 'permission' => 'stock-ban-view'],
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat', 'route' => 'bl.rekap-bongkaran.select', 'permission' => 'bl-view'],
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat Kontainer', 'route' => 'bl.rekap-bongkaran-kontainer.select', 'permission' => 'bl-view'],
         ['category' => 'Bongkar/Muat', 'label' => 'Rekap Bongkar/Muat Perincian', 'route' => 'bl.rekap-bongkaran-perincian.select', 'permission' => 'bl-view'],

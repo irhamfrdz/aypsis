@@ -3288,6 +3288,10 @@ Route::middleware([
             ->name('rekap-pemakaian-barang.index')
             ->middleware('can:rekap-pemakaian-barang-view');
 
+        Route::get('rekap-pemakaian-ban', [\App\Http\Controllers\RekapPemakaianBanController::class, 'index'])
+            ->name('rekap-pemakaian-ban.index')
+            ->middleware('can:stock-ban-view');
+
         // 🏢 Master Asset Management
         Route::get('master-asset/export', [\App\Http\Controllers\AssetController::class, 'export'])->name('asset.export');
         Route::get('master-asset/template', [\App\Http\Controllers\AssetController::class, 'downloadTemplate'])->name('asset.template');
