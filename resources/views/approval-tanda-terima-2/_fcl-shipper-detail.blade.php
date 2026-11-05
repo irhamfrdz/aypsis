@@ -49,8 +49,6 @@
                 <div class="overflow-x-auto p-5">
                     @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect([$manifest]), 'isAdditionalShipper' => true])
                     <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true" data-saved-override="{{ filled(data_get($perincian, 'nama_barang')) ? 'true' : 'false' }}">
-                        <h3 class="mb-4 text-base font-bold text-gray-900">Detail Barang Perincian</h3>
-                        <p class="mb-4 text-xs text-gray-500">Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.</p>
                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                                 <tr>

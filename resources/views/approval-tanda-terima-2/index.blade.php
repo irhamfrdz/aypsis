@@ -431,8 +431,6 @@
                                     <div class="overflow-x-auto p-5">
                                         @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect($goodsOverride?->manifest_goods ?? [])])
                                         <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true" data-saved-override="{{ $goodsOverride ? 'true' : 'false' }}">
-                                        <h3 class="mb-4 text-base font-bold text-gray-900">Detail Barang Perincian</h3>
-                                        <p class="mb-4 text-xs text-gray-500">Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.</p>
                                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
                                                 <tr>
@@ -593,10 +591,8 @@
         <section class="border-t border-gray-200 px-5 py-5 sm:px-6">
             <h3 class="mb-4 text-base font-semibold text-indigo-800">2. Detail Barang Manifest dan Perincian</h3>
             <div class="space-y-6">
-                @foreach(['manifest_goods' => 'Detail Barang Manifest', 'goods' => 'Detail Barang Perincian'] as $prefix => $title)
+                @foreach(['manifest_goods', 'goods'] as $prefix)
                     <section class="{{ $prefix === 'goods' ? 'border-t border-gray-200 pt-6' : '' }}">
-                        <h4 class="mb-2 text-base font-bold text-gray-900">{{ $title }}</h4>
-                        <p class="mb-4 text-xs text-gray-500">{{ $prefix === 'manifest_goods' ? 'Isi satu barang untuk manifest approval. Satu HS Code per baris.' : 'Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.' }}</p>
                         <div class="ttsj-goods-row">
                             <h4>{{ $prefix === 'manifest_goods' ? 'Rincian Barang Manifest' : 'Rincian Barang Perincian' }}</h4>
                             @if($prefix === 'manifest_goods')

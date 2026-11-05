@@ -4,8 +4,6 @@
             ? collect([[]])
             : $manifestGoods->take(1);
     @endphp
-    <h3 class="mb-2 text-base font-bold text-gray-900">Detail Barang Manifest</h3>
-    <p class="mb-4 text-xs text-gray-500">Isi satu barang untuk manifest approval. Baris yang dibiarkan kosong tidak akan disimpan.</p>
     <table class="min-w-full divide-y divide-gray-200 text-sm">
         <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
             <tr>
