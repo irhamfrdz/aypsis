@@ -61,10 +61,10 @@
 
         <table class="items">
             <thead><tr>
-                <th style="width:3%">No.</th><th style="width:7%">Tanggal</th><th style="width:9%">Invoice / Referensi</th>
-                <th style="width:9%">Kapal / Voyage</th><th style="width:9%">Vendor / Lokasi</th><th style="width:11%">Jenis Biaya</th>
-                <th style="width:5%">Qty</th><th style="width:8%">Harga</th><th style="width:8%">Jasa Air</th>
-                <th style="width:8%">Subtotal</th><th style="width:7%">PPh</th><th style="width:8%">Penyesuaian</th><th style="width:8%">Total</th>
+                <th style="width:3%">No.</th><th style="width:7%">Tanggal</th><th style="width:11%">Invoice / Referensi</th>
+                <th style="width:11%">Kapal / Voyage</th><th style="width:12%">Vendor / Lokasi</th>
+                <th style="width:6%">Qty</th><th style="width:9%">Harga</th><th style="width:9%">Jasa Air</th>
+                <th style="width:9%">Subtotal</th><th style="width:7%">PPh</th><th style="width:8%">Penyesuaian</th><th style="width:8%">Total</th>
             </tr></thead>
             <tbody>
                 @forelse($rows as $row)
@@ -74,7 +74,6 @@
                         <td>{{ $row->nomor_invoice ?: '-' }}@if($row->nomor_referensi)<br><span class="small">{{ $row->nomor_referensi }}</span>@endif</td>
                         <td>{{ $row->kapal ?: '-' }}<br><span class="small">Voyage {{ $row->voyage ?: '-' }}</span></td>
                         <td>{{ $row->vendor ?: '-' }}<br><span class="small">{{ $row->lokasi ?: '-' }}</span></td>
-                        <td>{{ $row->type_keterangan ?: '-' }}{{ $row->is_lumpsum ? ' (Lumpsum)' : '' }}</td>
                         <td class="right">{{ $row->is_lumpsum ? '-' : number_format($row->kuantitas, 2, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->harga, 0, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->jasa_air, 0, ',', '.') }}</td>
@@ -84,11 +83,11 @@
                         <td class="right">{{ number_format($row->grand_total, 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="13" class="center">Tidak ada biaya agen untuk pilihan ini.</td></tr>
+                    <tr><td colspan="12" class="center">Tidak ada biaya agen untuk pilihan ini.</td></tr>
                 @endforelse
             </tbody>
             <tfoot>
-                <tr><th colspan="9" class="right">TOTAL BIAYA AGEN (Rp)</th><th class="right">{{ number_format($summary['subtotal'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['pph'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['adjustment'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['grand_total'], 0, ',', '.') }}</th></tr>
+                <tr><th colspan="8" class="right">TOTAL BIAYA AGEN (Rp)</th><th class="right">{{ number_format($summary['subtotal'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['pph'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['adjustment'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['grand_total'], 0, ',', '.') }}</th></tr>
             </tfoot>
         </table>
     </main>
