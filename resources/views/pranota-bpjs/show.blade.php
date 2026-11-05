@@ -134,6 +134,31 @@
         <div class="mb-8">
             <h3 class="text-lg font-bold text-gray-800 mb-2">Rincian Iuran BPJS Karyawan</h3>
             <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen dan ringkasan tunjangan. Ringkasan tidak ditambahkan kembali ke Grand Total.</p>
+            <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3 print:hidden">
+                <label class="block">
+                    <span class="mb-1 block text-sm font-medium text-gray-700">Cari Nama Karyawan</span>
+                    <input id="bpjs-detail-search" type="search" placeholder="Ketik nama karyawan..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-sm font-medium text-gray-700">Filter Group</span>
+                    <select id="bpjs-detail-group-filter" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Group</option>
+                        @foreach($pranota_bpj->details->flatMap(fn ($detail) => [$detail->karyawan_pranota?->group_jkn, $detail->karyawan_pranota?->group_bp_jamsostek])->filter()->unique()->sort() as $group)
+                            <option value="{{ $group }}">{{ $group }}</option>
+                        @endforeach
+                    </select>
+                </label>
+                <label class="block">
+                    <span class="mb-1 block text-sm font-medium text-gray-700">Filter Tipe</span>
+                    <select id="bpjs-detail-type-filter" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500">
+                        <option value="">Semua Tipe</option>
+                        @foreach($pranota_bpj->details->flatMap(fn ($detail) => [$detail->karyawan_pranota?->tipe_jkn, $detail->karyawan_pranota?->tipe_bp_jamsostek])->filter()->unique()->sort() as $type)
+                            <option value="{{ $type }}">{{ $type }}</option>
+                        @endforeach
+                    </select>
+                </label>
+            </div>
+            <p id="bpjs-detail-empty" class="hidden mb-3 text-sm text-gray-500" aria-live="polite">Tidak ada karyawan yang cocok dengan pencarian atau filter.</p>
             <div class="bpjs-detail-scroll bpjs-table-scroll overflow-x-auto rounded-lg border border-gray-200" role="region" aria-label="Rincian iuran BPJS, gulir untuk melihat seluruh data" tabindex="0">
                 <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
                     <thead>
@@ -155,7 +180,8 @@
                     </thead>
                     <tbody>
                         @foreach($pranota_bpj->details as $index => $detail)
-                            <tr class="hover:bg-gray-50">
+                            @php($employee = $detail->karyawan_pranota)
+                            <tr class="bpjs-detail-row hover:bg-gray-50" data-name="{{ $employee?->nama_lengkap ?? '' }}" data-groups="{{ implode('|', array_filter([$employee?->group_jkn, $employee?->group_bp_jamsostek])) }}" data-types="{{ implode('|', array_filter([$employee?->tipe_jkn, $employee?->tipe_bp_jamsostek])) }}">
                                 <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
                                 <td class="border border-gray-200 p-3" style="min-width:220px">
                                     <span class="font-semibold">{{ $detail->karyawan_pranota->nama_lengkap ?? '-' }}</span>
@@ -260,5 +286,34 @@
 <script src="{{ asset('js/pranota-bpjs-journal.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-journal.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => BpjsJournal.render(@json($journalRecords)));
+document.addEventListener('DOMContentLoaded', () => {
+    const search = document.getElementById('bpjs-detail-search');
+    const groupFilter = document.getElementById('bpjs-detail-group-filter');
+    const typeFilter = document.getElementById('bpjs-detail-type-filter');
+    const rows = [...document.querySelectorAll('.bpjs-detail-row')];
+    const emptyMessage = document.getElementById('bpjs-detail-empty');
+    const normalize = value => (value || '').toLocaleLowerCase('id').trim();
+
+    const filterRows = () => {
+        const query = normalize(search.value);
+        const group = normalize(groupFilter.value);
+        const type = normalize(typeFilter.value);
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const matches = normalize(row.dataset.name).includes(query)
+                && (!group || row.dataset.groups.split('|').some(value => normalize(value) === group))
+                && (!type || row.dataset.types.split('|').some(value => normalize(value) === type));
+            row.hidden = !matches;
+            if (matches) visibleCount++;
+        });
+
+        emptyMessage.classList.toggle('hidden', visibleCount > 0);
+    };
+
+    search.addEventListener('input', filterRows);
+    groupFilter.addEventListener('change', filterRows);
+    typeFilter.addEventListener('change', filterRows);
+});
 </script>
 @endsection
