@@ -195,6 +195,11 @@
                     $akunRows = [['akun_coa_id' => $akunTruckingId, 'nominal' => $item->total_tagihan_setelah_penyesuaian, 'memo' => '']];
                 }
             @endphp
+            <datalist id="akunCoaOptions">
+                @foreach($akunBiaya as $akun)
+                    <option value="{{ $akun->nomor_akun }} - {{ $akun->nama_akun }} (#{{ $akun->id }})" data-id="{{ $akun->id }}"></option>
+                @endforeach
+            </datalist>
             <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
                 <div class="flex items-center justify-between gap-3 mb-3">
                     <div>
@@ -206,15 +211,12 @@
                 @error('akun_items')<p class="mb-2 text-xs text-red-600">{{ $message }}</p>@enderror
                 <div id="akunItemRows" class="space-y-3">
                     @foreach($akunRows as $index => $line)
+                        @php $selectedAkun = $akunBiaya->firstWhere('id', $line['akun_coa_id'] ?? null); @endphp
                         <div class="akun-item-row grid grid-cols-1 md:grid-cols-12 gap-2 items-end border-b border-gray-200 pb-3">
                             <div class="md:col-span-5">
                                 <label class="{{ $labelClasses }}">Akun Biaya <span class="text-red-500">*</span></label>
-                                <select name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-account {{ $inputClasses }} bg-white" required>
-                                    <option value="">Pilih Akun</option>
-                                    @foreach($akunBiaya as $akun)
-                                        <option value="{{ $akun->id }}" @selected(($line['akun_coa_id'] ?? null) == $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
-                                    @endforeach
-                                </select>
+                                <input type="text" list="akunCoaOptions" class="akun-item-search {{ $inputClasses }} bg-white" value="{{ $selectedAkun ? $selectedAkun->nomor_akun.' - '.$selectedAkun->nama_akun.' (#'.$selectedAkun->id.')' : '' }}" placeholder="Cari nomor atau nama akun" autocomplete="off" required>
+                                <input type="hidden" name="akun_items[{{ $index }}][akun_coa_id]" class="akun-item-account" value="{{ $line['akun_coa_id'] ?? '' }}">
                             </div>
                             <div class="md:col-span-2">
                                 <label class="{{ $labelClasses }}">Biaya <span class="text-red-500">*</span></label>
@@ -238,12 +240,8 @@
                 <div class="akun-item-row grid grid-cols-1 md:grid-cols-12 gap-2 items-end border-b border-gray-200 pb-3">
                     <div class="md:col-span-5">
                         <label class="{{ $labelClasses }}">Akun Biaya <span class="text-red-500">*</span></label>
-                        <select name="akun_items[__INDEX__][akun_coa_id]" class="akun-item-account {{ $inputClasses }} bg-white" required>
-                            <option value="">Pilih Akun</option>
-                            @foreach($akunBiaya as $akun)
-                                <option value="{{ $akun->id }}">{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
-                            @endforeach
-                        </select>
+                        <input type="text" list="akunCoaOptions" class="akun-item-search {{ $inputClasses }} bg-white" placeholder="Cari nomor atau nama akun" autocomplete="off" required>
+                        <input type="hidden" name="akun_items[__INDEX__][akun_coa_id]" class="akun-item-account">
                     </div>
                     <div class="md:col-span-2">
                         <label class="{{ $labelClasses }}">Biaya <span class="text-red-500">*</span></label>
@@ -328,6 +326,8 @@
             const akunItemRows = document.getElementById('akunItemRows');
             const akunItemTotal = document.getElementById('akunItemTotal');
             const akunItemStatus = document.getElementById('akunItemStatus');
+            const akunOptions = new Map([...document.querySelectorAll('#akunCoaOptions option')]
+                .map(option => [option.value, option.dataset.id]));
             let nextAkunIndex = Math.max(-1, ...[...akunItemRows.querySelectorAll('.akun-item-account')]
                 .map(select => Number(select.name.match(/\[(\d+)\]/)?.[1] ?? -1))) + 1;
 
@@ -336,12 +336,23 @@
                     .reduce((sum, input) => sum + Math.round((Number(input.value) || 0) * 100), 0);
                 const final = Math.round((Number(totalAkhirInput.value) || 0) * 100);
                 akunItemTotal.textContent = 'Rp ' + (total / 100).toLocaleString('id-ID');
-                akunItemStatus.textContent = total === final ? 'Sesuai total akhir' : 'Belum sesuai total akhir';
-                akunItemStatus.className = total === final ? 'text-green-700' : 'text-red-700';
-                return total === final;
+                const hasCompleteRows = [...akunItemRows.querySelectorAll('.akun-item-row')].every(row =>
+                    row.querySelector('.akun-item-account').value && Number(row.querySelector('.akun-item-nominal').value) > 0
+                );
+                const matches = total === final && akunItemRows.children.length > 0 && hasCompleteRows;
+                akunItemStatus.textContent = matches ? 'Sesuai total akhir' : 'Belum sesuai total akhir';
+                akunItemStatus.className = matches ? 'text-green-700' : 'text-red-700';
+                return matches;
             }
 
-            akunItemRows.addEventListener('input', updateAkunItemTotal);
+            akunItemRows.addEventListener('input', event => {
+                if (event.target.matches('.akun-item-search')) {
+                    const account = event.target.closest('.akun-item-row').querySelector('.akun-item-account');
+                    account.value = akunOptions.get(event.target.value.trim()) || '';
+                    event.target.setCustomValidity(account.value || !event.target.value.trim() ? '' : 'Pilih akun dari daftar saran.');
+                }
+                updateAkunItemTotal();
+            });
             akunItemRows.addEventListener('click', event => {
                 if (!event.target.closest('.remove-akun-item') || akunItemRows.children.length === 1) return;
                 event.target.closest('.akun-item-row').remove();
