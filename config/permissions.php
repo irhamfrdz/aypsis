@@ -22,6 +22,17 @@
 
 return [
     'modules' => [
+        'surat-jalan-bongkaran-tanjung-pinang' => [
+            'name' => 'Surat Jalan Bongkaran Tanjung Pinang',
+            'description' => 'Kelola surat jalan bongkaran Tanjung Pinang',
+            'required' => true,
+            'sub_modules' => [
+                'surat-jalan-bongkaran-tanjung-pinang-view' => 'Lihat dan cetak Surat Jalan Bongkaran Tanjung Pinang',
+                'surat-jalan-bongkaran-tanjung-pinang-create' => 'Buat Surat Jalan Bongkaran Tanjung Pinang',
+                'surat-jalan-bongkaran-tanjung-pinang-update' => 'Ubah Surat Jalan Bongkaran Tanjung Pinang',
+                'surat-jalan-bongkaran-tanjung-pinang-delete' => 'Hapus Surat Jalan Bongkaran Tanjung Pinang',
+            ],
+        ],
         'pembayaran-pranota-bpjs' => [
             'name' => 'Pembayaran Pranota BPJS',
             'description' => 'Pelunasan dan riwayat pembayaran pranota BPJS',

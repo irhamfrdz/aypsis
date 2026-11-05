@@ -4771,6 +4771,17 @@ Route::middleware([
 
         // ============= SURAT JALAN BONGKARAN ROUTES =============
 
+        Route::prefix('surat-jalan-bongkaran-tanjung-pinang')->name('surat-jalan-bongkaran-tanjung-pinang.')->group(function () {
+            $controller = \App\Http\Controllers\SuratJalanBongkaranTanjungPinangController::class;
+            Route::get('/', [$controller, 'index'])->name('index')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
+            Route::get('/create', [$controller, 'create'])->name('create')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
+            Route::post('/', [$controller, 'store'])->name('store')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
+            Route::get('/{id}/edit', [$controller, 'edit'])->name('edit')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-update');
+            Route::put('/{id}', [$controller, 'update'])->name('update')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-update');
+            Route::delete('/{id}', [$controller, 'destroy'])->name('destroy')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-delete');
+            Route::get('/{id}/print', [$controller, 'print'])->name('print')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
+        });
+
         // Select kapal and voyage before creating
         Route::get('/surat-jalan-bongkaran/select-kapal', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectKapal'])
             ->name('surat-jalan-bongkaran.select-kapal')
