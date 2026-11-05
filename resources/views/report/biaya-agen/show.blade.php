@@ -9,13 +9,14 @@
         <div>
             <a href="{{ route('report.biaya-agen.index') }}" class="text-sm font-medium text-indigo-700 hover:underline">&larr; Ubah pilihan report</a>
             <h1 class="mt-3 text-2xl font-bold text-gray-900">Report Biaya Agen</h1>
-            <p class="mt-1 text-sm text-gray-600">
-                @if($validated['mode'] === 'kapal')
-                    Kapal: <strong>{{ $validated['kapal'] }}</strong>
-                @else
-                    Periode: <strong>{{ \Carbon\Carbon::parse($validated['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($validated['end_date'])->format('d/m/Y') }}</strong>
+            <div class="mt-2 flex flex-wrap gap-x-5 gap-y-1 text-sm text-gray-600">
+                @if(in_array($validated['mode'], ['kapal', 'gabungan'], true))
+                    <span>Kapal: <strong class="text-gray-900">{{ $validated['kapal'] }}</strong></span>
                 @endif
-            </p>
+                @if(in_array($validated['mode'], ['tanggal', 'gabungan'], true))
+                    <span>Periode: <strong class="text-gray-900">{{ \Carbon\Carbon::parse($validated['start_date'])->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($validated['end_date'])->format('d/m/Y') }}</strong></span>
+                @endif
+            </div>
         </div>
         <span class="rounded-full bg-indigo-50 px-3 py-1 text-sm font-medium text-indigo-700">{{ $rows->count() }} item</span>
     </div>

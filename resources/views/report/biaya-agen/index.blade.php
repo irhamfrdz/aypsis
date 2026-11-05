@@ -90,6 +90,46 @@
                 </button>
             </div>
         </form>
+
+        <form method="GET" action="{{ route('report.biaya-agen.show') }}" class="rounded-2xl border border-indigo-200 bg-white p-6 shadow-sm sm:p-8 lg:col-span-2">
+            <input type="hidden" name="mode" value="gabungan">
+            <div class="flex items-start gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-lg text-indigo-600">
+                    <i class="fas fa-filter" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 sm:text-xl">Kapal dan rentang tanggal</h2>
+                    <p class="mt-1 text-sm leading-6 text-gray-600">Lihat rincian satu kapal hanya dalam periode yang dipilih.</p>
+                </div>
+            </div>
+
+            <div class="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                <div class="min-w-0 sm:col-span-2 lg:col-span-1">
+                    <label for="kapal_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Pilih kapal <span class="text-red-600">*</span></label>
+                    <select id="kapal_gabungan" name="kapal" required class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                        <option value="">Pilih kapal</option>
+                        @foreach($kapals as $kapal)
+                            <option value="{{ $kapal }}" @selected(old('kapal') === $kapal)>{{ $kapal }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="min-w-0">
+                    <label for="start_date_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Dari tanggal <span class="text-red-600">*</span></label>
+                    <input id="start_date_gabungan" name="start_date" type="date" value="{{ old('start_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                </div>
+                <div class="min-w-0">
+                    <label for="end_date_gabungan" class="mb-2 block text-sm font-semibold text-gray-800">Sampai tanggal <span class="text-red-600">*</span></label>
+                    <input id="end_date_gabungan" name="end_date" type="date" value="{{ old('end_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                </div>
+            </div>
+            <div class="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                <p class="text-xs leading-5 text-gray-500">Tanggal invoice vendor digunakan; jika kosong, tanggal biaya kapal.</p>
+                <button type="submit" class="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Lihat report gabungan
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

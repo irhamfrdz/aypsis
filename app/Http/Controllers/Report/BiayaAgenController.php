@@ -31,10 +31,10 @@ class BiayaAgenController extends Controller
     public function show(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'mode' => ['required', Rule::in(['kapal', 'tanggal'])],
-            'kapal' => ['required_if:mode,kapal', 'nullable', 'string', 'max:255'],
-            'start_date' => ['required_if:mode,tanggal', 'nullable', 'date'],
-            'end_date' => ['required_if:mode,tanggal', 'nullable', 'date', 'after_or_equal:start_date'],
+            'mode' => ['required', Rule::in(['kapal', 'tanggal', 'gabungan'])],
+            'kapal' => ['required_if:mode,kapal,gabungan', 'nullable', 'string', 'max:255'],
+            'start_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date'],
+            'end_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date', 'after_or_equal:start_date'],
         ]);
 
         if ($validator->fails()) {
@@ -52,9 +52,11 @@ class BiayaAgenController extends Controller
                 'invoice.tanggal as tanggal_biaya_kapal',
             ]);
 
-        if ($validated['mode'] === 'kapal') {
+        if (in_array($validated['mode'], ['kapal', 'gabungan'], true)) {
             $query->whereRaw('LOWER(TRIM(rincian.kapal)) = ?', [mb_strtolower(trim($validated['kapal']))]);
-        } else {
+        }
+
+        if (in_array($validated['mode'], ['tanggal', 'gabungan'], true)) {
             $query->whereBetween(DB::raw('COALESCE(rincian.tanggal_invoice_vendor, invoice.tanggal)'), [
                 $validated['start_date'],
                 $validated['end_date'],
