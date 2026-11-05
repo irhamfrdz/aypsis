@@ -4,49 +4,91 @@
 @section('page_title', 'Report Biaya Agen')
 
 @section('content')
-<div class="mx-auto max-w-5xl space-y-6 px-4 py-6">
-    <div>
-        <a href="{{ route('rekap.index') }}" class="text-sm font-medium text-indigo-700 hover:underline">&larr; Rekap dan Laporan</a>
-        <h1 class="mt-3 text-2xl font-bold text-gray-900">Report Biaya Agen</h1>
-        <p class="mt-1 text-sm text-gray-600">Pilih kapal atau rentang tanggal untuk melihat rincian biaya agen.</p>
+<div class="mx-auto max-w-6xl px-2 py-4 sm:px-4 sm:py-6">
+    <div class="mb-8">
+        <a href="{{ route('rekap.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-indigo-700 hover:text-indigo-900">
+            <i class="fas fa-arrow-left" aria-hidden="true"></i>
+            Rekap dan Laporan
+        </a>
+        <div class="mt-5 flex items-start gap-4">
+            <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-xl text-indigo-700 sm:h-14 sm:w-14">
+                <i class="fas fa-file-invoice-dollar" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold tracking-tight text-gray-900 sm:text-3xl">Report Biaya Agen</h1>
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-gray-600 sm:text-base">Pilih cara melihat rincian biaya agen sesuai kebutuhan Anda.</p>
+            </div>
+        </div>
     </div>
 
     @if($errors->any())
-        <div class="rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-700">
-            <ul class="list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        <div role="alert" class="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-800">
+            <p class="font-semibold">Periksa kembali pilihan report:</p>
+            <ul class="mt-2 list-disc space-y-1 pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
     @endif
 
-    <div class="grid gap-5 md:grid-cols-2">
-        <form method="GET" action="{{ route('report.biaya-agen.show') }}" class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+    <div class="grid gap-6 lg:grid-cols-2">
+        <form method="GET" action="{{ route('report.biaya-agen.show') }}" class="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
             <input type="hidden" name="mode" value="kapal">
-            <h2 class="text-lg font-semibold text-gray-900">Berdasarkan kapal</h2>
-            <p class="mt-1 text-sm text-gray-500">Tampilkan seluruh rincian biaya agen untuk satu kapal.</p>
-            <label for="kapal" class="mt-5 block text-sm font-medium text-gray-700">Kapal</label>
-            <select id="kapal" name="kapal" required class="mt-2 block w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">Pilih kapal</option>
-                @foreach($kapals as $kapal)
-                    <option value="{{ $kapal }}" @selected(old('kapal') === $kapal)>{{ $kapal }}</option>
-                @endforeach
-            </select>
-            <button type="submit" class="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Lihat report kapal</button>
-        </form>
-
-        <form method="GET" action="{{ route('report.biaya-agen.show') }}" class="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-            <input type="hidden" name="mode" value="tanggal">
-            <h2 class="text-lg font-semibold text-gray-900">Berdasarkan rentang tanggal</h2>
-            <p class="mt-1 text-sm text-gray-500">Gunakan tanggal invoice vendor, atau tanggal biaya kapal jika tanggal vendor kosong.</p>
-            <div class="mt-5 grid gap-4 sm:grid-cols-2">
-                <div>
-                    <label for="start_date" class="block text-sm font-medium text-gray-700">Dari tanggal</label>
-                    <input id="start_date" name="start_date" type="date" value="{{ old('start_date') }}" required class="mt-2 block w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            <div class="flex items-start gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-lg text-indigo-600">
+                    <i class="fas fa-ship" aria-hidden="true"></i>
                 </div>
                 <div>
-                    <label for="end_date" class="block text-sm font-medium text-gray-700">Sampai tanggal</label>
-                    <input id="end_date" name="end_date" type="date" value="{{ old('end_date') }}" required class="mt-2 block w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <h2 class="text-lg font-semibold text-gray-900 sm:text-xl">Berdasarkan kapal</h2>
+                    <p class="mt-1 text-sm leading-6 text-gray-600">Lihat seluruh rincian biaya agen untuk satu kapal.</p>
                 </div>
             </div>
-            <button type="submit" class="mt-5 w-full rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-700">Lihat report tanggal</button>
+
+            <div class="mt-8">
+                <label for="kapal" class="mb-2 block text-sm font-semibold text-gray-800">Pilih kapal <span class="text-red-600">*</span></label>
+                <select id="kapal" name="kapal" required class="block w-full rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                    <option value="">Pilih kapal</option>
+                    @foreach($kapals as $kapal)
+                        <option value="{{ $kapal }}" @selected(old('kapal') === $kapal)>{{ $kapal }}</option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="mt-auto pt-6">
+                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Lihat report kapal
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
+        </form>
+
+        <form method="GET" action="{{ route('report.biaya-agen.show') }}" class="flex h-full flex-col rounded-2xl border border-gray-200 bg-white p-6 shadow-sm sm:p-8">
+            <input type="hidden" name="mode" value="tanggal">
+            <div class="flex items-start gap-4">
+                <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-indigo-50 text-lg text-indigo-600">
+                    <i class="fas fa-calendar-days" aria-hidden="true"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-semibold text-gray-900 sm:text-xl">Berdasarkan tanggal</h2>
+                    <p class="mt-1 text-sm leading-6 text-gray-600">Lihat rincian biaya agen dalam rentang tanggal tertentu.</p>
+                </div>
+            </div>
+
+            <div class="mt-8 grid gap-4 2xl:grid-cols-2">
+                <div class="min-w-0">
+                    <label for="start_date" class="mb-2 block text-sm font-semibold text-gray-800">Dari tanggal <span class="text-red-600">*</span></label>
+                    <input id="start_date" name="start_date" type="date" value="{{ old('start_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                </div>
+                <div class="min-w-0">
+                    <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-800">Sampai tanggal <span class="text-red-600">*</span></label>
+                    <input id="end_date" name="end_date" type="date" value="{{ old('end_date') }}" required class="block w-full min-w-0 rounded-lg border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                </div>
+            </div>
+            <p class="mt-3 text-xs leading-5 text-gray-500">Menggunakan tanggal invoice vendor. Jika kosong, tanggal biaya kapal yang digunakan.</p>
+
+            <div class="mt-auto pt-6">
+                <button type="submit" class="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                    Lihat report tanggal
+                    <i class="fas fa-arrow-right" aria-hidden="true"></i>
+                </button>
+            </div>
         </form>
     </div>
 </div>
