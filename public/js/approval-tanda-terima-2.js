@@ -399,6 +399,23 @@
     const previewButtons = dialog.querySelectorAll('[data-shipper-preview]');
     const goodsHost = document.getElementById('approval-shipper-goods');
     const saveGoods = document.getElementById('approval-save-goods');
+    const scrollKey = `approval-tt2-scroll:${window.location.pathname}${window.location.search}`;
+    window.addEventListener('pageshow', () => {
+        let savedPosition;
+        try {
+            savedPosition = JSON.parse(sessionStorage.getItem(scrollKey));
+            sessionStorage.removeItem(scrollKey);
+        } catch {
+            return;
+        }
+        if (!savedPosition) return;
+        requestAnimationFrame(() => {
+            const row = Array.from(document.querySelectorAll('tr[data-receipt-id]'))
+                .find(item => item.dataset.receiptId === savedPosition.id);
+            if (row) row.scrollIntoView({ block: 'center' });
+            else window.scrollTo(0, savedPosition.y);
+        });
+    });
     let goodsContent;
     let goodsParent;
     let timer;
@@ -690,6 +707,14 @@
             event.preventDefault();
             alert('Isi barang perincian sebelum menyimpan.');
             return;
+        }
+        const rowId = opener?.closest('tr[data-receipt-id]')?.dataset.receiptId;
+        if (rowId) {
+            try {
+                sessionStorage.setItem(scrollKey, JSON.stringify({ id: rowId, y: window.scrollY }));
+            } catch {
+                // Saving the approval still works when browser storage is unavailable.
+            }
         }
         save.disabled = true;
         save.textContent = 'Menyimpan...';
