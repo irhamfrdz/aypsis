@@ -58,9 +58,11 @@
     .approval-goods-dialog .overflow-x-auto { overflow: visible; padding: 20px 24px; }
     .approval-goods-dialog table, .approval-goods-rows { display: block; width: 100%; }
     .approval-goods-dialog thead { display: none; }
-    .approval-goods-rows { counter-reset: goods; border: 0; }
+    .approval-goods-rows { border: 0; }
     .approval-goods-rows > tr { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; margin-bottom: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgb(15 23 42 / 3%); }
-    .approval-goods-rows > tr::before { counter-increment: goods; content: 'Barang ' counter(goods); grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: #334155; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+    .approval-goods-rows > tr::before { grid-column: 1 / -1; font-size: 14px; font-weight: 700; color: #334155; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; }
+    .approval-goods-section[data-field-prefix="manifest_goods"] .approval-goods-rows > tr::before { content: 'Uraian Barang Manifest'; }
+    .approval-goods-section[data-field-prefix="goods"] .approval-goods-rows > tr::before { content: 'Uraian Barang Perincian'; }
     .approval-goods-rows td { display: block; min-width: 0; padding: 0; white-space: normal; overflow-wrap: anywhere; }
     .approval-goods-rows td[hidden] { display: none; }
     .approval-goods-rows td::before { content: attr(data-label); display: block; margin-bottom: 7px; font-size: 12px; font-weight: 600; color: #475569; }
@@ -429,7 +431,7 @@
                                     <div class="overflow-x-auto p-5">
                                         @include('approval-tanda-terima-2._manifest-goods-section', ['manifestGoods' => collect($goodsOverride?->manifest_goods ?? [])])
                                         <section class="approval-goods-section mt-8 border-t border-gray-200 pt-6" data-field-prefix="goods" data-required="true" data-saved-override="{{ $goodsOverride ? 'true' : 'false' }}">
-                                        <h3 class="mb-4 text-base font-semibold text-gray-900">Detail Barang Perincian</h3>
+                                        <h3 class="mb-4 text-base font-bold text-gray-900">Detail Barang Perincian</h3>
                                         <p class="mb-4 text-xs text-gray-500">Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.</p>
                                         <table class="min-w-full divide-y divide-gray-200 text-sm">
                                             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-500">
@@ -593,7 +595,7 @@
             <div class="space-y-6">
                 @foreach(['manifest_goods' => 'Detail Barang Manifest', 'goods' => 'Detail Barang Perincian'] as $prefix => $title)
                     <section class="{{ $prefix === 'goods' ? 'border-t border-gray-200 pt-6' : '' }}">
-                        <h4 class="mb-2 text-base font-semibold text-gray-900">{{ $title }}</h4>
+                        <h4 class="mb-2 text-base font-bold text-gray-900">{{ $title }}</h4>
                         <p class="mb-4 text-xs text-gray-500">{{ $prefix === 'manifest_goods' ? 'Isi satu barang untuk manifest approval. Satu HS Code per baris.' : 'Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.' }}</p>
                         <div class="ttsj-goods-row">
                             <h4>{{ $prefix === 'manifest_goods' ? 'Rincian Barang Manifest' : 'Rincian Barang Perincian' }}</h4>
@@ -723,7 +725,6 @@
             <p id="approval-shipper-help" class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
         </div>
         <div id="approval-shipper-goods" class="approval-goods-dialog w-full border-t border-gray-200 px-5 py-5 sm:px-6" hidden>
-            <p class="mb-4 text-xs text-gray-500">Isi barang manifest dan perincian dalam approval yang sama.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
             <button type="button" class="approval-shipper-close rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100">Batal</button>
