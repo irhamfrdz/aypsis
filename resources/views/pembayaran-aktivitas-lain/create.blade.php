@@ -393,13 +393,13 @@
                 </div>
 
                 <!-- Rincian biaya per akun -->
-                <div id="debit_kredit_per_akun_field" class="md:col-span-2 {{ old('jenis_aktivitas') === 'Pembayaran Lain Lain' ? '' : 'hidden' }}">
+                <div id="debit_kredit_per_akun_field" class="md:col-span-2">
                     <input type="hidden" name="gunakan_debit_kredit_per_akun" value="0">
                     <label class="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
-                        <input type="checkbox" id="gunakan_debit_kredit_per_akun" name="gunakan_debit_kredit_per_akun" value="1" @checked(old('gunakan_debit_kredit_per_akun')) class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        <input type="checkbox" id="gunakan_debit_kredit_per_akun" name="gunakan_debit_kredit_per_akun" value="1" @checked(old('gunakan_debit_kredit_per_akun')) @disabled(old('jenis_aktivitas') !== 'Pembayaran Lain Lain') class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 disabled:cursor-not-allowed disabled:opacity-50">
                         Gunakan debit/kredit per akun
                     </label>
-                    <p class="mt-1 text-xs text-gray-500">Tentukan debit atau kredit pada setiap akun. Arah dan jumlah Bank/Kas dihitung dari selisihnya.</p>
+                    <p class="mt-1 text-xs text-gray-500">Tersedia untuk Pembayaran Lain Lain. Tentukan debit atau kredit pada setiap akun; arah dan jumlah Bank/Kas dihitung dari selisihnya.</p>
                 </div>
                 @include('pembayaran-aktivitas-lain._akun-details', ['bankDirectionMode' => true, 'allowPerAccountMode' => true])
 
@@ -1477,7 +1477,6 @@ function initializeSelect2() {
         const isBatamVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan'
             && document.getElementById('lokasi_kendaraan_select').value === 'batam';
         const isMultiAccount = ['Pembayaran Lain Lain', 'Pembayaran Kendaraan'].includes(jenisAktivitas.value);
-        document.getElementById('debit_kredit_per_akun_field').classList.toggle('hidden', jenisAktivitas.value !== 'Pembayaran Lain Lain');
         [
             ['debit_kredit_field', debitKreditSelect],
             ['akun_coa_field', akunBiayaSelect],

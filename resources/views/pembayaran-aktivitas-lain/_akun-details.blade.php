@@ -95,6 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
             * (Number(row.querySelector('.akun-detail-nominal').value) || 0), 0);
     const update = () => {
         const active = isMulti();
+        const perAccountAvailable = activity.value === 'Pembayaran Lain Lain';
+        if (perAccountCheckbox) {
+            perAccountCheckbox.disabled = !perAccountAvailable;
+            if (!perAccountAvailable) perAccountCheckbox.checked = false;
+        }
         field.classList.toggle('hidden', !active);
         document.getElementById('akun_details_total_label').textContent = isVehicle() ? 'Total biaya' : 'Bank/Kas';
         document.getElementById('akun_details_help').textContent = isVehicle()
