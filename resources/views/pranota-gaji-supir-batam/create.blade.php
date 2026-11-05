@@ -64,7 +64,7 @@
         <dialog id="pph-dialog" aria-labelledby="pph-title" class="w-full max-w-2xl rounded-xl p-0 shadow-xl" style="max-height:85vh">
             <div class="p-5">
                 <h2 id="pph-title" class="text-lg font-bold">Isi PPh Setiap Supir</h2>
-                <p class="mt-1 mb-4 text-sm text-gray-600">PPh mengurangi gaji bersih. Isi 0 jika tidak ada potongan. Supir dengan beberapa periode cukup diisi sekali.</p>
+                <p class="mt-1 mb-4 text-sm text-gray-600">PPh dan BPJS mengurangi gaji bersih. BPJS diambil dari JHT 2% (Hutang) pada pranota BPJS terbaru dengan NIK dan nama yang sama. Potongan diambil sekali per supir, meskipun beberapa periode dipilih. Isi PPh 0 jika tidak ada.</p>
                 <div id="pph-fields" class="space-y-3"></div>
                 <p id="pph-net-total" class="mt-4 font-semibold" aria-live="polite"></p>
                 <div class="mt-5 flex justify-end gap-3">
@@ -80,6 +80,7 @@
 
 @push('scripts')
 <script>window.pranotaGajiOldPph = {{ Illuminate\Support\Js::from(old('pph', [])) }};</script>
+<script>window.pranotaGajiBpjs = {{ Illuminate\Support\Js::from($bpjsByEmployee) }};</script>
 <script src="{{ asset('js/pranota-gaji-supir-batam-pph.js') }}?v={{ filemtime(public_path('js/pranota-gaji-supir-batam-pph.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', () => {

@@ -10,6 +10,11 @@
         <a href="{{ route('pranota-gaji-supir-batam.index') }}" class="rounded-lg border px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Kembali</a>
     </div>
     @if(session('success'))<div class="mb-4 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
+    @if($errors->any())
+        <div class="mb-4 rounded-lg border border-red-200 bg-red-50 p-4 text-sm text-red-800" role="alert">
+            @foreach($errors->all() as $error)<p>{{ $error }}</p>@endforeach
+        </div>
+    @endif
     <div class="mb-5 grid gap-4 rounded-xl border bg-white p-5 shadow-sm sm:grid-cols-3">
         <div><p class="text-xs font-semibold uppercase text-gray-500">Total Pranota</p><p class="mt-1 text-xl font-bold">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</p></div>
         <div><p class="text-xs font-semibold uppercase text-gray-500">Dibuat oleh</p><p class="mt-1">{{ $pranota->creator?->name ?: '-' }}</p></div>
@@ -23,7 +28,7 @@
         $deductionTotal = $pranota->items->sum(fn ($item) => $item->gaji?->is_potongan_5_persen
             ? (float) ($item->gaji?->nominal_potongan_5_persen ?? 0) : 0);
     @endphp
-    <p class="mb-3 text-xs text-gray-500">Geser tabel ke kanan untuk melihat seluruh komponen gaji. Tanda — pada BPJS berarti nominal belum tersedia.</p>
+    <p class="mb-3 text-xs text-gray-500">Geser tabel ke kanan untuk melihat seluruh komponen gaji. BPJS adalah potongan JHT 2% (Hutang). Tanda — berarti pranota dibuat sebelum potongan BPJS diterapkan.</p>
     <div class="overflow-x-auto rounded-xl border bg-white shadow-sm" role="region" aria-label="Rincian komponen gaji supir" tabindex="0">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600">
@@ -32,7 +37,7 @@
                     <th class="px-4 py-3">NIK</th>
                     <th class="px-4 py-3">Supir</th>
                     <th class="px-4 py-3">Periode</th>
-                    @foreach(['Uang Jalan', 'Uang Lembur', 'Uang Bensin', 'Potongan 5%', 'BPJS', 'PPh', 'Gaji Bersih Setelah PPh'] as $label)
+                    @foreach(['Uang Jalan', 'Uang Lembur', 'Uang Bensin', 'Potongan 5%', 'BPJS', 'PPh', 'Gaji Bersih Setelah BPJS & PPh'] as $label)
                         <th class="whitespace-nowrap px-4 py-3 text-right">{{ $label }}</th>
                     @endforeach
                     <th class="whitespace-nowrap px-4 py-3">Status Bayar</th>
@@ -49,7 +54,7 @@
                             <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) ($item->gaji?->$field ?? 0), 2, ',', '.') }}</td>
                         @endforeach
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format($item->gaji?->is_potongan_5_persen ? (float) ($item->gaji?->nominal_potongan_5_persen ?? 0) : 0, 2, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-right text-gray-500">—</td>
+                        <td class="whitespace-nowrap px-4 py-3 text-right" title="{{ $item->bpjs_nomor_pranota ?: 'Tidak ada sumber BPJS tersimpan' }}">{{ $item->bpjs === null ? '—' : 'Rp '.number_format((float) $item->bpjs, 2, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $item->pph, 2, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $item->total_gaji, 0, ',', '.') }}</td>
                         <td class="px-4 py-3">{{ $item->gaji?->status_pembayaran ?: '-' }}</td>
@@ -63,7 +68,7 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format($salaryTotals[$field], 2, ',', '.') }}</td>
                     @endforeach
                     <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format($deductionTotal, 2, ',', '.') }}</td>
-                    <td class="px-4 py-3 text-right text-gray-500">—</td>
+                    <td class="whitespace-nowrap px-4 py-3 text-right">{{ $pranota->items->every(fn ($item) => $item->bpjs === null) ? '—' : 'Rp '.number_format((float) $pranota->items->sum('bpjs'), 2, ',', '.') }}</td>
                     <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $pranota->items->sum('pph'), 2, ',', '.') }}</td>
                     <td class="whitespace-nowrap px-4 py-3 text-right">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</td>
                     <td></td>

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\GajiSupirBatam;
 use App\Models\PranotaGajiSupirBatam;
 use App\Models\PranotaGajiSupirBatamItem;
+use App\Services\SupirBatamBpjsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -32,7 +33,9 @@ class PranotaGajiSupirBatamController extends Controller
             $gaji->tanggal_selesai?->toDateString() ?? '',
         ]));
 
-        return view('pranota-gaji-supir-batam.create', compact('gajiList', 'gajiGroups'));
+        $bpjsByEmployee = app(SupirBatamBpjsService::class)->latestForEmployees($gajiList->pluck('karyawan'));
+
+        return view('pranota-gaji-supir-batam.create', compact('gajiList', 'gajiGroups', 'bpjsByEmployee'));
     }
 
     public function store(Request $request)
@@ -47,7 +50,7 @@ class PranotaGajiSupirBatamController extends Controller
         ]);
 
         $pranota = DB::transaction(function () use ($validated, $request) {
-            $gajiList = GajiSupirBatam::whereKey($validated['gaji_ids'])
+            $gajiList = GajiSupirBatam::with('karyawan')->whereKey($validated['gaji_ids'])
                 ->orderBy('id')->lockForUpdate()->get();
             if ($gajiList->count() !== count($validated['gaji_ids'])
                 || $gajiList->contains(fn ($gaji) => $gaji->status_pembayaran !== 'PENDING')
@@ -57,21 +60,25 @@ class PranotaGajiSupirBatamController extends Controller
                 ]);
             }
 
+            $bpjsByEmployee = app(SupirBatamBpjsService::class)->latestForEmployees($gajiList->pluck('karyawan'));
+            $remainingBpjs = [];
             $remainingPph = [];
             foreach ($gajiList->groupBy('karyawan_id') as $employeeId => $salaries) {
                 $pph = $validated['pph'][$employeeId] ?? null;
-                if ($pph === null || round((float) $pph * 100) > round((float) $salaries->sum('total_gaji') * 100)) {
+                $bpjs = (int) round(($bpjsByEmployee[$employeeId]['amount'] ?? 0) * 100);
+                if ($pph === null || $bpjs < 0 || round((float) $pph * 100) + $bpjs > round((float) $salaries->sum('total_gaji') * 100)) {
                     throw ValidationException::withMessages([
-                        'pph.'.$employeeId => 'Isi PPh setiap supir, maksimal sebesar total gaji supir yang dipilih.',
+                        'pph.'.$employeeId => 'Isi PPh setiap supir. Total PPh dan BPJS tidak boleh melebihi gaji yang dipilih, dan nominal BPJS harus valid.',
                     ]);
                 }
                 $remainingPph[$employeeId] = (int) round((float) $pph * 100);
+                $remainingBpjs[$employeeId] = $bpjs;
             }
 
             $pranota = PranotaGajiSupirBatam::create([
                 'nomor_pranota' => 'TEMP-'.(string) \Illuminate\Support\Str::uuid(),
                 'tanggal_pranota' => $validated['tanggal_pranota'],
-                'total_gaji' => ($gajiList->sum(fn ($gaji) => (int) round((float) $gaji->total_gaji * 100)) - array_sum($remainingPph)) / 100,
+                'total_gaji' => ($gajiList->sum(fn ($gaji) => (int) round((float) $gaji->total_gaji * 100)) - array_sum($remainingPph) - array_sum($remainingBpjs)) / 100,
                 'keterangan' => $validated['keterangan'] ?? null,
                 'created_by' => $request->user()?->id,
             ]);
@@ -80,12 +87,17 @@ class PranotaGajiSupirBatamController extends Controller
             foreach ($gajiList as $gaji) {
                 // Allocate one deduction per driver across their selected periods.
                 $salaryCents = (int) round((float) $gaji->total_gaji * 100);
-                $pphCents = min($remainingPph[$gaji->karyawan_id], max(0, $salaryCents));
+                $bpjsCents = min($remainingBpjs[$gaji->karyawan_id], max(0, $salaryCents));
+                $remainingBpjs[$gaji->karyawan_id] -= $bpjsCents;
+                $pphCents = min($remainingPph[$gaji->karyawan_id], max(0, $salaryCents - $bpjsCents));
                 $remainingPph[$gaji->karyawan_id] -= $pphCents;
                 $pranota->items()->create([
                     'gaji_supir_batam_id' => $gaji->id,
-                    'total_gaji' => ($salaryCents - $pphCents) / 100,
+                    'total_gaji' => ($salaryCents - $pphCents - $bpjsCents) / 100,
                     'pph' => $pphCents / 100,
+                    'bpjs' => $bpjsCents / 100,
+                    'bpjs_detail_id' => $bpjsByEmployee[$gaji->karyawan_id]['detail_id'] ?? null,
+                    'bpjs_nomor_pranota' => $bpjsByEmployee[$gaji->karyawan_id]['number'] ?? null,
                 ]);
             }
 
@@ -123,6 +135,7 @@ class PranotaGajiSupirBatamController extends Controller
                         ? (float) ($item->gaji?->nominal_potongan_5_persen ?? 0) : 0),
                     'total_gaji' => $items->sum(fn ($item) => (float) $item->total_gaji),
                     'pph' => $items->sum(fn ($item) => (float) $item->pph),
+                    'bpjs' => $items->sum(fn ($item) => (float) $item->bpjs),
                 ];
             })->values();
         $showPotongan = $drivers->contains(fn ($driver) => $driver->has_potongan_5_persen);
