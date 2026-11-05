@@ -596,7 +596,7 @@
                         <h4 class="mb-2 text-base font-semibold text-gray-900">{{ $title }}</h4>
                         <p class="mb-4 text-xs text-gray-500">{{ $prefix === 'manifest_goods' ? 'Isi satu barang untuk manifest approval. Satu HS Code per baris.' : 'Isi satu barang perincian. Nilai awal mengikuti Manifest dan dapat diubah terpisah.' }}</p>
                         <div class="ttsj-goods-row">
-                            <h4>Barang 1</h4>
+                            <h4>{{ $prefix === 'manifest_goods' ? 'Rincian Barang Manifest' : 'Rincian Barang Perincian' }}</h4>
                             @if($prefix === 'manifest_goods')
                                 <div class="ttsj-goods-field" data-field="hs_codes">
                                     <label for="approval-ttsj-hs-codes">HS Code</label>
