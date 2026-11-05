@@ -77,7 +77,10 @@
                 try { tiers = JSON.parse(tiers); } catch (_) { tiers = []; }
             }
             const tier = Array.isArray(tiers) ? tiers.find(item => parseAmount(item.dpp) === dpp) : null;
-            const jht = tier ? parseAmount(tier.potongan) : 0;
+            const receivesDiscount = record.diskon_status === 'ada' && parseFloat(record.diskon_nilai || 0) > 0
+                && !isDiscountExcluded(record, employee);
+            const jht = tier ? parseAmount(!receivesDiscount && tier.potongan_tanpa_diskon != null
+                ? tier.potongan_tanpa_diskon : tier.potongan) : 0;
             const discount = amount => applyDiscount(record, amount, employee);
             return {
                 jht,

@@ -185,6 +185,9 @@ class MasterRumusBpjsController extends Controller
                     $decoded = json_decode($tiersRaw, true);
                     // Filter tier kosong
                     if (is_array($decoded)) {
+                        \Illuminate\Support\Facades\Validator::make(['tiers' => $decoded], [
+                            'tiers.*.potongan_tanpa_diskon' => 'nullable|numeric|min:0|max:9999999999999.99',
+                        ])->validate();
                         $tiers = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
                         $tiers = count($tiers) ? $tiers : null;
                     }
@@ -316,6 +319,9 @@ class MasterRumusBpjsController extends Controller
             if ($tiersRaw) {
                 $decoded = json_decode($tiersRaw, true);
                 if (is_array($decoded)) {
+                    \Illuminate\Support\Facades\Validator::make(['tiers' => $decoded], [
+                        'tiers.*.potongan_tanpa_diskon' => 'nullable|numeric|min:0|max:9999999999999.99',
+                    ])->validate();
                     $filtered = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
                     $tiers = count($filtered) ? $filtered : null;
                 }

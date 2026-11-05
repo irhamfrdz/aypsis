@@ -215,6 +215,9 @@
                                             <span class="text-gray-400 font-mono">Rp {{ number_format((float)($tier['dpp'] ?? 0), 0, ',', '.') }}</span>
                                             <span class="text-gray-300">→</span>
                                             <span class="font-semibold text-gray-700 font-mono">Rp {{ number_format((float)($tier['potongan'] ?? 0), 0, ',', '.') }}</span>
+                                            @if(isset($tier['potongan_tanpa_diskon']))
+                                                <span class="text-gray-500">(diskon) · Tanpa diskon: <strong>Rp {{ number_format((float)$tier['potongan_tanpa_diskon'], 0, ',', '.') }}</strong></span>
+                                            @endif
                                         </div>
                                         @endforeach
                                     </div>
@@ -1346,7 +1349,7 @@
         var crewContainer = document.getElementById('edit-hutang-tiers-container');
         if (crewContainer) {
             crewContainer.innerHTML = '';
-            tiers.forEach(function(t) { editAddTierRow(t.dpp, t.potongan); });
+            tiers.forEach(function(t) { editAddTierRow(t.dpp, t.potongan, t.potongan_tanpa_diskon); });
         }
 
         var nonCrewContainer = document.getElementById('edit-noncrew-hutang-tiers-container');
@@ -1736,7 +1739,10 @@
                 var dpp      = row.querySelector('.tier-dpp')?.value;
                 var potongan = row.querySelector('.tier-potongan')?.value;
                 if (dpp || potongan) {
-                    tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
+                    var tier = { dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null };
+                    var withoutDiscount = row.querySelector('.tier-potongan-tanpa-diskon')?.value;
+                    if (isBpuCrew && withoutDiscount !== undefined && withoutDiscount !== '') tier.potongan_tanpa_diskon = Number(withoutDiscount);
+                    tiers.push(tier);
                 }
             });
         }
@@ -1747,6 +1753,7 @@
     function addTierRow(addBtn) {
         var container = addBtn.closest('.border').querySelector('.hutang-tiers-container');
         var newRow = buildTierRow('', '');
+        if (container.closest('.bpu-crew-fields')) addCrewDebtInput(newRow);
         container.appendChild(newRow);
         updateTierRemoveBtns(container);
     }
@@ -1775,10 +1782,11 @@
 
     // ── Hutang Tiers — Edit Modal ─────────────────────────────────────────────
 
-    function editAddTierRow(dpp, potongan) {
+    function editAddTierRow(dpp, potongan, withoutDiscount) {
         var container = document.getElementById('edit-hutang-tiers-container');
         var newRow = buildTierRow(dpp || '', potongan || '');
-        newRow.querySelectorAll('.tier-dpp, .tier-potongan').forEach(function(inp) {
+        addCrewDebtInput(newRow, withoutDiscount);
+        newRow.querySelectorAll('.tier-dpp, .tier-potongan, .tier-potongan-tanpa-diskon').forEach(function(inp) {
             inp.setAttribute('oninput', 'syncEditTiersJson()');
         });
         container.appendChild(newRow);
@@ -1810,12 +1818,33 @@
                 var dpp      = row.querySelector('.tier-dpp')?.value;
                 var potongan = row.querySelector('.tier-potongan')?.value;
                 if (dpp || potongan) {
-                    tiers.push({ dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null });
+                    var tier = { dpp: dpp ? parseFloat(dpp) : null, potongan: potongan ? parseFloat(potongan) : null };
+                    var withoutDiscount = row.querySelector('.tier-potongan-tanpa-diskon')?.value;
+                    if (isBpuCrew && withoutDiscount !== undefined && withoutDiscount !== '') tier.potongan_tanpa_diskon = Number(withoutDiscount);
+                    tiers.push(tier);
                 }
             });
         }
         var hidden = document.getElementById('edit_hutang_tiers');
         if (hidden) hidden.value = JSON.stringify(tiers);
     }
+
+    function addCrewDebtInput(row, amount) {
+        if (row.querySelector('.tier-potongan-tanpa-diskon')) return;
+        const label = document.createElement('label');
+        label.className = 'block text-xs text-gray-600';
+        label.style.gridColumn = '1 / -1';
+        label.textContent = 'Potongan tanpa diskon (Rp) — kosongkan jika sama dengan potongan di atas';
+        const input = document.createElement('input');
+        input.type = 'number';
+        input.min = '0';
+        input.step = '1';
+        input.value = amount ?? '';
+        input.className = 'tier-potongan-tanpa-diskon w-full border border-gray-300 rounded-lg px-3 py-1.5 text-sm text-right';
+        input.setAttribute('oninput', row.closest('#edit-hutang-tiers-container') ? 'syncEditTiersJson()' : 'syncTiersJson(this)');
+        label.append(input);
+        row.append(label);
+    }
+    document.querySelectorAll('.bpu-crew-fields .hutang-tier-row').forEach(row => addCrewDebtInput(row));
 </script>
 @endsection

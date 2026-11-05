@@ -17,6 +17,20 @@ const employee = {
     tipe_bp_jamsostek: 'Crew', cabang_bpjs: 'ALEXINDO PLUIT', dpp_bp_jamsostek: '2.200.000,00',
 };
 
+test('crew Pluit uses separate debt tiers for discounted and exempt employees', () => {
+    const rule = { ...crew, diskon_pengecualian: ['Karyawan_1825'], hutang_tiers: [
+        {dpp: 2200000, potongan: 5720, potongan_tanpa_diskon: 14000},
+        {dpp: 4450000, potongan: 5720, potongan_tanpa_diskon: 25000},
+    ] };
+    const rido = {...employee, unique_id: 'Karyawan_1825'};
+    assert.deepEqual(calculator.calculateCrew(rule, 2200000, rido), {jht: 14000, jkk: 8000, jkm: 6800});
+    assert.deepEqual(calculator.calculateCrew(rule, 4450000, rido), {jht: 25000, jkk: 19500, jkm: 6800});
+    assert.deepEqual(calculator.calculateCrew(rule, 2200000, employee), {jht: 5720, jkk: 5280, jkm: 3400});
+    assert.deepEqual(calculator.calculateCrew(rule, 4450000, employee), {jht: 5720, jkk: 16530, jkm: 3400});
+    assert.equal(calculator.calculateCrew({...rule, diskon_status: 'tidak_ada'}, 2200000, employee).jht, 14000);
+    assert.equal(calculator.calculateCrew({...rule, hutang_tiers: JSON.stringify(rule.hutang_tiers)}, 4450000, rido).jht, 25000);
+});
+
 test('discount exemptions distinguish permanent and temporary IDs and leave JHT unchanged', () => {
     const rule = { ...crew, diskon_pengecualian: ['KaryawanTidakTetap_1'] };
     const temporary = { ...employee, unique_id: 'KaryawanTidakTetap_1', tipe_karyawan: 'App\\Models\\KaryawanTidakTetap' };
