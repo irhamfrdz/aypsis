@@ -703,7 +703,7 @@
 
                         {{-- Pranota BPJS --}}
                         @if($user && ($user->can('pranota-bpjs-view') || $isAdmin))
-                        <a href="{{ route('pranota-bpjs.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-bpjs.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                        <a href="{{ route('pranota-bpjs.history') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pranota-bpjs.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                             <span class="text-xs font-medium">Pranota BPJS</span>
                         </a>
                         @endif
