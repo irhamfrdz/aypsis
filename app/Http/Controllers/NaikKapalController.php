@@ -454,6 +454,20 @@ class NaikKapalController extends Controller
         }
     }
 
+    public function destroyVoyageSp18jb26(Request $request)
+    {
+        $request->validate([
+            'confirmation' => 'required|in:SP18JB26',
+        ]);
+
+        $deleted = DB::transaction(function () {
+            return NaikKapal::where('no_voyage', 'SP18JB26')->delete();
+        });
+
+        return redirect()->route('naik-kapal.select')
+            ->with('success', "{$deleted} data Naik Kapal voyage SP18JB26 berhasil dihapus.");
+    }
+
     /**
      * Download template CSV untuk import Naik Kapal
      */

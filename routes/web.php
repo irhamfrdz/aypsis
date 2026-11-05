@@ -7167,6 +7167,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('naik-kapal.bulk-update-size')
         ->middleware('can:prospek-edit');
 
+    Route::delete('naik-kapal/voyage/SP18JB26', [NaikKapalController::class, 'destroyVoyageSp18jb26'])
+        ->name('naik-kapal.destroy-voyage-sp18jb26')
+        ->middleware('can:prospek-delete');
+
     Route::resource('naik-kapal', NaikKapalController::class)
         ->middleware('can:prospek-edit');
 

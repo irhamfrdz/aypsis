@@ -13,6 +13,19 @@
                 </div>
             </div>
             <div class="flex gap-3">
+                @if(request('no_voyage') === 'SP18JB26')
+                    @can('prospek-delete')
+                        <form action="{{ route('naik-kapal.destroy-voyage-sp18jb26') }}" method="POST"
+                              onsubmit="const confirmation = prompt('Semua data Naik Kapal voyage SP18JB26 akan dihapus. Ketik SP18JB26 untuk konfirmasi:'); if (confirmation !== 'SP18JB26') return false; this.querySelector('[name=confirmation]').value = confirmation; return true;">
+                            @csrf
+                            @method('DELETE')
+                            <input type="hidden" name="confirmation">
+                            <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-md transition duration-200">
+                                <i class="fas fa-trash mr-2"></i> Hapus Voyage SP18JB26
+                            </button>
+                        </form>
+                    @endcan
+                @endif
                 <a href="{{ route('naik-kapal.select') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
