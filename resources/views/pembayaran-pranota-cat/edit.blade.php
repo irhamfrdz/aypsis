@@ -115,20 +115,12 @@
                                     <option value="credit" {{ old('jenis_transaksi', $pembayaran->jenis_transaksi) == 'credit' ? 'selected' : '' }}>Credit</option>
                                 </select>
                             </div>
-                            <div class="md:col-span-2">
-                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-600">*</span></label>
-                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
-                                    <option value="">-- Pilih Akun COA --</option>
-                                    @foreach($akunBiaya as $akun)
-                                        <option value="{{ $akun->id }}" @selected(old('akun_coa_id', $pembayaran->akun_coa_id) == $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
-                                    @endforeach
-                                </select>
-                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            @include('pembayaran-pranota-cat._akun-items')
 
             {{-- Pranota CAT yang Dipilih --}}
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -274,6 +266,7 @@
             const totalPembayaran = parseFloat(totalPembayaranInput.value) || 0;
             const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
             totalSetelahInput.value = totalPembayaran + penyesuaian;
+            totalSetelahInput.dispatchEvent(new Event('input'));
         }
 
         penyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
@@ -293,6 +286,12 @@
                 e.preventDefault();
                 alert('Pilih jenis transaksi.');
                 jenisTransaksi.focus();
+                return false;
+            }
+
+            if (!window.validateCatAkunItems?.()) {
+                e.preventDefault();
+                alert('Pilih akun berbeda dengan nominal positif. Total nominal akun harus sama dengan total akhir pembayaran.');
                 return false;
             }
 

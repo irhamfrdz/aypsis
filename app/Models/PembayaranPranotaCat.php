@@ -41,6 +41,11 @@ class PembayaranPranotaCat extends Model
         return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
+    public function akunItems()
+    {
+        return $this->hasMany(PembayaranPranotaCatAkunItem::class, 'pembayaran_pranota_cat_id');
+    }
+
     /**
      * Relationship to pranota items through pivot table
      */

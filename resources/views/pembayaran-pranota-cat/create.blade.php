@@ -23,7 +23,7 @@
             </div>
         @endif
         {{-- Only show validation errors if this is a POST request (form submission) --}}
-        @if(request()->isMethod('post') && !empty($errors) && (is_object($errors) ? $errors->any() : (!empty($errors) && is_array($errors))))
+        @if($errors->any())
             <div class="mb-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
                 <strong>Terjadi kesalahan:</strong>
                 <ul class="mt-1 list-disc list-inside">
@@ -119,20 +119,12 @@
                                     <option value="credit" @selected(old('jenis_transaksi') === 'credit')>Credit</option>
                                 </select>
                             </div>
-                            <div class="md:col-span-2">
-                                <label for="akun_coa_id" class="{{ $labelClasses }}">Pilih Akun Biaya <span class="text-red-600">*</span></label>
-                                <select name="akun_coa_id" id="akun_coa_id" class="{{ $inputClasses }}" required>
-                                    <option value="">-- Pilih Akun COA --</option>
-                                    @foreach($akunBiaya as $akun)
-                                        <option value="{{ $akun->id }}" @selected(old('akun_coa_id') == $akun->id)>{{ $akun->nomor_akun }} - {{ $akun->nama_akun }}</option>
-                                    @endforeach
-                                </select>
-                                @error('akun_coa_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            @include('pembayaran-pranota-cat._akun-items')
 
             {{-- Pilih Pranota CAT --}}
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
@@ -223,7 +215,7 @@
                             <div>
                                 <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
                                 <input type="text" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
-                                    class="{{ $inputClasses }}" value="0">
+                                    class="{{ $inputClasses }}" value="{{ old('total_tagihan_penyesuaian', '0') }}">
                             </div>
                             <div>
                                 <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
@@ -290,6 +282,7 @@
             const total = parseFloat(document.getElementById('total_pembayaran').value.replace(/\./g, '').replace(',', '.')) || 0;
             const penyesuaian = parseFloat(document.getElementById('total_tagihan_penyesuaian').value.replace(/\./g, '').replace(',', '.')) || 0;
             document.getElementById('total_tagihan_setelah_penyesuaian').value = (total + penyesuaian).toLocaleString('id-ID');
+            document.getElementById('total_tagihan_setelah_penyesuaian').dispatchEvent(new Event('input'));
         }
 
         // Select all functionality
@@ -355,6 +348,12 @@
                 return false;
             }
 
+            if (!window.validateCatAkunItems?.()) {
+                e.preventDefault();
+                alert('Pilih akun berbeda dengan nominal positif. Total nominal akun harus sama dengan total akhir pembayaran.');
+                return false;
+            }
+
             // Mencegah double submit / double book
             const submitBtn = this.querySelector('button[type="submit"]');
             submitBtn.disabled = true;
@@ -377,7 +376,6 @@
 
         // Initial calculation
         calculateTotal();
-        penyesuaianInput.value = '0';
 
         // Generate initial nomor pembayaran if bank is selected
         const bankSelect = document.getElementById('bank');

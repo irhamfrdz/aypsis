@@ -258,7 +258,13 @@
                 </tr>
                 <tr>
                     <td style="padding: 3px; font-weight: bold;">Akun Biaya:</td>
-                    <td style="padding: 3px; border-bottom: 1px solid #333;" colspan="3">{{ $pembayaran->akunCoa ? $pembayaran->akunCoa->nomor_akun.' - '.$pembayaran->akunCoa->nama_akun : '-' }}</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;" colspan="3">
+                        @forelse($pembayaran->akunItems as $item)
+                            <div>{{ $item->akunCoa?->nomor_akun }} - {{ $item->akunCoa?->nama_akun }}: Rp {{ number_format($item->nominal, 0, ',', '.') }}@if($item->memo) ({{ $item->memo }}) @endif</div>
+                        @empty
+                            {{ $pembayaran->akunCoa ? $pembayaran->akunCoa->nomor_akun.' - '.$pembayaran->akunCoa->nama_akun : '-' }}
+                        @endforelse
+                    </td>
                 </tr>
             </table>
         </div>
