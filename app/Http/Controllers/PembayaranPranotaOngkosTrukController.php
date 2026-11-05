@@ -70,10 +70,12 @@ class PembayaranPranotaOngkosTrukController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')
             ->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get();
+        $akunTruckingId = Coa::where('nama_akun', 'Biaya Trucking')->value('id');
 
         $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
-        return view('pembayaran-pranota-ongkos-truk.create', compact('pranotaOngkosTruks', 'nomorPembayaran', 'akunCoa'));
+        return view('pembayaran-pranota-ongkos-truk.create', compact('pranotaOngkosTruks', 'nomorPembayaran', 'akunCoa', 'akunBiaya', 'akunTruckingId'));
     }
 
     public function store(Request $request)
@@ -91,7 +93,24 @@ class PembayaranPranotaOngkosTrukController extends Controller
             'total_tagihan_setelah_penyesuaian' => 'required|numeric|min:0',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'akun_items' => ['required', 'array', 'min:1'],
+            'akun_items.*.akun_coa_id' => ['required', 'integer', 'exists:akun_coa,id'],
+            'akun_items.*.nominal' => ['required', 'numeric', 'gt:0'],
+            'akun_items.*.memo' => ['nullable', 'string', 'max:255'],
         ]);
+
+        $accountTotal = collect($validated['akun_items'])->sum(fn ($line) => (int) round((float) $line['nominal'] * 100));
+        $paymentTotal = (int) round((float) $validated['total_tagihan_setelah_penyesuaian'] * 100);
+        if ($accountTotal !== $paymentTotal) {
+            throw ValidationException::withMessages(['akun_items' => 'Total biaya seluruh akun harus sama dengan total akhir pembayaran.']);
+        }
+        $bankAccount = Coa::where('nama_akun', $validated['bank'])->first();
+        if (! $bankAccount) {
+            throw ValidationException::withMessages(['bank' => 'Akun Bank/Kas tidak ditemukan.']);
+        }
+        if (collect($validated['akun_items'])->contains(fn ($line) => (int) $line['akun_coa_id'] === $bankAccount->id)) {
+            throw ValidationException::withMessages(['akun_items' => 'Akun biaya harus berbeda dari akun Bank/Kas.']);
+        }
 
         DB::beginTransaction();
 
@@ -105,7 +124,7 @@ class PembayaranPranotaOngkosTrukController extends Controller
             $modulSis->increment('nomor_terakhir');
 
             $paymentData = $validated;
-            unset($paymentData['pranota_ongkos_truk_ids']);
+            unset($paymentData['pranota_ongkos_truk_ids'], $paymentData['akun_items']);
 
             $paymentData['nomor_pembayaran'] = $nomorPembayaran;
             $paymentData['status_pembayaran'] = 'paid';
@@ -113,6 +132,7 @@ class PembayaranPranotaOngkosTrukController extends Controller
             $paymentData['updated_by'] = Auth::id();
 
             $pembayaran = PembayaranPranotaOngkosTruk::create($paymentData);
+            $pembayaran->akunItems()->createMany(array_values($validated['akun_items']));
 
             foreach ($validated['pranota_ongkos_truk_ids'] as $pranotaId) {
                 $pranota = PranotaOngkosTruk::findOrFail($pranotaId);
@@ -129,31 +149,7 @@ class PembayaranPranotaOngkosTrukController extends Controller
                 ]);
             }
 
-            // Accounting Entry (Double Book)
-            $totalFinal = $validated['total_tagihan_setelah_penyesuaian'];
-            $bankName = $validated['bank'];
-            $jenisTransaksi = $validated['jenis_transaksi'];
-            $desc = 'Pembayaran Pranota Ongkos Truk - '.$nomorPembayaran;
-
-            if ($jenisTransaksi == 'Debit') {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $nomorPembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            } else {
-                $this->coaTransactionService->recordDoubleEntry(
-                    ['nama_akun' => 'Biaya Trucking', 'jumlah' => $totalFinal],
-                    ['nama_akun' => $bankName, 'jumlah' => $totalFinal],
-                    $validated['tanggal_pembayaran'],
-                    $nomorPembayaran,
-                    'Pembayaran Pranota Ongkos Truk',
-                    $desc
-                );
-            }
+            $this->recordAccountEntries($pembayaran);
 
             DB::commit();
 
