@@ -723,7 +723,6 @@
             <p id="approval-shipper-help" class="text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima dan manifest voyage JB terkait; data master asli tetap tersedia.</p>
         </div>
         <div id="approval-shipper-goods" class="approval-goods-dialog w-full border-t border-gray-200 px-5 py-5 sm:px-6" hidden>
-            <h3 class="mb-2 text-base font-semibold text-gray-900">Detail Barang Manifest dan Perincian</h3>
             <p class="mb-4 text-xs text-gray-500">Isi barang manifest dan perincian dalam approval yang sama.</p>
         </div>
         <div class="flex justify-end gap-2 border-t border-gray-200 bg-gray-50 px-5 py-4 sm:px-6">
