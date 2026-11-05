@@ -259,7 +259,7 @@
 
 <style>
 @media print {
-    @page { size: A3 landscape; margin: 8mm; }
+    @@page { size: A3 landscape; margin: 8mm; }
     .bpjs-detail-scroll { overflow: visible !important; }
     .bpjs-detail-table { font-size: 7px; white-space: normal; }
     .bpjs-detail-table th, .bpjs-detail-table td { padding: 3px; min-width: 0 !important; }
