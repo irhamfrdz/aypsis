@@ -115,7 +115,9 @@ class BiayaBensinController extends Controller
             ->orderBy('id', 'desc')
             ->value('nomor_kartu');
 
-        return view('biaya-bensin.create', compact('mobils', 'alatBerats', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu', 'kartus'));
+        $nomorTransaksi = BiayaBensin::formatNomorTransaksi(((int) BiayaBensin::max('id')) + 1);
+
+        return view('biaya-bensin.create', compact('mobils', 'alatBerats', 'supirs', 'lastHargaPerLiter', 'lastNomorKartu', 'kartus', 'nomorTransaksi'));
     }
 
     /**

@@ -208,7 +208,7 @@
                         </tr>
                         <tr>
                             <td>Nomor</td>
-                            <td>: BBS-{{ str_pad($biayaBensin->id, 6, '0', STR_PAD_LEFT) }}</td>
+                            <td>: {{ $biayaBensin->nomor_transaksi }}</td>
                         </tr>
                         <tr>
                             <td>Kendaraan</td>

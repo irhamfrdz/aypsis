@@ -149,6 +149,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $item->tanggal->format('d/m/Y') }}
+                                    <div class="text-xs font-semibold text-amber-700">{{ $item->nomor_transaksi }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($item->mobil_id)

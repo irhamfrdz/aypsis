@@ -37,6 +37,16 @@
                             </div>
                         </div>
 
+                        <!-- Nomor Transaksi -->
+                        <div>
+                            <label for="nomor_transaksi" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                                Nomor Transaksi
+                            </label>
+                            <input type="text" id="nomor_transaksi" value="{{ $nomorTransaksi }}" readonly
+                                   class="block w-full px-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-slate-700 font-semibold text-sm cursor-not-allowed">
+                            <p class="mt-1 text-xs text-slate-400">Nomor final ditetapkan otomatis saat data disimpan.</p>
+                        </div>
+
                         <!-- Tanggal -->
                         <div>
                             <label for="tanggal" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">

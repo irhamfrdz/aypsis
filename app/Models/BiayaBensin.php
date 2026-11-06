@@ -8,6 +8,16 @@ class BiayaBensin extends Model
 {
     protected $table = 'biaya_bensin';
 
+    public static function formatNomorTransaksi(int $id): string
+    {
+        return 'BBS-'.str_pad((string) $id, 6, '0', STR_PAD_LEFT);
+    }
+
+    public function getNomorTransaksiAttribute(): ?string
+    {
+        return $this->id ? self::formatNomorTransaksi((int) $this->id) : null;
+    }
+
     protected $fillable = [
         'tanggal',
         'mobil_id',
