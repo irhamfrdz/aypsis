@@ -333,6 +333,12 @@
                 <p class="font-semibold text-gray-600">Pekerjaan</p>
                 <p class="text-gray-800">{{ $karyawan->pekerjaan ?? '-' }}</p>
             </div>
+            @if($karyawan->divisi === 'ABK' || $karyawan->pekerjaan === 'ABK' || $karyawan->kapalAbk->isNotEmpty())
+            <div>
+                <p class="font-semibold text-gray-600">Kapal</p>
+                <p class="text-gray-800">{{ $karyawan->kapalAbk->first()?->nama_kapal ?? 'Belum ditempatkan' }}</p>
+            </div>
+            @endif
 
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Masuk</p>

@@ -559,7 +559,7 @@
                                     {{ $karyawan->catatan_pekerjaan ? strtoupper($karyawan->catatan_pekerjaan) : '-' }}
                                 </div>
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}@if($karyawan->kapalAbk->isNotEmpty())<div class="mt-1 text-blue-700">Kapal: {{ $karyawan->kapalAbk->first()->nama_kapal }}</div>@endif</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 @if($karyawan->divisi && $karyawan->divisi !== '0')
@@ -695,6 +695,7 @@
                     <div class="flex justify-between items-start mb-3">
                         <div>
                             <h3 class="font-semibold text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</h3>
+                            @if($karyawan->kapalAbk->isNotEmpty())<p class="text-xs text-blue-700">Kapal: {{ $karyawan->kapalAbk->first()->nama_kapal }}</p>@endif
                             <p class="text-xs text-gray-500">{{ strtoupper($karyawan->nik) }}</p>
                             @if($karyawan->catatan_pekerjaan)
                                 <p class="text-[10px] text-blue-600 font-medium italic mt-0.5">{{ strtoupper($karyawan->catatan_pekerjaan) }}</p>

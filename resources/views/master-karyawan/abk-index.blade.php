@@ -48,6 +48,12 @@
                 </div>
 
                 <!-- COMPACT FILTERS -->
+                @can('master-kapal.view')
+                <nav class="flex gap-2 border-b border-gray-200" aria-label="Tampilan Master Data ABK">
+                    <span class="border-b-2 border-blue-600 px-4 py-2 text-sm font-semibold text-blue-700" aria-current="page">Data ABK</span>
+                    <a href="{{ route('master.karyawan.abk-index', ['tampilan' => 'kapal']) }}" class="px-4 py-2 text-sm font-medium text-gray-600 hover:text-blue-700">Daftar Kapal</a>
+                </nav>
+                @endcan
                 <div class="bg-gray-50/50 rounded-xl p-3 border border-gray-200 shadow-sm">
                     <form method="GET" action="{{ route('master.karyawan.abk-index') }}" class="space-y-3">
                         @foreach(request()->except(['search', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end', 'page']) as $key => $value)
@@ -92,7 +98,7 @@
                                 </div>
                                 <button type="submit" class="px-4 py-1.5 bg-gray-900 text-white rounded-lg text-[10px] font-bold uppercase hover:bg-gray-800 transition-colors"><i class="fas fa-filter mr-1"></i> Filter</button>
                                 @if(request()->anyFilled(['search', 'cabang', 'tanggal_masuk_start', 'tanggal_masuk_end', 'tanggal_berhenti_start', 'tanggal_berhenti_end']))
-                                    <a href="{{ route('master.karyawan.abk-index') }}" class="p-1.5 text-gray-400 hover:text-red-500" title="Reset"><i class="fas fa-undo"></i></a>
+                                    <a href="{{ route('master.karyawan.abk-index', ['tampilan' => 'abk']) }}" class="p-1.5 text-gray-400 hover:text-red-500" title="Reset"><i class="fas fa-undo"></i></a>
                                 @endif
                             </div>
                         </div>
@@ -196,6 +202,7 @@
                                 <span>PEKERJAAN</span>
                             </div>
                         </th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">KAPAL</th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
                                 <span>NO HP</span>
@@ -251,6 +258,7 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ strtoupper($karyawan->pekerjaan ?: '-') }}
                             </td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ $karyawan->kapalAbk->first()?->nama_kapal ?? '-' }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp ?: '-') }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
@@ -294,7 +302,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="{{ request('show_berhenti') ? '9' : '8' }}" class="px-6 py-4 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '10' : '9' }}" class="px-6 py-4 text-center text-gray-500">
                                 Tidak ada data karyawan ABK
                             </td>
                         </tr>

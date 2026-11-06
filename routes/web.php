@@ -1347,6 +1347,10 @@ Route::middleware([
         Route::get('karyawan-abk', [KaryawanController::class, 'abkIndex'])
             ->name('karyawan.abk-index')
             ->middleware('can:master-karyawan-abk-view');
+        Route::post('karyawan-abk/kapal/{kapal}/abk', [KaryawanController::class, 'assignAbkKapal'])
+            ->name('karyawan.abk-kapal.assign')->middleware(['can:master-karyawan-abk-update', 'can:master-kapal.view']);
+        Route::delete('karyawan-abk/kapal/{kapal}/abk/{karyawan}', [KaryawanController::class, 'removeAbkKapal'])
+            ->name('karyawan.abk-kapal.remove')->middleware(['can:master-karyawan-abk-update', 'can:master-kapal.view']);
 
         // Karyawan Approval Routes
         Route::get('karyawan-approval', [\App\Http\Controllers\KaryawanApprovalController::class, 'index'])

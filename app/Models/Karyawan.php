@@ -44,6 +44,11 @@ class Karyawan extends Model
         'grup_bpjs' => 'array',
     ];
 
+    public function kapalAbk()
+    {
+        return $this->belongsToMany(MasterKapal::class, 'kapal_abk_assignments', 'karyawan_id', 'kapal_id')->withTimestamps();
+    }
+
     // In this codebase users table has nullable karyawan_id; keep inverse relation here.
     public function user()
     {

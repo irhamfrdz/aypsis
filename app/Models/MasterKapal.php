@@ -101,4 +101,9 @@ class MasterKapal extends Model
     {
         return $this->hasMany(Asset::class, 'kapal_id');
     }
+
+    public function abk()
+    {
+        return $this->belongsToMany(Karyawan::class, 'kapal_abk_assignments', 'kapal_id', 'karyawan_id')->withTimestamps();
+    }
 }

@@ -242,7 +242,7 @@ class KaryawanController extends Controller
         }
 
         // Menggunakan paginate dengan per_page yang dinamis
-        $karyawans = $query->paginate($perPage)->appends($request->query());
+        $karyawans = $query->with('kapalAbk')->paginate($perPage)->appends($request->query());
 
         return view('master-karyawan.index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions', 'penempatanOptions', 'departemenOptions'));
     }
@@ -252,6 +252,31 @@ class KaryawanController extends Controller
      */
     public function abkIndex(Request $request)
     {
+        if (! $request->query() && $request->user()?->can('master-kapal.view')) {
+            return redirect()->route('master.karyawan.abk-index', ['tampilan' => 'kapal']);
+        }
+
+        if ($request->query('tampilan') === 'kapal') {
+            $this->authorize('master-kapal.view');
+            $query = \App\Models\MasterKapal::query();
+            if ($request->filled('cari_kapal')) {
+                $search = $request->input('cari_kapal');
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_kapal', 'like', "%{$search}%")
+                        ->orWhere('kode', 'like', "%{$search}%")
+                        ->orWhere('kode_kapal', 'like', "%{$search}%")
+                        ->orWhere('pelayaran', 'like', "%{$search}%");
+                });
+            }
+            $kapals = $query->with(['abk' => fn ($q) => $q->orderBy('nama_lengkap')])->orderBy('nama_kapal')->paginate(15)->withQueryString();
+            $availableAbk = Karyawan::whereNull('tanggal_berhenti')
+                ->where(fn ($q) => $q->where('divisi', 'ABK')->orWhere('pekerjaan', 'ABK'))
+                ->whereNotIn('id', DB::table('kapal_abk_assignments')->select('karyawan_id'))
+                ->orderBy('nama_lengkap')->get(['id', 'nik', 'nama_lengkap']);
+
+            return view('master-karyawan.abk-kapal', compact('kapals', 'availableAbk'));
+        }
+
         // Query builder untuk karyawan ABK
         $query = Karyawan::where(function ($q) {
             $q->where('divisi', 'ABK')
@@ -348,9 +373,26 @@ class KaryawanController extends Controller
         $query->orderBy($sortField, $sortDirection);
 
         $perPage = (int) $request->get('per_page', 15);
-        $karyawans = $query->paginate($perPage)->appends($request->query());
+        $karyawans = $query->with('kapalAbk')->paginate($perPage)->appends($request->query());
 
         return view('master-karyawan.abk-index', compact('karyawans', 'counts', 'divisiOptions', 'cabangOptions'));
+    }
+
+    public function assignAbkKapal(Request $request, \App\Models\MasterKapal $kapal)
+    {
+        $validated = $request->validate(['karyawan_id' => ['required', 'integer', Rule::exists('karyawans', 'id')->where(function ($query) {
+            $query->whereNull('tanggal_berhenti')->where(fn ($q) => $q->where('divisi', 'ABK')->orWhere('pekerjaan', 'ABK'));
+        }), Rule::unique('kapal_abk_assignments', 'karyawan_id')]]);
+        $kapal->abk()->attach($validated['karyawan_id']);
+
+        return back()->with('success', 'ABK berhasil ditambahkan ke kapal.');
+    }
+
+    public function removeAbkKapal(\App\Models\MasterKapal $kapal, Karyawan $karyawan)
+    {
+        $kapal->abk()->detach($karyawan->id);
+
+        return back()->with('success', 'ABK berhasil dilepas dari kapal.');
     }
 
     /**
@@ -1317,6 +1359,7 @@ class KaryawanController extends Controller
      */
     public function show(Karyawan $karyawan)
     {
+        $karyawan->load('kapalAbk');
         $assets = app(\App\Services\KaryawanAssetService::class)->forKaryawan($karyawan->id);
 
         return view('master-karyawan.show', compact('karyawan', 'assets'));
