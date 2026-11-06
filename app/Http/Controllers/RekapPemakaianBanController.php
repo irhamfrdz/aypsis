@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\StockBan;
+use App\Models\StockBanUsageHistory;
 use Illuminate\Http\Request;
 
 class RekapPemakaianBanController extends Controller
@@ -22,21 +22,20 @@ class RekapPemakaianBanController extends Controller
         $items = null;
 
         if ($startDate && $endDate) {
-            $query = StockBan::query()->whereHas('mobil')
-                ->where(fn ($q) => $q->whereNotNull('tanggal_digunakan')->orWhere('status', 'Terpakai'))
-                ->whereRaw('COALESCE(tanggal_digunakan, tanggal_keluar, DATE(updated_at)) >= ?', [$startDate])
-                ->whereRaw('COALESCE(tanggal_digunakan, tanggal_keluar, DATE(updated_at)) <= ?', [$endDate]);
-            $units = (clone $query)->with('mobil')->selectRaw('mobil_id, COUNT(*) as total')
-                ->groupBy('mobil_id')->get()->sortBy(fn ($row) => $row->mobil?->nomor_polisi ?: $row->mobil?->no_kir)->values();
+            $query = StockBanUsageHistory::query()->whereNotNull('mobil_id')
+                ->whereBetween('tanggal_digunakan', [$startDate, $endDate]);
+            $units = (clone $query)->with('mobil')->selectRaw('mobil_id, MAX(unit_name) as unit_name, COUNT(*) as total')
+                ->groupBy('mobil_id')->get()->sortBy(fn ($row) => $row->mobil?->nomor_polisi ?: ($row->unit_name ?: $row->mobil?->no_kir))->values();
             if ($unit) {
-                $detailQuery = (clone $query)->with(['namaStockBan', 'penerima', 'mobil'])->where('mobil_id', $unit)
-                    ->orderByRaw('COALESCE(tanggal_digunakan, tanggal_keluar, DATE(updated_at)) DESC')
+                $detailQuery = (clone $query)->with('mobil')->where('mobil_id', $unit)
+                    ->orderByDesc('tanggal_digunakan')
                     ->orderByDesc('id');
                 if (($filters['print'] ?? null) === '1') {
                     $items = $detailQuery->get();
                     $selectedUnit = $units->firstWhere('mobil_id', $unit)?->mobil;
+                    $selectedUnitName = $units->firstWhere('mobil_id', $unit)?->unit_name;
 
-                    return view('rekap.pemakaian-ban-print', compact('items', 'startDate', 'endDate', 'selectedUnit'));
+                    return view('rekap.pemakaian-ban-print', compact('items', 'startDate', 'endDate', 'selectedUnit', 'selectedUnitName'));
                 }
                 $items = $detailQuery->paginate(25)->withQueryString();
             }

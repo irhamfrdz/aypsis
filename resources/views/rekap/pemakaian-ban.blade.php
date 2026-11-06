@@ -37,7 +37,7 @@
         <div class="flex flex-wrap items-center justify-between gap-3"><div class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-sm font-bold text-indigo-600">2</span><div><h2 class="font-bold text-gray-900">Pilih unit kendaraan</h2><p class="mt-1 text-xs text-gray-500">Pilih unit untuk melihat detail pemakaian ban.</p></div></div><span class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600">{{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</span></div>
         <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             @forelse($units as $vehicle)
-            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="flex items-center gap-3 rounded-xl border p-4 transition {{ (int) $unit === (int) $vehicle->mobil_id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50' }}"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"><i class="fas fa-truck" aria-hidden="true"></i></span><span class="min-w-0"><span class="block break-words font-bold text-gray-900">{{ $vehicle->mobil?->nomor_polisi && $vehicle->mobil->nomor_polisi !== '-' ? $vehicle->mobil->nomor_polisi : ($vehicle->mobil?->no_kir ?: 'Unit #'.$vehicle->mobil_id) }}</span><span class="mt-1 block text-xs text-gray-500">{{ $vehicle->total }} catatan pemakaian</span></span></a>
+            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="flex items-center gap-3 rounded-xl border p-4 transition {{ (int) $unit === (int) $vehicle->mobil_id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50' }}"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"><i class="fas fa-truck" aria-hidden="true"></i></span><span class="min-w-0"><span class="block break-words font-bold text-gray-900">{{ $vehicle->unit_name ?: ($vehicle->mobil?->nomor_polisi && $vehicle->mobil->nomor_polisi !== '-' ? $vehicle->mobil->nomor_polisi : ($vehicle->mobil?->no_kir ?: 'Unit #'.$vehicle->mobil_id)) }}</span><span class="mt-1 block text-xs text-gray-500">{{ $vehicle->total }} catatan pemakaian</span></span></a>
             @empty
             <p class="col-span-full py-5 text-center text-sm text-gray-500">Tidak ada pemakaian ban untuk unit kendaraan pada periode ini.</p>
             @endforelse
@@ -70,13 +70,13 @@
                 <tbody class="divide-y divide-gray-100">
                     @forelse ($items as $ban)
                         <tr class="transition hover:bg-gray-50">
-                            <td class="whitespace-nowrap px-4 py-3">{{ ($ban->tanggal_digunakan ?? $ban->tanggal_keluar ?? $ban->updated_at)?->format('d/m/Y') ?? '-' }}</td>
+                            <td class="whitespace-nowrap px-4 py-3">{{ $ban->tanggal_digunakan?->format('d/m/Y') ?? '-' }}</td>
                             <td class="whitespace-nowrap px-4 py-3 font-semibold text-indigo-700">{{ $ban->nomor_bukti_pakai ?: '-' }}</td>
-                            <td class="px-4 py-3">{{ $ban->namaStockBan->nama ?? '-' }}</td>
+                            <td class="px-4 py-3">{{ $ban->nama_ban ?: '-' }}</td>
                             <td class="px-4 py-3">{{ $ban->merk ?: '-' }} / {{ $ban->ukuran ?: '-' }}</td>
                             <td class="whitespace-nowrap px-4 py-3">{{ $ban->nomor_seri ?: '-' }}</td>
-                            <td class="px-4 py-3">{{ $ban->mobil?->nomor_polisi ?: ($ban->mobil?->no_kir ?: ($ban->alatBerat?->nama ?: ($ban->kapal?->nama_kapal ?: '-'))) }}</td>
-                            <td class="px-4 py-3">{{ $ban->penerima?->nama_lengkap ?: ($ban->penerima_manual ?: '-') }}</td>
+                            <td class="px-4 py-3">{{ $ban->unit_name ?: ($ban->mobil?->nomor_polisi ?: ($ban->mobil?->no_kir ?: '-')) }}</td>
+                            <td class="px-4 py-3">{{ $ban->penerima_name ?: '-' }}</td>
                             <td class="px-4 py-3">{{ $ban->keterangan ?: '-' }}</td>
                         </tr>
                     @empty

@@ -3,12 +3,13 @@
 namespace App\Models;
 
 use App\Traits\Auditable;
+use App\Traits\RecordsStockBanUsage;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class StockBanLuarBatam extends Model
 {
-    use Auditable, HasFactory;
+    use Auditable, HasFactory, RecordsStockBanUsage;
 
     protected $table = 'stock_ban_luar_batams';
 

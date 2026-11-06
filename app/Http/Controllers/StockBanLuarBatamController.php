@@ -8,6 +8,7 @@ use App\Models\NamaStockBan;
 use App\Models\StockBanLuarBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class StockBanLuarBatamController extends Controller
 {
@@ -236,7 +237,7 @@ class StockBanLuarBatamController extends Controller
             $updateData['alat_berat_id'] = null;
         }
 
-        $stockBan->update($updateData);
+        DB::transaction(fn () => $stockBan->update($updateData));
 
         $unitName = $isAlatBerat ? 'alat berat' : 'mobil';
 

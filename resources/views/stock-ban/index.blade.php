@@ -167,6 +167,10 @@
         </div>
         
         <div class="flex gap-2 items-center w-full md:w-auto">
+            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => now()->startOfYear()->toDateString(), 'end_date' => now()->toDateString()]) }}"
+               class="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition flex items-center gap-2 whitespace-nowrap">
+                <i class="fas fa-history"></i> Riwayat Pemakaian Ban
+            </a>
             <!-- Search Box -->
             <div class="relative flex-1 md:flex-initial md:w-80">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">

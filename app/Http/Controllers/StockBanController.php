@@ -660,7 +660,7 @@ class StockBanController extends Controller
             $updateData['alat_berat_id'] = null;
         }
 
-        $stockBan->update($updateData);
+        DB::transaction(fn () => $stockBan->update($updateData));
 
         $unitName = $isAlatBerat ? 'alat berat' : 'mobil';
 

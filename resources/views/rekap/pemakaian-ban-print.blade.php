@@ -17,14 +17,14 @@
 <body>
     <div class="actions"><button type="button" onclick="window.print()">Cetak</button></div>
     <h1>Rekap Pemakaian Ban</h1>
-    <p><strong>Unit:</strong> {{ $selectedUnit?->nomor_polisi && $selectedUnit->nomor_polisi !== '-' ? $selectedUnit->nomor_polisi : ($selectedUnit?->no_kir ?: '-') }}</p>
+    <p><strong>Unit:</strong> {{ $selectedUnitName ?: ($selectedUnit?->nomor_polisi && $selectedUnit->nomor_polisi !== '-' ? $selectedUnit->nomor_polisi : ($selectedUnit?->no_kir ?: '-')) }}</p>
     <p><strong>Periode:</strong> {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
     <p><strong>Total pemakaian:</strong> {{ $items->count() }} ban</p>
     <table>
         <thead><tr><th>Tanggal</th><th>Bukti Pakai</th><th>Tipe Ban</th><th>Merek / Ukuran</th><th>Nomor Seri</th><th>Unit</th><th>Penerima</th><th>Keterangan</th></tr></thead>
         <tbody>
             @forelse($items as $ban)
-            <tr><td>{{ ($ban->tanggal_digunakan ?? $ban->tanggal_keluar ?? $ban->updated_at)?->format('d/m/Y') ?? '-' }}</td><td>{{ $ban->nomor_bukti_pakai ?: '-' }}</td><td>{{ $ban->namaStockBan->nama ?? '-' }}</td><td>{{ $ban->merk ?: '-' }} / {{ $ban->ukuran ?: '-' }}</td><td>{{ $ban->nomor_seri ?: '-' }}</td><td>{{ $ban->mobil?->nomor_polisi && $ban->mobil->nomor_polisi !== '-' ? $ban->mobil->nomor_polisi : ($ban->mobil?->no_kir ?: '-') }}</td><td>{{ $ban->penerima?->nama_lengkap ?: ($ban->penerima_manual ?: '-') }}</td><td>{{ $ban->keterangan ?: '-' }}</td></tr>
+            <tr><td>{{ $ban->tanggal_digunakan?->format('d/m/Y') ?? '-' }}</td><td>{{ $ban->nomor_bukti_pakai ?: '-' }}</td><td>{{ $ban->nama_ban ?: '-' }}</td><td>{{ $ban->merk ?: '-' }} / {{ $ban->ukuran ?: '-' }}</td><td>{{ $ban->nomor_seri ?: '-' }}</td><td>{{ $ban->unit_name ?: ($ban->mobil?->nomor_polisi ?: ($ban->mobil?->no_kir ?: '-')) }}</td><td>{{ $ban->penerima_name ?: '-' }}</td><td>{{ $ban->keterangan ?: '-' }}</td></tr>
             @empty
             <tr><td colspan="8">Tidak ada pemakaian ban untuk unit dan periode ini.</td></tr>
             @endforelse
