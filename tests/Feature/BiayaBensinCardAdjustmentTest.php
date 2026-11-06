@@ -129,6 +129,43 @@ class BiayaBensinCardAdjustmentTest extends TestCase
         $this->assertSame('100000.00', $card->fresh()->saldo);
     }
 
+    public function test_removing_old_card_deletes_original_charge_and_its_reversal(): void
+    {
+        $card = $this->card('OLD', 0);
+        $this->history($card, 'BBS-000168', 'berkurang', 204000, 0, -204000);
+        $this->history($card, 'BBS-000168', 'bertambah', 204000, -204000, 0);
+
+        MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(fn () =>
+            app(BiayaBensinCardService::class)->removeUsage($this->expense(), 'OLD')
+        ));
+
+        $this->assertSame(0, $card->histories()->count());
+        $this->assertSame('0.00', $card->fresh()->saldo);
+    }
+
+    public function test_removing_old_card_also_clears_unnumbered_original_with_numbered_reversal(): void
+    {
+        $card = $this->card('OLD', 0);
+        $original = $this->history($card, null, 'berkurang', 204000, 0, -204000);
+        DB::table('master_kartu_bensin_batam_histories')->where('id', $original->id)->update([
+            'created_at' => '2026-10-20 10:37:54', 'created_by' => 17,
+        ]);
+        $this->history($card, 'BBS-000168', 'bertambah', 204000, -204000, 0);
+        DB::table('audit_logs')->insert([
+            'auditable_type' => BiayaBensin::class, 'auditable_id' => 168,
+            'action' => 'created',
+            'new_values' => json_encode(['nomor_kartu' => 'OLD', 'biaya' => 204000, 'created_by' => 17]),
+            'created_at' => '2026-10-20 10:37:54',
+        ]);
+
+        MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(fn () =>
+            app(BiayaBensinCardService::class)->removeUsage($this->expense(), 'OLD')
+        ));
+
+        $this->assertSame(0, $card->histories()->count());
+        $this->assertSame('0.00', $card->fresh()->saldo);
+    }
+
     private function history(
         MasterKartuBensinBatam $card,
         ?string $number,
