@@ -38,6 +38,34 @@ class BiayaBensinController extends Controller
     {
         $query = BiayaBensin::with(['mobil', 'supir', 'creator']);
 
+        $search = trim((string) $request->query('search', ''));
+        if ($search !== '') {
+            $transactionId = preg_match('/^(?:BBS-?)?0*([1-9]\d*)$/i', $search, $matches)
+                ? (int) $matches[1]
+                : null;
+
+            $query->where(function ($q) use ($search, $transactionId) {
+                if ($transactionId !== null) {
+                    $q->orWhere('id', $transactionId);
+                }
+
+                $q->orWhere('nomor_kartu', 'like', '%'.$search.'%')
+                    ->orWhere('keterangan', 'like', '%'.$search.'%')
+                    ->orWhereHas('mobil', function ($mobil) use ($search) {
+                        $mobil->where('nomor_polisi', 'like', '%'.$search.'%')
+                            ->orWhere('kode_no', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('alatBerat', function ($alatBerat) use ($search) {
+                        $alatBerat->where('nama', 'like', '%'.$search.'%')
+                            ->orWhere('kode_alat', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('supir', function ($supir) use ($search) {
+                        $supir->where('nama_panggilan', 'like', '%'.$search.'%')
+                            ->orWhere('nama_lengkap', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
         if ($request->has('start_date') && $request->has('end_date') && $request->start_date && $request->end_date) {
             $query->whereBetween('tanggal', [$request->start_date, $request->end_date]);
         }
