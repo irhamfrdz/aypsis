@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Services\LegacyFuelCardHistoryRepair;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
@@ -113,5 +114,78 @@ class FixBbs000127CardHistoryTest extends TestCase
 
         $this->assertDatabaseHas('master_kartu_bensin_batam_histories', ['id' => 12]);
         $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 231000]);
+    }
+
+    public function test_legacy_repair_removes_a_charge_after_card_was_cleared(): void
+    {
+        $this->insertCreatedAudit();
+        $this->insertChangeAudit('updated', ['nomor_kartu' => '20000063108', 'biaya' => 669000], [
+            'nomor_kartu' => null, 'biaya' => 669000,
+        ]);
+
+        DB::transaction(function () {
+            $repair = app(LegacyFuelCardHistoryRepair::class);
+            $repair->repair(127, '20000063108', 669000, null, 'removed', 'Pengisian bensin Kendaraan BP8923ZH');
+            $repair->repair(127, '20000063108', 669000, null, 'removed', 'Pengisian bensin Kendaraan BP8923ZH');
+        });
+
+        $this->assertDatabaseMissing('master_kartu_bensin_batam_histories', ['id' => 12]);
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'id' => 13, 'saldo_sebelum' => 1000000, 'saldo_sesudah' => 900000,
+        ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 900000]);
+    }
+
+    public function test_legacy_repair_adjusts_original_charge_after_amount_changed(): void
+    {
+        DB::table('biaya_bensin')->where('id', 127)->update(['nomor_kartu' => '20000063108', 'biaya' => 670000]);
+        $this->insertCreatedAudit();
+        $this->insertChangeAudit('updated', ['nomor_kartu' => '20000063108', 'biaya' => 669000], [
+            'nomor_kartu' => '20000063108', 'biaya' => 670000,
+        ]);
+
+        DB::transaction(fn () => app(LegacyFuelCardHistoryRepair::class)
+            ->repair(127, '20000063108', 669000, 670000, 'amount', 'Pengisian bensin Kendaraan BP8923ZH'));
+
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'id' => 12, 'nominal' => 670000, 'saldo_sebelum' => 1000000, 'saldo_sesudah' => 330000,
+        ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'id' => 13, 'saldo_sebelum' => 330000, 'saldo_sesudah' => 230000,
+        ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 230000]);
+    }
+
+    public function test_legacy_repair_removes_charge_after_expense_was_deleted(): void
+    {
+        DB::table('biaya_bensin')->where('id', 127)->delete();
+        $this->insertCreatedAudit();
+        $this->insertChangeAudit('deleted', ['nomor_kartu' => '20000063108', 'biaya' => 669000], null);
+
+        DB::transaction(fn () => app(LegacyFuelCardHistoryRepair::class)
+            ->repair(127, '20000063108', 669000, null, 'deleted', 'Pengisian bensin Kendaraan BP8923ZH'));
+
+        $this->assertDatabaseMissing('master_kartu_bensin_batam_histories', ['id' => 12]);
+        $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 900000]);
+    }
+
+    private function insertCreatedAudit(): void
+    {
+        DB::table('audit_logs')->insert([
+            'auditable_type' => 'App\\Models\\BiayaBensin', 'auditable_id' => 127,
+            'action' => 'created', 'new_values' => json_encode([
+                'nomor_kartu' => '20000063108', 'biaya' => 669000, 'created_by' => 197,
+            ]),
+            'created_at' => '2026-09-03 11:37:50',
+        ]);
+    }
+
+    private function insertChangeAudit(string $action, array $old, ?array $new): void
+    {
+        DB::table('audit_logs')->insert([
+            'auditable_type' => 'App\\Models\\BiayaBensin', 'auditable_id' => 127,
+            'action' => $action, 'old_values' => json_encode($old), 'new_values' => json_encode($new),
+            'created_at' => '2026-09-03 11:37:59',
+        ]);
     }
 }
