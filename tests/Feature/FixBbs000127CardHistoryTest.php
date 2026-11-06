@@ -35,6 +35,7 @@ class FixBbs000127CardHistoryTest extends TestCase
         Schema::create('master_kartu_bensin_batam_histories', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('master_kartu_bensin_batam_id');
+            $table->string('nomor_transaksi')->nullable();
             $table->dateTime('tanggal');
             $table->string('tipe');
             $table->decimal('nominal', 15, 2);
@@ -167,6 +168,38 @@ class FixBbs000127CardHistoryTest extends TestCase
 
         $this->assertDatabaseMissing('master_kartu_bensin_batam_histories', ['id' => 12]);
         $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 900000]);
+    }
+
+    public function test_backfills_history_number_even_when_amount_and_plate_changed(): void
+    {
+        DB::table('biaya_bensin')->insert([
+            'id' => 14, 'mobil_id' => 82, 'nomor_kartu' => '20000063108', 'biaya' => 200000,
+            'created_by' => 155, 'created_at' => '2026-07-28 15:10:35', 'updated_at' => '2026-07-28 15:11:10',
+        ]);
+        DB::table('master_kartu_bensin_batam_histories')->insert([
+            'id' => 1, 'master_kartu_bensin_batam_id' => 4,
+            'tanggal' => '2026-07-28 15:10:35', 'tipe' => 'berkurang', 'nominal' => 200000,
+            'saldo_sebelum' => 0, 'saldo_sesudah' => -200000,
+            'keterangan' => 'Pengisian bensin Kendaraan BP9250ZN', 'created_by' => 155,
+            'created_at' => '2026-07-28 15:10:35', 'updated_at' => '2026-07-28 15:10:35',
+        ]);
+        DB::table('audit_logs')->insert([
+            'auditable_type' => 'App\\Models\\BiayaBensin', 'auditable_id' => 14,
+            'action' => 'created', 'new_values' => json_encode([
+                'nomor_kartu' => '20000063108', 'biaya' => 2000000, 'created_by' => 155,
+            ]),
+            'created_at' => '2026-07-28 15:10:35',
+        ]);
+
+        $migration = require database_path('migrations/2026_11_06_160000_backfill_fuel_card_history_numbers.php');
+        $migration->up();
+        $migration->up();
+
+        $this->assertDatabaseHas('master_kartu_bensin_batam_histories', [
+            'id' => 1, 'nomor_transaksi' => 'BBS-000014', 'nominal' => 200000,
+            'saldo_sebelum' => 0, 'saldo_sesudah' => -200000,
+        ]);
+        $this->assertDatabaseHas('master_kartu_bensin_batams', ['id' => 4, 'saldo' => 231000]);
     }
 
     private function insertCreatedAudit(): void
