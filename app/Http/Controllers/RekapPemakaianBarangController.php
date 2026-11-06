@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\NamaStockBan;
-use App\Models\StockAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
 use Carbon\Carbon;
@@ -13,48 +11,20 @@ class RekapPemakaianBarangController extends Controller
 {
     public function index(Request $request)
     {
-        $namaBarang = $request->input('nama_barang');
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
         $filters = $request->validate([
-            'aktiva' => 'nullable|in:kendaraan,alat_berat,kantor,kapal',
-            'lokasi' => 'nullable|in:jakarta,batam,tanjung_pinang',
+            'start_date' => 'nullable|required_with:end_date|date_format:Y-m-d',
+            'end_date' => 'nullable|required_with:start_date|date_format:Y-m-d|after_or_equal:start_date',
         ]);
-        $aktiva = $filters['aktiva'] ?? null;
-        $lokasi = in_array($aktiva, ['kendaraan', 'alat_berat'], true) ? ($filters['lokasi'] ?? null) : null;
-
-        // Fetch distinct type barang from master for Amprahan
-        $amprahanItems = StockAmprahan::with('masterNamaBarangAmprahan')
-            ->whereHas('usages')
-            ->whereNotNull('master_nama_barang_amprahan_id')
-            ->get()
-            ->pluck('masterNamaBarangAmprahan.nama_barang')
-            ->filter()
-            ->unique()
-            ->toArray();
-
-        $banItems = NamaStockBan::select('nama')
-            ->distinct()
-            ->pluck('nama')
-            ->toArray();
-
-        // Combine and sort alphabetically
-        $allBarang = array_unique(array_merge($amprahanItems, $banItems));
-        sort($allBarang);
+        $startDate = $filters['start_date'] ?? null;
+        $endDate = $filters['end_date'] ?? null;
+        $aktiva = 'kendaraan';
+        $lokasi = null;
 
         $results = collect();
 
-        if ($namaBarang) {
-            $isAmprahan = in_array($namaBarang, $amprahanItems);
-            $isBan = in_array($namaBarang, $banItems);
-
-            if ($isAmprahan) {
-                $amprahanUsages = StockAmprahanUsage::with(['stockAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat', 'kapal', 'chasisBatam'])
-                    ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
-                        $q->whereHas('masterNamaBarangAmprahan', function ($q2) use ($namaBarang) {
-                            $q2->where('nama_barang', $namaBarang);
-                        });
-                    })
+        if ($startDate && $endDate) {
+            {
+                $amprahanUsages = StockAmprahanUsage::with(['stockAmprahan.masterNamaBarangAmprahan', 'penerima', 'kendaraan', 'truck', 'buntut', 'alatBerat', 'kapal', 'chasisBatam'])
                     ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
                         $q->whereBetween('tanggal_pengambilan', [$startDate, $endDate]);
                     })
@@ -109,7 +79,7 @@ class RekapPemakaianBarangController extends Controller
 
                     $results->push((object) [
                         'tanggal' => Carbon::parse($usage->tanggal_pengambilan)->format('Y-m-d'),
-                        'nama_barang' => $usage->stockAmprahan->nama_barang ?? '-',
+                        'nama_barang' => $usage->stockAmprahan?->masterNamaBarangAmprahan?->nama_barang ?? $usage->stockAmprahan?->nama_barang ?? '-',
                         'penerima' => $penerimaName,
                         'unit' => $unitName,
                         'qty' => floatval($usage->jumlah).' '.($usage->stockAmprahan->satuan ?? ''),
@@ -121,11 +91,8 @@ class RekapPemakaianBarangController extends Controller
                 }
             }
 
-            if ($isBan) {
+            {
                 $banUsages = StockBan::with(['namaStockBan', 'penerima', 'mobil', 'alatBerat', 'kapal'])
-                    ->whereHas('namaStockBan', function ($q) use ($namaBarang) {
-                        $q->where('nama', $namaBarang);
-                    })
                     ->when($startDate && $endDate, function ($q) use ($startDate, $endDate) {
                         $q->where(function ($q2) use ($startDate, $endDate) {
                             $q2->whereBetween('tanggal_digunakan', [$startDate, $endDate])
@@ -193,7 +160,7 @@ class RekapPemakaianBarangController extends Controller
             $results = $results->sortByDesc('tanggal')->values();
         }
 
-        return view('rekap-pemakaian-barang.index', compact('allBarang', 'results', 'namaBarang', 'startDate', 'endDate', 'aktiva', 'lokasi'));
+        return view('rekap-pemakaian-barang.index', compact('results', 'startDate', 'endDate'));
     }
 
     private function normalizeAssetLocation(?string $location): ?string
