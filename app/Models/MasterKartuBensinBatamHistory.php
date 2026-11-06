@@ -13,6 +13,7 @@ class MasterKartuBensinBatamHistory extends Model
 
     protected $fillable = [
         'master_kartu_bensin_batam_id',
+        'nomor_transaksi',
         'tanggal',
         'tipe',
         'nominal',

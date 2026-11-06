@@ -115,6 +115,7 @@
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         <th class="px-6 py-4">Tanggal & Waktu</th>
+                        <th class="px-6 py-4">No. Transaksi</th>
                         <th class="px-6 py-4">Tipe Aksi</th>
                         <th class="px-6 py-4">Nominal</th>
                         <th class="px-6 py-4">Saldo Sebelum</th>
@@ -128,6 +129,9 @@
                     <tr class="hover:bg-gray-50 transition">
                         <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-600">
                             {{ $log->tanggal ? $log->tanggal->translatedFormat('d F Y H:i') : '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap font-semibold text-blue-700">
+                            {{ $log->nomor_transaksi ?? $log->legacy_nomor_transaksi ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($log->tipe == 'bertambah')
@@ -165,7 +169,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-history text-3xl mb-3 block text-gray-300"></i>
                             Belum ada riwayat perubahan saldo untuk kartu bensin ini.
                         </td>

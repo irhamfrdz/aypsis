@@ -210,6 +210,7 @@ class BiayaBensinController extends Controller
                     $mobilPlat = $mobil ? $mobil->nomor_polisi : '-';
 
                     $card->histories()->create([
+                        'nomor_transaksi' => $createdItem->nomor_transaksi,
                         'tanggal' => now(),
                         'tipe' => 'berkurang',
                         'nominal' => floatval($validated['biaya']),

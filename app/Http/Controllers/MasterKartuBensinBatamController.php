@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\BiayaBensin;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
@@ -164,6 +165,33 @@ class MasterKartuBensinBatamController extends Controller
     {
         $card = MasterKartuBensinBatam::findOrFail($id);
         $histories = $card->histories()->with('createdBy')->latest()->paginate(25);
+
+        $legacyHistories = $histories->getCollection()->filter(fn ($log) =>
+            $log->tipe === 'berkurang'
+            && ! $log->nomor_transaksi
+            && str_starts_with((string) $log->keterangan, 'Pengisian bensin Kendaraan ')
+        );
+
+        if ($legacyHistories->isNotEmpty()) {
+            $from = $legacyHistories->min('created_at')->copy()->subMinute();
+            $to = $legacyHistories->max('created_at')->copy()->addMinute();
+            $fuelEntries = BiayaBensin::where('nomor_kartu', $card->nomor_kartu)
+                ->whereBetween('created_at', [$from, $to])
+                ->whereIn('biaya', $legacyHistories->pluck('nominal')->unique())
+                ->get(['id', 'created_at', 'created_by', 'biaya']);
+
+            $legacyHistories->each(function ($log) use ($fuelEntries) {
+                $matches = $fuelEntries->filter(fn ($fuel) =>
+                    $fuel->created_by == $log->created_by
+                    && abs($fuel->created_at->diffInSeconds($log->created_at)) <= 60
+                    && abs((float) $fuel->biaya - (float) $log->nominal) < 0.01
+                );
+
+                if ($matches->count() === 1) {
+                    $log->setAttribute('legacy_nomor_transaksi', $matches->first()->nomor_transaksi);
+                }
+            });
+        }
 
         return view('master-kartu-bensin-batam.history', compact('card', 'histories'));
     }
