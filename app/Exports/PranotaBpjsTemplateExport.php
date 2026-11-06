@@ -32,7 +32,17 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $this->fileName = 'BPJS_'.$pranota->periode_tahun.'_'.str_pad($pranota->periode_bulan, 2, '0', STR_PAD_LEFT).'_'.$pranota->nomor_pranota.'.xlsx';
 
         foreach ($this->pranota->details as $index => $detail) {
-            $this->rows[] = $this->mapDetail($detail, $index + 1);
+            $employee = $detail->karyawan_pranota;
+            $groups = [];
+            if (trim((string) $employee?->group_bp_jamsostek) !== '') $groups[] = 'jamsostek';
+            if (trim((string) $employee?->group_jkn) !== '') $groups[] = 'jkn';
+            if (count($groups) < 2) {
+                $this->rows[] = $this->mapDetail($detail, $index + 1);
+                continue;
+            }
+            foreach ($groups as $group) {
+                $this->rows[] = $this->mapDetail($detail, $index + 1, $group);
+            }
         }
     }
 
@@ -61,6 +71,10 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
     private function writeRowsIntoTemplate(): void
     {
         $sheet = $this->template;
+        $groupHeading = $sheet->getCell('H1')->getValue();
+        $typeHeading = $sheet->getCell('I1')->getValue();
+        $sheet->setCellValue('H1', $typeHeading);
+        $sheet->setCellValue('I1', $groupHeading);
         foreach (['BC' => 'AKUN JURNAL', 'BD' => 'TUNJANGAN JURNAL', 'BE' => 'BIAYA JURNAL', 'BF' => 'HUTANG JURNAL', 'BG' => 'GROUP JKN', 'BH' => 'GROUP BP JAMSOSTEK', 'BI' => 'JAMSOSTEK GABUNGAN DATA LAMA'] as $column => $heading) {
             $sheet->setCellValue($column.'1', $heading);
             $sheet->getColumnDimension($column)->setAutoSize(true);
@@ -101,7 +115,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         return \PhpOffice\PhpSpreadsheet\Cell\Coordinate::columnIndexFromString($column);
     }
 
-    private function mapDetail(PranotaBpjsDetail $detail, int $number): array
+    private function mapDetail(PranotaBpjsDetail $detail, int $number, ?string $component = null): array
     {
         $employee = $detail->karyawan_pranota;
         $parts = $detail->rincian_bpjs ?? [];
@@ -134,8 +148,8 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('E', (string) ($employee?->nik_ktp ?? $employee?->ktp ?? ''));
         $set('F', $date($employee?->tanggal_lahir));
         $set('G', $date($employee?->tanggal_masuk));
-        $set('H', $jamsostekGroup ?: $jknGroup);
-        $set('I', $jamsostekType ?: $jknType);
+        $set('H', $component === 'jkn' ? $jknGroup : ($jamsostekGroup ?: $jknGroup));
+        $set('I', $component === 'jkn' ? $jknType : ($jamsostekType ?: $jknType));
         $set('J', trim((string) ($detail->karyawan?->cabang_bpjs)) ?: ($employee?->cabang_bpjs ?? ''));
         $set('K', 'x');
         $set('L', $this->parseWage($employee?->dpp_bp_jamsostek ?? $employee?->dpp_jkn ?? 0));
@@ -166,7 +180,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('BB', 'x');
         $accounts = new BpjsJournalAccount;
         $set('BC', $accounts->label((string) $jamsostekType, (string) $jamsostekGroup) ?? 'Belum dipetakan');
-        [$tunjangan, $biaya, $hutang] = (new BpjsJournalAmounts)->forDetail($detail);
+        [$tunjangan, $biaya, $hutang] = (new BpjsJournalAmounts)->forDetail($detail, $component);
         $set('BD', $tunjangan);
         $set('BE', $biaya);
         $set('BF', $hutang);
@@ -174,6 +188,15 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('BH', $jamsostekGroup);
         $set('BI', $detail->rincian_bpjs === null
             ? array_sum(array_map(fn ($field) => (float) $detail->$field, $ppu)) : null);
+
+        if ($component === 'jkn') {
+            $set('L', $this->parseWage($employee?->dpp_jkn ?? 0));
+            foreach (['M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'AE', 'AF', 'AH', 'AJ', 'AK', 'AP', 'AQ', 'BI'] as $column) $set($column, null);
+            $set('AT', $detail->summaryBurden('kary_jkn'));
+        } elseif ($component === 'jamsostek') {
+            foreach (['Y', 'Z', 'AA', 'AG', 'AI', 'AR', 'AS'] as $column) $set($column, null);
+            $set('AT', $detail->summaryBurden('kary_jht'));
+        }
 
         return $row;
     }
