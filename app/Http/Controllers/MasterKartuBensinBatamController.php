@@ -177,6 +177,7 @@ class MasterKartuBensinBatamController extends Controller
             $to = $legacyHistories->max('created_at')->copy()->addMinute();
             $fuelEntries = BiayaBensin::with('mobil')
                 ->whereBetween('created_at', [$from, $to])
+                ->where('nomor_kartu', $card->nomor_kartu)
                 ->whereIn('biaya', $legacyHistories->pluck('nominal')->unique())
                 ->get(['id', 'created_at', 'created_by', 'biaya', 'mobil_id']);
 
