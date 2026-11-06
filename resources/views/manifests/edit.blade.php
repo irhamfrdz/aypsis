@@ -167,65 +167,66 @@
             <!-- Informasi Barang -->
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
                 <h2 class="text-lg font-semibold text-gray-900 mb-4">Informasi Barang</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div class="md:col-span-2">
-                        <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-2">Nama Barang</label>
-                        <textarea name="nama_barang" id="nama_barang" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('nama_barang', $manifest->nama_barang) }}</textarea>
-                    </div>
-                    @include('manifests.partials.perincian-barang-form')
+                <div class="space-y-6">
+                    <section class="rounded-xl border border-purple-100 bg-purple-50/40 p-4 sm:p-5" aria-labelledby="uraian-barang-manifest">
+                        <h3 id="uraian-barang-manifest" class="mb-4 text-base font-semibold text-purple-800">Uraian Barang Manifest</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div class="md:col-span-2">
+                                <label for="nama_barang" class="block text-sm font-medium text-gray-700 mb-2">Nama Barang</label>
+                                <textarea name="nama_barang" id="nama_barang" rows="3"
+                                          class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">{{ old('nama_barang', $manifest->nama_barang) }}</textarea>
+                            </div>
+                            <div>
+                                <label for="hs_code" class="block text-sm font-medium text-gray-700 mb-2">HS Code</label>
+                                <input type="text" name="hs_code" id="hs_code" value="{{ old('hs_code', $manifest->hs_code) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 @error('hs_code') border-red-500 @enderror">
+                                @error('hs_code')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+                            </div>
+                            <div>
+                                <label for="kuantitas" class="block text-sm font-medium text-gray-700 mb-2">Jumlah</label>
+                                <input type="number" name="kuantitas" id="kuantitas" value="{{ old('kuantitas', $manifest->kuantitas) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="satuan" class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
+                                <input type="text" name="satuan" id="satuan" value="{{ old('satuan', $manifest->satuan) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="tonnage" class="block text-sm font-medium text-gray-700 mb-2">Tonase</label>
+                                <input type="text" inputmode="decimal" name="tonnage" id="tonnage" value="{{ old('tonnage', $manifest->tonnage_input) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                                <p class="mt-1 text-xs text-gray-500">Gunakan titik atau koma untuk desimal, misalnya 78,776 ton.</p>
+                            </div>
+                            <div>
+                                <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">Volume (m³)</label>
+                                <input type="number" step="0.001" name="volume" id="volume" value="{{ old('volume', $manifest->volume !== null ? rtrim(rtrim($manifest->volume, '0'), '.') : '') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="term" class="block text-sm font-medium text-gray-700 mb-2">Term</label>
+                                <input type="text" name="term" id="term" value="{{ old('term', $manifest->term) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                        </div>
+                    </section>
 
-                    <div>
-                        <label for="tonnage" class="block text-sm font-medium text-gray-700 mb-2">Tonnage</label>
-                        <input type="text" inputmode="decimal" name="tonnage" id="tonnage" value="{{ old('tonnage', $manifest->tonnage_input) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                        <p class="mt-1 text-xs text-gray-500">Gunakan titik atau koma untuk desimal, misalnya 78,776 ton.</p>
-                    </div>
-
-                    <div>
-                        <label for="volume" class="block text-sm font-medium text-gray-700 mb-2">Volume</label>
-                        <input type="number" step="0.001" name="volume" id="volume" value="{{ old('volume', $manifest->volume !== null ? rtrim(rtrim($manifest->volume, '0'), '.') : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="tonnage_perincian" class="block text-sm font-medium text-gray-700 mb-2">Tonnage Perincian</label>
-                        <input type="number" step="0.001" name="tonnage_perincian" id="tonnage_perincian" value="{{ old('tonnage_perincian', $manifest->tonnage_perincian) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="volume_perincian" class="block text-sm font-medium text-gray-700 mb-2">Volume/Kubikasi Perincian</label>
-                        <input type="number" step="0.001" name="volume_perincian" id="volume_perincian" value="{{ old('volume_perincian', $manifest->volume_perincian !== null ? rtrim(rtrim($manifest->volume_perincian, '0'), '.') : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="satuan" class="block text-sm font-medium text-gray-700 mb-2">Satuan</label>
-                        <input type="text" name="satuan" id="satuan" value="{{ old('satuan', $manifest->satuan) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="kuantitas" class="block text-sm font-medium text-gray-700 mb-2">Kuantitas</label>
-                        <input type="number" name="kuantitas" id="kuantitas" value="{{ old('kuantitas', $manifest->kuantitas) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="term" class="block text-sm font-medium text-gray-700 mb-2">Term</label>
-                        <input type="text" name="term" id="term" value="{{ old('term', $manifest->term) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
-                    </div>
-
-                    <div>
-                        <label for="hs_code" class="block text-sm font-medium text-gray-700 mb-2">HS Code</label>
-                        <input type="text" name="hs_code" id="hs_code" value="{{ old('hs_code', $manifest->hs_code) }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500 @error('hs_code') border-red-500 @enderror">
-                        @error('hs_code')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                    <section class="rounded-xl border border-gray-200 bg-gray-50 p-4 sm:p-5" aria-labelledby="uraian-barang-perincian">
+                        <h3 id="uraian-barang-perincian" class="mb-4 text-base font-semibold text-gray-800">Uraian Barang Perincian</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            @include('manifests.partials.perincian-barang-form', ['hideTitle' => true])
+                            <div>
+                                <label for="tonnage_perincian" class="block text-sm font-medium text-gray-700 mb-2">Tonase Perincian</label>
+                                <input type="number" step="0.001" name="tonnage_perincian" id="tonnage_perincian" value="{{ old('tonnage_perincian', $manifest->tonnage_perincian) }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                            <div>
+                                <label for="volume_perincian" class="block text-sm font-medium text-gray-700 mb-2">Volume/Kubikasi Perincian</label>
+                                <input type="number" step="0.001" name="volume_perincian" id="volume_perincian" value="{{ old('volume_perincian', $manifest->volume_perincian !== null ? rtrim(rtrim($manifest->volume_perincian, '0'), '.') : '') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-purple-500 focus:border-purple-500">
+                            </div>
+                        </div>
+                    </section>
                 </div>
             </div>
 

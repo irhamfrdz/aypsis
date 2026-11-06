@@ -453,7 +453,8 @@ class ManifestController extends Controller
                 $detail->update(array_merge($fields, ['updated_by' => Auth::id()]));
             }
 
-            $manifest->update($validated);
+            // Form edit memiliki uraian barang sendiri; jangan timpa lagi dengan data approval lama.
+            $manifest->updateQuietly($validated);
         });
 
         $listQuery = array_intersect_key($request->query(), array_flip([

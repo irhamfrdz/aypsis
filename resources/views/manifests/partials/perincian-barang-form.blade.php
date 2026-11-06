@@ -1,8 +1,10 @@
 @php
     $perincianRows = old('perincian_barang', isset($manifest) ? ($manifest->perincian_barang ?: [[]]) : [[]]);
 @endphp
-<div class="md:col-span-2 rounded-lg border border-gray-200 bg-gray-50 p-4">
-    <h3 class="mb-3 text-sm font-semibold text-gray-800">Detail Barang Perincian</h3>
+<div class="md:col-span-2 rounded-lg border border-gray-200 {{ ($hideTitle ?? false) ? 'bg-white' : 'bg-gray-50' }} p-4">
+    @unless($hideTitle ?? false)
+        <h3 class="mb-3 text-sm font-semibold text-gray-800">Detail Barang Perincian</h3>
+    @endunless
     @foreach($perincianRows as $index => $barang)
         <div class="grid grid-cols-1 gap-3 md:grid-cols-5 {{ !$loop->last ? 'mb-4 border-b border-gray-200 pb-4' : '' }}">
             <div>
