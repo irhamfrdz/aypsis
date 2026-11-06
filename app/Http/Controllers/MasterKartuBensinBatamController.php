@@ -175,16 +175,18 @@ class MasterKartuBensinBatamController extends Controller
         if ($legacyHistories->isNotEmpty()) {
             $from = $legacyHistories->min('created_at')->copy()->subMinute();
             $to = $legacyHistories->max('created_at')->copy()->addMinute();
-            $fuelEntries = BiayaBensin::where('nomor_kartu', $card->nomor_kartu)
+            $fuelEntries = BiayaBensin::with('mobil')
                 ->whereBetween('created_at', [$from, $to])
                 ->whereIn('biaya', $legacyHistories->pluck('nominal')->unique())
-                ->get(['id', 'created_at', 'created_by', 'biaya']);
+                ->get(['id', 'created_at', 'created_by', 'biaya', 'mobil_id']);
 
             $legacyHistories->each(function ($log) use ($fuelEntries) {
+                $plat = substr($log->keterangan, strlen('Pengisian bensin Kendaraan '));
                 $matches = $fuelEntries->filter(fn ($fuel) =>
                     $fuel->created_by == $log->created_by
                     && abs($fuel->created_at->diffInSeconds($log->created_at)) <= 60
                     && abs((float) $fuel->biaya - (float) $log->nominal) < 0.01
+                    && ($plat === '-' || $fuel->mobil?->nomor_polisi === $plat)
                 );
 
                 if ($matches->count() === 1) {

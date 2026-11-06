@@ -8,8 +8,11 @@ use App\Models\BiayaBensin;
 use App\Models\Karyawan;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\Mobil;
+use App\Services\BiayaBensinCardService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class BiayaBensinController extends Controller
@@ -156,7 +159,7 @@ class BiayaBensinController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'kendaraan_id' => 'required|string',
-            'nomor_kartu' => 'nullable|string|max:50',
+            'nomor_kartu' => 'nullable|string|max:50|exists:master_kartu_bensin_batams,nomor_kartu',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
             'km_akhir' => 'nullable|integer',
@@ -195,31 +198,15 @@ class BiayaBensinController extends Controller
         $validated['created_by'] = Auth::id();
         $validated['status'] = 'approved';
 
-        $item = \Illuminate\Support\Facades\DB::transaction(function () use ($validated) {
+        $item = DB::transaction(function () use ($validated) {
             $createdItem = BiayaBensin::create($validated);
 
             if (! empty($validated['nomor_kartu'])) {
-                $card = MasterKartuBensinBatam::where('nomor_kartu', $validated['nomor_kartu'])->first();
-                if ($card) {
-                    $oldSaldo = floatval($card->saldo);
-                    $newSaldo = $oldSaldo - floatval($validated['biaya']);
-                    $card->saldo = $newSaldo;
-                    $card->save();
-
-                    $mobil = Mobil::find($validated['mobil_id']);
-                    $mobilPlat = $mobil ? $mobil->nomor_polisi : '-';
-
-                    $card->histories()->create([
-                        'nomor_transaksi' => $createdItem->nomor_transaksi,
-                        'tanggal' => now(),
-                        'tipe' => 'berkurang',
-                        'nominal' => floatval($validated['biaya']),
-                        'saldo_sebelum' => $oldSaldo,
-                        'saldo_sesudah' => $newSaldo,
-                        'keterangan' => 'Pengisian bensin Kendaraan '.$mobilPlat,
-                        'created_by' => Auth::id(),
-                    ]);
-                }
+                $mobilPlat = Mobil::find($validated['mobil_id'] ?? null)?->nomor_polisi ?? '-';
+                app(BiayaBensinCardService::class)->adjust(
+                    $createdItem, null, 0, $validated['nomor_kartu'], (float) $validated['biaya'],
+                    'Pengisian bensin Kendaraan '.$mobilPlat
+                );
             }
 
             return $createdItem;
@@ -283,12 +270,11 @@ class BiayaBensinController extends Controller
     public function update(Request $request, string $id)
     {
         $item = BiayaBensin::findOrFail($id);
-        $oldValues = $item->toArray();
 
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'kendaraan_id' => 'required|string',
-            'nomor_kartu' => 'nullable|string|max:50',
+            'nomor_kartu' => 'nullable|string|max:50|exists:master_kartu_bensin_batams,nomor_kartu',
             'karyawan_id' => 'required|exists:karyawans,id',
             'km_awal' => 'nullable|integer',
             'km_akhir' => 'nullable|integer',
@@ -317,32 +303,55 @@ class BiayaBensinController extends Controller
             $validated['harga_per_liter'] = round($validated['biaya'] / $validated['liter'], 2);
         }
 
+        $oldBukti = $item->bukti_beli;
+        $newBukti = null;
         if ($request->hasFile('bukti_beli')) {
-            if ($item->bukti_beli && \Illuminate\Support\Facades\Storage::disk('public')->exists($item->bukti_beli)) {
-                \Illuminate\Support\Facades\Storage::disk('public')->delete($item->bukti_beli);
-            }
             $file = $request->file('bukti_beli');
             $filename = time().'_'.preg_replace('/\s+/', '_', $file->getClientOriginalName());
-            $path = $file->storeAs('bukti-bensin', $filename, 'public');
-            $validated['bukti_beli'] = $path;
+            $newBukti = $file->storeAs('bukti-bensin', $filename, 'public');
+            $validated['bukti_beli'] = $newBukti;
         }
 
-        $item->update($validated);
+        try {
+            DB::transaction(function () use ($id, $validated, $request) {
+                $item = BiayaBensin::lockForUpdate()->findOrFail($id);
+                $oldValues = $item->toArray();
+                $oldCardNumber = $item->nomor_kartu;
+                $oldAmount = (float) $item->biaya;
+                $item->update($validated);
 
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'user_name' => Auth::user()->name,
-            'auditable_type' => 'App\Models\BiayaBensin',
-            'auditable_id' => $item->id,
-            'action' => 'updated',
-            'module' => 'biaya_bensin',
-            'description' => 'Mengubah data biaya bensin',
-            'old_values' => $oldValues,
-            'new_values' => $item->toArray(),
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'url' => $request->fullUrl(),
-        ]);
+                app(BiayaBensinCardService::class)->adjust(
+                    $item, $oldCardNumber, $oldAmount,
+                    $item->nomor_kartu, (float) $item->biaya,
+                    'Koreksi biaya bensin '.$item->nomor_transaksi
+                );
+
+                AuditLog::create([
+                    'user_id' => Auth::id(),
+                    'user_name' => Auth::user()->name,
+                    'auditable_type' => 'App\Models\BiayaBensin',
+                    'auditable_id' => $item->id,
+                    'action' => 'updated',
+                    'module' => 'biaya_bensin',
+                    'description' => 'Mengubah data biaya bensin',
+                    'old_values' => $oldValues,
+                    'new_values' => $item->toArray(),
+                    'ip_address' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'url' => $request->fullUrl(),
+                ]);
+            });
+        } catch (\Throwable $e) {
+            if ($newBukti) {
+                Storage::disk('public')->delete($newBukti);
+            }
+
+            throw $e;
+        }
+
+        if ($newBukti && $oldBukti) {
+            Storage::disk('public')->delete($oldBukti);
+        }
 
         return redirect()->route('biaya-bensin.index')->with('success', 'Biaya bensin berhasil diperbarui.');
     }
@@ -352,24 +361,31 @@ class BiayaBensinController extends Controller
      */
     public function destroy(Request $request, string $id)
     {
-        $item = BiayaBensin::findOrFail($id);
-        $oldValues = $item->toArray();
-        $item->delete();
+        DB::transaction(function () use ($id, $request) {
+            $item = BiayaBensin::lockForUpdate()->findOrFail($id);
+            $oldValues = $item->toArray();
 
-        AuditLog::create([
-            'user_id' => Auth::id(),
-            'user_name' => Auth::user()->name,
-            'auditable_type' => 'App\Models\BiayaBensin',
-            'auditable_id' => $id,
-            'action' => 'deleted',
-            'module' => 'biaya_bensin',
-            'description' => 'Menghapus data biaya bensin',
-            'old_values' => $oldValues,
-            'new_values' => null,
-            'ip_address' => $request->ip(),
-            'user_agent' => $request->userAgent(),
-            'url' => $request->fullUrl(),
-        ]);
+            app(BiayaBensinCardService::class)->adjust(
+                $item, $item->nomor_kartu, (float) $item->biaya,
+                null, 0, 'Pembatalan biaya bensin '.$item->nomor_transaksi
+            );
+            $item->delete();
+
+            AuditLog::create([
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+                'auditable_type' => 'App\Models\BiayaBensin',
+                'auditable_id' => $id,
+                'action' => 'deleted',
+                'module' => 'biaya_bensin',
+                'description' => 'Menghapus data biaya bensin',
+                'old_values' => $oldValues,
+                'new_values' => null,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'url' => $request->fullUrl(),
+            ]);
+        });
 
         return redirect()->route('biaya-bensin.index')->with('success', 'Biaya bensin berhasil dihapus.');
     }
