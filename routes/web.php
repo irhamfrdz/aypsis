@@ -1508,6 +1508,9 @@ Route::middleware([
         Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
             ->name('karyawan.show')
             ->middleware('can:master-karyawan-view');
+        Route::post('karyawan/{karyawan}/apd', [KaryawanController::class, 'storeApd'])
+            ->name('karyawan.apd.store')
+            ->middleware('can:master-karyawan-update');
         Route::get('karyawan/{karyawan}/edit', [KaryawanController::class, 'edit'])
             ->name('karyawan.edit')
             ->middleware('can:master-karyawan-update');
@@ -3310,6 +3313,9 @@ Route::middleware([
         Route::get('master-asset/{asset}/print-tanda-terima', [\App\Http\Controllers\AssetController::class, 'printTandaTerima'])->name('asset.print-tanda-terima');
         Route::get('master-asset/{asset}/download-tanda-terima', [\App\Http\Controllers\AssetController::class, 'downloadTandaTerima'])->name('asset.download-tanda-terima');
         Route::get('master-asset/{asset}/foto-tanda-terima', [\App\Http\Controllers\AssetController::class, 'fotoTandaTerima'])->name('asset.foto-tanda-terima');
+        Route::get('master-asset/{asset}/riwayat-karyawan', [\App\Http\Controllers\AssetController::class, 'employeeHistory'])->name('asset.employee-history');
+        Route::post('master-asset/{asset}/riwayat-karyawan/{transaction}/kembalikan', [\App\Http\Controllers\AssetController::class, 'returnEmployeeApd'])->name('asset.employee-return');
+        Route::delete('master-asset/{asset}/riwayat-karyawan/{transaction}', [\App\Http\Controllers\AssetController::class, 'deleteEmployeeApd'])->name('asset.employee-history.destroy');
         Route::post('master-asset/{asset}/tanda-terima', [\App\Http\Controllers\AssetController::class, 'updateTandaTerima'])->name('asset.update-tanda-terima');
         Route::resource('master-asset', \App\Http\Controllers\AssetController::class)
             ->names('asset')

@@ -341,6 +341,11 @@
                     <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk @if($karyawan->tanggal_masuk)<span class="text-red-500">*</span>@endif</label>
                     <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}" @required($karyawan->tanggal_masuk)>
                 </div>
+                <div>
+                    <label for="tanggal_akhir_kontrak" class="{{ $labelClasses }}">Tanggal Akhir Kontrak</label>
+                    <input type="date" name="tanggal_akhir_kontrak" id="tanggal_akhir_kontrak" class="{{ $inputClasses }}" value="{{ old('tanggal_akhir_kontrak', $karyawan->tanggal_akhir_kontrak?->format('Y-m-d')) }}">
+                    @error('tanggal_akhir_kontrak')<p class="text-sm text-red-600">{{ $message }}</p>@enderror
+                </div>
 
                 <div>
                     <label for="tanggal_berhenti" class="{{ $labelClasses }}">Tanggal Berhenti</label>
@@ -848,6 +853,7 @@
             flatpickr("#sim_berlaku_mulai", dateConfig);
             flatpickr("#sim_berlaku_sampai", dateConfig);
             flatpickr("#tanggal_masuk", dateConfig);
+            flatpickr("#tanggal_akhir_kontrak", dateConfig);
             flatpickr("#tanggal_berhenti", dateConfig);
             flatpickr("#tanggal_masuk_sebelumnya", dateConfig);
             flatpickr("#tanggal_berhenti_sebelumnya", dateConfig);

@@ -23,6 +23,54 @@ use Maatwebsite\Excel\HeadingRowImport;
 
 class AssetController extends Controller
 {
+    public function employeeHistory(Asset $asset)
+    {
+        $asset->load('karyawan');
+        $transactions = \App\Models\KaryawanApdTransaction::with('karyawan')
+            ->where('asset_id', $asset->id)->orderByDesc('tanggal_serah_terima')->orderByDesc('id')->paginate(20);
+        $returns = DB::table('apd_return_histories')->where('asset_id', $asset->id)->orderByDesc('returned_at')->orderByDesc('id')->paginate(20, ['*'], 'return_page');
+
+        return view('master-asset.employee-history', compact('asset', 'transactions', 'returns'));
+    }
+
+    public function returnEmployeeApd(Request $request, Asset $asset, \App\Models\KaryawanApdTransaction $transaction)
+    {
+        $user = $request->user();
+        abort_unless($user && ($user->hasRole('admin') || $user->can('asset-update') || $user->can('master-asset-update')), 403);
+        $result = DB::transaction(function () use ($asset, $transaction, $user) {
+            $record = \App\Models\KaryawanApdTransaction::where('asset_id', $asset->id)->lockForUpdate()->findOrFail($transaction->id);
+            if ($record->status !== 'Di Gunakan') return 'already';
+            $updated = DB::table('assets')->where('id', $asset->id)->whereNotNull('kuantitas')->increment('kuantitas', $record->qty);
+            if (! $updated) throw \Illuminate\Validation\ValidationException::withMessages(['stok' => 'Stok asset belum diisi; isi stok terlebih dahulu sebelum pengembalian.']);
+            $record->update(['status' => 'Dikembalikan']);
+            $employee = $record->karyawan;
+            DB::table('apd_return_histories')->insert([
+                'asset_id' => $asset->id, 'transaction_id' => $record->id, 'nomor_transaksi' => $record->nomor_transaksi,
+                'karyawan_id' => $record->karyawan_id, 'nama_karyawan' => $employee?->nama_lengkap, 'nik' => $employee?->nik,
+                'nama_barang' => $record->nama_barang, 'ukuran' => $record->ukuran, 'qty' => $record->qty,
+                'returned_by' => $user->id ?? null, 'nama_pengguna' => $user->name ?? $user->username ?? null, 'returned_at' => now(),
+            ]);
+
+            return 'returned';
+        });
+        $message = match ($result) {
+            'already' => 'Transaksi ini sudah dikembalikan.',
+            default => 'Barang berhasil dikembalikan dan stok bertambah.',
+        };
+
+        return redirect()->route('asset.employee-history', $asset)->with('success', $message);
+    }
+
+    public function deleteEmployeeApd(Request $request, Asset $asset, \App\Models\KaryawanApdTransaction $transaction)
+    {
+        $user = $request->user();
+        abort_unless($user && ($user->hasRole('admin') || $user->can('asset-delete') || $user->can('master-asset-delete')), 403);
+        $record = \App\Models\KaryawanApdTransaction::where('asset_id', $asset->id)->findOrFail($transaction->id);
+        $record->delete();
+
+        return redirect()->route('asset.employee-history', $asset)->with('success', 'Riwayat transaksi berhasil dihapus. Stok tidak berubah.');
+    }
+
     /**
      * Display a listing of assets with search, filters, and statistics.
      */

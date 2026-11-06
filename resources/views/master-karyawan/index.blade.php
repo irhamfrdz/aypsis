@@ -587,6 +587,7 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
+                                @if($karyawan->tanggal_akhir_kontrak)<div class="mt-1 text-gray-500">Akhir kontrak: {{ $karyawan->tanggal_akhir_kontrak->format('d/M/Y') }}</div>@endif
                             </td>
                             @if(request('show_berhenti'))
                                 <td class="px-4 py-2 whitespace-nowrap text-center text-[10px]">
@@ -739,6 +740,7 @@
                             <span class="block text-gray-400 mb-0.5">Tgl Masuk</span>
                             <span class="font-medium">{{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}</span>
                         </div>
+                        @if($karyawan->tanggal_akhir_kontrak)<div class="flex justify-between gap-2 text-sm"><span class="text-gray-500">Tanggal Akhir Kontrak</span><span class="font-medium">{{ $karyawan->tanggal_akhir_kontrak->format('d/M/Y') }}</span></div>@endif
                         @if($karyawan->tanggal_berhenti)
                         <div>
                             <span class="block text-gray-400 mb-0.5">Tgl Berhenti</span>

@@ -1248,6 +1248,7 @@ class KaryawanController extends Controller
             'grup_bpjs' => 'nullable|array',
             'grup_bpjs.*' => 'nullable|string|max:255',
             'tanggal_masuk' => 'required|date',
+            'tanggal_akhir_kontrak' => 'nullable|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',
@@ -1361,8 +1362,42 @@ class KaryawanController extends Controller
     {
         $karyawan->load('kapalAbk');
         $assets = app(\App\Services\KaryawanAssetService::class)->forKaryawan($karyawan->id);
+        $assetsApd = \App\Models\Asset::where('karyawan_id', $karyawan->id)
+            ->where('kategori', 'APD')->orderBy('nama_asset')->get();
+        $apdOptions = \App\Models\Asset::where('kategori', 'APD')->orderBy('nama_asset')->get(['id', 'kode_asset', 'nama_asset', 'nomor_seri_items', 'nomor_seri', 'kuantitas']);
+        $apdTransactions = \App\Models\KaryawanApdTransaction::where('karyawan_id', $karyawan->id)->orderByDesc('id')->get();
 
-        return view('master-karyawan.show', compact('karyawan', 'assets'));
+        return view('master-karyawan.show', compact('karyawan', 'assets', 'assetsApd', 'apdOptions', 'apdTransactions'));
+    }
+
+    public function storeApd(Request $request, Karyawan $karyawan)
+    {
+        $data = $request->validateWithBag('apd', [
+            'tanggal_serah_terima' => ['required', 'date'],
+            'asset_id' => ['required', 'integer', Rule::exists('assets', 'id')->where(fn ($q) => $q->where('kategori', 'APD')->whereNull('deleted_at'))],
+            'ukuran' => ['nullable', 'string', 'max:100'],
+            'qty' => ['required', 'numeric', 'gt:0', 'max:9999999999.99', 'decimal:0,2'],
+            'keterangan' => ['nullable', 'string', 'max:2000'],
+        ]);
+        $transaction = DB::transaction(function () use ($data, $karyawan) {
+            $asset = \App\Models\Asset::where('kategori', 'APD')->lockForUpdate()->findOrFail($data['asset_id']);
+            $sizes = collect($asset->daftar_nomor_seri)->pluck('ukuran')->filter(fn ($size) => is_string($size) && trim($size) !== '')->unique()->values();
+            if (($sizes->isNotEmpty() && ! $sizes->contains($data['ukuran'] ?? null)) || ($sizes->isEmpty() && ! empty($data['ukuran']))) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['ukuran' => 'Pilih ukuran yang tersedia untuk barang APD.'])->errorBag('apd');
+            }
+            $updated = DB::table('assets')->where('id', $asset->id)->whereNotNull('kuantitas')
+                ->where('kuantitas', '>=', $data['qty'])->decrement('kuantitas', $data['qty']);
+            if (! $updated) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['qty' => 'Stok APD tidak cukup atau belum diisi di Master Asset.'])->errorBag('apd');
+            }
+            $data['karyawan_id'] = $karyawan->id;
+            $data['nama_barang'] = $asset->nama_asset;
+            $data['stock_deducted'] = true;
+
+            return \App\Models\KaryawanApdTransaction::create($data);
+        });
+
+        return redirect()->route('master.karyawan.show', $karyawan)->with('success', 'Transaksi '.$transaction->nomor_transaksi.' berhasil disimpan.');
     }
 
     /**
@@ -1498,6 +1533,7 @@ class KaryawanController extends Controller
             'grup_bpjs' => 'nullable|array',
             'grup_bpjs.*' => 'nullable|string|max:255',
             'tanggal_masuk' => ($karyawan->tanggal_masuk ? 'required' : 'nullable').'|date',
+            'tanggal_akhir_kontrak' => 'nullable|date',
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',

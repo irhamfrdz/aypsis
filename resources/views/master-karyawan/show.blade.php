@@ -345,6 +345,10 @@
                 <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_masuk, 'd/M/Y') }}</p>
             </div>
             <div>
+                <p class="font-semibold text-gray-600">Tanggal Akhir Kontrak</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_akhir_kontrak, 'd/M/Y') }}</p>
+            </div>
+            <div>
                 <p class="font-semibold text-gray-600">Tanggal Berhenti</p>
                 <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_berhenti, 'd/M/Y') }}</p>
             </div>
@@ -793,6 +797,78 @@
 
     <details open class="mb-4 border rounded">
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
+            <span>Asset APD</span>
+            <span class="text-sm text-gray-500">{{ $apdTransactions->count() }} transaksi</span>
+        </summary>
+        <div class="p-4">
+            @if(session('success'))<div role="status" class="mb-4 rounded bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
+            @can('master-karyawan-update')
+            <div class="mb-4 flex justify-end"><button type="button" id="open-apd-modal" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"><i class="fas fa-plus mr-1" aria-hidden="true"></i> Tambah Asset APD</button></div>
+            @endcan
+            <div class="overflow-x-auto">
+                <table class="min-w-full border border-gray-300 text-sm">
+                    <thead><tr class="bg-gray-100"><th class="border px-3 py-2 text-left">ID Transaksi</th><th class="border px-3 py-2 text-left">Tanggal Serah Terima</th><th class="border px-3 py-2 text-left">Jenis Barang</th><th class="border px-3 py-2 text-left">Ukuran</th><th class="border px-3 py-2 text-right">Qty</th><th class="border px-3 py-2 text-left">Keterangan</th><th class="border px-3 py-2 text-left">Status</th></tr></thead>
+                    <tbody>
+                    @forelse($apdTransactions as $transaction)
+                        <tr><td class="border px-3 py-2">{{ $transaction->nomor_transaksi }}</td><td class="border px-3 py-2 whitespace-nowrap">{{ $transaction->tanggal_serah_terima->format('d/m/Y') }}</td><td class="border px-3 py-2">{{ $transaction->nama_barang }}</td><td class="border px-3 py-2">{{ $transaction->ukuran ?: '-' }}</td><td class="border px-3 py-2 text-right">{{ rtrim(rtrim($transaction->qty, '0'), '.') }}</td><td class="border px-3 py-2">{{ $transaction->keterangan ?: '-' }}</td><td class="border px-3 py-2"><span class="inline-flex whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{{ $transaction->status }}</span></td></tr>
+                    @empty
+                        <tr><td colspan="7" class="border px-3 py-6 text-center text-gray-500">Belum ada transaksi serah terima APD.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @if($assetsApd->isNotEmpty())
+                <h3 class="mt-6 mb-3 text-sm font-semibold text-gray-700">Asset APD yang tercatat pada Master Asset</h3>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300 text-sm">
+                        <thead><tr class="bg-gray-100">
+                            <th class="border border-gray-300 px-3 py-2 text-left">Kode Asset</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Nama APD</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Merk</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Kuantitas</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Tanggal Tanda Terima</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Kondisi</th>
+                            <th class="border border-gray-300 px-3 py-2 text-left">Status</th>
+                        </tr></thead>
+                        <tbody>
+                            @foreach($assetsApd as $apd)
+                                <tr>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kode_asset }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->nama_asset }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->nama_merk ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kuantitas ?? '-' }} {{ $apd->satuan }}</td>
+                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $apd->tanggal_tanda_terima?->format('d/m/Y') ?? '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kondisi ?: '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->status ?: '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+        </div>
+    </details>
+
+    @can('master-karyawan-update')
+    <dialog id="apd-modal" aria-labelledby="apd-modal-title" class="w-full max-w-lg rounded-xl border-0 p-0 shadow-xl backdrop:bg-black/50">
+        <div class="border-b px-6 py-4"><h3 id="apd-modal-title" class="text-lg font-bold text-gray-900">Tambah Serah Terima APD</h3><p class="mt-1 text-sm text-gray-500">Catat barang APD yang diserahkan kepada {{ $karyawan->nama_lengkap }}.</p></div>
+        <form method="POST" action="{{ route('master.karyawan.apd.store', $karyawan) }}" class="space-y-4 p-6">
+            @csrf
+            @if($errors->apd->any())<div role="alert" class="rounded-lg bg-red-50 p-3 text-sm text-red-800"><ul>@foreach($errors->apd->all() as $error)<li>{{ $error }}</li>@endforeach</ul></div>@endif
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-id">ID Transaksi</label><input id="apd-id" value="TRX-APD-..." readonly class="mt-1 block w-full rounded-lg border-gray-300 bg-gray-100 text-sm"><p class="mt-1 text-xs text-gray-500">Nomor dibuat otomatis saat transaksi disimpan.</p></div>
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-date">Tanggal Serah Terima APD</label><input id="apd-date" type="date" name="tanggal_serah_terima" value="{{ old('tanggal_serah_terima', now()->toDateString()) }}" required class="mt-1 block w-full rounded-lg border-gray-300 text-sm"></div>
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-asset">Jenis Barang</label><select id="apd-asset" name="asset_id" required class="mt-1 block w-full rounded-lg border-gray-300 text-sm"><option value="">Pilih barang APD</option>@foreach($apdOptions as $option)<option value="{{ $option->id }}" @selected(old('asset_id') == $option->id)>{{ $option->nama_asset }} ({{ $option->kode_asset }})</option>@endforeach</select></div>
+            <p id="apd-stock" class="text-xs text-gray-500" aria-live="polite"></p>
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-size">Ukuran</label><select id="apd-size" name="ukuran" class="mt-1 block w-full rounded-lg border-gray-300 text-sm"><option value="">Pilih barang terlebih dahulu</option></select><p id="apd-size-hint" class="mt-1 text-xs text-gray-500"></p></div>
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-qty">Qty</label><input id="apd-qty" type="number" min="0.01" step="0.01" name="qty" value="{{ old('qty', 1) }}" required class="mt-1 block w-full rounded-lg border-gray-300 text-sm"></div>
+            <div><label class="block text-sm font-medium text-gray-700" for="apd-notes">Keterangan</label><textarea id="apd-notes" name="keterangan" rows="3" maxlength="2000" class="mt-1 block w-full rounded-lg border-gray-300 text-sm">{{ old('keterangan') }}</textarea></div>
+            <div class="flex justify-end gap-2"><button type="button" id="close-apd-modal" class="rounded-lg border px-4 py-2 text-sm text-gray-700">Batal</button><button type="submit" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Simpan</button></div>
+        </form>
+    </dialog>
+    @endcan
+
+    <details open class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
             <span>Asset yang Digunakan</span>
             <span class="text-sm text-gray-500">{{ $assets->count() }} asset</span>
         </summary>
@@ -965,3 +1041,36 @@
 @endcan
 
 @endsection
+
+@push('scripts')
+@can('master-karyawan-update')
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('apd-modal');
+    const asset = document.getElementById('apd-asset');
+    const size = document.getElementById('apd-size');
+    const hint = document.getElementById('apd-size-hint');
+    const stockHint = document.getElementById('apd-stock');
+    const stocks = {{ Illuminate\Support\Js::from($apdOptions->mapWithKeys(fn ($item) => [$item->id => $item->kuantitas])) }};
+    const sizes = {{ Illuminate\Support\Js::from($apdOptions->mapWithKeys(fn ($item) => [$item->id => collect($item->daftar_nomor_seri)->pluck('ukuran')->filter(fn ($value) => is_string($value) && trim($value) !== '')->unique()->values()])) }};
+    const oldSize = {{ Illuminate\Support\Js::from(old('ukuran', '')) }};
+    function updateSizes(selected = '') {
+        const options = sizes[asset.value] || [];
+        size.replaceChildren(new Option(options.length ? 'Pilih ukuran' : 'Tidak ada ukuran tersedia', ''));
+        options.forEach(value => size.add(new Option(value, value)));
+        size.value = options.includes(selected) ? selected : '';
+        size.required = options.length > 0;
+        size.disabled = options.length === 0;
+        hint.textContent = asset.value && !options.length ? 'Barang ini tidak memiliki ukuran di Master Asset.' : '';
+        const stock = stocks[asset.value];
+        stockHint.textContent = asset.value ? (stock === null || stock === undefined ? 'Stok belum diisi di Master Asset.' : 'Stok tersedia: ' + new Intl.NumberFormat('id-ID', { maximumFractionDigits: 2 }).format(Number(stock))) : '';
+    }
+    asset.addEventListener('change', () => updateSizes());
+    document.getElementById('open-apd-modal').addEventListener('click', () => modal.showModal());
+    document.getElementById('close-apd-modal').addEventListener('click', () => modal.close());
+    updateSizes(oldSize);
+    if ({{ $errors->apd->any() ? 'true' : 'false' }}) modal.showModal();
+});
+</script>
+@endcan
+@endpush

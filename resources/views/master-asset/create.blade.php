@@ -286,7 +286,7 @@
             document.getElementById('tanggal-perolehan-label').textContent = showKapal ? 'Tanggal Beli' : 'Tanggal Perolehan';
             Array.from(kategori.options).forEach(function(option) {
                 if (option.value) {
-                    const available = (option.dataset.kapal === '1') === showKapal;
+                    const available = option.value === 'APD' || (option.dataset.kapal === '1') === showKapal;
                     option.hidden = !available;
                     option.disabled = !available;
                 }

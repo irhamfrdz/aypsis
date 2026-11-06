@@ -65,6 +65,7 @@ class Asset extends Model
     }
 
     public const KATEGORI_OPTIONS = [
+        'APD',
         'Elektronik',
         'Elektronik & IT',
         'Kendaraan',
@@ -81,6 +82,7 @@ class Asset extends Model
     ];
 
     public const KATEGORI_KAPAL_OPTIONS = [
+        'APD',
         'Keselamatan',
         'Navigasi',
         'Buku',
