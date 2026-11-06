@@ -866,7 +866,7 @@ class ObController extends Controller
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => now(),
                             'gudang_id' => $gudang->id,
-                            'keterangan' => 'Masuk via OB Bongkar dari Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
+                            'keterangan' => 'Masuk via OB Muat ke Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
                             'created_by' => Auth::id(),
                         ]);
                     }
@@ -2377,7 +2377,8 @@ class ObController extends Controller
                                 'jenis_kegiatan' => 'Masuk',
                                 'tanggal_kegiatan' => now(),
                                 'gudang_id' => $gudang->id,
-                                'keterangan' => 'Masuk via OB Bongkar dari Kapal: '.($record->nama_kapal ?? '-').'. Voyage: '.($record->no_voyage ?? '-'),
+                                'keterangan' => ($type === 'naik_kapal' ? 'Masuk via OB Muat ke Kapal: ' : 'Masuk via OB Bongkar dari Kapal: ')
+                                    .($record->nama_kapal ?? '-').'. Voyage: '.($record->no_voyage ?? '-'),
                                 'created_by' => Auth::id(),
                             ]);
                         }
@@ -2558,7 +2559,8 @@ class ObController extends Controller
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => now(),
                             'gudang_id' => $gudang->id,
-                            'keterangan' => "Bulk Overbrengen. Kapal: {$namaKapal}. Voyage: {$noVoyage}",
+                            'keterangan' => ($hasBl ? 'Masuk via OB Bongkar dari Kapal: ' : 'Masuk via OB Muat ke Kapal: ')
+                                .$namaKapal.'. Voyage: '.$noVoyage,
                             'created_by' => Auth::id(),
                         ]);
                     }

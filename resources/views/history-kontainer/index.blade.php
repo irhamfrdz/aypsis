@@ -144,7 +144,16 @@
                             </td>
                             <td class="px-6 py-4">
                                 <p class="text-sm text-gray-600 line-clamp-2 max-w-xs break-words italic">
-                                    {{ preg_replace('/^(?:OB \(Overbrengen\)|Overbrengen) dari Kapal:/i', 'Masuk via OB Bongkar dari Kapal:', $history->keterangan ?? '-') }}
+                                    @php
+                                        $keterangan = $history->keterangan ?? '-';
+                                        $isObMuat = strcasecmp(trim($history->gudang->nama_gudang ?? ''), 'ON BOARD') === 0;
+                                        if ($isObMuat) {
+                                            $keterangan = preg_replace('/^(?:Masuk via OB Bongkar|OB \(Overbrengen\)|Overbrengen) dari Kapal:|^Bulk Overbrengen\. Kapal:/i', 'Masuk via OB Muat ke Kapal:', $keterangan);
+                                        } else {
+                                            $keterangan = preg_replace('/^(?:OB \(Overbrengen\)|Overbrengen) dari Kapal:|^Bulk Overbrengen\. Kapal:/i', 'Masuk via OB Bongkar dari Kapal:', $keterangan);
+                                        }
+                                    @endphp
+                                    {{ $keterangan }}
                                 </p>
                                 @if($history->is_masuk_via_tanda_terima)
                                     <p class="mt-1 text-xs font-semibold text-gray-700">
