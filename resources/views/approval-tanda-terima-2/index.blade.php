@@ -384,7 +384,7 @@
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
                                         data-goods-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}" data-container-number="{{ $containerNumber }}"
-                                        data-receipt-number="{{ $type === 'fcl' ? $item->nomor_tanda_terima : $number }}"
+                                        data-receipt-number="{{ $number }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
                                         data-shipper="{{ $shipperFields['shipper'] ?? $item->shipperJb?->shipper }}"
                                         data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'>
