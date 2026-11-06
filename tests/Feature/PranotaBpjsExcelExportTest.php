@@ -50,6 +50,9 @@ class PranotaBpjsExcelExportTest extends TestCase
             $copy->snapshot_bpjs = $snapshot;
             $copy->save();
         }
+        $legacy = $original->replicate();
+        $legacy->rincian_bpjs = null;
+        $legacy->save();
 
         $response = (new PranotaBpjsController)->exportExcel($header);
         $path = $response->getFile()->getPathname();
@@ -62,6 +65,7 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertSame('ABDULLAH', $sheet->getCell('C2')->getValue());
         $this->assertSame('0012', $sheet->getCell('B2')->getValue());
         $this->assertSame('3202160607820012', $sheet->getCell('D2')->getValue());
+        $this->assertSame('PPU', $sheet->getCell('H2')->getValue());
         $this->assertSame('JKT', $sheet->getCell('J2')->getValue());
         $this->assertSame(4450000.0, $sheet->getCell('L2')->getValue());
         $this->assertEquals(5360000.5, $sheet->getCell('L3')->getValue());
@@ -76,6 +80,12 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertEquals(241195.2, $sheet->getCell('BD2')->getValue());
         $this->assertEquals(110000.8, $sheet->getCell('BE2')->getValue());
         $this->assertEquals(91298.8, $sheet->getCell('BF2')->getValue());
+        $this->assertSame('GROUP JKN', $sheet->getCell('BG1')->getValue());
+        $this->assertSame('GROUP BP JAMSOSTEK', $sheet->getCell('BH1')->getValue());
+        $this->assertSame('JKN-KIS', $sheet->getCell('BG2')->getValue());
+        $this->assertSame('PPU', $sheet->getCell('BH2')->getValue());
+        $this->assertNull($sheet->getCell('BI2')->getValue());
+        $this->assertEquals(144000.8, $sheet->getCell('BI6')->getValue());
         @unlink($path);
     }
 
