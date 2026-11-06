@@ -142,6 +142,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
 
         $this->assertEquals($shipperId, DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('shipper_jb_id'));
         $this->assertSame('TT-FCL-001', DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('nomor_tanda_terima'));
+        $this->assertSame('SJ-JB-001', DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('no_surat_jalan'));
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $jbId)->value('shipper_jb_id'));
         $this->assertEquals(77, DB::table('manifests')->where('id', $jbId)->value('shipper_id'));
         $this->assertEquals('Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
@@ -246,10 +247,11 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         ]);
 
         $controller = new ApprovalTandaTerimaDuaController;
-        $controller->update(Request::create('/approval-tanda-terima-2/lcl/'.$lclId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-LCL-1']), 'lcl', $lclId);
+        $controller->update(Request::create('/approval-tanda-terima-2/lcl/'.$lclId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-LCL-BARU']), 'lcl', $lclId);
         $controller->update(Request::create('/approval-tanda-terima-2/ttsj/'.$ttsjId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-TTSJ-1']), 'ttsj', $ttsjId);
 
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $linkedManifestId)->value('shipper_jb_id'));
+        $this->assertSame('TT-LCL-BARU', DB::table('tanda_terimas_lcl')->where('id', $lclId)->value('nomor_tanda_terima'));
         $this->assertNull(DB::table('manifests')->where('id', $otherManifestId)->value('shipper_jb_id'));
         $this->assertEquals($shipperId, DB::table('tanda_terima_tanpa_surat_jalan')->where('id', $ttsjId)->value('shipper_jb_id'));
         $this->assertSame('TT-TTSJ-1', DB::table('tanda_terima_tanpa_surat_jalan')->where('id', $ttsjId)->value('no_tanda_terima'));

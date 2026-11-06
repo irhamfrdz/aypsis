@@ -471,7 +471,10 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
-                                    <span class="text-xs font-semibold text-gray-900">{{ $item->no_surat_jalan }}</span>
+                                    <span class="text-xs font-semibold text-gray-900">{{ $item->nomor_tanda_terima ?: $item->no_surat_jalan }}</span>
+                                    @if(filled($item->nomor_tanda_terima) && $item->nomor_tanda_terima !== $item->no_surat_jalan)
+                                        <span class="text-xs text-gray-500">(SJ: {{ $item->no_surat_jalan }})</span>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
@@ -575,7 +578,10 @@
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="flex items-center gap-1">
-                                    <span class="text-xs font-semibold text-gray-900">{{ $tandaTerima->no_surat_jalan }}</span>
+                                    <span class="text-xs font-semibold text-gray-900">{{ $tandaTerima->nomor_tanda_terima ?: $tandaTerima->no_surat_jalan }}</span>
+                                    @if(filled($tandaTerima->nomor_tanda_terima) && $tandaTerima->nomor_tanda_terima !== $tandaTerima->no_surat_jalan)
+                                        <span class="text-xs text-gray-500">(SJ: {{ $tandaTerima->no_surat_jalan }})</span>
+                                    @endif
                                     @if(!$tandaTerima->surat_jalan_id)
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                                             Manual

@@ -261,6 +261,7 @@ class TandaTerimaController extends Controller
                 ->select(
                     'sj.id as surat_jalan_id',
                     'sj.no_surat_jalan',
+                    'tt.nomor_tanda_terima',
                     'sj.tanggal_surat_jalan',
                     'sj.no_kontainer',
                     'sj.supir',
@@ -279,12 +280,13 @@ class TandaTerimaController extends Controller
                         ->orWhere('sj.kegiatan', '')
                         ->orWhere('sj.kegiatan', 'NOT LIKE', '%bongkar%');
                 })
-                ->groupBy('sj.id', 'sj.no_surat_jalan', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.surat_jalan_pabrik', 'tt.no_dn', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
+                ->groupBy('sj.id', 'sj.no_surat_jalan', 'tt.nomor_tanda_terima', 'sj.tanggal_surat_jalan', 'sj.no_kontainer', 'sj.supir', 'sj.no_plat', 'sj.kegiatan', 'tt.id', 'tt.penerima', 'tt.surat_jalan_pabrik', 'tt.no_dn', 'tt.created_at', 'uj.nomor_uang_jalan', 'uj.tanggal_uang_jalan');
 
             // Apply search filter
             if (! empty($search)) {
                 $query->where(function ($q) use ($search) {
                     $q->where('sj.no_surat_jalan', 'like', "%{$search}%")
+                        ->orWhere('tt.nomor_tanda_terima', 'like', "%{$search}%")
                         ->orWhere('sj.supir', 'like', "%{$search}%")
                         ->orWhere('sj.no_kontainer', 'like', "%{$search}%")
                         ->orWhere('tt.penerima', 'like', "%{$search}%");
@@ -324,6 +326,7 @@ class TandaTerimaController extends Controller
         if (! empty($search)) {
             $query->where(function ($q) use ($search) {
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
+                    ->orWhere('nomor_tanda_terima', 'like', "%{$search}%")
                     ->orWhere('no_kontainer', 'like', "%{$search}%")
                     ->orWhere('no_dn', 'like', "%{$search}%")
                     ->orWhere('surat_jalan_pabrik', 'like', "%{$search}%")

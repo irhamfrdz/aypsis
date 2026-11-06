@@ -85,7 +85,7 @@
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Nomor Tanda Terima</dt>
                             <dd class="text-sm text-gray-900 font-semibold">
-                                <code class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded">{{ $tandaTerima->nomor_tanda_terima ?: '-' }}</code>
+                                <code class="text-sm bg-blue-100 text-blue-800 px-3 py-1 rounded">{{ $tandaTerima->nomor_tanda_terima ?: $tandaTerima->no_surat_jalan }}</code>
                             </dd>
                         </div>
                         <div>
