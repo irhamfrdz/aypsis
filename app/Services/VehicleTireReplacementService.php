@@ -33,7 +33,7 @@ class VehicleTireReplacementService
                     }
                 })
                 ->with(['mobil:id,nomor_polisi,no_kir,kode_no', 'penerima:id,nama_lengkap'])
-                ->select(['id', 'mobil_id', 'penerima_id', 'nomor_bukti_pakai', 'nomor_seri', 'merk', 'ukuran', 'kondisi', 'keterangan'])
+                ->select(['id', 'mobil_id', 'penerima_id', 'nomor_bukti_pakai', 'nomor_seri', 'merk', 'ukuran', 'kondisi', 'harga_beli', 'keterangan'])
                 ->selectRaw($hasManualReceiver ? 'penerima_manual' : 'NULL AS penerima_manual')
                 ->selectRaw($dateColumn.' AS usage_date')
                 ->get();
@@ -63,6 +63,7 @@ class VehicleTireReplacementService
                     'merk' => $row->merk,
                     'ukuran' => $row->ukuran,
                     'kondisi' => $row->kondisi,
+                    'harga_beli' => $row->harga_beli,
                     'kendaraan' => $row->mobil?->nomor_polisi ?: ($row->mobil?->no_kir ?: ($row->mobil?->kode_no ?: '-')),
                     'penerima' => $row->penerima?->nama_lengkap ?: ($row->penerima_manual ?: '-'),
                     'sumber' => $row->stock_source,

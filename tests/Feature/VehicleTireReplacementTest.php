@@ -37,6 +37,7 @@ class VehicleTireReplacementTest extends TestCase
                 $table->string('merk')->nullable();
                 $table->string('ukuran')->nullable();
                 $table->string('kondisi')->nullable();
+                $table->decimal('harga_beli', 15, 2)->nullable();
                 $table->text('keterangan')->nullable();
             });
         }
@@ -110,7 +111,8 @@ class VehicleTireReplacementTest extends TestCase
             'mobil_id' => 9, 'penerima_id' => 10, 'status' => 'Terpakai',
             'tanggal_keluar' => '2026-09-01', 'tanggal_digunakan' => '2026-10-30',
             'nomor_bukti_pakai' => 'P261000330', 'nomor_seri' => 'SERIBAN01',
-            'merk' => 'GITI', 'ukuran' => '1000', 'kondisi' => 'Kanisir', 'keterangan' => '<script>alert(1)</script>',
+            'merk' => 'GITI', 'ukuran' => '1000', 'kondisi' => 'Kanisir', 'harga_beli' => 1250000,
+            'keterangan' => '<script>alert(1)</script>',
         ]);
         DB::table('stock_ban_luar_batams')->insert([
             'mobil_id' => 9, 'penerima_id' => 10, 'status' => 'Terpakai', 'tanggal_keluar' => '2026-10-31',
@@ -126,9 +128,12 @@ class VehicleTireReplacementTest extends TestCase
         $this->assertSame('JKT2022409', $details[1]['kendaraan']);
         $this->assertSame('BENI', $details[1]['penerima']);
         $this->assertSame('P261000330', $details[1]['nomor_bukti']);
+        $this->assertSame('1250000.00', $details[1]['harga_beli']);
+        $this->assertNull($details[0]['harga_beli']);
         $html = view('dashboard-perjalanan-kendaraan.partials.tire-details', ['tireDetails' => $details])->render();
         $this->assertStringContainsString('SERIBAN01', $html);
         $this->assertStringContainsString('31/10/2026', $html);
+        $this->assertStringContainsString('Rp 1.250.000', $html);
         $this->assertStringNotContainsString('<script>', $html);
         $this->assertStringContainsString('Tidak ada pergantian ban', view('dashboard-perjalanan-kendaraan.partials.tire-details', [
             'tireDetails' => collect(),
