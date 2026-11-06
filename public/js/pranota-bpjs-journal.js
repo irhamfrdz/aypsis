@@ -60,6 +60,7 @@
         const section = document.querySelector('[data-bpjs-journal]');
         if (!section) return;
         const journal = calculate(records);
+        updateTotals(journal.totals);
         const formatter = new Intl.NumberFormat('id-ID', { maximumFractionDigits: 0 });
         const preciseFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const fragment = document.createDocumentFragment();
@@ -89,13 +90,26 @@
             section.querySelector('[data-journal-total="' + key + '"]').textContent = text;
         });
     }
+    function updateTotals(totals) {
+        for (const key of ['tunjangan', 'biaya', 'hutang']) {
+            const cell = document.querySelector('[data-row-journal-total="' + key + '"]');
+            if (cell) cell.textContent = 'Rp ' + Math.round(totals[key]).toLocaleString('id-ID');
+        }
+    }
+    function renderRow(row, record) {
+        const totals = calculate([record]).totals;
+        for (const key of ['tunjangan', 'biaya', 'hutang']) {
+            const cell = row.querySelector('[data-row-journal="' + key + '"]');
+            if (cell) cell.textContent = 'Rp ' + Math.round(totals[key]).toLocaleString('id-ID');
+        }
+    }
     function renderFromRows(container) {
         const filter = container.bpjsJournalFilter;
         render(Array.from(container.querySelectorAll('tr.detail-row')).filter(row =>
             !row.classList.contains('hidden') && row.querySelector('.karyawan-hidden-input')?.value
             && row.bpjsJournalRecord).map(row => {
                 const record = row.bpjsJournalRecord;
-                if (!filter) return record;
+                if (!filter) { renderRow(row, record); return record; }
                 const employee = record.employee || {};
                 const matches = jenis => root.BpjsMasterFilters.matches(jenis === 'jkn'
                     ? { group_jkn: employee.group_jkn, tipe_jkn: employee.tipe_jkn }
@@ -108,8 +122,10 @@
                 if (!matches('jamsostek')) {
                     for (const key of fields.filter(key => !['bpjs_kesehatan', 'bpjs_ketenagakerjaan'].includes(key))) amounts[key] = 0;
                 }
-                return { ...record, amounts };
+                const filtered = { ...record, amounts };
+                renderRow(row, filtered);
+                return filtered;
             }));
     }
-    root.BpjsJournal = { fields, calculate, render, renderFromRows };
+    root.BpjsJournal = { fields, calculate, render, renderRow, renderFromRows };
 })(globalThis);

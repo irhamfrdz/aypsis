@@ -7,18 +7,16 @@ use Illuminate\Validation\ValidationException;
 
 class BpjsJournalAccount
 {
+    private ?array $mapping = null;
+
     public function resolve(string $type, string $fallback = ''): ?Coa
     {
         $compact = fn ($value) => preg_replace('/[\s_-]+/u', '', mb_strtoupper($value));
-        $key = $compact($type);
-        if ($key === 'BPUCREW' || (! $key && $compact($fallback) === 'BPUCREW')) {
-            $key = 'CREW';
-        }
-        $mapping = collect(json_decode(file_get_contents(public_path('js/bpjs-journal-accounts.json')), true))->first(fn ($row) => $row[0] === $key);
-        if (! $mapping) {
+        $label = $this->label($type, $fallback);
+        if (! $label) {
             return null;
         }
-        [$number, $name] = explode(' - ', $mapping[2], 2);
+        [$number, $name] = explode(' - ', $label, 2);
         $accounts = Coa::where('nomor_akun', $number)->get();
         if ($accounts->count() === 1) {
             return $accounts->first();
@@ -26,6 +24,18 @@ class BpjsJournalAccount
         $matches = $accounts->filter(fn ($account) => $compact($account->nama_akun) === $compact($name));
 
         return $matches->count() === 1 ? $matches->first() : null;
+    }
+
+    public function label(string $type, string $fallback = ''): ?string
+    {
+        $compact = fn ($value) => preg_replace('/[\s_-]+/u', '', mb_strtoupper($value));
+        $key = $compact($type);
+        if ($key === 'BPUCREW' || (! $key && $compact($fallback) === 'BPUCREW')) {
+            $key = 'CREW';
+        }
+        $this->mapping ??= json_decode(file_get_contents(public_path('js/bpjs-journal-accounts.json')), true);
+        $mapping = collect($this->mapping)->first(fn ($row) => $row[0] === $key);
+        return $mapping[2] ?? null;
     }
 
     public function selectedId(array $groups): int

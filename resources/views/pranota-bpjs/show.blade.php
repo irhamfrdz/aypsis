@@ -163,18 +163,18 @@
                 <table class="bpjs-detail-table w-full text-xs border-collapse whitespace-nowrap">
                     <thead>
                         <tr class="bg-gray-100 text-gray-700">
-                            <th colspan="7" class="border border-gray-200 p-3">Informasi Karyawan</th>
+                            <th colspan="8" class="border border-gray-200 p-3">Informasi Karyawan</th>
                             @foreach($componentGroups as $group => $columns)
-                                <th colspan="{{ count($columns) }}" class="border border-gray-200 p-3 {{ $group === 'JKN' ? 'bg-indigo-50 text-indigo-800' : 'bg-teal-50 text-teal-800' }}">{{ $group }}</th>
+                                <th colspan="{{ count($columns) + (array_key_exists('no_voucher', $columns) ? 3 : 0) }}" class="border border-gray-200 p-3 {{ $group === 'JKN' ? 'bg-indigo-50 text-indigo-800' : 'bg-teal-50 text-teal-800' }}">{{ $group }}</th>
                             @endforeach
                             <th rowspan="2" class="border border-gray-200 p-3 bg-teal-50">Subtotal (Rp)</th>
                         </tr>
                         <tr class="bg-gray-50">
-                            @foreach(['No', 'Nama Karyawan', 'Group BPJS', 'Tipe JKN', 'DPP JKN', 'Tipe BP Jamsostek', 'DPP BP Jamsostek'] as $label)
+                            @foreach(['No', 'Nama Karyawan', 'Group BPJS', 'Tipe JKN', 'DPP JKN', 'Tipe BP Jamsostek', 'Akun Jurnal', 'DPP BP Jamsostek'] as $label)
                                 <th class="border border-gray-200 p-3 text-left">{{ $label }}</th>
                             @endforeach
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<th class="border border-gray-200 p-3 text-right {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $label }}</th>@endforeach
+                                @foreach($columns as $field => $label)<th class="border border-gray-200 p-3 text-right {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $label }}</th>@if($field === 'no_voucher')<th class="border p-3">Tunjangan Jurnal</th><th class="border p-3">Biaya Jurnal</th><th class="border p-3">Hutang Jurnal</th>@endif @endforeach
                             @endforeach
                         </tr>
                     </thead>
@@ -182,6 +182,7 @@
                         @foreach($pranota_bpj->details as $index => $detail)
                             @php
                                 $employee = $detail->karyawan_pranota;
+                                $accountResolver = $accountResolver ?? new \App\Services\BpjsJournalAccount;
                             @endphp
                             <tr class="bpjs-detail-row hover:bg-gray-50" data-name="{{ $employee?->nama_lengkap ?? '' }}" data-groups="{{ implode('|', array_filter([$employee?->group_jkn, $employee?->group_bp_jamsostek])) }}" data-types="{{ implode('|', array_filter([$employee?->tipe_jkn, $employee?->tipe_bp_jamsostek])) }}">
                                 <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
@@ -199,11 +200,13 @@
                                 <td class="border border-gray-200 p-3">{{ $detail->karyawan_pranota?->tipe_jkn ?: '-' }}</td>
                                 <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan_pranota?->dpp_jkn) }}</td>
                                 <td class="border border-gray-200 p-3">{{ $detail->karyawan_pranota?->tipe_bp_jamsostek ?: '-' }}</td>
+                                <td class="border border-gray-200 p-3">{{ $accountResolver->label((string) $employee?->tipe_bp_jamsostek, (string) $employee?->group_bp_jamsostek) ?? 'Belum dipetakan' }}</td>
                                 <td class="border border-gray-200 p-3 text-right font-mono">{{ $formatDpp($detail->karyawan_pranota?->dpp_bp_jamsostek) }}</td>
                                 @foreach($componentGroups as $columns)
                                     @foreach($columns as $field => $label)
                                         @if($field === 'no_voucher')
                                             <td class="border border-gray-200 p-3">{{ $detail->no_voucher ?: '-' }}</td>
+                                            <td class="border p-3 text-right" data-row-journal="tunjangan">Rp 0</td><td class="border p-3 text-right" data-row-journal="biaya">Rp 0</td><td class="border p-3 text-right" data-row-journal="hutang">Rp 0</td>
                                         @else
                                             <td class="border border-gray-200 p-3 text-right font-mono {{ isset($totalClasses[$field]) ? $totalClasses[$field] . ' font-bold' : ($componentClasses[$field] ?? '') }}">Rp {{ in_array($field, ['kis_tunjangan', 'bpjs_ketenagakerjaan']) ? number_format(round($amount($detail, $field)), 0, ',', '.') : number_format($amount($detail, $field), 2, ',', '.') }}</td>
                                         @endif
@@ -215,9 +218,9 @@
                     </tbody>
                     <tfoot class="bg-gray-100 font-bold">
                         <tr>
-                            <td colspan="7" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
+                            <td colspan="8" class="border border-gray-200 p-3">Total {{ $pranota_bpj->total_karyawan }} Karyawan</td>
                             @foreach($componentGroups as $columns)
-                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : ($field === 'bpjs_ketenagakerjaan' || $field === 'allowance_kary_jkn' ? 'Rp ' . number_format(round($groupTotal([$field])), 0, ',', '.') : ($field === 'total_jkn' ? 'Rp ' . number_format($groupTotal(['kis_tunjangan', 'kis_biaya']) + round($groupTotal(['bpjs_ketenagakerjaan'])), 2, ',', '.') : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.'))) }}</td>@endforeach
+                                @foreach($columns as $field => $label)<td class="border border-gray-200 p-3 text-right font-mono {{ $totalClasses[$field] ?? $componentClasses[$field] ?? '' }}">{{ $field === 'no_voucher' ? '-' : ($field === 'bpjs_ketenagakerjaan' || $field === 'allowance_kary_jkn' ? 'Rp ' . number_format(round($groupTotal([$field])), 0, ',', '.') : ($field === 'total_jkn' ? 'Rp ' . number_format($groupTotal(['kis_tunjangan', 'kis_biaya']) + round($groupTotal(['bpjs_ketenagakerjaan'])), 2, ',', '.') : 'Rp ' . number_format($groupTotal([$field]), 2, ',', '.'))) }}</td>@if($field === 'no_voucher')<td class="border p-3 text-right" data-row-journal-total="tunjangan">Rp 0</td><td class="border p-3 text-right" data-row-journal-total="biaya">Rp 0</td><td class="border p-3 text-right" data-row-journal-total="hutang">Rp 0</td>@endif @endforeach
                             @endforeach
                             <td class="border border-gray-200 p-3 text-right text-teal-800">Rp {{ number_format($pranota_bpj->grand_total, 2, ',', '.') }}</td>
                         </tr>
@@ -288,7 +291,10 @@
 <script src="{{ asset('js/pranota-bpjs-journal.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-journal.js')) }}"></script>
 <script>
 const bpjsJournalRecords = {{ Illuminate\Support\Js::from($journalRecords) }};
-document.addEventListener('DOMContentLoaded', () => BpjsJournal.render(bpjsJournalRecords));
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.bpjs-detail-row').forEach((row, index) => BpjsJournal.renderRow(row, bpjsJournalRecords[index]));
+    BpjsJournal.render(bpjsJournalRecords);
+});
 document.addEventListener('DOMContentLoaded', () => {
     const search = document.getElementById('bpjs-detail-search');
     const groupFilter = document.getElementById('bpjs-detail-group-filter');

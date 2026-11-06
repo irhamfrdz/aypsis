@@ -4,6 +4,8 @@ namespace App\Exports;
 
 use App\Models\PranotaBpjsDetail;
 use App\Models\PranotaBpjsHeader;
+use App\Services\BpjsJournalAccount;
+use App\Services\BpjsJournalAmounts;
 use Illuminate\Contracts\Support\Responsable;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
@@ -59,6 +61,10 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
     private function writeRowsIntoTemplate(): void
     {
         $sheet = $this->template;
+        foreach (['BC' => 'AKUN JURNAL', 'BD' => 'TUNJANGAN JURNAL', 'BE' => 'BIAYA JURNAL', 'BF' => 'HUTANG JURNAL'] as $column => $heading) {
+            $sheet->setCellValue($column.'1', $heading);
+            $sheet->getColumnDimension($column)->setAutoSize(true);
+        }
         $firstDataRow = 2;
         $lastTemplateRow = $sheet->getHighestDataRow();
         if ($lastTemplateRow >= $firstDataRow) {
@@ -78,7 +84,9 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         }
 
         $lastRow = max(2, count($this->rows) + 1);
-        $sheet->setAutoFilter('A1:BB'.$lastRow);
+        $sheet->getStyle('L2:L'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+        $sheet->getStyle('BD2:BF'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+        $sheet->setAutoFilter('A1:BF'.$lastRow);
         $sheet->freezePane('A2');
         $sheet->setSelectedCell('A1');
         $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
@@ -112,7 +120,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $jkn4 = (float) $detail->bpjs_kesehatan;
         $jkn1 = (float) $detail->bpjs_ketenagakerjaan;
 
-        $row = array_fill(0, 54, null);
+        $row = array_fill(0, 58, null);
         $set = function (string $column, mixed $cell) use (&$row): void {
             $row[$this->columnIndex($column) - 1] = $cell;
         };
@@ -127,9 +135,9 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('G', $date($employee?->tanggal_masuk));
         $set('H', $jknGroup ?: $jamsostekGroup);
         $set('I', $jamsostekType ?: $jknType);
-        $set('J', $employee?->lokasi ?? $employee?->cabang ?? $employee?->penempatan);
+        $set('J', trim((string) ($detail->karyawan?->cabang_bpjs)) ?: ($employee?->cabang_bpjs ?? ''));
         $set('K', 'x');
-        $set('L', (float) ($employee?->dpp_bp_jamsostek ?? $employee?->dpp_jkn ?? 0));
+        $set('L', $this->parseWage($employee?->dpp_bp_jamsostek ?? $employee?->dpp_jkn ?? 0));
         foreach (['M' => 'jht_biaya', 'N' => 'jht_hutang', 'O' => 'jkk_tunjangan', 'P' => 'jkm_tunjangan', 'Q' => 'jp_biaya', 'R' => 'jp_hutang'] as $column => $field) $set($column, $value($field));
         $set('S', $totalPpu);
         foreach (['T' => 'noncrew_jht_biaya', 'U' => 'jkk_hutang', 'V' => 'bpu_jkk_tunjangan', 'W' => 'bpu_jkm'] as $column => $field) $set($column, $value($field));
@@ -155,7 +163,26 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('AU', 'x');
         $set('AW', $employee?->pekerjaan ?? $employee?->posisi ?? $employee?->group_posisi ?? '');
         $set('BB', 'x');
+        $accounts = new BpjsJournalAccount;
+        $set('BC', $accounts->label((string) $jamsostekType, (string) $jamsostekGroup) ?? 'Belum dipetakan');
+        [$tunjangan, $biaya, $hutang] = (new BpjsJournalAmounts)->forDetail($detail);
+        $set('BD', $tunjangan);
+        $set('BE', $biaya);
+        $set('BF', $hutang);
 
         return $row;
+    }
+
+    private function parseWage(mixed $value): float
+    {
+        if (is_string($value)) {
+            $value = trim($value);
+            if (preg_match('/^\d{1,3}(?:\.\d{3})+(?:,\d+)?$/', $value)) {
+                $value = str_replace('.', '', $value);
+            }
+            $value = str_replace(',', '.', $value);
+        }
+
+        return (float) $value;
     }
 }

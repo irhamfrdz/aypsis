@@ -866,6 +866,11 @@ class KaryawanController extends Controller
         ]);
     }
 
+    public function exportDppData()
+    {
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\KaryawanBpjsDataExport, 'data_bpjs_karyawan.xlsx');
+    }
+
     public function downloadSupervisorTemplate()
     {
         $columns = ['nik', 'nik_supervisor', 'departemen'];

@@ -265,7 +265,7 @@
                     <thead>
                         {{-- ── Group Header Row ── --}}
                         <tr class="text-[11px] uppercase tracking-wider font-bold border-b border-gray-200 text-gray-700">
-                            <th id="th-group-info" colspan="7" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
+                            <th id="th-group-info" colspan="8" class="px-3 py-2 text-center border-r border-gray-200 bg-gray-100">
                                 <i class="fas fa-id-card-clip text-gray-500 mr-1"></i> Informasi Karyawan
                             </th>
                             <th id="th-group-jkn" colspan="4" class="px-3 py-2 text-center border-r border-indigo-200 bg-indigo-50 text-indigo-900 col-group-jkn">
@@ -280,7 +280,7 @@
                             <th id="th-group-bpu-noncrew" colspan="5" class="px-3 py-2 text-center border-r border-purple-200 bg-purple-50 text-purple-900 col-group-bpu-noncrew">
                                 <i class="fas fa-user-tag text-purple-600 mr-1"></i> BP Jamsostek (Non BPU-CREW)
                             </th>
-                            <th id="th-group-summary" colspan="8" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan</th>
+                            <th id="th-group-summary" colspan="11" class="px-3 py-2 bg-orange-50 text-orange-800 text-center">Ringkasan Tunjangan dan Jurnal</th>
                             <th rowspan="2" class="px-4 py-3 text-right bg-teal-50 text-teal-900 border-l border-teal-200 font-bold whitespace-nowrap" style="min-width:130px">
                                 Subtotal (Rp)
                             </th>
@@ -297,6 +297,7 @@
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 col-info-tipe-jkn" style="min-width:130px">Tipe JKN</th>
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jkn" style="min-width:150px">DPP JKN</th>
                             <th class="px-3 py-2.5 text-center font-bold text-gray-600 border-r border-gray-200 col-info-tipe-jam" style="min-width:140px">Tipe Jamsostek</th>
+                            <th class="px-3 py-2.5 text-left" style="min-width:180px">Akun Jurnal</th>
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jam" style="min-width:150px">DPP BP Jamsostek</th>
                             
                             {{-- JKN (4) --}}
@@ -328,6 +329,7 @@
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-bpu_noncrew col-group-bpu-noncrew" style="min-width:150px">TOTAL NON BPU-CREW</th>
 
 <th class="col-group-ppu bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="col-summary-bpu bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="col-group-jkn bpjs-allowance-green px-3 py-3 text-right bg-green-50 text-green-800" style="min-width:220px">Tunjangan JKN 4%</th><th class="col-summary-jamsostek bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="col-group-jkn bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
+                            <th class="px-3 py-3 text-right bg-green-50">Tunjangan Jurnal</th><th class="px-3 py-3 text-right bg-blue-50">Biaya Jurnal</th><th class="px-3 py-3 text-right bg-yellow-50">Hutang Jurnal</th>
                         </tr>
                     </thead>
                     <tbody id="detail-container" class="divide-y divide-gray-100 bg-white font-medium">
@@ -335,7 +337,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50/95 border-t-2 border-gray-300 shadow-xs text-xs">
                         <tr class="divide-x divide-gray-200/60 font-semibold">
-                            <td colspan="7" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90" id="footer-total-label">
+                            <td colspan="8" class="px-4 py-3.5 text-right font-bold text-gray-700 uppercase tracking-wide bg-gray-100/90" id="footer-total-label">
                                 Total Keseluruhan:
                             </td>
                             {{-- JKN --}}
@@ -376,6 +378,7 @@
 <td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0,00</td>
 <td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0,00</td>
 <td class="px-3 py-3 bg-orange-50"></td>
+<td class="px-3 py-3 text-right" data-row-journal-total="tunjangan">Rp 0</td><td class="px-3 py-3 text-right" data-row-journal-total="biaya">Rp 0</td><td class="px-3 py-3 text-right" data-row-journal-total="hutang">Rp 0</td>
 <td class="px-4 py-3.5 text-right font-mono font-bold text-teal-800 text-sm bg-teal-100/70" id="grand_total">Rp 0</td>
                             <td class="bg-gray-100/90"></td>
                         </tr>
@@ -510,7 +513,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleElements('.col-summary-bpu', showBpuCrew || showBpuNonCrew);
         toggleElements('.col-summary-jamsostek', showTipeJam);
         const allowanceKeys = BpjsMasterFilters.allowanceKeys(categories);
-        document.getElementById('th-group-summary').setAttribute('colspan', allowanceKeys.size + 1);
+        document.getElementById('th-group-summary').setAttribute('colspan', allowanceKeys.size + 4);
         document.querySelectorAll('[data-allowance-component]').forEach(row => {
             row.classList.toggle('hidden', !allowanceKeys.has(row.dataset.allowanceComponent));
         });
@@ -533,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (thBpuCrew) thBpuCrew.classList.toggle('hidden', !showBpuCrew);
         if (thBpuNonCrew) thBpuNonCrew.classList.toggle('hidden', !showBpuNonCrew);
 
-        let infoColspan = 3; // #, Nama, Group
+        let infoColspan = 4; // #, Nama, Group, Akun Jurnal
         if (showTipeJkn) infoColspan += 2;
         if (showTipeJam) infoColspan += 2;
 
@@ -881,6 +884,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="employee-tipe-jamsostek bpjs-employee-type">-</span>
                 <input type="hidden" class="select-tipe-bp-jamsostek" name="details[${rowCount}][tipe_bp_jamsostek]" value="total">
             </td>
+            <td class="px-3 py-2.5 text-xs employee-akun-jamsostek">-</td>
             <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
             
             {{-- JKN (4) --}}
@@ -951,6 +955,7 @@ document.addEventListener('DOMContentLoaded', function() {
             <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
             <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
             <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>
+            <td class="px-3 py-2 text-right" data-row-journal="tunjangan">Rp 0</td><td class="px-3 py-2 text-right" data-row-journal="biaya">Rp 0</td><td class="px-3 py-2 text-right" data-row-journal="hutang">Rp 0</td>
             <td class="px-3 py-2 text-right font-mono font-bold align-middle subtotal-text text-teal-800 bg-teal-50/40 whitespace-nowrap">Rp 0</td>
             <td class="px-2 py-2 text-center align-middle">
                 <button type="button" class="inline-flex items-center justify-center w-7 h-7 rounded-lg text-rose-400 hover:text-rose-600 hover:bg-rose-50 transition-all btn-remove" title="Hapus Baris">

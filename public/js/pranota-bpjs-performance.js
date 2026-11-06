@@ -91,11 +91,19 @@
         set('.group-text', groups.join('\n') || '-');
         set('.employee-tipe-jkn', employee?.tipe_jkn || '-');
         set('.employee-tipe-jamsostek', employee?.tipe_bp_jamsostek || '-');
+        set('.employee-akun-jamsostek', journalAccount(employee?.tipe_bp_jamsostek, employee?.group_bp_jamsostek));
         for (const [selector, key] of [['.employee-dpp-jkn', 'dpp_jkn'], ['.employee-dpp-jamsostek', 'dpp_bp_jamsostek']]) {
             const value = employee?.[key];
             set(selector, value === null || value === undefined || value === '' ? '-' : 'Rp ' + formatNumber(parseAmount(value)));
         }
     }
 
-    root.BpjsPerformance = { field, readNumber, scheduler, groupTotals, updateGroupTotals, updateEmployeeInfo };
+    function journalAccount(type, fallback) {
+        const compact = value => String(value || '').toUpperCase().replace(/[\s_-]+/g, '');
+        let key = compact(type);
+        if (key === 'BPUCREW' || (!key && compact(fallback) === 'BPUCREW')) key = 'CREW';
+        return (root.BpjsJournalAccounts || []).find(account => account[0] === key)?.[2] || 'Belum dipetakan';
+    }
+
+    root.BpjsPerformance = { field, readNumber, scheduler, groupTotals, updateGroupTotals, updateEmployeeInfo, journalAccount };
 })(globalThis);

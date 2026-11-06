@@ -1466,6 +1466,8 @@ Route::middleware([
         // Download DPP template
         Route::get('karyawan/dpp-template', [KaryawanController::class, 'downloadDppTemplate'])
             ->name('karyawan.dpp-template');
+        Route::get('karyawan/dpp-data', [KaryawanController::class, 'exportDppData'])
+            ->name('karyawan.dpp-data')->middleware('can:master-karyawan-update');
         Route::get('karyawan/supervisor-template', [KaryawanController::class, 'downloadSupervisorTemplate'])
             ->name('karyawan.supervisor-template');
         Route::get('karyawan/group-template', [KaryawanController::class, 'downloadGroupTemplate'])

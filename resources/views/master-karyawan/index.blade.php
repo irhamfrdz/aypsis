@@ -1062,6 +1062,9 @@
                                             <a href="{{ route('master.karyawan.dpp-template') }}" class="inline-flex items-center px-3 py-2 border border-blue-200 shadow-sm text-xs font-bold rounded-md text-blue-700 bg-white hover:bg-blue-100 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
                                                 <i class="fas fa-download mr-1.5"></i> Download Template
                                             </a>
+                                            <a href="{{ route('master.karyawan.dpp-data') }}" class="inline-flex items-center px-3 py-2 border border-teal-200 shadow-sm text-xs font-bold rounded-md text-teal-700 bg-white hover:bg-teal-50">
+                                                <i class="fas fa-download mr-1.5"></i> Download Data Karyawan
+                                            </a>
                                         </div>
                                     </div>
                                 </div>

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Exports\PranotaBpjsTemplateExport;
+use App\Http\Controllers\PranotaBpjsController;
 use App\Models\PranotaBpjsHeader;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +14,7 @@ class PranotaBpjsExcelExportTest extends TestCase
     public function test_export_keeps_template_columns_and_maps_saved_employee_values(): void
     {
         $this->createPranotaSchema();
+        DB::table('karyawans')->insert(['id' => 1, 'cabang_bpjs' => 'JKT']);
         $header = PranotaBpjsHeader::create([
             'nomor_pranota' => 'PBPJS26110003', 'tanggal_pranota' => '2026-11-04',
             'periode_bulan' => 11, 'periode_tahun' => 2026, 'status' => 'draft',
@@ -33,7 +34,7 @@ class PranotaBpjsExcelExportTest extends TestCase
                     'no_ketenagakerjaan' => '3202160607820012', 'nik_ktp' => '3202160607820012',
                     'tanggal_lahir' => '1982-07-06', 'tanggal_masuk' => '2020-01-01',
                     'group_jkn' => 'JKN-KIS', 'group_bp_jamsostek' => 'PPU', 'tipe_jkn' => 'KANTOR',
-                    'tipe_bp_jamsostek' => 'KARYAWAN', 'dpp_bp_jamsostek' => 4450000, 'pekerjaan' => 'SUPIR TRUCK'],
+                    'tipe_bp_jamsostek' => 'KARYAWAN', 'dpp_bp_jamsostek' => '4.450.000', 'pekerjaan' => 'SUPIR TRUCK', 'cabang_bpjs' => 'PLUIT'],
                 'kis_tunjangan' => 229195.20, 'kis_biaya' => 0,
                 'ringkasan' => ['ppu' => 3000, 'bpu' => 9000, 'jkn' => 229195.20,
                     'kary_jht' => 54000, 'kary_jkn' => 57298.80, 'pt' => 110000.80, 'non_kary' => 0],
@@ -41,7 +42,16 @@ class PranotaBpjsExcelExportTest extends TestCase
             'tunjangan_manual' => ['ppu' => 3000, 'bpu' => 9000], 'no_voucher' => '0001/VC-BPJS',
         ]);
 
-        $response = (new PranotaBpjsTemplateExport($header->load('details')))->toResponse(request());
+        $original = $header->details()->first();
+        foreach (['5.360.000,50', '4450000.00', '0'] as $wage) {
+            $copy = $original->replicate();
+            $snapshot = $copy->snapshot_bpjs;
+            $snapshot['karyawan']['dpp_bp_jamsostek'] = $wage;
+            $copy->snapshot_bpjs = $snapshot;
+            $copy->save();
+        }
+
+        $response = (new PranotaBpjsController)->exportExcel($header);
         $path = $response->getFile()->getPathname();
         $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
         $sheet = $spreadsheet->getSheetByName('Rincian BPJS');
@@ -52,10 +62,20 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertSame('ABDULLAH', $sheet->getCell('C2')->getValue());
         $this->assertSame('0012', $sheet->getCell('B2')->getValue());
         $this->assertSame('3202160607820012', $sheet->getCell('D2')->getValue());
+        $this->assertSame('JKT', $sheet->getCell('J2')->getValue());
         $this->assertSame(4450000.0, $sheet->getCell('L2')->getValue());
+        $this->assertEquals(5360000.5, $sheet->getCell('L3')->getValue());
+        $this->assertEquals(4450000, $sheet->getCell('L4')->getValue());
+        $this->assertEquals(0, $sheet->getCell('L5')->getValue());
+        $this->assertSame('0.00', \PhpOffice\PhpSpreadsheet\Style\NumberFormat::toFormattedString(0, $sheet->getStyle('L2')->getNumberFormat()->getFormatCode()));
         $this->assertSame(100000.8, $sheet->getCell('M2')->getValue());
         $this->assertSame(229195.2, $sheet->getCell('AA2')->getValue());
         $this->assertSame('0001/VC-BPJS', $sheet->getCell('AL2')->getValue());
+        $this->assertSame('AKUN JURNAL', $sheet->getCell('BC1')->getValue());
+        $this->assertSame('Belum dipetakan', $sheet->getCell('BC2')->getValue());
+        $this->assertEquals(241195.2, $sheet->getCell('BD2')->getValue());
+        $this->assertEquals(110000.8, $sheet->getCell('BE2')->getValue());
+        $this->assertEquals(91298.8, $sheet->getCell('BF2')->getValue());
         @unlink($path);
     }
 
@@ -63,6 +83,10 @@ class PranotaBpjsExcelExportTest extends TestCase
     {
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
+        Schema::create('karyawans', function (Blueprint $table) {
+            $table->id();
+            $table->string('cabang_bpjs')->nullable();
+        });
         Schema::create('pranota_bpjs_headers', function (Blueprint $table) {
             $table->id();
             $table->string('nomor_pranota')->nullable();

@@ -120,6 +120,7 @@
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe JKN</th>
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jkn" style="min-width:150px">DPP JKN</th>
                             <th class="px-4 py-3 text-center" style="min-width:180px">Tipe BP JAMSOSTEK</th>
+                            <th class="px-4 py-3 text-left" style="min-width:180px">Akun Jurnal</th>
                             <th class="px-3 py-3 text-right font-bold text-gray-600 col-info-dpp-jam" style="min-width:150px">DPP BP Jamsostek</th>
                             <th class="px-4 py-3 text-right bpjs-jkn-contribution" style="min-width:110px">KIS 4% (TUNJ)</th>
                             <th class="px-4 py-3 text-right bpjs-jkn-contribution" style="min-width:110px">KIS 4% (BIAY)</th>
@@ -133,6 +134,7 @@
                             <th class="px-4 py-3 text-right bpjs-ppu-debt" style="min-width:90px">PPU JP 1%</th>
                             <th class="px-3 py-3 text-right font-bold bpjs-group-total-ppu col-group-ppu" style="min-width:130px">TOTAL PPU</th>
 <th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKK 0,24% + JKM 0,3%</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan BPU JKK 1% + JKM</th><th class="bpjs-allowance-green px-3 py-3 text-right bg-green-50" style="min-width:220px">Tunjangan JKN 4%</th><th class="bpjs-allowance-red px-3 py-3 text-right bg-red-50 text-red-800" style="min-width:220px">Beban KARY. JHT 2%, JP 1% & BPU JHT</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban KARY. JKN 1%</th><th class="bpjs-allowance-blue px-3 py-3 text-right bg-blue-50 text-blue-800" style="min-width:220px">Beban PT. PPU JHT 3.7%, PPU JP 2% & JHT 2% (BIAYA)</th><th class="bpjs-allowance-yellow px-3 py-3 text-right bg-yellow-50 text-yellow-800" style="min-width:220px">Beban NON KARY. JKN & BPJS</th><th class="px-3 py-3 bg-orange-50 text-orange-800" style="min-width:220px">No Voucher</th>
+                            <th class="px-3 py-3 text-right bg-green-50">Tunjangan Jurnal</th><th class="px-3 py-3 text-right bg-blue-50">Biaya Jurnal</th><th class="px-3 py-3 text-right bg-yellow-50">Hutang Jurnal</th>
                             <th class="px-4 py-3 text-right">Subtotal (Rp)</th>
                             <th class="px-4 py-3 w-10 text-center">Aksi</th>
                         </tr>
@@ -142,7 +144,7 @@
                     </tbody>
                     <tfoot class="bg-gray-50 border-t-2 border-gray-200 shadow-sm">
                         <tr>
-                            <td colspan="7" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
+                            <td colspan="8" class="px-4 py-4 text-right text-sm font-bold text-gray-700 uppercase tracking-wide">Total Keseluruhan:</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-contribution" id="total_kes_biaya">Rp 0</td>
                             <td class="px-4 py-4 text-right font-bold text-indigo-700 text-sm bpjs-jkn-debt" id="total_ket">Rp 0</td>
@@ -162,6 +164,7 @@
 <td class="bpjs-allowance-blue px-3 py-3 text-right font-mono bg-blue-50" id="total-allowance-pt">Rp 0,00</td>
 <td class="bpjs-allowance-yellow px-3 py-3 text-right font-mono bg-yellow-50" id="total-allowance-non_kary">Rp 0,00</td>
 <td class="px-3 py-3 bg-orange-50"></td>
+<td class="px-3 py-3 text-right" data-row-journal-total="tunjangan">Rp 0</td><td class="px-3 py-3 text-right" data-row-journal-total="biaya">Rp 0</td><td class="px-3 py-3 text-right" data-row-journal-total="hutang">Rp 0</td>
 <td class="px-4 py-4 text-right font-bold text-teal-600 text-base" id="grand_total">Rp 0</td>
                             <td></td>
                         </tr>
@@ -368,6 +371,7 @@ document.addEventListener('DOMContentLoaded', async function() {
                 <span class="employee-tipe-jamsostek bpjs-employee-type">-</span>
                 <input type="hidden" class="select-tipe-bp-jamsostek" name="details[${rowCount}][tipe_bp_jamsostek]" value="total">
             </td>
+            <td class="px-4 py-3 text-xs employee-akun-jamsostek">-</td>
             <td class="px-3 py-3 text-right align-middle font-mono text-xs col-info-dpp-jam"><span class="employee-dpp-jamsostek">-</span></td>
             <td class="px-4 py-3 align-middle bpjs-jkn-contribution" data-jkn-tunjangan>
                 <input type="text" name="details[${rowCount}][bpjs_kesehatan]" class="w-full text-right text-sm input-kes font-semibold text-indigo-700 bg-transparent border-0 p-0 focus:ring-0 focus:outline-none" value="${formatRounded(valKes)}" autocomplete="off">
@@ -404,6 +408,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             <td class="bpjs-allowance-blue px-3 py-2 text-right font-mono bg-blue-50/40 whitespace-nowrap" data-allowance="pt">Rp 0,00</td>
             <td class="bpjs-allowance-yellow px-3 py-2 text-right font-mono bg-yellow-50/40 whitespace-nowrap" data-allowance="non_kary">Rp 0,00</td>
             <td class="px-3 py-2 bg-orange-50/40"><input type="text" name="details[${rowCount}][no_voucher]" class="bpjs-voucher-input w-full rounded-lg border-gray-200 text-sm" maxlength="100" aria-label="No Voucher" placeholder="No Voucher" autocomplete="off"></td>
+            <td class="px-3 py-2 text-right" data-row-journal="tunjangan">Rp 0</td><td class="px-3 py-2 text-right" data-row-journal="biaya">Rp 0</td><td class="px-3 py-2 text-right" data-row-journal="hutang">Rp 0</td>
             <td class="px-4 py-3 text-right font-bold align-middle subtotal-text text-teal-600 block" style="padding-top: 0.75rem;">Rp ${formatNumber(subVal)}</td>
             <td class="px-4 py-3 text-center align-middle">
                 <button type="button" class="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-md transition-all btn-remove mt-1" title="Hapus Baris">
