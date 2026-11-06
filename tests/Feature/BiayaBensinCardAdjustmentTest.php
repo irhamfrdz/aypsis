@@ -41,6 +41,14 @@ class BiayaBensinCardAdjustmentTest extends TestCase
             $table->unsignedBigInteger('created_by')->nullable();
             $table->timestamps();
         });
+        Schema::create('audit_logs', function (Blueprint $table) {
+            $table->id();
+            $table->string('auditable_type');
+            $table->unsignedBigInteger('auditable_id');
+            $table->string('action');
+            $table->json('new_values')->nullable();
+            $table->timestamp('created_at')->nullable();
+        });
     }
 
     private function card(string $number, int $balance): MasterKartuBensinBatam
@@ -62,34 +70,82 @@ class BiayaBensinCardAdjustmentTest extends TestCase
         return $expense;
     }
 
-    public function test_removing_card_restores_balance_and_records_correction(): void
+    public function test_removing_card_deletes_its_history_and_rebases_later_balances(): void
     {
-        $card = $this->card('20000063107', -3502500);
+        $card = $this->card('20000063107', 55000);
+        $this->history($card, 'BBS-000168', 'berkurang', 30000, 100000, 70000);
+        $this->history($card, 'BBS-000169', 'berkurang', 10000, 70000, 60000);
+        $this->history($card, 'BBS-000168', 'berkurang', 5000, 60000, 55000);
 
         MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(fn () =>
-            app(BiayaBensinCardService::class)->adjust($this->expense(), $card->nomor_kartu, 3000000, null, 0, 'Koreksi biaya bensin BBS-000168')
+            app(BiayaBensinCardService::class)->removeUsage($this->expense(), $card->nomor_kartu)
         ));
 
-        $this->assertSame('-502500.00', $card->fresh()->saldo);
+        $this->assertSame('90000.00', $card->fresh()->saldo);
         $history = $card->histories()->sole();
-        $this->assertSame('bertambah', $history->tipe);
-        $this->assertSame('3000000.00', $history->nominal);
-        $this->assertSame('BBS-000168', $history->nomor_transaksi);
+        $this->assertSame('BBS-000169', $history->nomor_transaksi);
+        $this->assertSame('100000.00', $history->saldo_sebelum);
+        $this->assertSame('90000.00', $history->saldo_sesudah);
     }
 
     public function test_changing_card_moves_debit_to_new_card(): void
     {
         $oldCard = $this->card('OLD', 50000);
         $newCard = $this->card('NEW', 100000);
+        $this->history($oldCard, 'BBS-000168', 'berkurang', 50000, 100000, 50000);
 
-        MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(fn () =>
-            app(BiayaBensinCardService::class)->adjust($this->expense(), 'OLD', 50000, 'NEW', 50000, 'Koreksi biaya bensin BBS-000168')
-        ));
+        MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(function () {
+            $service = app(BiayaBensinCardService::class);
+            $service->removeUsage($this->expense(), 'OLD');
+            $service->adjust($this->expense(), null, 0, 'NEW', 50000, 'Pengisian bensin setelah perubahan kartu BBS-000168');
+        }));
 
         $this->assertSame('100000.00', $oldCard->fresh()->saldo);
         $this->assertSame('50000.00', $newCard->fresh()->saldo);
-        $this->assertSame('bertambah', $oldCard->histories()->sole()->tipe);
+        $this->assertSame(0, $oldCard->histories()->count());
         $this->assertSame('berkurang', $newCard->histories()->sole()->tipe);
+    }
+
+    public function test_removing_legacy_card_usage_matches_created_audit(): void
+    {
+        $card = $this->card('OLD', 70000);
+        $history = $this->history($card, null, 'berkurang', 30000, 100000, 70000);
+        DB::table('master_kartu_bensin_batam_histories')->where('id', $history->id)->update([
+            'created_at' => '2026-09-18 09:26:04', 'created_by' => 17,
+        ]);
+        DB::table('audit_logs')->insert([
+            'auditable_type' => BiayaBensin::class,
+            'auditable_id' => 168,
+            'action' => 'created',
+            'new_values' => json_encode(['nomor_kartu' => 'OLD', 'biaya' => 30000, 'created_by' => 17]),
+            'created_at' => '2026-09-18 09:26:04',
+        ]);
+
+        MasterKartuBensinBatam::withoutEvents(fn () => DB::transaction(fn () =>
+            app(BiayaBensinCardService::class)->removeUsage($this->expense(), 'OLD')
+        ));
+
+        $this->assertSame(0, $card->histories()->count());
+        $this->assertSame('100000.00', $card->fresh()->saldo);
+    }
+
+    private function history(
+        MasterKartuBensinBatam $card,
+        ?string $number,
+        string $type,
+        int $amount,
+        int $before,
+        int $after
+    ) {
+        return $card->histories()->create([
+            'nomor_transaksi' => $number,
+            'tanggal' => now(),
+            'tipe' => $type,
+            'nominal' => $amount,
+            'saldo_sebelum' => $before,
+            'saldo_sesudah' => $after,
+            'keterangan' => 'Pengisian bensin Kendaraan TEST',
+        ]);
     }
 
     public function test_changing_amount_on_same_card_records_only_difference(): void

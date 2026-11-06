@@ -320,11 +320,22 @@ class BiayaBensinController extends Controller
                 $oldAmount = (float) $item->biaya;
                 $item->update($validated);
 
-                app(BiayaBensinCardService::class)->adjust(
-                    $item, $oldCardNumber, $oldAmount,
-                    $item->nomor_kartu, (float) $item->biaya,
-                    'Koreksi biaya bensin '.$item->nomor_transaksi
-                );
+                $cardService = app(BiayaBensinCardService::class);
+                if (filled($oldCardNumber) && $oldCardNumber !== $item->nomor_kartu) {
+                    $cardService->removeUsage($item, $oldCardNumber);
+                    if (filled($item->nomor_kartu)) {
+                        $cardService->adjust(
+                            $item, null, 0, $item->nomor_kartu, (float) $item->biaya,
+                            'Pengisian bensin setelah perubahan kartu '.$item->nomor_transaksi
+                        );
+                    }
+                } else {
+                    $cardService->adjust(
+                        $item, $oldCardNumber, $oldAmount,
+                        $item->nomor_kartu, (float) $item->biaya,
+                        'Koreksi biaya bensin '.$item->nomor_transaksi
+                    );
+                }
 
                 AuditLog::create([
                     'user_id' => Auth::id(),
@@ -365,10 +376,9 @@ class BiayaBensinController extends Controller
             $item = BiayaBensin::lockForUpdate()->findOrFail($id);
             $oldValues = $item->toArray();
 
-            app(BiayaBensinCardService::class)->adjust(
-                $item, $item->nomor_kartu, (float) $item->biaya,
-                null, 0, 'Pembatalan biaya bensin '.$item->nomor_transaksi
-            );
+            if (filled($item->nomor_kartu)) {
+                app(BiayaBensinCardService::class)->removeUsage($item, $item->nomor_kartu);
+            }
             $item->delete();
 
             AuditLog::create([
