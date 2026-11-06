@@ -51,6 +51,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $this->writeRowsIntoTemplate();
         $temporaryPath = tempnam(sys_get_temp_dir(), 'bpjs-export-');
         $writer = IOFactory::createWriter($this->template->getParent(), 'Xlsx');
+        $writer->setPreCalculateFormulas(false);
         $writer->save($temporaryPath);
 
         return response()->download($temporaryPath, $this->fileName)->deleteFileAfterSend(true);
@@ -80,9 +81,31 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
             $sheet->getColumnDimension($column)->setAutoSize(true);
         }
         $firstDataRow = 2;
-        $lastTemplateRow = $sheet->getHighestDataRow();
-        if ($lastTemplateRow >= $firstDataRow) {
-            $sheet->removeRow($firstDataRow, $lastTemplateRow - $firstDataRow + 1);
+        $templateGrandTotalRow = 0;
+        for ($row = $firstDataRow; $row <= $sheet->getHighestDataRow(); $row++) {
+            if ($sheet->getCell('C'.$row)->getValue() === 'Grand Total') {
+                $templateGrandTotalRow = $row;
+                break;
+            }
+        }
+        if ($templateGrandTotalRow === 0) {
+            throw new \RuntimeException('Baris Grand Total pada template BPJS tidak ditemukan.');
+        }
+
+        $templateDataCapacity = $templateGrandTotalRow - $firstDataRow - 1;
+        $rowCount = count($this->rows);
+        if ($rowCount < $templateDataCapacity) {
+            // Pertahankan satu baris kosong sebelum ringkasan, seperti file contoh.
+            $sheet->removeRow($firstDataRow + $rowCount, $templateDataCapacity - $rowCount);
+        } elseif ($rowCount > $templateDataCapacity) {
+            $extraRows = $rowCount - $templateDataCapacity;
+            $sheet->insertNewRowBefore($templateGrandTotalRow - 1, $extraRows);
+            for ($row = $templateGrandTotalRow - 1; $row < $templateGrandTotalRow - 1 + $extraRows; $row++) {
+                for ($columnIndex = 1; $columnIndex <= 54; $columnIndex++) {
+                    $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+                    $sheet->duplicateStyle($sheet->getStyle($column.($templateGrandTotalRow - 2)), $column.$row);
+                }
+            }
         }
 
         foreach ($this->rows as $index => $row) {
@@ -97,17 +120,112 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
             }
         }
 
-        $lastRow = max(2, count($this->rows) + 1);
-        $sheet->getStyle('L2:L'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle('BD2:BF'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle('BI2:BI'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->setAutoFilter('A1:BI'.$lastRow);
+        $lastDataRow = $firstDataRow + $rowCount - 1;
+        if ($rowCount > 0) {
+            $sheet->getStyle('L2:L'.$lastDataRow)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('BD2:BF'.$lastDataRow)->getNumberFormat()->setFormatCode('#,##0.00');
+            $sheet->getStyle('BI2:BI'.$lastDataRow)->getNumberFormat()->setFormatCode('#,##0.00');
+        }
+        $this->writeDynamicSummary($sheet, $firstDataRow, $lastDataRow);
+        $sheet->setAutoFilter('A1:BI'.max(1, $lastDataRow));
         $sheet->freezePane('A2');
         $sheet->setSelectedCell('A1');
         $sheet->getPageSetup()->setOrientation(PageSetup::ORIENTATION_LANDSCAPE);
         $sheet->getPageSetup()->setFitToWidth(1)->setFitToHeight(0);
         $sheet->getPageSetup()->setRowsToRepeatAtTopByStartAndEnd(1, 1);
         $sheet->setTitle('Rincian BPJS');
+    }
+
+    private function writeDynamicSummary(Worksheet $sheet, int $firstDataRow, int $lastDataRow): void
+    {
+        $grandTotalRow = $lastDataRow + 2;
+        $roundingRow = $grandTotalRow + 1;
+        $summaryHeaderRow = $grandTotalRow + 3;
+        $groupTotalRow = $grandTotalRow + 18;
+        $groupCombinedRow = $grandTotalRow + 19;
+        $hasData = $lastDataRow >= $firstDataRow;
+
+        for ($columnIndex = $this->columnIndex('L'); $columnIndex <= $this->columnIndex('AU'); $columnIndex++) {
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($columnIndex);
+            if ($column === 'AL') {
+                continue;
+            }
+            $sheet->setCellValue($column.$grandTotalRow, $hasData
+                ? '=SUBTOTAL(109,'.$column.$firstDataRow.':'.$column.$lastDataRow.')' : '=0');
+        }
+        foreach (['S', 'X', 'AA'] as $column) {
+            $sheet->setCellValue($column.$roundingRow, '=ROUNDDOWN('.$column.$grandTotalRow.',0)');
+        }
+
+        $groupRows = range($summaryHeaderRow + 1, $groupTotalRow - 2);
+        $templateGroups = [];
+        $emptyRows = [];
+        foreach ($groupRows as $row) {
+            $label = trim((string) $sheet->getCell('AE'.$row)->getValue());
+            if ($label === '') {
+                $emptyRows[] = $row;
+            } else {
+                $templateGroups[$label] = $row;
+            }
+        }
+        $exportGroups = array_values(array_unique(array_filter(array_map(
+            fn (array $row) => trim((string) ($row[$this->columnIndex('H') - 1] ?? '')),
+            $this->rows
+        ))));
+        foreach ($exportGroups as $group) {
+            if (isset($templateGroups[$group])) {
+                continue;
+            }
+            $row = array_shift($emptyRows);
+            if ($row === null) {
+                foreach ($templateGroups as $templateGroup => $candidate) {
+                    if (! in_array($templateGroup, $exportGroups, true)) {
+                        $row = $candidate;
+                        unset($templateGroups[$templateGroup]);
+                        break;
+                    }
+                }
+            }
+            if ($row === null) {
+                throw new \RuntimeException('Jumlah grup BPJS melebihi kapasitas ringkasan pada template Excel.');
+            }
+            $sheet->setCellValue('AE'.$row, $group);
+            $templateGroups[$group] = $row;
+        }
+
+        foreach ($groupRows as $row) {
+            if (trim((string) $sheet->getCell('AE'.$row)->getValue()) === '') {
+                continue;
+            }
+            foreach (['AF' => ['AE', 'AF', 'AG'], 'AG' => ['AJ'], 'AH' => ['AH', 'AI', 'AK']] as $target => $sourceColumns) {
+                $formula = $hasData
+                    ? '='.$this->visibleGroupSum($sourceColumns, $firstDataRow, $lastDataRow, $row)
+                    : '=0';
+                $sheet->setCellValue($target.$row, $formula);
+            }
+        }
+        foreach (['AF', 'AG', 'AH'] as $column) {
+            $sheet->setCellValue($column.$groupTotalRow,
+                '=SUM('.$column.($summaryHeaderRow + 1).':'.$column.($groupTotalRow - 2).')');
+        }
+        $sheet->setCellValue('AI'.$groupTotalRow, '=SUM(AF'.$groupTotalRow.':AH'.$groupTotalRow.')');
+        $sheet->setCellValue('AF'.$groupCombinedRow, '=AF'.$groupTotalRow.'+AG'.$groupTotalRow);
+
+        // Angka contoh di bagian catatan template tidak berasal dari data pranota.
+        foreach ([$grandTotalRow + 7, $grandTotalRow + 8, $grandTotalRow + 9,
+            $grandTotalRow + 10, $grandTotalRow + 11] as $row) {
+            $sheet->setCellValue('L'.$row, null);
+        }
+    }
+
+    private function visibleGroupSum(array $columns, int $firstDataRow, int $lastDataRow, int $summaryRow): string
+    {
+        $groupCondition = '--($H$'.$firstDataRow.':$H$'.$lastDataRow.'=$AE$'.$summaryRow.')';
+        return implode('+', array_map(function (string $column) use ($firstDataRow, $lastDataRow, $groupCondition): string {
+            $firstCell = $column.'$'.$firstDataRow;
+            $range = $column.'$'.$firstDataRow.':'.$column.'$'.$lastDataRow;
+            return 'SUMPRODUCT(SUBTOTAL(109,OFFSET('.$firstCell.',ROW('.$range.')-ROW('.$firstCell.'),0,1)),'.$groupCondition.')';
+        }, $columns));
     }
 
     private function columnIndex(string $column): int

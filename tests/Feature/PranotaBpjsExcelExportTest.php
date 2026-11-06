@@ -97,6 +97,22 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertSame('PPU', $sheet->getCell('BH2')->getValue());
         $this->assertNull($sheet->getCell('BI2')->getValue());
         $this->assertEquals(144000.8, $sheet->getCell('BI10')->getValue());
+        $this->assertSame('A1:BI11', $sheet->getAutoFilter()->getRange());
+        $this->assertSame('Grand Total', $sheet->getCell('C13')->getValue());
+        $this->assertSame('=SUBTOTAL(109,S2:S11)', $sheet->getCell('S13')->getValue());
+        $this->assertSame('=ROUNDDOWN(S13,0)', $sheet->getCell('S14')->getValue());
+        $this->assertSame('Tunjangan', $sheet->getCell('AF16')->getValue());
+        $this->assertSame('Crew', $sheet->getCell('AE17')->getValue());
+        $summaryGroups = array_map(fn (int $row) => $sheet->getCell('AE'.$row)->getValue(), range(17, 30));
+        $this->assertContains('PPU', $summaryGroups);
+        $this->assertContains('JKN-KIS', $summaryGroups);
+        $this->assertStringContainsString('SUBTOTAL(109,OFFSET(AE$2,ROW(AE$2:AE$11)',
+            $sheet->getCell('AF17')->getValue());
+        $this->assertStringContainsString('$H$2:$H$11=$AE$17', $sheet->getCell('AF17')->getValue());
+        $this->assertSame('=SUM(AF17:AF29)', $sheet->getCell('AF31')->getValue());
+        $this->assertSame('=SUM(AF31:AH31)', $sheet->getCell('AI31')->getValue());
+        $this->assertSame($template->getStyle('S379')->getFill()->getStartColor()->getRGB(),
+            $sheet->getStyle('S13')->getFill()->getStartColor()->getRGB());
         @unlink($path);
     }
 
