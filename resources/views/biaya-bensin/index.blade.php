@@ -129,6 +129,7 @@
                                 <input type="checkbox" id="check-all" class="rounded border-gray-300 text-amber-600 shadow-sm focus:border-amber-300 focus:ring focus:ring-amber-200 focus:ring-opacity-50">
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Transaksi</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
@@ -149,7 +150,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $item->tanggal->format('d/m/Y') }}
-                                    <div class="text-xs font-semibold text-amber-700">{{ $item->nomor_transaksi }}</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-amber-700">
+                                    {{ $item->nomor_transaksi }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm">
                                     @if($item->mobil_id)
@@ -230,7 +233,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-6 py-12 text-center">
+                                <td colspan="11" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <i class="fas fa-gas-pump text-gray-300 text-5xl mb-4"></i>
                                         <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada catatan biaya bensin</h3>
