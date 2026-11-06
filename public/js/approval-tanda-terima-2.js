@@ -399,6 +399,8 @@
     const previewButtons = dialog.querySelectorAll('[data-shipper-preview]');
     const goodsHost = document.getElementById('approval-shipper-goods');
     const saveGoods = document.getElementById('approval-save-goods');
+    const receiptNumberField = document.getElementById('approval-receipt-number-field');
+    const receiptNumber = document.getElementById('approval-receipt-number');
     const scrollKey = `approval-tt2-scroll:${window.location.pathname}${window.location.search}`;
     window.addEventListener('pageshow', () => {
         let savedPosition;
@@ -606,6 +608,10 @@
             form.action = button.dataset.updateUrl;
             const isAdditional = button.dataset.additional === 'true';
             const isEditingAdditional = button.dataset.mode === 'edit-additional';
+            receiptNumberField.hidden = isAdditional || isEditingAdditional;
+            receiptNumber.disabled = isAdditional || isEditingAdditional;
+            receiptNumber.required = !receiptNumber.disabled;
+            receiptNumber.value = button.dataset.receiptNumber || '';
             const goodsDialog = button.dataset.goodsDialogId && document.getElementById(button.dataset.goodsDialogId);
             goodsContent = goodsDialog?.querySelector('.overflow-x-auto') || null;
             goodsParent = goodsContent?.parentElement || null;

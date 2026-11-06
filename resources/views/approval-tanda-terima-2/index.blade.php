@@ -256,7 +256,7 @@
                 <tbody id="approval-receipt-rows" class="divide-y divide-gray-100">
                     @forelse($items as $item)
                         @php
-                            $number = $type === 'fcl' ? $item->no_surat_jalan : ($type === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
+                            $number = $type === 'fcl' ? ($item->nomor_tanda_terima ?: $item->no_surat_jalan) : ($type === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
                             $sender = $type === 'lcl' ? $item->nama_pengirim : $item->pengirim;
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
@@ -303,7 +303,7 @@
                                     <span class="approval-order-number">{{ $items->firstItem() + $loop->index }}</span>
                                 </span>
                             </td>
-                            <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}</td>
+                            <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}@if($type === 'fcl' && filled($item->nomor_tanda_terima))<div class="text-xs font-normal text-gray-500">Surat jalan: {{ $item->no_surat_jalan }}</div>@endif</td>
                             <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
                             <td data-label="Jumlah / Satuan Manifest" class="text-gray-700">
@@ -384,6 +384,7 @@
                                         data-update-url="{{ route('approval-tanda-terima-2.update', ['sourceType' => $type, 'id' => $item->id]) }}"
                                         data-goods-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}"
                                         data-number="{{ $number }}" data-sender="{{ $sender }}" data-container-number="{{ $containerNumber }}"
+                                        data-receipt-number="{{ $type === 'fcl' ? $item->nomor_tanda_terima : $number }}"
                                         data-shipper-id="{{ $item->shipper_jb_id }}"
                                         data-shipper="{{ $shipperFields['shipper'] ?? $item->shipperJb?->shipper }}"
                                         data-shipper-overrides='@json($shipperApprovalOverride?->fields ?? [])'>
@@ -669,6 +670,10 @@
         <input type="hidden" id="approval-shipper-id" name="shipper_jb_id">
         <input type="hidden" id="approval-save-goods" name="save_goods" value="1" disabled>
         <div class="space-y-4 px-5 py-5 sm:px-6">
+            <div id="approval-receipt-number-field">
+                <label for="approval-receipt-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
+                <input id="approval-receipt-number" name="nomor_tanda_terima" type="text" maxlength="255" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+            </div>
             <div>
                 <div class="mb-1 flex items-center justify-between gap-3">
                     <label for="approval-shipper-search" class="text-sm font-medium text-gray-700">Cari shipper atau consignee</label>

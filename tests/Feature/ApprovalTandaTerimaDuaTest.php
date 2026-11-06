@@ -31,6 +31,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         Schema::create('tanda_terimas', function (Blueprint $table) {
             $table->id();
             $table->string('no_surat_jalan');
+            $table->string('nomor_tanda_terima')->nullable()->unique();
             $table->string('notify_party')->nullable();
             $table->text('alamat_notify_party')->nullable();
             $table->unsignedBigInteger('shipper_jb_id')->nullable();
@@ -44,6 +45,17 @@ class ApprovalTandaTerimaDuaTest extends TestCase
             $table->json('goods')->nullable();
             $table->unsignedBigInteger('updated_by')->nullable();
             $table->timestamps();
+        });
+        Schema::create('approval_tanda_terima_2_shipper_overrides', function (Blueprint $table) {
+            $table->id();
+            $table->string('source_type');
+            $table->unsignedBigInteger('source_id');
+            $table->string('context');
+            $table->unsignedBigInteger('shipper_jb_id');
+            $table->json('fields');
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+            $table->unique(['source_type', 'source_id', 'context']);
         });
         Schema::create('tanda_terimas_lcl', function (Blueprint $table) {
             $table->id();
@@ -124,11 +136,12 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         ]);
 
         (new ApprovalTandaTerimaDuaController)->update(
-            Request::create('/approval-tanda-terima-2/fcl/'.$tandaTerimaId, 'PUT', ['shipper_jb_id' => $shipperId]),
+            Request::create('/approval-tanda-terima-2/fcl/'.$tandaTerimaId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-FCL-001']),
             'fcl', $tandaTerimaId
         );
 
         $this->assertEquals($shipperId, DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('shipper_jb_id'));
+        $this->assertSame('TT-FCL-001', DB::table('tanda_terimas')->where('id', $tandaTerimaId)->value('nomor_tanda_terima'));
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $jbId)->value('shipper_jb_id'));
         $this->assertEquals(77, DB::table('manifests')->where('id', $jbId)->value('shipper_id'));
         $this->assertEquals('Pengirim Asli', DB::table('manifests')->where('id', $jbId)->value('pengirim'));
@@ -218,7 +231,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         $this->assertSame('Penerima Asli', DB::table('shipper_consignees')->where('id', $masterId)->value('consignee'));
     }
 
-    public function test_lcl_selection_matches_its_receipt_and_an_unnumbered_receipt_cannot_update_unrelated_manifests(): void
+    public function test_lcl_and_ttsj_selection_match_their_receipts_without_updating_unrelated_manifests(): void
     {
         $shipperId = DB::table('shipper_consignees')->insertGetId([
             'shipper' => 'PT LCL JB', 'notify_party_consignee' => 'PT Notify LCL',
@@ -233,12 +246,13 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         ]);
 
         $controller = new ApprovalTandaTerimaDuaController;
-        $controller->update(Request::create('/approval-tanda-terima-2/lcl/'.$lclId, 'PUT', ['shipper_jb_id' => $shipperId]), 'lcl', $lclId);
-        $controller->update(Request::create('/approval-tanda-terima-2/ttsj/'.$ttsjId, 'PUT', ['shipper_jb_id' => $shipperId]), 'ttsj', $ttsjId);
+        $controller->update(Request::create('/approval-tanda-terima-2/lcl/'.$lclId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-LCL-1']), 'lcl', $lclId);
+        $controller->update(Request::create('/approval-tanda-terima-2/ttsj/'.$ttsjId, 'PUT', ['shipper_jb_id' => $shipperId, 'nomor_tanda_terima' => 'TT-TTSJ-1']), 'ttsj', $ttsjId);
 
         $this->assertEquals($shipperId, DB::table('manifests')->where('id', $linkedManifestId)->value('shipper_jb_id'));
         $this->assertNull(DB::table('manifests')->where('id', $otherManifestId)->value('shipper_jb_id'));
         $this->assertEquals($shipperId, DB::table('tanda_terima_tanpa_surat_jalan')->where('id', $ttsjId)->value('shipper_jb_id'));
+        $this->assertSame('TT-TTSJ-1', DB::table('tanda_terima_tanpa_surat_jalan')->where('id', $ttsjId)->value('no_tanda_terima'));
     }
 
     public function test_editing_selected_shipper_creates_a_separate_record_for_the_receipt_and_jb_manifest(): void
@@ -256,6 +270,7 @@ class ApprovalTandaTerimaDuaTest extends TestCase
         (new ApprovalTandaTerimaDuaController)->update(
             Request::create('/approval-tanda-terima-2/lcl/'.$receiptId, 'PUT', [
                 'shipper_jb_id' => $shipperId,
+                'nomor_tanda_terima' => 'TT-EDIT-1',
                 'shipper' => 'Pengirim Revisi',
                 'consignee' => 'Penerima Revisi',
             ]),

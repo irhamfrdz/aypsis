@@ -13,9 +13,10 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
 {
     public function test_export_removes_company_header_and_sets_sheet_view(): void
     {
-        $receipt = (new class extends Model {})->forceFill(['no_surat_jalan' => 'TEST-001']);
+        $receipt = (new class extends Model {})->forceFill(['no_surat_jalan' => 'TEST-001', 'nomor_tanda_terima' => 'TT-APPROVED-001']);
         $receipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'AYP']));
         $otherReceipt = clone $receipt;
+        $otherReceipt->nomor_tanda_terima = null;
         $otherReceipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => 'LAINNYA']));
         $nonFakturReceipt = clone $receipt;
         $nonFakturReceipt->setRelation('shipperJb', (new ShipperConsignee)->forceFill(['document_ppftz_03' => ' non-faktur ']));
@@ -31,7 +32,7 @@ class ApprovalTandaTerimaDuaExcelServiceTest extends TestCase
 
             $this->assertSame('M A N I F E S T    O F    C A R G O', $sheet->getCell('B1')->getValue());
             $this->assertSame('B/L NO.', $sheet->getCell('B5')->getValue());
-            $this->assertSame('TEST-001', $sheet->getCell('AC8')->getValue());
+            $this->assertSame('TT-APPROVED-001', $sheet->getCell('AC8')->getValue());
             $this->assertNull($sheet->getCell('AC7')->getValue());
             $this->assertSame('TEST-001', $sheet->getCell('AC9')->getValue());
             $this->assertSame('AYP', $sheet->getCell('AA8')->getValue());

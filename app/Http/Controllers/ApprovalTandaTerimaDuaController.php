@@ -16,6 +16,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -95,9 +96,11 @@ class ApprovalTandaTerimaDuaController extends Controller
         });
 
         $sourceTable = $query->getModel()->getTable();
-        $numberColumns = $type === 'ttsj'
-            ? ['no_tanda_terima', 'nomor_tanda_terima']
-            : [$this->numberColumn($type)];
+        $numberColumns = match ($type) {
+            'fcl' => ['no_surat_jalan', 'nomor_tanda_terima'],
+            'ttsj' => ['no_tanda_terima', 'nomor_tanda_terima'],
+            default => [$this->numberColumn($type)],
+        };
         $manifestByNumber = function ($manifestQuery) use ($sourceTable, $numberColumns) {
             $manifestQuery->selectRaw('1')->from('manifests')
                 ->where(function ($numbers) use ($sourceTable, $numberColumns) {
@@ -168,7 +171,8 @@ class ApprovalTandaTerimaDuaController extends Controller
                                 $query->orWhere('nomor_tanda_terima', 'like', "%{$search}%");
                             }
                             if ($type === 'fcl') {
-                                $query->orWhere('jenis_barang', 'like', "%{$search}%")
+                                $query->orWhere('nomor_tanda_terima', 'like', "%{$search}%")
+                                    ->orWhere('jenis_barang', 'like', "%{$search}%")
                                     ->orWhere('nama_barang', 'like', "%{$search}%")
                                     ->orWhere('dimensi_items', 'like', "%{$search}%")
                                     ->orWhere('dimensi_details', 'like', "%{$search}%");
@@ -584,6 +588,16 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
         $item = self::SOURCES[$sourceType]::findOrFail($id);
+        $request->merge(['nomor_tanda_terima' => trim((string) $request->input('nomor_tanda_terima'))]);
+        $numberColumn = $sourceType === 'ttsj' ? 'no_tanda_terima' : 'nomor_tanda_terima';
+        $numberData = $request->validate([
+            'nomor_tanda_terima' => ['required', 'string', 'max:255', Rule::unique($item->getTable(), $numberColumn)->ignore($item->id)],
+        ]);
+        $receiptNumber = trim($numberData['nomor_tanda_terima']);
+        if ($sourceType === 'ttsj' && TandaTerimaTanpaSuratJalan::query()
+            ->whereKeyNot($item->id)->where('nomor_tanda_terima', $receiptNumber)->exists()) {
+            throw ValidationException::withMessages(['nomor_tanda_terima' => 'Nomor tanda terima sudah digunakan.']);
+        }
         [$shipper, $fields] = $this->validateShipperSelection($request);
         $withGoods = $request->boolean('save_goods');
         $goods = $withGoods ? $this->validateApprovalGoods($request) : null;
@@ -591,14 +605,17 @@ class ApprovalTandaTerimaDuaController extends Controller
             abort_if($item->fclShipperDetails()->where('shipper_jb_id', $shipper->id)->exists(), 422, 'Shipper ini sudah menjadi shipper tambahan.');
         }
 
-        DB::transaction(function () use ($item, $sourceType, $shipper, $fields, $goods, $id) {
+        DB::transaction(function () use ($item, $sourceType, $shipper, $fields, $goods, $id, $receiptNumber) {
             $this->saveShipperApprovalOverride($sourceType, $item->id, 'main', $shipper, $fields);
-            $item->update(['shipper_jb_id' => $shipper->id]);
-
             $number = $item->{$this->numberColumn($sourceType)};
             if ($sourceType === 'ttsj' && blank($number)) {
                 $number = $item->nomor_tanda_terima;
             }
+            $item->update([
+                'shipper_jb_id' => $shipper->id,
+                'nomor_tanda_terima' => $receiptNumber,
+                ...($sourceType === 'ttsj' ? ['no_tanda_terima' => $receiptNumber] : []),
+            ]);
 
             $manifests = collect();
             if ($sourceType === 'fcl' || filled($number)) {

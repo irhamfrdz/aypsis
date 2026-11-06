@@ -65,7 +65,7 @@ class ApprovalTandaTerimaDuaExcelService
         $shipper = $detail?->shipperJb ?? $receipt->shipperJb;
         $shipperValues = array_replace($shipper?->getAttributes() ?? [], $shipperOverride ?? []);
         $number = match ($sourceType) {
-            'fcl' => $receipt->no_surat_jalan,
+            'fcl' => $receipt->nomor_tanda_terima ?: $receipt->no_surat_jalan,
             'lcl' => $receipt->nomor_tanda_terima,
             default => $receipt->no_tanda_terima ?: $receipt->nomor_tanda_terima,
         };
