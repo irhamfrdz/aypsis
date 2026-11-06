@@ -12,6 +12,9 @@
     #approval-ttsj-dialog { background: #f8fafc; color: #0f172a; }
     #approval-ttsj-dialog > div:first-child { position: sticky; top: 0; z-index: 3; background: #fff; }
     #approval-ttsj-dialog form > div:last-child { position: sticky; bottom: 0; z-index: 3; background: #fff; box-shadow: 0 -4px 16px rgb(15 23 42 / 6%); }
+    #approval-ttsj-dialog [hidden] { display: none !important; }
+    #approval-ttsj-dialog .ttsj-shipper-field { min-width: 0; }
+    #approval-ttsj-dialog .ttsj-shipper-field input, #approval-ttsj-dialog .ttsj-shipper-field textarea, #approval-ttsj-dialog .ttsj-shipper-field select { width: 100%; }
     #approval-ttsj-dialog .ttsj-goods-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; padding: 20px; border: 1px solid #e2e8f0; border-radius: 12px; background: #fff; box-shadow: 0 2px 4px rgb(15 23 42 / 3%); }
     #approval-ttsj-dialog .ttsj-goods-row > h4 { grid-column: 1 / -1; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 14px; font-weight: 700; }
     #approval-ttsj-dialog .ttsj-goods-field { min-width: 0; }
@@ -29,14 +32,14 @@
     }
     #approval-shipper-dialog [hidden] { display: none !important; }
     .approval-shipper-combobox { position: relative; }
-    #approval-shipper-search { display: block; width: 100%; min-height: 44px; padding: 10px 42px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgb(15 23 42 / 5%); }
-    #approval-shipper-search::placeholder { color: #94a3b8; }
-    #approval-shipper-search:hover { border-color: #818cf8; }
-    #approval-shipper-search:focus { border-color: #6366f1; outline: 0; box-shadow: 0 0 0 3px rgb(99 102 241 / 18%); }
+    #approval-shipper-search, #approval-ttsj-shipper-search { display: block; width: 100%; min-height: 44px; padding: 10px 42px; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; color: #0f172a; box-shadow: 0 1px 2px rgb(15 23 42 / 5%); }
+    #approval-shipper-search::placeholder, #approval-ttsj-shipper-search::placeholder { color: #94a3b8; }
+    #approval-shipper-search:hover, #approval-ttsj-shipper-search:hover { border-color: #818cf8; }
+    #approval-shipper-search:focus, #approval-ttsj-shipper-search:focus { border-color: #6366f1; outline: 0; box-shadow: 0 0 0 3px rgb(99 102 241 / 18%); }
     .approval-shipper-search-icon, .approval-shipper-search-arrow { position: absolute; top: 22px; transform: translateY(-50%); color: #64748b; pointer-events: none; }
     .approval-shipper-search-icon { left: 15px; }
     .approval-shipper-search-arrow { right: 16px; }
-    #approval-shipper-options { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; max-height: 220px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-shadow: 0 14px 32px rgb(15 23 42 / 16%); padding: 4px; color: #475569; }
+    #approval-shipper-options, #approval-ttsj-shipper-results { position: absolute; z-index: 20; top: calc(100% + 6px); left: 0; right: 0; max-height: 220px; overflow-y: auto; border: 1px solid #cbd5e1; border-radius: 10px; background: #fff; box-shadow: 0 14px 32px rgb(15 23 42 / 16%); padding: 4px; color: #475569; }
     #approval-shipper-options.approval-shipper-message { padding: 12px; }
     .approval-shipper-option { display: block; width: 100%; padding: 10px 12px; text-align: left; border: 0; border-radius: 7px; background: #fff; color: #0f172a; }
     .approval-shipper-option + .approval-shipper-option { border-top: 1px solid #f1f5f9; }
@@ -525,34 +528,44 @@
                 <input id="approval-ttsj-date" name="tanggal_tanda_terima" type="date" value="{{ old('tanggal_tanda_terima', now()->toDateString()) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div class="sm:col-span-2">
-                <label for="approval-ttsj-shipper-search" class="mb-1 block text-sm font-medium text-gray-700">Shipper / consignee dari master <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-shipper-search" type="search" autocomplete="off" placeholder="Cari shipper atau consignee..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" aria-controls="approval-ttsj-shipper-results">
-                <div id="approval-ttsj-shipper-results" class="mt-1 max-h-48 overflow-y-auto rounded-lg border border-gray-200 bg-white shadow-sm" hidden></div>
+                <div class="mb-1 flex items-center justify-between gap-3">
+                    <label for="approval-ttsj-shipper-search" class="text-sm font-medium text-gray-700">Cari shipper atau consignee <span class="text-red-600">*</span></label>
+                    @can('master-shipper-consignee-create')
+                        <a href="{{ route('master.shipper-consignee.create') }}" target="_blank" rel="noopener noreferrer" class="text-xs font-semibold text-indigo-700 hover:underline"><i class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah di master</a>
+                    @endcan
+                </div>
+                <div class="approval-shipper-combobox">
+                    <i class="approval-shipper-search-icon fas fa-magnifying-glass" aria-hidden="true"></i>
+                    <input id="approval-ttsj-shipper-search" type="search" autocomplete="off" placeholder="Ketik nama shipper atau consignee..." class="text-sm" aria-controls="approval-ttsj-shipper-results" aria-expanded="false" aria-autocomplete="list">
+                    <i class="approval-shipper-search-arrow fas fa-chevron-down text-xs" aria-hidden="true"></i>
+                    <div id="approval-ttsj-shipper-results" class="text-sm" aria-label="Hasil pencarian shipper" hidden></div>
+                </div>
                 <p id="approval-ttsj-shipper-message" class="mt-1 text-xs text-gray-500" aria-live="polite">Pilih pasangan shipper dan consignee dari hasil pencarian.</p>
                 @error('shipper_jb_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
             </div>
             @php
                 $ttsjShipperGroups = [
-                    'Shipper' => ['shipper' => 'Shipper', 'alamat_shipper' => 'Address Shipper', 'npwp_shipper' => 'NPWP Shipper'],
-                    'Consignee' => ['consignee' => 'Consignee', 'alamat_consignee' => 'Address Consignee', 'npwp_consignee' => 'NPWP Consignee'],
-                    'Notify Party' => ['notify_party_consignee' => 'Notify Party', 'alamat_notify_party_consignee' => 'Address Notify Party', 'npwp_notify_party_consignee' => 'NPWP Notify Party'],
-                    'Informasi Lainnya' => ['delivery_address_contact_person' => 'Delivery Address & Contact Person', 'document_ppftz_03' => 'Dokumen PPFTZ-03', 'condition' => 'Condition', 'status' => 'Status'],
+                    'Informasi Shipper' => ['shipper' => 'Shipper', 'alamat_shipper' => 'Address (Shipper)', 'npwp_shipper' => 'NPWP Shipper'],
+                    'Informasi Consignee' => ['consignee' => 'Consignee', 'alamat_consignee' => 'Address (Consignee)', 'npwp_consignee' => 'NPWP Consignee'],
+                    'Informasi Notify Party' => ['notify_party_consignee' => 'Notify Party (Consignee)', 'alamat_notify_party_consignee' => 'Address (Notify Party)', 'npwp_notify_party_consignee' => 'NPWP Notify Party'],
+                    'Informasi Lainnya' => ['delivery_address_contact_person' => 'Delivery Address & Contact Person', 'document_ppftz_03' => 'Doc PPFTZ-03', 'condition' => 'Condition', 'status' => 'Status'],
                 ];
             @endphp
-            <div class="sm:col-span-2 grid gap-3 lg:grid-cols-2">
+            <div class="sm:col-span-2 space-y-2" aria-label="Data Shipper / Consignee yang akan disimpan">
                 @foreach($ttsjShipperGroups as $groupTitle => $fields)
-                    <section class="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                        <h4 class="mb-3 font-semibold text-gray-800">{{ $groupTitle }}</h4>
-                        <div class="grid gap-3 sm:grid-cols-2">
+                    <section class="rounded-xl border border-gray-200 bg-gray-50 p-3">
+                        <h4 class="mb-2 text-sm font-semibold text-gray-800">{{ $groupTitle }}</h4>
+                        <div class="grid gap-2 text-sm sm:grid-cols-3">
                             @foreach($fields as $field => $label)
-                                <div class="{{ in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']) ? 'sm:col-span-2' : '' }}">
-                                    <label for="approval-ttsj-field-{{ $field }}" class="mb-1 block text-xs font-medium text-gray-600">{{ $label }}</label>
+                                <div class="ttsj-shipper-field">
+                                    <label for="approval-ttsj-field-{{ $field }}" class="block text-xs font-medium text-gray-500">{{ $label }}</label>
+                                    <button type="button" data-ttsj-shipper-preview="{{ $field }}" class="approval-shipper-field-preview text-sm" aria-label="Ubah {{ $label }}" disabled>-</button>
                                     @if($field === 'status')
-                                        <select id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" disabled class="w-full rounded-lg border-gray-300 bg-white text-sm"><option value="1">Aktif</option><option value="0">Tidak aktif</option></select>
+                                        <select id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500"><option value="1" @selected(old('status', '1') === '1')>Aktif</option><option value="0" @selected(old('status') === '0')>Tidak aktif</option></select>
                                     @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
-                                        <textarea id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" rows="2" disabled class="w-full rounded-lg border-gray-300 bg-white text-sm">{{ old($field) }}</textarea>
+                                        <textarea id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" rows="2" disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500">{{ old($field) }}</textarea>
                                     @else
-                                        <input id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" value="{{ old($field) }}" maxlength="255" {{ in_array($field, ['shipper', 'consignee']) ? 'required' : '' }} disabled class="w-full rounded-lg border-gray-300 bg-white text-sm">
+                                        <input id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" value="{{ old($field) }}" maxlength="255" {{ in_array($field, ['shipper', 'consignee']) ? 'required' : '' }} disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500">
                                     @endif
                                     @error($field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
@@ -561,7 +574,7 @@
                     </section>
                 @endforeach
             </div>
-            <p class="sm:col-span-2 text-xs text-gray-500">Data dapat disesuaikan untuk tanda terima ini. Perubahan membuat salinan; data master asli tetap tersedia.</p>
+            <p class="sm:col-span-2 text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima ini; data master asli tetap tersedia.</p>
             <div>
                 <label for="approval-ttsj-destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman <span class="text-red-600">*</span></label>
                 <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
@@ -759,6 +772,33 @@ document.addEventListener('DOMContentLoaded', () => {
     const message = document.getElementById('approval-ttsj-shipper-message');
     const selectedId = document.getElementById('approval-ttsj-shipper-id');
     const shipperFields = form.querySelectorAll('[data-ttsj-shipper-field]');
+    const shipperPreviews = form.querySelectorAll('[data-ttsj-shipper-preview]');
+    function setResultsVisible(visible) {
+        results.hidden = !visible;
+        search.setAttribute('aria-expanded', String(visible));
+    }
+    function showShipperPreview(field) {
+        const preview = form.querySelector(`[data-ttsj-shipper-preview="${field.dataset.ttsjShipperField}"]`);
+        preview.textContent = field.name === 'status'
+            ? (field.value === '0' ? 'Tidak aktif' : 'Aktif')
+            : (field.value.trim() || '-');
+        preview.disabled = field.disabled;
+        preview.hidden = false;
+        field.hidden = true;
+    }
+    shipperPreviews.forEach(preview => {
+        preview.addEventListener('click', () => {
+            if (preview.disabled) return;
+            const field = form.querySelector(`[data-ttsj-shipper-field="${preview.dataset.ttsjShipperPreview}"]`);
+            preview.hidden = true;
+            field.hidden = false;
+            field.focus();
+        });
+    });
+    shipperFields.forEach(field => {
+        field.addEventListener('blur', () => showShipperPreview(field));
+        if (field.tagName === 'SELECT') field.addEventListener('change', () => showShipperPreview(field));
+    });
     function updateGoodsSizeVisibility(prefix) {
         const name = form.elements.namedItem(`${prefix}[0][nama_barang]`);
         const size = form.elements.namedItem(`${prefix}[0][ukuran]`);
@@ -787,6 +827,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let controller;
 
     function selectShipper(item, preserveEdits = false) {
+        controller?.abort();
         selectedId.value = item.real_id;
         shipperFields.forEach(field => {
             field.disabled = false;
@@ -795,10 +836,12 @@ document.addEventListener('DOMContentLoaded', () => {
                     ? (item.status === 0 || item.status === '0' ? '0' : '1')
                     : (item[field.dataset.ttsjShipperField] ?? '');
             }
+            showShipperPreview(field);
         });
         search.value = item.display_text;
-        message.textContent = 'Data master dipilih. Periksa dan sesuaikan rincian di bawah.';
-        results.hidden = true;
+        message.textContent = 'Dipilih: ' + item.display_text + '. Klik data di bawah untuk mengubahnya.';
+        message.className = 'mt-2 text-xs font-medium text-indigo-700';
+        setResultsVisible(false);
     }
 
     async function findShippers(id = null, preserveEdits = false) {
@@ -820,6 +863,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 else {
                     selectedId.value = '';
                     message.textContent = 'Data master perlu memiliki shipper dan consignee.';
+                    shipperFields.forEach(field => {
+                        field.disabled = true;
+                        showShipperPreview(field);
+                    });
                 }
                 return;
             }
@@ -827,12 +874,21 @@ document.addEventListener('DOMContentLoaded', () => {
             items.forEach(item => {
                 const button = document.createElement('button');
                 button.type = 'button';
-                button.className = 'block w-full border-b border-gray-100 px-3 py-2 text-left text-sm hover:bg-indigo-50 focus:bg-indigo-50';
-                button.textContent = item.display_text;
+                button.className = 'approval-shipper-option';
+                const name = document.createElement('span');
+                name.className = 'approval-shipper-option-name';
+                name.textContent = item.text || item.display_text;
+                button.append(name);
+                [['Consignee', 'consignee'], ['Notify Party', 'notify_party_consignee'], ['Delivery Address & Contact Person', 'delivery_address_contact_person']].forEach(([label, field]) => {
+                    const detail = document.createElement('span');
+                    detail.className = 'approval-shipper-option-detail';
+                    detail.textContent = label + ': ' + (String(item[field] ?? '').trim() || '-');
+                    button.append(detail);
+                });
                 button.addEventListener('click', () => selectShipper(item));
                 results.append(button);
             });
-            results.hidden = !results.childElementCount;
+            setResultsVisible(!!results.childElementCount);
             message.textContent = results.hidden ? 'Pasangan shipper dan consignee tidak ditemukan.' : 'Pilih satu hasil pencarian.';
         } catch (error) {
             if (error.name !== 'AbortError') message.textContent = error.message;
@@ -844,11 +900,13 @@ document.addEventListener('DOMContentLoaded', () => {
         clearTimeout(timer);
         controller?.abort();
         selectedId.value = '';
+        message.className = 'mt-1 text-xs text-gray-500';
         shipperFields.forEach(field => {
             field.value = '';
             field.disabled = true;
+            showShipperPreview(field);
         });
-        results.hidden = true;
+        setResultsVisible(false);
         timer = setTimeout(() => findShippers(), 250);
     });
     search.addEventListener('focus', () => {
