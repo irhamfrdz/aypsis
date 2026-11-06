@@ -866,7 +866,7 @@ class ObController extends Controller
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => now(),
                             'gudang_id' => $gudang->id,
-                            'keterangan' => 'OB (Overbrengen) dari Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
+                            'keterangan' => 'Masuk via OB Bongkar dari Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
                             'created_by' => Auth::id(),
                         ]);
                     }
@@ -1519,7 +1519,7 @@ class ObController extends Controller
                             'jenis_kegiatan' => 'Masuk',
                             'tanggal_kegiatan' => now(),
                             'gudang_id' => $gudang->id,
-                            'keterangan' => 'OB (Overbrengen) dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
+                            'keterangan' => 'Masuk via OB Bongkar dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
                             'created_by' => Auth::id(),
                         ]);
                     }
@@ -2377,7 +2377,7 @@ class ObController extends Controller
                                 'jenis_kegiatan' => 'Masuk',
                                 'tanggal_kegiatan' => now(),
                                 'gudang_id' => $gudang->id,
-                                'keterangan' => 'Overbrengen dari Kapal: '.($record->nama_kapal ?? '-').'. Voyage: '.($record->no_voyage ?? '-'),
+                                'keterangan' => 'Masuk via OB Bongkar dari Kapal: '.($record->nama_kapal ?? '-').'. Voyage: '.($record->no_voyage ?? '-'),
                                 'created_by' => Auth::id(),
                             ]);
                         }
