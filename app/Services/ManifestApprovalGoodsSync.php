@@ -113,8 +113,8 @@ class ManifestApprovalGoodsSync
                 'satuan' => filled($good['satuan'] ?? null) ? $good['satuan'] : null,
             ];
             $fields['hs_code'] = filled($good['hs_code'] ?? null) ? $good['hs_code'] : null;
-            $fields['tonnage'] = filled($good['tonase'] ?? null) ? $this->decimal((string) $good['tonase']) : null;
-            $fields['volume'] = filled($good['meter_kubik'] ?? null) ? $this->decimal((string) $good['meter_kubik']) : null;
+            $fields['tonnage'] = filled($good['tonase'] ?? null) ? $this->parseMetric((string) $good['tonase']) : null;
+            $fields['volume'] = filled($good['meter_kubik'] ?? null) ? $this->parseMetric((string) $good['meter_kubik']) : null;
         }
 
         $perincian = collect($override->goods ?? [])
@@ -129,14 +129,14 @@ class ManifestApprovalGoodsSync
         return $fields;
     }
 
-    private function decimal(string $value): string
+    public function parseMetric(string $value): string
     {
         $value = trim($value);
         if (str_contains($value, ',')) {
             return str_replace(',', '.', str_replace('.', '', $value));
         }
 
-        return preg_match('/^\d{1,3}(?:\.\d{3})+$/', $value)
-            ? str_replace('.', '', $value) : $value;
+        // Tonase dan volume dengan satu titik, seperti 5.825, adalah nilai desimal.
+        return $value;
     }
 }

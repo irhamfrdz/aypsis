@@ -630,7 +630,7 @@
                                 @foreach(['tonase' => 'Tonase', 'meter_kubik' => 'Volume (m³)'] as $field => $label)
                                     <div class="ttsj-goods-field" data-field="{{ $field }}">
                                         <label for="approval-ttsj-manifest-{{ $field }}">{{ $label }}</label>
-                                        <input id="approval-ttsj-manifest-{{ $field }}" name="manifest_goods[0][{{ $field }}]" value="{{ old('manifest_goods.0.'.$field) }}" inputmode="decimal" placeholder="{{ $field === 'tonase' ? 'Contoh: 17.665,78' : 'Contoh: 3.500,25' }}">
+                                        <input id="approval-ttsj-manifest-{{ $field }}" name="manifest_goods[0][{{ $field }}]" value="{{ old('manifest_goods.0.'.$field) }}" inputmode="decimal" placeholder="{{ $field === 'tonase' ? 'Contoh: 5.825 atau 5,825' : 'Contoh: 13.728 atau 13,728' }}">
                                         @error('manifest_goods.0.'.$field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                     </div>
                                 @endforeach

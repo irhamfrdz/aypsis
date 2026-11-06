@@ -10,7 +10,7 @@
             ukuran: 'Ukuran keramik', meter_kubik: 'Volume (m³)',
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_codes: 'Contoh: 8479.89 (satu kode per baris)', jumlah: '0',
-            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 17.665,78', meter_kubik: 'Contoh: 3.500,25', keterangan_barang: 'Catatan tambahan (opsional)' };
+            satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 5.825 atau 5,825', meter_kubik: 'Contoh: 13.728 atau 13,728', keterangan_barang: 'Catatan tambahan (opsional)' };
         function formatLocalizedNumber(value) {
             const clean = value.replace(/[^\d.,]/g, '');
             const comma = clean.indexOf(',');

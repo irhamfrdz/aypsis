@@ -33,7 +33,7 @@
                                     <input type="{{ $inputType }}" name="{{ $rowName }}[{{ $field }}]"
                                         value="{{ data_get($good, $field) }}"
                                         @if($inputType === 'number') min="0" step="{{ $field === 'jumlah' ? '1' : 'any' }}" @endif
-                                        @if(in_array($field, ['tonase', 'meter_kubik'])) inputmode="decimal" placeholder="Contoh: 17.665,78" @endif
+                                        @if(in_array($field, ['tonase', 'meter_kubik'])) inputmode="decimal" placeholder="{{ $field === 'tonase' ? 'Contoh: 5.825 atau 5,825' : 'Contoh: 13.728 atau 13,728' }}" @endif
                                         class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                 @endif
                             </td>
