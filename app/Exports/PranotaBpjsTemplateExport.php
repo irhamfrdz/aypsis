@@ -72,10 +72,6 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
     private function writeRowsIntoTemplate(): void
     {
         $sheet = $this->template;
-        $groupHeading = $sheet->getCell('H1')->getValue();
-        $typeHeading = $sheet->getCell('I1')->getValue();
-        $sheet->setCellValue('H1', $typeHeading);
-        $sheet->setCellValue('I1', $groupHeading);
         foreach (['BC' => 'AKUN JURNAL', 'BD' => 'TUNJANGAN JURNAL', 'BE' => 'BIAYA JURNAL', 'BF' => 'HUTANG JURNAL', 'BG' => 'GROUP JKN', 'BH' => 'GROUP BP JAMSOSTEK', 'BI' => 'JAMSOSTEK GABUNGAN DATA LAMA'] as $column => $heading) {
             $sheet->setCellValue($column.'1', $heading);
             $sheet->getColumnDimension($column)->setAutoSize(true);
@@ -158,6 +154,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         }
 
         $groupRows = range($summaryHeaderRow + 1, $groupTotalRow - 2);
+        $groupKey = fn (string $label): string => mb_strtoupper(trim($label));
         $templateGroups = [];
         $emptyRows = [];
         foreach ($groupRows as $row) {
@@ -165,21 +162,24 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
             if ($label === '') {
                 $emptyRows[] = $row;
             } else {
-                $templateGroups[$label] = $row;
+                $templateGroups[$groupKey($label)] = $row;
             }
         }
-        $exportGroups = array_values(array_unique(array_filter(array_map(
-            fn (array $row) => trim((string) ($row[$this->columnIndex('H') - 1] ?? '')),
-            $this->rows
-        ))));
-        foreach ($exportGroups as $group) {
-            if (isset($templateGroups[$group])) {
+        $exportGroups = [];
+        foreach ($this->rows as $dataRow) {
+            $label = trim((string) ($dataRow[$this->columnIndex('H') - 1] ?? ''));
+            if ($label !== '') {
+                $exportGroups[$groupKey($label)] = $label;
+            }
+        }
+        foreach ($exportGroups as $key => $group) {
+            if (isset($templateGroups[$key])) {
                 continue;
             }
             $row = array_shift($emptyRows);
             if ($row === null) {
                 foreach ($templateGroups as $templateGroup => $candidate) {
-                    if (! in_array($templateGroup, $exportGroups, true)) {
+                    if (! isset($exportGroups[$templateGroup])) {
                         $row = $candidate;
                         unset($templateGroups[$templateGroup]);
                         break;
@@ -190,7 +190,7 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
                 throw new \RuntimeException('Jumlah grup BPJS melebihi kapasitas ringkasan pada template Excel.');
             }
             $sheet->setCellValue('AE'.$row, $group);
-            $templateGroups[$group] = $row;
+            $templateGroups[$key] = $row;
         }
 
         foreach ($groupRows as $row) {
@@ -266,8 +266,8 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('E', (string) ($employee?->nik_ktp ?? $employee?->ktp ?? ''));
         $set('F', $date($employee?->tanggal_lahir));
         $set('G', $date($employee?->tanggal_masuk));
-        $set('H', $component === 'jkn' ? $jknGroup : ($jamsostekGroup ?: $jknGroup));
-        $set('I', $component === 'jkn' ? $jknType : ($jamsostekType ?: $jknType));
+        $set('H', $component === 'jkn' ? $jknType : ($jamsostekType ?: $jknType));
+        $set('I', $component === 'jkn' ? $jknGroup : ($jamsostekGroup ?: $jknGroup));
         $set('J', trim((string) ($detail->karyawan?->cabang_bpjs)) ?: ($employee?->cabang_bpjs ?? ''));
         $set('K', 'x');
         $set('L', $this->parseWage($employee?->dpp_bp_jamsostek ?? $employee?->dpp_jkn ?? 0));

@@ -63,13 +63,13 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertNotNull($sheet);
         $this->assertSame('NIK. KARY.', $sheet->getCell('B1')->getValue());
         $this->assertSame('NAMA KARYAWAN', $sheet->getCell('C1')->getValue());
-        $this->assertSame($template->getCell('I1')->getValue(), $sheet->getCell('H1')->getValue());
-        $this->assertSame($template->getCell('H1')->getValue(), $sheet->getCell('I1')->getValue());
+        $this->assertSame('Group', $sheet->getCell('H1')->getValue());
+        $this->assertSame('Tipe', $sheet->getCell('I1')->getValue());
         $this->assertSame('ABDULLAH', $sheet->getCell('C2')->getValue());
         $this->assertSame('0012', $sheet->getCell('B2')->getValue());
         $this->assertSame('3202160607820012', $sheet->getCell('D2')->getValue());
-        $this->assertSame('PPU', $sheet->getCell('H2')->getValue());
-        $this->assertSame('KARYAWAN', $sheet->getCell('I2')->getValue());
+        $this->assertSame('KARYAWAN', $sheet->getCell('H2')->getValue());
+        $this->assertSame('PPU', $sheet->getCell('I2')->getValue());
         $this->assertSame('JKT', $sheet->getCell('J2')->getValue());
         $this->assertSame(4450000.0, $sheet->getCell('L2')->getValue());
         $this->assertEquals(5360000.5, $sheet->getCell('L4')->getValue());
@@ -80,8 +80,8 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertNull($sheet->getCell('AA2')->getValue());
         $this->assertSame(229195.2, $sheet->getCell('AA3')->getValue());
         $this->assertSame('ABDULLAH', $sheet->getCell('C3')->getValue());
-        $this->assertSame('JKN-KIS', $sheet->getCell('H3')->getValue());
-        $this->assertSame('KANTOR', $sheet->getCell('I3')->getValue());
+        $this->assertSame('KANTOR', $sheet->getCell('H3')->getValue());
+        $this->assertSame('JKN-KIS', $sheet->getCell('I3')->getValue());
         $this->assertNull($sheet->getCell('M3')->getValue());
         $this->assertSame('0001/VC-BPJS', $sheet->getCell('AL2')->getValue());
         $this->assertSame('AKUN JURNAL', $sheet->getCell('BC1')->getValue());
@@ -104,8 +104,11 @@ class PranotaBpjsExcelExportTest extends TestCase
         $this->assertSame('Tunjangan', $sheet->getCell('AF16')->getValue());
         $this->assertSame('Crew', $sheet->getCell('AE17')->getValue());
         $summaryGroups = array_map(fn (int $row) => $sheet->getCell('AE'.$row)->getValue(), range(17, 30));
-        $this->assertContains('PPU', $summaryGroups);
-        $this->assertContains('JKN-KIS', $summaryGroups);
+        $this->assertContains('KARYAWAN', $summaryGroups);
+        $this->assertContains('Kantor', $summaryGroups);
+        $this->assertNotContains('KANTOR', $summaryGroups);
+        $this->assertNotContains('PPU', $summaryGroups);
+        $this->assertNotContains('JKN-KIS', $summaryGroups);
         $this->assertStringContainsString('SUBTOTAL(109,OFFSET(AE$2,ROW(AE$2:AE$11)',
             $sheet->getCell('AF17')->getValue());
         $this->assertStringContainsString('$H$2:$H$11=$AE$17', $sheet->getCell('AF17')->getValue());
