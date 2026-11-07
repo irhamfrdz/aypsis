@@ -429,6 +429,7 @@
                             </table>
                         </div>
                     </div>
+                    <p id="modal-filter-empty" class="hidden py-4 text-center text-sm text-gray-500">Tidak ada item terpilih yang sesuai dengan filter.</p>
                 </div>
 
             </div>
@@ -706,10 +707,14 @@
     function filterModalItems() {
         const search = document.getElementById('modal-search-input').value.trim().toLowerCase();
         const placement = document.getElementById('modal-penempatan-filter').value;
+        let visibleCount = 0;
         document.querySelectorAll('#modal-item-list tr').forEach(row => {
             const matchesSearch = row.dataset.name.includes(search) || row.dataset.nik.includes(search);
-            row.style.display = matchesSearch && (!placement || row.dataset.penempatan === placement) ? '' : 'none';
+            const visible = matchesSearch && (!placement || row.dataset.penempatan === placement);
+            row.style.display = visible ? '' : 'none';
+            if (visible) visibleCount++;
         });
+        document.getElementById('modal-filter-empty').classList.toggle('hidden', visibleCount > 0);
     }
 
     async function refreshTableData() {
@@ -975,9 +980,11 @@
         if (searchInput) searchInput.value = '';
         const placementFilter = document.getElementById('modal-penempatan-filter');
         placementFilter.replaceChildren(new Option('Semua Penempatan', ''));
-        [...placements].sort((a, b) => a.localeCompare(b, 'id')).forEach(placement => {
+        const masterPlacements = @json(config('penempatan_karyawan'));
+        [...new Set([...masterPlacements, ...placements])].forEach(placement => {
             placementFilter.add(new Option(placement === '-' ? 'Tanpa Penempatan' : placement, placement));
         });
+        filterModalItems();
 
         document.getElementById('pranota-modal').classList.remove('hidden');
     }

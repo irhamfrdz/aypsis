@@ -251,22 +251,9 @@
                         <label for="penempatan" class="{{ $labelClasses }}">Penempatan</label>
                         <select name="penempatan" id="penempatan" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Penempatan --</option>
-                            <option value="JAKARTA PELABHUHAN" {{ old('penempatan') == 'JAKARTA PELABHUHAN' ? 'selected' : '' }}>JAKARTA PELABHUHAN</option>
-                            <option value="JAKARTA PELABUHAN 1" {{ old('penempatan') == "JAKARTA PELABUHAN 1" ? 'selected' : '' }}>JAKARTA PELABUHAN 1</option>
-                            <option value="JAKARTA KRANI" {{ old('penempatan') == 'JAKARTA KRANI' ? 'selected' : '' }}>JAKARTA KRANI</option>
-                            <option value="KANTOR JAKARTA" {{ old('penempatan') == 'KANTOR JAKARTA' ? 'selected' : '' }}>KANTOR JAKARTA</option>
-                            <option value="GARASAI JAKARTA" {{ old('penempatan') == 'GARASAI JAKARTA' ? 'selected' : '' }}>GARASAI JAKARTA</option>
-                            <option value="KANTOR BATAM" {{ old('penempatan') == 'KANTOR BATAM' ? 'selected' : '' }}>KANTOR BATAM</option>
-                            <option value="GARASI BATAM" {{ old('penempatan') == 'GARASI BATAM' ? 'selected' : '' }}>GARASI BATAM</option>
-                            <option value="BATAM HARIAN" {{ old('penempatan') == 'BATAM HARIAN' ? 'selected' : '' }}>BATAM HARIAN</option>
-                            <option value="BATAM LAPANGAN" {{ old('penempatan') == 'BATAM LAPANGAN' ? 'selected' : '' }}>BATAM LAPANGAN</option>
-                            <option value="BATAM SUPIR" {{ old('penempatan') == 'BATAM SUPIR' ? 'selected' : '' }}>BATAM SUPIR</option>
-                            <option value="BATAM TEKNISI" {{ old('penempatan') == 'BATAM TEKNISI' ? 'selected' : '' }}>BATAM TEKNISI</option>
-                            <option value="JAKARTA HARIAN" {{ old('penempatan') == 'JAKARTA HARIAN' ? 'selected' : '' }}>JAKARTA HARIAN</option>
-                            <option value="JAKARTA KENEK" {{ old('penempatan') == 'JAKARTA KENEK' ? 'selected' : '' }}>JAKARTA KENEK</option>
-                            <option value="JAKARTA SATPAM" {{ old('penempatan') == 'JAKARTA SATPAM' ? 'selected' : '' }}>JAKARTA SATPAM</option>
-                            <option value="JAKARTA SATPAM PEL" {{ old('penempatan') == 'JAKARTA SATPAM PEL' ? 'selected' : '' }}>JAKARTA SATPAM PEL</option>
-                            <option value="JAKARTA SUPIR" {{ old('penempatan') == 'JAKARTA SUPIR' ? 'selected' : '' }}>JAKARTA SUPIR</option>
+                            @foreach(config('penempatan_karyawan') as $placement)
+                                <option value="{{ $placement }}" @selected(old('penempatan') == $placement)>{{ $placement }}</option>
+                            @endforeach
                         </select>
                     </div>
 
