@@ -288,6 +288,11 @@
                 calculateAirSectionTotal(sectionIndex);
             }
         });
+        typesList.addEventListener('input', function(e) {
+            if (e.target.classList.contains('type-manual-input-air')) {
+                calculateAirSectionTotal(sectionIndex);
+            }
+        });
         
         // Set default lokasi if available
         const lokasiSelect = section.querySelector('.lokasi-select-air');
@@ -580,13 +585,18 @@
         
         let totalCost = 0;
         let taxableCost = 0;
+        let hasSelectedType = false;
 
         // Iterate through each type container to calculate individual costs
         typeContainers.forEach(container => {
             const select = container.querySelector('.type-select-air');
             const checkbox = container.querySelector('.lumpsum-checkbox');
+            const manualInput = container.querySelector('.type-manual-input-air');
+            const isManual = manualInput && !manualInput.classList.contains('hidden');
+            const hasType = isManual ? manualInput.value.trim() !== '' : Boolean(select && !select.disabled && select.value);
             
-            if (select) {
+            if (hasType) {
+                hasSelectedType = true;
                 // Determine price from input field now
                 const priceInput = container.querySelector('.price-input-air');
                 const tonaseInput = container.querySelector('.tonase-input-air');
@@ -610,7 +620,7 @@
 
                 // For Abqori, only "Biaya Agency" and "Jasa Air" are taxable
                 if (isAbqori) {
-                    const typeText = (select.options[select.selectedIndex]?.text || '').toLowerCase();
+                    const typeText = (isManual ? manualInput.value : (select.options[select.selectedIndex]?.text || '')).toLowerCase();
                     if (typeText.includes('agency') || typeText.includes('jasa air')) {
                         taxableCost += currentItemCost;
                     }
@@ -622,7 +632,7 @@
 
         let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
-        let jasaAir = parseFloat(jasaAirInput ? jasaAirInput.value : 0) || 0; 
+        let jasaAir = hasSelectedType ? (parseFloat(jasaAirInput ? jasaAirInput.value : 0) || 0) : 0;
         
         // Sub Total = (Price * Qty) + Jasa Air
         let subTotal = waterCost + jasaAir;
