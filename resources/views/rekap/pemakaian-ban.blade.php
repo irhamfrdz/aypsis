@@ -64,7 +64,6 @@
                         <th class="px-4 py-3">Nomor Seri</th>
                         <th class="px-4 py-3">Unit</th>
                         <th class="px-4 py-3">Penerima</th>
-                        <th class="px-4 py-3">Keterangan</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -77,10 +76,9 @@
                             <td class="whitespace-nowrap px-4 py-3">{{ $ban->nomor_seri ?: '-' }}</td>
                             <td class="px-4 py-3">{{ $ban->unit_name ?: ($ban->mobil?->nomor_polisi ?: ($ban->mobil?->no_kir ?: '-')) }}</td>
                             <td class="px-4 py-3">{{ $ban->penerima_name ?: '-' }}</td>
-                            <td class="px-4 py-3">{{ $ban->keterangan ?: '-' }}</td>
                         </tr>
                     @empty
-                        <tr><td colspan="8" class="px-4 py-10 text-center text-gray-500">Belum ada pemakaian ban untuk filter ini.</td></tr>
+                        <tr><td colspan="7" class="px-4 py-10 text-center text-gray-500">Belum ada pemakaian ban untuk filter ini.</td></tr>
                     @endforelse
                 </tbody>
             </table>
