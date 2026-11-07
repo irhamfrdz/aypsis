@@ -141,4 +141,36 @@ class StockBanUsageHistoryTest extends TestCase
             'mobil_id' => $mobilId, 'tanggal_digunakan' => '2026-05-01',
         ]);
     }
+
+    public function test_backfill_recovers_a_returned_tire_from_real_audit_events(): void
+    {
+        $mobilId = DB::table('mobils')->insertGetId(['nomor_polisi' => 'B 4321 CD']);
+        $ban = StockBan::create(['status' => 'Stok', 'nomor_seri' => 'BAN-ULANG']);
+        $ban->update(['status' => 'Terpakai', 'mobil_id' => $mobilId, 'tanggal_keluar' => '2026-01-10', 'tanggal_digunakan' => '2026-01-10']);
+        $ban->update(['status' => 'Stok', 'mobil_id' => null, 'tanggal_keluar' => null]);
+
+        DB::table('stock_ban_usage_histories')->delete();
+        (new StockBanUsageHistoryService)->backfill();
+
+        $this->assertDatabaseHas('stock_ban_usage_histories', [
+            'source_id' => $ban->id, 'mobil_id' => $mobilId, 'tanggal_digunakan' => '2026-01-10',
+        ]);
+    }
+
+    public function test_backfill_uses_old_values_when_creation_audit_is_missing(): void
+    {
+        $mobilId = DB::table('mobils')->insertGetId(['nomor_polisi' => 'B 2222 XY']);
+        DB::table('audit_logs')->insert([
+            'auditable_type' => StockBan::class, 'auditable_id' => 90, 'action' => 'updated',
+            'old_values' => json_encode(['status' => 'Stok', 'nomor_seri' => 'BAN-LAMA']),
+            'new_values' => json_encode(['status' => 'Terpakai', 'mobil_id' => $mobilId, 'tanggal_digunakan' => '2026-01-09']),
+            'created_at' => '2026-01-09 08:00:00',
+        ]);
+
+        (new StockBanUsageHistoryService)->backfill();
+
+        $this->assertDatabaseHas('stock_ban_usage_histories', [
+            'source_id' => 90, 'nomor_seri' => 'BAN-LAMA', 'tanggal_digunakan' => '2026-01-09',
+        ]);
+    }
 }

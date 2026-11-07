@@ -33,7 +33,9 @@ class StockBanUsageHistoryService
                         if (! is_array($new)) {
                             continue;
                         }
-                        $current = $log->action === 'created' ? $new : array_replace($previous, $new);
+                        // Older audit streams can begin after the stock item was
+                        // created. Their old_values provide the missing baseline.
+                        $current = $log->action === 'created' ? $new : array_replace($previous, $old, $new);
                         // Audit rows generally contain only changed columns. Use the
                         // explicit old status when available, then merge the row into
                         // the last known snapshot for this stock item.
