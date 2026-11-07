@@ -98,7 +98,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($pranotaUangRits as $item)
-                            <tr class="hover:bg-gray-50 transition-colors duration-200">
+                            <tr class="hover:bg-gray-50 transition-colors duration-200" data-no-surat-jalan="{{ $item->no_surat_jalan }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $item->no_pranota }}</div>
                                     @if($item->suratJalan)
@@ -387,16 +387,28 @@ function exportToExcel() {
     // Create workbook
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.table_to_sheet(tableClone);
+    const detailRows = [['No. Pranota', 'No. Surat Jalan']];
+    XLSX.utils.sheet_add_aoa(ws, [['No. Surat Jalan']], { origin: 'E1' });
+    table.querySelectorAll('tbody tr').forEach((row, index) => {
+        const noPranota = row.querySelector('td:first-child div')?.textContent.trim() || '-';
+        const numbers = (row.dataset.noSuratJalan || '').split(',').map(number => number.trim()).filter(Boolean);
+        XLSX.utils.sheet_add_aoa(ws, [[numbers.join(', ')]], { origin: `E${index + 2}` });
+        numbers.forEach(number => detailRows.push([noPranota, number]));
+    });
     
     // Set column widths
     ws['!cols'] = [
         { wch: 20 }, // No. Pranota
         { wch: 15 }, // Tanggal
         { wch: 20 }, // Uang Rit
-        { wch: 15 }  // Status
+        { wch: 15 }, // Status
+        { wch: 70 }  // No. Surat Jalan
     ];
     
     XLSX.utils.book_append_sheet(wb, ws, 'Pranota Uang Rit');
+    const detailSheet = XLSX.utils.aoa_to_sheet(detailRows);
+    detailSheet['!cols'] = [{ wch: 24 }, { wch: 30 }];
+    XLSX.utils.book_append_sheet(wb, detailSheet, 'Detail Surat Jalan');
     
     // Generate filename with current date
     const date = new Date().toISOString().split('T')[0];
