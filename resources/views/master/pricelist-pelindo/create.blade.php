@@ -3,6 +3,24 @@
 @section('title', 'Tambah Pricelist Pelindo')
 
 @section('content')
+<style>
+    .pelindo-form-control {
+        border: 1px solid #94a3b8 !important;
+        background-color: #fff;
+    }
+
+    .pelindo-form-control:focus {
+        border-color: #9333ea !important;
+    }
+
+    .pelindo-form-control.is-invalid {
+        border-color: #ef4444 !important;
+    }
+
+    .pelindo-form-section + .pelindo-form-section {
+        margin-top: 2.25rem;
+    }
+</style>
 <div class="min-h-screen bg-slate-50 px-4 py-8 sm:px-6">
     <div class="mx-auto max-w-4xl">
         <a href="{{ route('master.pricelist-pelindo.index') }}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-500 hover:text-purple-700"><i class="fas fa-arrow-left" aria-hidden="true"></i> Kembali ke daftar</a>
@@ -18,24 +36,28 @@
         <form action="{{ route('master.pricelist-pelindo.store') }}" method="POST" class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
             @csrf
             <div class="space-y-9 p-5 sm:p-8">
-                <section aria-labelledby="section-kegiatan">
+                <section class="pelindo-form-section" aria-labelledby="section-kegiatan">
                     <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-kegiatan" class="font-semibold text-slate-900">Informasi kegiatan</h2><p class="mt-1 text-sm text-slate-500">Nama kegiatan yang akan ditampilkan pada pricelist.</p></div>
                     <label for="kegiatan" class="block text-sm font-medium text-slate-700">Kegiatan <span class="text-red-600">*</span></label>
-                    <input type="text" name="kegiatan" id="kegiatan" value="{{ old('kegiatan') }}" required placeholder="Contoh: Bongkar muat kontainer" class="mt-2 block w-full rounded-lg border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('kegiatan') border-red-400 @enderror">
+                    <input type="text" name="kegiatan" id="kegiatan" value="{{ old('kegiatan') }}" required placeholder="Contoh: Bongkar muat kontainer" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('kegiatan') is-invalid @enderror">
                     @error('kegiatan') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                 </section>
 
-                <section aria-labelledby="section-tarif">
+                <section class="pelindo-form-section" aria-labelledby="section-tarif">
                     <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-tarif" class="font-semibold text-slate-900">Detail kontainer & tarif</h2><p class="mt-1 text-sm text-slate-500">Lengkapi ukuran dan status kontainer jika tarif berlaku untuk jenis tertentu.</p></div>
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <label for="ukuran" class="block text-sm font-medium text-slate-700">Ukuran kontainer</label>
-                            <input type="text" name="ukuran" id="ukuran" value="{{ old('ukuran') }}" placeholder="Contoh: 20 Feet" class="mt-2 block w-full rounded-lg border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('ukuran') border-red-400 @enderror">
+                            <select name="ukuran" id="ukuran" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('ukuran') is-invalid @enderror">
+                                <option value="">Pilih ukuran kontainer</option>
+                                <option value="20" {{ old('ukuran') == '20' ? 'selected' : '' }}>20 ft</option>
+                                <option value="40" {{ old('ukuran') == '40' ? 'selected' : '' }}>40 ft</option>
+                            </select>
                             @error('ukuran') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="status_kontainer" class="block text-sm font-medium text-slate-700">Status kontainer</label>
-                            <select name="status_kontainer" id="status_kontainer" class="mt-2 block w-full rounded-lg border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('status_kontainer') border-red-400 @enderror">
+                            <select name="status_kontainer" id="status_kontainer" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('status_kontainer') is-invalid @enderror">
                                 <option value="">Pilih status kontainer</option>
                                 <option value="empty" {{ old('status_kontainer') == 'empty' ? 'selected' : '' }}>Empty</option>
                                 <option value="full" {{ old('status_kontainer') == 'full' ? 'selected' : '' }}>Full</option>
@@ -44,24 +66,24 @@
                         </div>
                         <div class="sm:col-span-2">
                             <label for="tarif" class="block text-sm font-medium text-slate-700">Tarif <span class="text-red-600">*</span></label>
-                            <div class="relative mt-2"><span class="pointer-events-none absolute inset-y-0 left-0 flex items-center border-r border-slate-300 px-4 text-sm font-semibold text-slate-600">Rp</span><input type="text" name="tarif" id="tarif" value="{{ old('tarif') }}" inputmode="numeric" required placeholder="0" class="block w-full rounded-lg border-slate-300 py-3 pl-16 pr-4 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('tarif') border-red-400 @enderror"></div>
+                            <div class="relative mt-2"><span class="pointer-events-none absolute inset-y-0 left-0 flex items-center border-r border-slate-300 px-4 text-sm font-semibold text-slate-600">Rp</span><input type="text" name="tarif" id="tarif" value="{{ old('tarif') }}" inputmode="numeric" required placeholder="0" class="pelindo-form-control block w-full rounded-lg py-3 pl-16 pr-4 text-sm shadow-sm focus:ring-purple-500 @error('tarif') is-invalid @enderror"></div>
                             <p class="mt-1 text-xs text-slate-500">Masukkan nominal dalam rupiah.</p>
                             @error('tarif') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                     </div>
                 </section>
 
-                <section aria-labelledby="section-tambahan">
+                <section class="pelindo-form-section" aria-labelledby="section-tambahan">
                     <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-tambahan" class="font-semibold text-slate-900">Detail tambahan</h2><p class="mt-1 text-sm text-slate-500">Tambahkan catatan dan atur ketersediaan pricelist.</p></div>
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
                         <div>
                             <label for="keterangan" class="block text-sm font-medium text-slate-700">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" rows="4" placeholder="Catatan tambahan jika diperlukan" class="mt-2 block w-full rounded-lg border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('keterangan') border-red-400 @enderror">{{ old('keterangan') }}</textarea>
+                            <textarea name="keterangan" id="keterangan" rows="4" placeholder="Catatan tambahan jika diperlukan" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('keterangan') is-invalid @enderror">{{ old('keterangan') }}</textarea>
                             @error('keterangan') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
                         <div>
                             <label for="status" class="block text-sm font-medium text-slate-700">Status <span class="text-red-600">*</span></label>
-                            <select name="status" id="status" required class="mt-2 block w-full rounded-lg border-slate-300 px-4 py-3 text-sm shadow-sm focus:border-purple-500 focus:ring-purple-500 @error('status') border-red-400 @enderror">
+                            <select name="status" id="status" required class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('status') is-invalid @enderror">
                                 <option value="aktif" {{ old('status', 'aktif') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                                 <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                             </select>
