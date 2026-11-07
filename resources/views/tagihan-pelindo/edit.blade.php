@@ -118,7 +118,7 @@
                                     <option value="">-- Pilih Kegiatan --</option>
                                     @foreach($pricelists as $pl)
                                         <option value="{{ $pl->id }}" data-tarif="{{ $pl->tarif }}" data-ukuran="{{ $pl->ukuran }}" data-kegiatan="{{ $pl->kegiatan }}" data-status_kontainer="{{ $pl->status_kontainer || '' }}" @if($item->pricelist_pelindo_id == $pl->id) selected @endif>
-                                            {{ $pl->kegiatan }} @if($pl->lokasi) - {{ $pl->lokasi }} @endif ({{ $pl->ukuran }}ft) @if($pl->status_kontainer) [{{ $pl->status_kontainer }}] @endif - Rp {{ number_format($pl->tarif, 0, ',', '.') }}
+                                            {{ $pl->kegiatan }} @if($pl->lokasi) - {{ $pl->lokasi }} @endif @if($pl->ukuran) ({{ $pl->ukuran }}ft) @endif @if($pl->status_kontainer) [{{ $pl->status_kontainer }}] @endif - Rp {{ number_format($pl->tarif, 0, ',', '.') }}
                                         </option>
                                     @endforeach
                                 </select>
@@ -132,6 +132,7 @@
                                     <option value="">-</option>
                                     <option value="Full" {{ $item->status_kontainer == 'Full' ? 'selected' : '' }}>Full</option>
                                     <option value="Empty" {{ $item->status_kontainer == 'Empty' ? 'selected' : '' }}>Empty</option>
+                                    <option value="Cargo" {{ $item->status_kontainer == 'Cargo' ? 'selected' : '' }}>Cargo</option>
                                 </select>
                             </td>
                             <td class="px-4 py-2">
@@ -216,7 +217,8 @@
         let selectOptions = '<option value="">-- Pilih Kegiatan --</option>';
         pricelistItems.forEach(item => {
             const statusSuffix = item.status_kontainer ? ` [${item.status_kontainer}]` : '';
-            const label = `${item.kegiatan}${item.lokasi ? ` - ${item.lokasi}` : ''} (${item.ukuran || '-'}ft)${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
+            const ukuranSuffix = item.ukuran ? ` (${item.ukuran}ft)` : '';
+            const label = `${item.kegiatan}${item.lokasi ? ` - ${item.lokasi}` : ''}${ukuranSuffix}${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
             selectOptions += `<option value="${item.id}" data-tarif="${item.tarif}" data-ukuran="${item.ukuran || ''}" data-kegiatan="${item.kegiatan}" data-status_kontainer="${item.status_kontainer || ''}">${label}</option>`;
         });
 
@@ -243,6 +245,7 @@
                     <option value="">-</option>
                     <option value="Full" ${statusKontainer === 'Full' ? 'selected' : ''}>Full</option>
                     <option value="Empty" ${statusKontainer === 'Empty' ? 'selected' : ''}>Empty</option>
+                    <option value="Cargo" ${statusKontainer === 'Cargo' ? 'selected' : ''}>Cargo</option>
                 </select>
             </td>
             <td class="px-4 py-2">
@@ -303,7 +306,7 @@
             inputKegiatan.value = kegiatan;
             inputUkuran.value = ukuran;
             if (selectStatus) {
-                selectStatus.value = status_kontainer || '';
+                selectStatus.value = status_kontainer ? status_kontainer.charAt(0).toUpperCase() + status_kontainer.slice(1).toLowerCase() : '';
             }
             inputTarif.value = tarif;
         } else {

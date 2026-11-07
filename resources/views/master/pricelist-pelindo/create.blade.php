@@ -54,9 +54,9 @@
                 </section>
 
                 <section class="pelindo-form-section" aria-labelledby="section-tarif">
-                    <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-tarif" class="font-semibold text-slate-900">Detail kontainer & tarif</h2><p class="mt-1 text-sm text-slate-500">Lengkapi ukuran dan status kontainer jika tarif berlaku untuk jenis tertentu.</p></div>
+                    <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-tarif" class="font-semibold text-slate-900">Detail layanan & tarif</h2><p class="mt-1 text-sm text-slate-500">Pilih Cargo untuk tarif tanpa ukuran kontainer.</p></div>
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        <div>
+                        <div id="ukuran-container" @if(old('status_kontainer') === 'cargo') hidden @endif>
                             <label for="ukuran" class="block text-sm font-medium text-slate-700">Ukuran kontainer</label>
                             <select name="ukuran" id="ukuran" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('ukuran') is-invalid @enderror">
                                 <option value="">Pilih ukuran kontainer</option>
@@ -71,6 +71,7 @@
                                 <option value="">Pilih status kontainer</option>
                                 <option value="empty" {{ old('status_kontainer') == 'empty' ? 'selected' : '' }}>Empty</option>
                                 <option value="full" {{ old('status_kontainer') == 'full' ? 'selected' : '' }}>Full</option>
+                                <option value="cargo" {{ old('status_kontainer') == 'cargo' ? 'selected' : '' }}>Cargo</option>
                             </select>
                             @error('status_kontainer') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -114,6 +115,19 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const tarifInput = document.getElementById('tarif');
+        const statusKontainer = document.getElementById('status_kontainer');
+        const ukuranContainer = document.getElementById('ukuran-container');
+        const ukuranInput = document.getElementById('ukuran');
+
+        function toggleUkuran() {
+            const isCargo = statusKontainer.value === 'cargo';
+            ukuranContainer.hidden = isCargo;
+            ukuranInput.disabled = isCargo;
+            if (isCargo) ukuranInput.value = '';
+        }
+
+        toggleUkuran();
+        statusKontainer.addEventListener('change', toggleUkuran);
 
         function formatTarif() {
             const digits = tarifInput.value.replace(/[^0-9]/g, '');

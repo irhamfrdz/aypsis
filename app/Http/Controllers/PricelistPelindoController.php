@@ -42,6 +42,10 @@ class PricelistPelindoController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->input('status_kontainer') === 'cargo') {
+            $request->merge(['ukuran' => null]);
+        }
+
         if ($request->has('tarif')) {
             $tarifClean = str_replace(['.', ','], ['', '.'], $request->input('tarif'));
             $request->merge(['tarif' => $tarifClean]);
@@ -54,7 +58,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
-            'status_kontainer' => 'nullable|in:empty,full',
+            'status_kontainer' => 'nullable|in:empty,full,cargo',
         ]);
 
         PricelistPelindo::create($validated);
@@ -84,6 +88,10 @@ class PricelistPelindoController extends Controller
      */
     public function update(Request $request, PricelistPelindo $pricelistPelindo)
     {
+        if ($request->input('status_kontainer') === 'cargo') {
+            $request->merge(['ukuran' => null]);
+        }
+
         if ($request->has('tarif')) {
             $tarifClean = str_replace(['.', ','], ['', '.'], $request->input('tarif'));
             $request->merge(['tarif' => $tarifClean]);
@@ -96,7 +104,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
-            'status_kontainer' => 'nullable|in:empty,full',
+            'status_kontainer' => 'nullable|in:empty,full,cargo',
         ]);
 
         $pricelistPelindo->update($validated);
