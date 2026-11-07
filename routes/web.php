@@ -5035,6 +5035,10 @@ Route::middleware([
             ->name('surat-jalan.update-status')
             ->middleware('can:surat-jalan-update');
 
+        Route::patch('/surat-jalan/{suratJalan}/status-pembayaran-rit', [\App\Http\Controllers\SuratJalanController::class, 'updateRitPaymentStatus'])
+            ->name('surat-jalan.update-rit-payment-status')
+            ->middleware('can:surat-jalan-update');
+
         // Lightweight endpoint to update only the supir field without running full surat-jalan validation
         Route::post('/surat-jalan/{suratJalan}/update-supir', [\App\Http\Controllers\SuratJalanController::class, 'updateSupir'])
             ->name('surat-jalan.update-supir')

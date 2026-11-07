@@ -1315,6 +1315,17 @@ class SuratJalanController extends Controller
     /**
      * Update status of surat jalan
      */
+    public function updateRitPaymentStatus(Request $request, SuratJalan $suratJalan)
+    {
+        $validated = $request->validate([
+            'status_pembayaran_uang_rit' => ['required', \Illuminate\Validation\Rule::in(array_keys(SuratJalan::getStatusPembayaranUangRitOptions()))],
+        ]);
+
+        $suratJalan->update($validated);
+
+        return back()->with('success', 'Status pembayaran rit supir berhasil diperbarui.');
+    }
+
     public function updateStatus(Request $request, $id)
     {
         try {
