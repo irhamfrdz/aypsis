@@ -392,15 +392,22 @@
 
                 <!-- Item Terpilih -->
                 <div class="mb-2">
-                    <div class="flex items-center justify-between mb-3">
+                    <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
                         <h4 class="text-sm font-semibold text-gray-800">Item Terpilih</h4>
+                        <div class="flex flex-wrap items-center gap-2">
+                        <label for="modal-penempatan-filter" class="sr-only">Filter penempatan</label>
+                        <select id="modal-penempatan-filter" class="w-full sm:w-48 px-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+                            <option value="">Semua Penempatan</option>
+                        </select>
                         <div class="relative">
                             <input type="text" id="modal-search-input" class="pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 w-64 md:w-80" placeholder="Cari Nama atau NIK...">
                             <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none">
                                 <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
                             </div>
                         </div>
+                        </div>
                     </div>
+                    <p class="mb-2 text-xs text-gray-500">Filter hanya mengubah tampilan. Semua item terpilih tetap disimpan dan dihitung dalam total pranota.</p>
                     <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
                         <div class="custom-scrollbar">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -692,31 +699,18 @@
     document.addEventListener('DOMContentLoaded', function() {
         initTableEvents();
         
-        // Modal Search Logic
-        const modalSearchInput = document.getElementById('modal-search-input');
-        if (modalSearchInput) {
-            modalSearchInput.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const rows = document.querySelectorAll('#modal-item-list tr');
-                
-                rows.forEach(row => {
-                    const nameNode = row.querySelector('td:nth-child(1) .font-bold');
-                    const nikNode = row.querySelector('td:nth-child(1) .text-\\[10px\\]');
-                    
-                    if (nameNode && nikNode) {
-                        const name = nameNode.innerText.toLowerCase();
-                        const nik = nikNode.innerText.toLowerCase();
-                        
-                        if (name.includes(searchTerm) || nik.includes(searchTerm)) {
-                            row.style.display = '';
-                        } else {
-                            row.style.display = 'none';
-                        }
-                    }
-                });
-            });
-        }
+        document.getElementById('modal-search-input')?.addEventListener('input', filterModalItems);
+        document.getElementById('modal-penempatan-filter')?.addEventListener('change', filterModalItems);
     });
+
+    function filterModalItems() {
+        const search = document.getElementById('modal-search-input').value.trim().toLowerCase();
+        const placement = document.getElementById('modal-penempatan-filter').value;
+        document.querySelectorAll('#modal-item-list tr').forEach(row => {
+            const matchesSearch = row.dataset.name.includes(search) || row.dataset.nik.includes(search);
+            row.style.display = matchesSearch && (!placement || row.dataset.penempatan === placement) ? '' : 'none';
+        });
+    }
 
     async function refreshTableData() {
         const btn = document.getElementById('btn-refresh-data');
@@ -904,6 +898,7 @@
         const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
         
         modalList.innerHTML = '';
+        const placements = new Set();
         
         rowCheckboxes.forEach(cb => {
             const tr = cb.closest('tr');
@@ -922,6 +917,10 @@
             const basePayoutVal = parseInt(payoutText.replace(/[^\d]/g, '')) || 0;
             
             const trModal = document.createElement('tr');
+            trModal.dataset.name = karyawanName.toLowerCase();
+            trModal.dataset.nik = karyawanNik.toLowerCase();
+            trModal.dataset.penempatan = penempatan;
+            placements.add(penempatan);
             trModal.innerHTML = `
                 <td class="px-3 py-2 whitespace-nowrap">
                     <div class="font-bold text-gray-900">${karyawanName}</div>
@@ -974,6 +973,11 @@
         // Reset search input
         const searchInput = document.getElementById('modal-search-input');
         if (searchInput) searchInput.value = '';
+        const placementFilter = document.getElementById('modal-penempatan-filter');
+        placementFilter.replaceChildren(new Option('Semua Penempatan', ''));
+        [...placements].sort((a, b) => a.localeCompare(b, 'id')).forEach(placement => {
+            placementFilter.add(new Option(placement === '-' ? 'Tanpa Penempatan' : placement, placement));
+        });
 
         document.getElementById('pranota-modal').classList.remove('hidden');
     }
