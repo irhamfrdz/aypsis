@@ -5067,6 +5067,10 @@ Route::middleware([
             ->name('pranota-uang-rit.from-selection')
             ->middleware('can:pranota-uang-rit-create');
 
+        Route::delete('pranota-uang-rit/{pranotaUangRit}/surat-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'removeSuratJalan'])
+            ->name('pranota-uang-rit.remove-surat-jalan')
+            ->middleware('can:pranota-uang-rit-update');
+
         // Pranota Uang Rit Management with permissions
         Route::resource('pranota-uang-rit', \App\Http\Controllers\PranotaUangRitController::class)
             ->middleware([

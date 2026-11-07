@@ -5,6 +5,9 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="bg-white shadow-lg rounded-lg p-4">
+        @if(session('success'))<div class="mb-4 rounded-lg bg-green-50 p-3 text-sm text-green-800" role="status">{{ session('success') }}</div>@endif
+        @if(session('error'))<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800" role="alert">{{ session('error') }}</div>@endif
+        @if($errors->any())<div class="mb-4 rounded-lg bg-red-50 p-3 text-sm text-red-800" role="alert">{{ $errors->first() }}</div>@endif
         {{-- Header --}}
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
             <div class="mb-4 sm:mb-0">
@@ -189,7 +192,33 @@
                         @if($groupedPranota && $groupedPranota->count() > 0)
                             @foreach($groupedPranota as $pranota)
                                 <tr class="hover:bg-gray-50 transition-colors">
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_surat_jalan ?? '-' }}</td>
+                                    <td class="px-2 py-2 text-xs font-medium">
+                                        <span class="whitespace-nowrap">{{ $pranota->no_surat_jalan ?? '-' }}</span>
+                                        @can('pranota-uang-rit-update')
+                                            @if($pranotaUangRit->status === 'draft' && $groupedPranota->count() > 1)
+                                                <details class="mt-1 font-normal">
+                                                    <summary class="cursor-pointer text-red-600 hover:text-red-800">Keluarkan dari pranota</summary>
+                                                    <form method="POST" action="{{ route('pranota-uang-rit.remove-surat-jalan', $pranotaUangRit) }}" class="mt-2 flex min-w-64 flex-col gap-2 rounded-lg border border-red-200 bg-red-50 p-2" onsubmit="return confirm('Keluarkan {{ $pranota->no_surat_jalan }} dari pranota ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="no_surat_jalan" value="{{ $pranota->no_surat_jalan }}">
+                                                        <label>Supir pada rincian
+                                                            <select name="supir_detail_id" required class="mt-1 w-full rounded border-gray-300 text-xs">
+                                                                <option value="">Pilih supir</option>
+                                                                @foreach($supirDetails as $detail)
+                                                                    <option value="{{ $detail->id }}">{{ $detail->supir_nama }} ({{ $detail->jumlah_rit }} rit; Rp {{ number_format($detail->total_uang_supir, 0, ',', '.') }})</option>
+                                                                @endforeach
+                                                            </select>
+                                                        </label>
+                                                        <label>Nominal rit surat jalan ini (Rp)
+                                                            <input type="number" name="uang_rit_supir" min="0" step="0.01" required class="mt-1 w-full rounded border-gray-300 text-xs" placeholder="Masukkan nominal sebenarnya">
+                                                        </label>
+                                                        <button type="submit" class="rounded bg-red-600 px-2 py-1.5 text-white hover:bg-red-700">Keluarkan Surat Jalan</button>
+                                                    </form>
+                                                </details>
+                                            @endif
+                                        @endcan
+                                    </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $pranota->tanggal ? $pranota->tanggal->format('d/m/Y') : '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $pranota->supir_nama ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">1</td>

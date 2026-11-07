@@ -744,6 +744,88 @@ class PranotaUangRitController extends Controller
         return view('pranota-uang-rit.show', compact('pranotaUangRit', 'groupedPranota', 'supirDetails'));
     }
 
+    public function removeSuratJalan(Request $request, PranotaUangRit $pranotaUangRit)
+    {
+        $data = $request->validate([
+            'no_surat_jalan' => ['required', 'string'],
+            'supir_detail_id' => ['required', 'integer'],
+            'uang_rit_supir' => ['required', 'numeric', 'min:0'],
+        ]);
+
+        DB::transaction(function () use ($pranotaUangRit, $data): void {
+            $pranota = PranotaUangRit::whereKey($pranotaUangRit->id)->lockForUpdate()->firstOrFail();
+            abort_unless($pranota->status === PranotaUangRit::STATUS_DRAFT, 422, 'Hanya pranota Draft yang dapat diubah.');
+
+            $numbers = array_values(array_filter(array_map('trim', explode(',', (string) $pranota->no_surat_jalan))));
+            $number = $data['no_surat_jalan'];
+            abort_unless(in_array($number, $numbers, true), 422, 'Surat jalan tidak ditemukan dalam pranota.');
+            abort_unless(count(array_filter($numbers, fn ($item) => $item === $number)) === 1,
+                422, 'Nomor surat jalan ganda dalam pranota. Periksa data sebelum mengubahnya.');
+            abort_if(count($numbers) <= 1, 422, 'Surat jalan terakhir tidak dapat dikeluarkan. Hapus pranota Draft jika seluruhnya batal.');
+
+            $detail = PranotaUangRitSupirDetail::where('no_pranota', $pranota->no_pranota)
+                ->whereKey($data['supir_detail_id'])->lockForUpdate()->firstOrFail();
+            $amount = round((float) $data['uang_rit_supir'], 2);
+            abort_if($detail->jumlah_rit < 1 || $amount > (float) $detail->total_uang_supir,
+                422, 'Nominal atau rincian supir tidak sesuai.');
+            abort_if($detail->jumlah_rit === 1 && abs($amount - (float) $detail->total_uang_supir) >= 0.01,
+                422, 'Nominal surat jalan terakhir untuk supir harus sama dengan total uang supir pada rincian.');
+            abort_if($detail->jumlah_rit === 1 && ((float) $detail->hutang !== 0.0
+                || (float) $detail->tabungan !== 0.0 || (float) $detail->bpjs !== 0.0
+                || (float) $detail->adjustment !== 0.0), 422,
+                'Rincian supir ini masih memiliki potongan atau adjustment. Kosongkan melalui Edit sebelum mengeluarkan surat jalan terakhirnya.');
+
+            $isBongkaran = str_ends_with($number, ' (Bongkaran)');
+            $rawNumber = $isBongkaran ? substr($number, 0, -strlen(' (Bongkaran)')) : $number;
+            $suratJalan = $isBongkaran
+                ? SuratJalanBongkaran::where('nomor_surat_jalan', $rawNumber)->lockForUpdate()->firstOrFail()
+                : SuratJalan::where('no_surat_jalan', $rawNumber)->lockForUpdate()->firstOrFail();
+
+            $remaining = array_values(array_filter($numbers, fn ($item) => $item !== $number));
+            if ($detail->jumlah_rit === 1) {
+                $detail->delete();
+            } else {
+                $detail->update([
+                    'jumlah_rit' => $detail->jumlah_rit - 1,
+                    'total_uang_supir' => round((float) $detail->total_uang_supir - $amount, 2),
+                ]);
+            }
+
+            $details = PranotaUangRitSupirDetail::where('no_pranota', $pranota->no_pranota)->get();
+            $totalUang = (float) $details->sum('total_uang_supir');
+            $totalHutang = (float) $details->sum('hutang');
+            $totalTabungan = (float) $details->sum('tabungan');
+            $totalBpjs = (float) $details->sum('bpjs');
+            $totalAdjustment = (float) $details->sum('adjustment');
+            $regularNumbers = array_values(array_filter($remaining, fn ($item) => ! str_ends_with($item, ' (Bongkaran)')));
+            $bongkaranNumbers = array_map(fn ($item) => substr($item, 0, -strlen(' (Bongkaran)')),
+                array_filter($remaining, fn ($item) => str_ends_with($item, ' (Bongkaran)')));
+
+            $pranota->update([
+                'no_surat_jalan' => implode(', ', $remaining),
+                'surat_jalan_id' => $regularNumbers ? SuratJalan::where('no_surat_jalan', $regularNumbers[0])->value('id') : null,
+                'surat_jalan_bongkaran_id' => $bongkaranNumbers ? SuratJalanBongkaran::where('nomor_surat_jalan', reset($bongkaranNumbers))->value('id') : null,
+                'supir_nama' => $details->pluck('supir_nama')->implode(', '),
+                'uang_rit_supir' => $totalUang,
+                'total_rit' => $totalUang,
+                'total_uang' => $totalUang,
+                'total_hutang' => $totalHutang,
+                'total_tabungan' => $totalTabungan,
+                'total_bpjs' => $totalBpjs,
+                'total_adjustment' => $totalAdjustment,
+                'grand_total_bersih' => $totalUang - $totalHutang - $totalTabungan - $totalBpjs + $totalAdjustment,
+                'updated_by' => Auth::id(),
+            ]);
+            if ($isBongkaran && $suratJalan->status_pembayaran_uang_rit === 'lunas') {
+                $suratJalan->update(['status_pembayaran_uang_rit' => 'belum_bayar']);
+            } elseif (! $isBongkaran && $suratJalan->status_pembayaran_uang_rit === SuratJalan::STATUS_UANG_RIT_DIBAYAR) {
+                $suratJalan->update(['status_pembayaran_uang_rit' => SuratJalan::STATUS_UANG_RIT_BELUM_DIBAYAR]);
+            }
+        });
+
+        return back()->with('success', 'Surat jalan berhasil dikeluarkan dari pranota.');
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
