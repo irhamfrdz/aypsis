@@ -34,8 +34,12 @@ class StockBanUsageHistoryService
                             continue;
                         }
                         $current = $log->action === 'created' ? $new : array_replace($previous, $new);
+                        // Audit rows generally contain only changed columns. Use the
+                        // explicit old status when available, then merge the row into
+                        // the last known snapshot for this stock item.
                         $oldStatus = $old['status'] ?? ($previous['status'] ?? null);
-                        if (($new['status'] ?? null) === 'Terpakai' && $oldStatus !== 'Terpakai') {
+                        $newStatus = $new['status'] ?? ($current['status'] ?? null);
+                        if ($newStatus === 'Terpakai' && $oldStatus !== 'Terpakai') {
                             $this->insertSnapshot($sourceType, (int) $log->auditable_id, $current, $log->id);
                         }
                         $states[$key] = $current;
