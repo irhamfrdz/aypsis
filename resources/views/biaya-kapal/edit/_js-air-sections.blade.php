@@ -209,11 +209,6 @@
                     </button>
                 </div>
 
-                <div class="hidden">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Jasa Air (Input)</label>
-                    <input type="number" name="air[${sectionIndex}][jasa_air]" class="jasa-air-input w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500" value="0" placeholder="0">
-                </div>
-
                 <div>
                   <div>
                       <label class="block text-sm font-medium text-gray-700 mb-1">Sub Total</label>
@@ -266,15 +261,6 @@
         const vendorSelect = section.querySelector('.vendor-select-air');
         vendorSelect.addEventListener('change', function() {
             loadTypesForVendor(sectionIndex, this.value);
-            // Jasa air logic removed as per request
-            /*
-            const jasaAirInput = section.querySelector('.jasa-air-input');
-            if (this.value && this.value.toLowerCase().includes('abqori')) {
-                jasaAirInput.value = 100000;
-            } else {
-                jasaAirInput.value = 0;
-            }
-            */
             calculateAirSectionTotal(sectionIndex);
         });
         
@@ -568,7 +554,6 @@
         // Updated selectors
         const subTotalDisplay = section.querySelector('.sub-total-display');
         const subTotalValue = section.querySelector('.sub-total-value');
-        const jasaAirInput = section.querySelector('.jasa-air-input');
         
         const hargaHidden = section.querySelector('.harga-hidden');
         
@@ -585,7 +570,6 @@
         
         let totalCost = 0;
         let taxableCost = 0;
-        let hasSelectedType = false;
 
         // Iterate through each type container to calculate individual costs
         typeContainers.forEach(container => {
@@ -596,7 +580,6 @@
             const hasType = isManual ? manualInput.value.trim() !== '' : Boolean(select && !select.disabled && select.value);
             
             if (hasType) {
-                hasSelectedType = true;
                 // Determine price from input field now
                 const priceInput = container.querySelector('.price-input-air');
                 const tonaseInput = container.querySelector('.tonase-input-air');
@@ -632,16 +615,12 @@
 
         let waterCost = Math.round(totalCost); // This is now the calculated base cost
         
-        let jasaAir = hasSelectedType ? (parseFloat(jasaAirInput ? jasaAirInput.value : 0) || 0) : 0;
-        
-        // Sub Total = (Price * Qty) + Jasa Air
-        let subTotal = waterCost + jasaAir;
+        let subTotal = waterCost;
         
         // PPH calculation adjusted for Abqori
-        // jasaAir (the hidden input) is always taxable if Abqori is chosen (it's Jasa Air Jakarta)
         const pphActiveCheckbox = section.querySelector('.pph-active-air');
         const pphActive = pphActiveCheckbox ? pphActiveCheckbox.checked : true;
-        let finalTaxableBase = isAbqori ? (taxableCost + jasaAir) : subTotal;
+        let finalTaxableBase = isAbqori ? taxableCost : subTotal;
         const pph = pphActive ? Math.round(finalTaxableBase * 0.02) : 0;
         
         const adjustmentValue = section.querySelector('.adjustment-value');

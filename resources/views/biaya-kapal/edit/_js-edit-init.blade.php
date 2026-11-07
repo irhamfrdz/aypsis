@@ -121,7 +121,6 @@
                          'voyage' => $parts[1],
                          'vendor' => $parts[2],
                          'lokasi' => $parts[3],
-                         'jasa_air' => $parts[4],
                          'penerima' => $parts[5],
                          'nomor_rekening' => $parts[6],
                          'nomor_referensi' => $parts[7],
@@ -949,7 +948,6 @@
                         loadTypesForVendor(sectionIndex, data.vendor); 
                     }
                     
-                    sec.querySelector('.jasa-air-input').value = data.jasa_air;
                     const penerimaAirInput = sec.querySelector('.penerima-input-air');
                     if(penerimaAirInput && data.penerima) penerimaAirInput.value = data.penerima;
                     const rekAirInput = sec.querySelector('.nomor-rekening-input-air');
