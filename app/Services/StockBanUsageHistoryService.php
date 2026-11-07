@@ -44,6 +44,20 @@ class StockBanUsageHistoryService
                         if ($newStatus === 'Terpakai' && $oldStatus !== 'Terpakai') {
                             $this->insertSnapshot($sourceType, (int) $log->auditable_id, $current, $log->id);
                         }
+                        if ($oldStatus === 'Terpakai' && $newStatus !== 'Terpakai') {
+                            $beforeReturn = array_replace($previous, $old);
+                            $date = $beforeReturn['tanggal_digunakan'] ?? $beforeReturn['tanggal_keluar'] ?? null;
+                            $existing = DB::table('stock_ban_usage_histories')
+                                ->where('source_type', $sourceType)
+                                ->where('source_id', $log->auditable_id)
+                                ->where('tanggal_digunakan', $date ? substr((string) $date, 0, 10) : '')
+                                ->where('mobil_id', $beforeReturn['mobil_id'] ?? null)
+                                ->where('alat_berat_id', $beforeReturn['alat_berat_id'] ?? null)
+                                ->exists();
+                            if (! $existing) {
+                                $this->insertSnapshot($sourceType, (int) $log->auditable_id, $beforeReturn, $log->id);
+                            }
+                        }
                         $states[$key] = $current;
                     }
                 });

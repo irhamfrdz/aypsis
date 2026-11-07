@@ -155,6 +155,7 @@ class StockBanUsageHistoryTest extends TestCase
         $this->assertDatabaseHas('stock_ban_usage_histories', [
             'source_id' => $ban->id, 'mobil_id' => $mobilId, 'tanggal_digunakan' => '2026-01-10',
         ]);
+        $this->assertSame(1, DB::table('stock_ban_usage_histories')->count());
     }
 
     public function test_backfill_uses_old_values_when_creation_audit_is_missing(): void
@@ -172,5 +173,24 @@ class StockBanUsageHistoryTest extends TestCase
         $this->assertDatabaseHas('stock_ban_usage_histories', [
             'source_id' => 90, 'nomor_seri' => 'BAN-LAMA', 'tanggal_digunakan' => '2026-01-09',
         ]);
+    }
+
+    public function test_backfill_recovers_usage_from_return_audit_without_install_audit(): void
+    {
+        $mobilId = DB::table('mobils')->insertGetId(['nomor_polisi' => 'B 9876 ZA']);
+        DB::table('audit_logs')->insert([
+            'auditable_type' => StockBan::class, 'auditable_id' => 91, 'action' => 'updated',
+            'old_values' => json_encode(['status' => 'Terpakai', 'mobil_id' => $mobilId, 'tanggal_keluar' => '2026-02-12', 'nomor_seri' => 'BAN-KEMBALI']),
+            'new_values' => json_encode(['status' => 'Stok', 'mobil_id' => null, 'tanggal_keluar' => null]),
+            'created_at' => '2026-03-01 08:00:00',
+        ]);
+
+        (new StockBanUsageHistoryService)->backfill();
+        (new StockBanUsageHistoryService)->backfill();
+
+        $this->assertDatabaseHas('stock_ban_usage_histories', [
+            'source_id' => 91, 'mobil_id' => $mobilId, 'tanggal_digunakan' => '2026-02-12',
+        ]);
+        $this->assertSame(1, DB::table('stock_ban_usage_histories')->count());
     }
 }
