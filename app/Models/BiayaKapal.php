@@ -10,6 +10,11 @@ class BiayaKapal extends Model
 {
     use Auditable, SoftDeletes;
 
+    public function pelindoDetail()
+    {
+        return $this->hasOne(BiayaKapalPelindo::class);
+    }
+
     protected $table = 'biaya_kapals';
 
     protected $fillable = [

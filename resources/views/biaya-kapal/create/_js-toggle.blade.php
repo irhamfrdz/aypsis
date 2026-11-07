@@ -3,6 +3,13 @@
     jenisBiayaSelect.addEventListener('change', function() {
         const selectedValue = this.value;
         const selectedText = selectedJenisBiaya.nama || '';
+        const pelindoWrapper = document.getElementById('pelindo_wrapper');
+        const isTagihanPelindo = selectedText.toLowerCase().includes('tagihan pelindo');
+        pelindoWrapper.classList.toggle('hidden', !isTagihanPelindo);
+        document.getElementById('pelindo_kapal').disabled = !isTagihanPelindo;
+        document.getElementById('pelindo_voyage').disabled = !isTagihanPelindo;
+        document.getElementById('pelindo_kapal').required = isTagihanPelindo;
+        document.getElementById('pelindo_voyage').required = isTagihanPelindo;
         
         // Reset visibility of standard fields
         if(nominalWrapper) {
@@ -1920,5 +1927,13 @@
                 klaimWrapper.classList.add('hidden');
                 if (typeof clearAllKlaimSections === 'function') clearAllKlaimSections();
             }
+        }
+        if (isTagihanPelindo) {
+            kapalWrapper.classList.add('hidden');
+            voyageWrapper.classList.add('hidden');
+            blWrapper.classList.add('hidden');
+            clearKapalSelections();
+            clearVoyageSelections();
+            clearBlSelections();
         }
     });

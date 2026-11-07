@@ -27,6 +27,9 @@
 {{-- Biaya Labuh Tambat --}}
 @include('biaya-kapal.create._section-labuh-tambat')
 
+{{-- Tagihan Pelindo --}}
+@include('biaya-kapal.create._section-pelindo')
+
 {{-- Biaya Buruh / Barang --}}
 @include('biaya-kapal.create._section-buruh')
 
@@ -95,6 +98,7 @@
 @include('biaya-kapal.create._js-dokumen')
 @include('biaya-kapal.create._js-jenis-biaya')
 @include('biaya-kapal.create._js-toggle')
+@include('biaya-kapal.create._js-pelindo')
 @include('biaya-kapal.create._js-perlengkapan')
 @include('biaya-kapal.create._js-buruh')
 @include('biaya-kapal.create._js-opp-opt')

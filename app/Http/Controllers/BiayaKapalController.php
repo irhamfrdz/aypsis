@@ -9,6 +9,7 @@ use App\Models\BiayaKapalLabuhTambat;
 use App\Models\BiayaKapalMeratus;
 use App\Models\BiayaKapalMeratusStage;
 use App\Models\BiayaKapalOperasional;
+use App\Models\BiayaKapalPelindo;
 use App\Models\BiayaKapalPerijinan;
 use App\Models\BiayaKapalPerijinanKarantina;
 use App\Models\BiayaKapalPerlengkapan;
@@ -149,6 +150,17 @@ class BiayaKapalController extends Controller
      */
     public function create()
     {
+        $pelindoManifestVoyages = Manifest::query()
+            ->select('nama_kapal', 'no_voyage')
+            ->whereNotNull('nama_kapal')
+            ->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->distinct()
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->get();
+
         // Get list of ships for dropdown
         $kapals = MasterKapal::where('status', 'aktif')
             ->orderBy('nama_kapal')
@@ -259,6 +271,7 @@ class BiayaKapalController extends Controller
             ->orderBy('nama')->get(['id', 'nama', 'nik_npwp']);
 
         return view('biaya-kapal.create', compact(
+            'pelindoManifestVoyages',
             'masterCustomerBuruhs',
             'penerimaBuktiPotongPphs',
             'kapals',
@@ -787,6 +800,8 @@ class BiayaKapalController extends Controller
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
             'no_voyage.*' => 'string|max:255',
+            'pelindo_kapal' => 'nullable|string|max:255',
+            'pelindo_voyage' => 'nullable|string|max:255',
             'no_bl' => 'nullable|array',
             'no_bl.*' => 'string|max:255',
             'jenis_biaya' => 'required|string|max:255',
@@ -1233,6 +1248,32 @@ class BiayaKapalController extends Controller
             'tanto.*.keterangan' => 'nullable|string',
         ]);
 
+        $isTagihanPelindo = KlasifikasiBiaya::where('kode', $validated['jenis_biaya'])
+            ->whereRaw('LOWER(nama) LIKE ?', ['%tagihan pelindo%'])
+            ->exists();
+
+        if ($isTagihanPelindo) {
+            $request->validate([
+                'pelindo_kapal' => 'required|string|max:255',
+                'pelindo_voyage' => 'required|string|max:255',
+            ]);
+
+            $manifestExists = Manifest::where('nama_kapal', $validated['pelindo_kapal'])
+                ->where('no_voyage', $validated['pelindo_voyage'])
+                ->exists();
+
+            if (! $manifestExists) {
+                throw ValidationException::withMessages([
+                    'pelindo_voyage' => 'Kapal dan voyage harus sesuai dengan data manifest.',
+                ]);
+            }
+
+            $validated['nama_kapal'] = [$validated['pelindo_kapal']];
+            $validated['no_voyage'] = [$validated['pelindo_voyage']];
+        }
+
+        unset($validated['pelindo_kapal'], $validated['pelindo_voyage']);
+
         $this->validateOppOptPenumpukanDateRanges($request);
 
         $validated['perijinan_sections'] = $this->resolvePerijinanKarantinaSections(
@@ -1335,6 +1376,14 @@ class BiayaKapalController extends Controller
 
             // Create BiayaKapal record
             $biayaKapal = BiayaKapal::create($validated);
+
+            if ($isTagihanPelindo) {
+                BiayaKapalPelindo::create([
+                    'biaya_kapal_id' => $biayaKapal->id,
+                    'nama_kapal' => $validated['nama_kapal'][0],
+                    'no_voyage' => $validated['no_voyage'][0],
+                ]);
+            }
 
             // BIAYA TRUCKING SECTIONS: Store trucking details
             if ($request->has('trucking_sections') && ! empty($request->trucking_sections)) {
