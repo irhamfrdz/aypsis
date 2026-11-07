@@ -407,7 +407,7 @@
                         </div>
                         </div>
                     </div>
-                    <p class="mb-2 text-xs text-gray-500">Filter hanya mengubah tampilan. Semua item terpilih tetap disimpan dan dihitung dalam total pranota.</p>
+                    <p class="mb-2 text-xs text-gray-500">Total hasil filter mengikuti data yang tampil. Semua item terpilih tetap disimpan dalam pranota.</p>
                     <div class="border border-gray-200 rounded-lg overflow-hidden flex flex-col">
                         <div class="custom-scrollbar">
                             <table class="min-w-full divide-y divide-gray-200">
@@ -438,11 +438,15 @@
                 <!-- Footer Stats -->
                 <div class="flex items-center gap-6 mb-4 sm:mb-0">
                     <div class="text-sm text-gray-500">
-                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item
+                        <span id="modal-item-count" class="font-medium text-gray-700">0</span> item ditampilkan
                     </div>
                     <div class="text-right sm:text-left">
-                        <div class="text-xs text-gray-500">Total Nominal</div>
+                        <div class="text-xs text-gray-500">Total Hasil Filter</div>
                         <div class="text-xl font-bold text-blue-600 leading-tight" id="modal-total-nominal">Rp 0</div>
+                    </div>
+                    <div class="text-right sm:text-left">
+                        <div class="text-xs text-gray-500">Total Seluruh Pranota</div>
+                        <div class="text-sm font-semibold text-gray-700" id="modal-total-all">Rp 0</div>
                     </div>
                 </div>
                 
@@ -715,6 +719,8 @@
             if (visible) visibleCount++;
         });
         document.getElementById('modal-filter-empty').classList.toggle('hidden', visibleCount > 0);
+        document.getElementById('modal-item-count').innerText = visibleCount;
+        updateModalTotal();
     }
 
     async function refreshTableData() {
@@ -899,7 +905,6 @@
 
     function openPranotaModal() {
         const modalList = document.getElementById('modal-item-list');
-        const countSpan = document.getElementById('modal-item-count');
         const rowCheckboxes = document.querySelectorAll('.row-checkbox:checked');
         
         modalList.innerHTML = '';
@@ -955,9 +960,6 @@
             modalList.appendChild(trModal);
         });
         
-        countSpan.innerText = rowCheckboxes.length;
-        updateModalTotal();
-        
         // Add event listeners to adjustment inputs
         const adjInputs = document.querySelectorAll('.modal-adjustment-input');
         adjInputs.forEach(input => {
@@ -992,10 +994,14 @@
     function updateModalTotal() {
         const payouts = document.querySelectorAll('.modal-row-payout');
         let total = 0;
+        let allTotal = 0;
         payouts.forEach(td => {
-            total += parseInt(td.getAttribute('data-current-payout')) || 0;
+            const payout = parseInt(td.getAttribute('data-current-payout')) || 0;
+            allTotal += payout;
+            if (td.closest('tr').style.display !== 'none') total += payout;
         });
         document.getElementById('modal-total-nominal').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+        document.getElementById('modal-total-all').innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(allTotal);
     }
 
     function closePranotaModal() {
