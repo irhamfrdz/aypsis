@@ -8,7 +8,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h1 class="text-2xl font-bold text-gray-900">Master Pricelist Pelindo</h1>
-                <p class="text-gray-600 mt-1">Kelola data tarif Pelindo (tidak menggunakan pelabuhan)</p>
+                <p class="text-gray-600 mt-1">Kelola data tarif Pelindo berdasarkan lokasi</p>
             </div>
             <div class="flex items-center space-x-2">
                 @can('master-pricelist-pelindo-create')
@@ -55,7 +55,7 @@
                             <span class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <i class="fas fa-search text-gray-400"></i>
                             </span>
-                            <input type="text" name="search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Cari Kegiatan, Ukuran, atau Keterangan..." value="{{ request('search') }}">
+                            <input type="text" name="search" class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Cari kegiatan, lokasi, ukuran, atau keterangan..." value="{{ request('search') }}">
                         </div>
                     </div>
                 </div>
@@ -67,6 +67,7 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-16 text-center">No</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Lokasi</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Ukuran</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider w-32">Status Kontainer</th>
                             <th class="px-4 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider w-40">Tarif</th>
@@ -84,6 +85,7 @@
                             <td class="px-4 py-3 text-xs font-medium text-gray-900 whitespace-normal">
                                 {{ $item->kegiatan }}
                             </td>
+                            <td class="px-4 py-3 text-xs text-gray-900">{{ $item->lokasi ?? '-' }}</td>
                             <td class="px-4 py-3 text-xs text-gray-900">
                                 {{ $item->ukuran ?? '-' }}
                             </td>
@@ -122,7 +124,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="px-4 py-8 text-center">
+                            <td colspan="9" class="px-4 py-8 text-center">
                                 <p class="text-gray-500 text-sm">Tidak ada data pricelist pelindo.</p>
                             </td>
                         </tr>

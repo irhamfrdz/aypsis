@@ -41,6 +41,16 @@
                     <label for="kegiatan" class="block text-sm font-medium text-slate-700">Kegiatan <span class="text-red-600">*</span></label>
                     <input type="text" name="kegiatan" id="kegiatan" value="{{ old('kegiatan') }}" required placeholder="Contoh: Bongkar muat kontainer" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('kegiatan') is-invalid @enderror">
                     @error('kegiatan') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    <div class="mt-5">
+                        <label for="lokasi" class="block text-sm font-medium text-slate-700">Lokasi <span class="text-red-600">*</span></label>
+                        <select name="lokasi" id="lokasi" required class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('lokasi') is-invalid @enderror">
+                            <option value="">Pilih lokasi</option>
+                            <option value="Jakarta" {{ old('lokasi') == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                            <option value="Batam" {{ old('lokasi') == 'Batam' ? 'selected' : '' }}>Batam</option>
+                            <option value="Tanjung Pinang" {{ old('lokasi') == 'Tanjung Pinang' ? 'selected' : '' }}>Tanjung Pinang</option>
+                        </select>
+                        @error('lokasi') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
+                    </div>
                 </section>
 
                 <section class="pelindo-form-section" aria-labelledby="section-tarif">

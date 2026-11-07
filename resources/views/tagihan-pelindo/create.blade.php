@@ -174,7 +174,7 @@
         let selectOptions = '<option value="">-- Pilih Kegiatan --</option>';
         pricelistItems.forEach(item => {
             const statusSuffix = item.status_kontainer ? ` [${item.status_kontainer}]` : '';
-            const label = `${item.kegiatan} (${item.ukuran || '-'}ft)${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
+            const label = `${item.kegiatan}${item.lokasi ? ` - ${item.lokasi}` : ''} (${item.ukuran || '-'}ft)${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
             selectOptions += `<option value="${item.id}" data-tarif="${item.tarif}" data-ukuran="${item.ukuran || ''}" data-kegiatan="${item.kegiatan}" data-status_kontainer="${item.status_kontainer || ''}">${label}</option>`;
         });
 

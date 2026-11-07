@@ -19,6 +19,7 @@ class PricelistPelindoController extends Controller
             $query->where(function ($q) use ($search) {
                 $q->where('kegiatan', 'like', "%{$search}%")
                     ->orWhere('ukuran', 'like', "%{$search}%")
+                    ->orWhere('lokasi', 'like', "%{$search}%")
                     ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
@@ -48,6 +49,7 @@ class PricelistPelindoController extends Controller
 
         $validated = $request->validate([
             'kegiatan' => 'required|string|max:255',
+            'lokasi' => 'required|in:Jakarta,Batam,Tanjung Pinang',
             'ukuran' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
@@ -89,6 +91,7 @@ class PricelistPelindoController extends Controller
 
         $validated = $request->validate([
             'kegiatan' => 'required|string|max:255',
+            'lokasi' => 'required|in:Jakarta,Batam,Tanjung Pinang',
             'ukuran' => 'nullable|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',

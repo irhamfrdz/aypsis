@@ -14,6 +14,7 @@ class PricelistPelindo extends Model
 
     protected $fillable = [
         'kegiatan',
+        'lokasi',
         'ukuran',
         'tarif',
         'keterangan',

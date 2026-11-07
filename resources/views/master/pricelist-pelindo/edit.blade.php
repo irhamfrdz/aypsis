@@ -30,6 +30,19 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                         <div>
+                            <label for="lokasi" class="block text-sm font-semibold text-gray-700">Lokasi <span class="text-red-500">*</span></label>
+                            <select name="lokasi" id="lokasi" required class="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm">
+                                <option value="">Pilih lokasi</option>
+                                <option value="Jakarta" {{ old('lokasi', $pricelistPelindo->lokasi) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                <option value="Batam" {{ old('lokasi', $pricelistPelindo->lokasi) == 'Batam' ? 'selected' : '' }}>Batam</option>
+                                <option value="Tanjung Pinang" {{ old('lokasi', $pricelistPelindo->lokasi) == 'Tanjung Pinang' ? 'selected' : '' }}>Tanjung Pinang</option>
+                            </select>
+                            @error('lokasi') <p class="mt-1 text-xs text-red-500">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
                             <label for="ukuran" class="block text-sm font-semibold text-gray-700">Ukuran</label>
                             <input type="text" name="ukuran" id="ukuran" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500 sm:text-sm" placeholder="Contoh: 20 Feet, 40 Feet..." value="{{ old('ukuran', $pricelistPelindo->ukuran) }}">
                             @error('ukuran')
