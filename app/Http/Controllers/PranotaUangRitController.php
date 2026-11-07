@@ -1502,6 +1502,10 @@ class PranotaUangRitController extends Controller
             ],
         ]);
 
+        $detailSheet = $spreadsheet->createSheet();
+        $detailSheet->setTitle('Detail Surat Jalan');
+        $this->fillSuratJalanSheet($detailSheet, $pranotaUangRit);
+
         // Create writer and download
         $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
         $filename = 'RITASI_SUPIR_'.$pranotaUangRit->no_pranota.'.xlsx';
@@ -1519,27 +1523,42 @@ class PranotaUangRitController extends Controller
      */
     public function exportSuratJalan(PranotaUangRit $pranotaUangRit)
     {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
+        $this->fillSuratJalanSheet($spreadsheet->getActiveSheet(), $pranotaUangRit);
+
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        $filename = 'DETAIL_SURAT_JALAN_'.$pranotaUangRit->no_pranota.'.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="'.$filename.'"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    private function fillSuratJalanSheet(\PhpOffice\PhpSpreadsheet\Worksheet\Worksheet $sheet, PranotaUangRit $pranotaUangRit): void
+    {
         // Get surat jalan numbers from the combined field
-        $suratJalanNomors = array_map('trim', explode(', ', $pranotaUangRit->no_surat_jalan));
+        $suratJalanNomors = array_values(array_filter(array_map('trim', explode(',', (string) $pranotaUangRit->no_surat_jalan))));
+        $regularNomors = array_values(array_filter($suratJalanNomors, fn ($nomor) => ! str_ends_with($nomor, ' (Bongkaran)')));
+        $bongkaranNomors = array_map(fn ($nomor) => substr($nomor, 0, -strlen(' (Bongkaran)')),
+            array_filter($suratJalanNomors, fn ($nomor) => str_ends_with($nomor, ' (Bongkaran)')));
 
         // Get surat jalan data - sorted by supir name alphabetically
-        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $suratJalanNomors)
+        $suratJalans = SuratJalan::whereIn('no_surat_jalan', $regularNomors)
             ->orderBy('supir', 'asc')
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->get();
 
         // Also check for surat jalan bongkaran if exists - sorted by supir name alphabetically
         $suratJalanBongkarans = collect();
-        if ($pranotaUangRit->surat_jalan_bongkaran_id) {
-            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $suratJalanNomors)
+        if ($bongkaranNomors) {
+            $suratJalanBongkarans = SuratJalanBongkaran::whereIn('nomor_surat_jalan', $bongkaranNomors)
                 ->orderBy('supir', 'asc')
                 ->orderBy('tanggal_surat_jalan', 'desc')
                 ->get();
         }
-
-        // Create Excel file using PhpSpreadsheet
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
 
         // Set title
         $sheet->setCellValue('A1', 'DETAIL SURAT JALAN - PRANOTA UANG RIT');
@@ -1638,7 +1657,7 @@ class PranotaUangRitController extends Controller
         // Add surat jalan bongkaran if exists
         foreach ($suratJalanBongkarans as $sj) {
             $sheet->setCellValue('A'.$row, $no);
-            $sheet->setCellValue('B'.$row, $sj->no_surat_jalan.' (Bongkaran)');
+            $sheet->setCellValue('B'.$row, $sj->nomor_surat_jalan.' (Bongkaran)');
             $sheet->setCellValue('C'.$row, $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-');
             $sheet->setCellValue('D'.$row, 'Bongkar');
             $sheet->setCellValue('E'.$row, $sj->supir ?? '-');
@@ -1692,16 +1711,6 @@ class PranotaUangRitController extends Controller
             ],
         ]);
 
-        // Create writer and download
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $filename = 'DETAIL_SURAT_JALAN_'.$pranotaUangRit->no_pranota.'.xlsx';
-
-        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        header('Content-Disposition: attachment;filename="'.$filename.'"');
-        header('Cache-Control: max-age=0');
-
-        $writer->save('php://output');
-        exit;
     }
 
     /**
