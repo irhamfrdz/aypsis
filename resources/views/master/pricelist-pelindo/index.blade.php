@@ -89,8 +89,8 @@
                             <td class="px-4 py-3 text-xs text-gray-900">
                                 {{ $item->ukuran ?? '-' }}
                             </td>
-                            <td class="px-4 py-3 text-xs text-gray-900 capitalize">
-                                {{ $item->status_kontainer ?? '-' }}
+                            <td class="px-4 py-3 text-xs text-gray-900">
+                                {{ ['b3' => 'B3', 'lpg' => 'LPG', 'besi_beton' => 'Besi Beton'][$item->status_kontainer] ?? ucfirst($item->status_kontainer ?? '-') }}
                             </td>
                             <td class="px-4 py-3 text-xs font-semibold text-gray-900 text-right">
                                 {{ $item->formatted_tarif }}
