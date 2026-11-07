@@ -177,6 +177,13 @@
             </div>
             @endif
 
+            @if($biayaKapal->pelindoDetail?->status_kontainer)
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Barang Pelindo</label>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetail->barang_label }}</p>
+            </div>
+            @endif
+
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Biaya</label>
                 <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-blue-100 text-blue-800">

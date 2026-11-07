@@ -20,4 +20,14 @@
             @error('pelindo_voyage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
     </div>
+    <div class="mt-4">
+        <label for="pelindo_barang" class="mb-2 block text-sm font-medium text-gray-700">Barang <span class="text-red-500">*</span></label>
+        <select id="pelindo_barang" name="pelindo_barang" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_barang') border-red-500 @enderror" disabled>
+            <option value="">-- Pilih Barang --</option>
+            @foreach($pelindoBarangOptions as $option)
+                <option value="{{ $option['value'] }}" @selected(old('pelindo_barang') === $option['value'])>{{ $option['label'] }}</option>
+            @endforeach
+        </select>
+        @error('pelindo_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
 </div>
