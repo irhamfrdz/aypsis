@@ -795,51 +795,59 @@
         </div>
     </details>
 
-    <details open class="mb-4 border rounded">
-        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
-            <span>Asset APD</span>
-            <span class="text-sm text-gray-500">{{ $apdTransactions->count() }} transaksi</span>
+    <form id="asset-receipt-form" method="POST" action="{{ route('master.karyawan.asset-tanda-terima.print', $karyawan) }}" target="_blank" class="mb-5 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-indigo-100 bg-indigo-50/50 px-5 py-4" onsubmit="if (!document.querySelector('[form=asset-receipt-form]:checked')) { alert('Pilih minimal satu aset untuk dicetak.'); return false; }">
+        @csrf
+        <div class="flex items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-100 text-indigo-600"><i class="fas fa-file-signature" aria-hidden="true"></i></span><div><p class="text-sm font-semibold text-gray-900">Surat tanda terima aset</p><p class="mt-0.5 text-xs text-gray-500">Pilih aset yang akan dicetak dalam satu surat.</p></div></div>
+        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"><i class="fas fa-print" aria-hidden="true"></i> Cetak Tanda Terima</button>
+    </form>
+
+    <details open class="group mb-5 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
+            <span class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-50 text-blue-600"><i class="fas fa-helmet-safety" aria-hidden="true"></i></span><span><span class="block text-sm font-semibold text-gray-900">Asset APD</span><span class="mt-0.5 block text-xs font-normal text-gray-500">Perlengkapan yang diserahkan kepada karyawan</span></span></span>
+            <span class="flex shrink-0 items-center gap-3"><span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">{{ $apdTransactions->count() }} transaksi</span><span class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600"><span class="hidden group-open:inline">Sembunyikan</span><span class="group-open:hidden">Tampilkan</span><i class="fas fa-chevron-down transition-transform group-open:rotate-180" aria-hidden="true"></i></span></span>
         </summary>
-        <div class="p-4">
+        <div class="p-5">
             @if(session('success'))<div role="status" class="mb-4 rounded bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
             @can('master-karyawan-update')
-            <div class="mb-4 flex justify-end"><button type="button" id="open-apd-modal" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"><i class="fas fa-plus mr-1" aria-hidden="true"></i> Tambah Asset APD</button></div>
+            <div class="mb-4 flex justify-end"><button type="button" id="open-apd-modal" class="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-white px-4 py-2 text-sm font-semibold text-blue-700 shadow-sm transition hover:bg-blue-50"><i class="fas fa-plus" aria-hidden="true"></i> Tambah Asset APD</button></div>
             @endcan
-            <div class="overflow-x-auto">
-                <table class="min-w-full border border-gray-300 text-sm">
-                    <thead><tr class="bg-gray-100"><th class="border px-3 py-2 text-left">ID Transaksi</th><th class="border px-3 py-2 text-left">Tanggal Serah Terima</th><th class="border px-3 py-2 text-left">Jenis Barang</th><th class="border px-3 py-2 text-left">Ukuran</th><th class="border px-3 py-2 text-right">Qty</th><th class="border px-3 py-2 text-left">Keterangan</th><th class="border px-3 py-2 text-left">Status</th></tr></thead>
-                    <tbody>
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead><tr class="bg-gray-50"><th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Pilih</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">ID Transaksi</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Serah Terima</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Jenis Barang</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Ukuran</th><th class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">Qty</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Keterangan</th><th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th></tr></thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
                     @forelse($apdTransactions as $transaction)
-                        <tr><td class="border px-3 py-2">{{ $transaction->nomor_transaksi }}</td><td class="border px-3 py-2 whitespace-nowrap">{{ $transaction->tanggal_serah_terima->format('d/m/Y') }}</td><td class="border px-3 py-2">{{ $transaction->nama_barang }}</td><td class="border px-3 py-2">{{ $transaction->ukuran ?: '-' }}</td><td class="border px-3 py-2 text-right">{{ rtrim(rtrim($transaction->qty, '0'), '.') }}</td><td class="border px-3 py-2">{{ $transaction->keterangan ?: '-' }}</td><td class="border px-3 py-2"><span class="inline-flex whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{{ $transaction->status }}</span></td></tr>
+                        <tr class="transition hover:bg-blue-50/40"><td class="px-4 py-3 text-center"><input form="asset-receipt-form" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" name="selected[]" value="apd:{{ $transaction->id }}" aria-label="Pilih {{ $transaction->nomor_transaksi }} untuk tanda terima"></td><td class="px-4 py-3 text-gray-700">{{ $transaction->nomor_transaksi }}</td><td class="whitespace-nowrap px-4 py-3 text-gray-600">{{ $transaction->tanggal_serah_terima->format('d/m/Y') }}</td><td class="px-4 py-3 text-gray-700">{{ $transaction->nama_barang }}</td><td class="px-4 py-3 text-gray-700">{{ $transaction->ukuran ?: '-' }}</td><td class="whitespace-nowrap px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-gray-500">{{ rtrim(rtrim($transaction->qty, '0'), '.') }}</td><td class="px-4 py-3 text-gray-700">{{ $transaction->keterangan ?: '-' }}</td><td class="px-4 py-3 text-gray-700"><span class="inline-flex whitespace-nowrap rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700">{{ $transaction->status }}</span></td></tr>
                     @empty
-                        <tr><td colspan="7" class="border px-3 py-6 text-center text-gray-500">Belum ada transaksi serah terima APD.</td></tr>
+                        <tr><td colspan="8" class="px-4 py-8 text-center text-gray-500">Belum ada transaksi serah terima APD.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
             </div>
             @if($assetsApd->isNotEmpty())
                 <h3 class="mt-6 mb-3 text-sm font-semibold text-gray-700">Asset APD yang tercatat pada Master Asset</h3>
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border border-gray-300 text-sm">
-                        <thead><tr class="bg-gray-100">
-                            <th class="border border-gray-300 px-3 py-2 text-left">Kode Asset</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Nama APD</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Merk</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Kuantitas</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Tanggal Tanda Terima</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Kondisi</th>
-                            <th class="border border-gray-300 px-3 py-2 text-left">Status</th>
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
+                        <thead><tr class="bg-gray-50">
+                            <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Pilih</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Kode Asset</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Nama APD</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Merk</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Kuantitas</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Tanda Terima</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Kondisi</th>
+                            <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Status</th>
                         </tr></thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-100 bg-white">
                             @foreach($assetsApd as $apd)
-                                <tr>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kode_asset }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->nama_asset }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->nama_merk ?: '-' }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kuantitas ?? '-' }} {{ $apd->satuan }}</td>
-                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $apd->tanggal_tanda_terima?->format('d/m/Y') ?? '-' }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->kondisi ?: '-' }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $apd->status ?: '-' }}</td>
+                                <tr class="transition hover:bg-blue-50/40">
+                                    <td class="px-4 py-3 text-center"><input form="asset-receipt-form" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" name="selected[]" value="master:{{ $apd->id }}" aria-label="Pilih {{ $apd->kode_asset }} untuk tanda terima"></td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->kode_asset }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->nama_asset }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->nama_merk ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->kuantitas ?? '-' }} {{ $apd->satuan }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 text-gray-600">{{ $apd->tanggal_tanda_terima?->format('d/m/Y') ?? '-' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->kondisi ?: '-' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $apd->status ?: '-' }}</td>
                                 </tr>
                             @endforeach
                         </tbody>
@@ -867,34 +875,36 @@
     </dialog>
     @endcan
 
-    <details open class="mb-4 border rounded">
-        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold flex justify-between items-center">
-            <span>Asset yang Digunakan</span>
-            <span class="text-sm text-gray-500">{{ $assets->count() }} asset</span>
+    <details open class="group mb-5 overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
+        <summary class="flex cursor-pointer list-none items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
+            <span class="flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"><i class="fas fa-boxes-stacked" aria-hidden="true"></i></span><span><span class="block text-sm font-semibold text-gray-900">Asset yang Digunakan</span><span class="mt-0.5 block text-xs font-normal text-gray-500">Daftar aset yang digunakan oleh karyawan</span></span></span>
+            <span class="flex shrink-0 items-center gap-3"><span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-semibold text-gray-600">{{ $assets->count() }} asset</span><span class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-600"><span class="hidden group-open:inline">Sembunyikan</span><span class="group-open:hidden">Tampilkan</span><i class="fas fa-chevron-down transition-transform group-open:rotate-180" aria-hidden="true"></i></span></span>
         </summary>
-        <div class="p-4">
+        <div class="p-5">
             @if($assets->isNotEmpty())
-                <div class="overflow-x-auto">
-                    <table class="min-w-full border border-gray-300 text-sm">
+                <div class="overflow-x-auto rounded-lg border border-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 text-sm">
                         <thead>
-                            <tr class="bg-gray-100">
-                                <th class="border border-gray-300 px-3 py-2 text-left">Jenis Asset</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Kode / Nomor</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Nama Asset</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Tanggal Tanda Terima Asset</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Kondisi Fisik</th>
-                                <th class="border border-gray-300 px-3 py-2 text-left">Detail</th>
+                            <tr class="bg-gray-50">
+                                <th class="px-4 py-3 text-center text-xs font-semibold uppercase tracking-wide text-gray-500">Pilih</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Jenis Asset</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Kode / Nomor</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Nama Asset</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Tanggal Tanda Terima Asset</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Kondisi Fisik</th>
+                                <th class="whitespace-nowrap px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">Detail</th>
                             </tr>
                         </thead>
-                        <tbody>
+                        <tbody class="divide-y divide-gray-100 bg-white">
                             @foreach($assets as $asset)
-                                <tr>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['jenis'] }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['kode'] }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['nama'] }}</td>
-                                    <td class="border border-gray-300 px-3 py-2 whitespace-nowrap">{{ $asset['tanggal_tanda_terima_asset'] ? \Carbon\Carbon::parse($asset['tanggal_tanda_terima_asset'])->format('d/m/Y') : '-' }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['kondisi_fisik'] }}</td>
-                                    <td class="border border-gray-300 px-3 py-2">{{ $asset['detail'] }}</td>
+                                <tr class="transition hover:bg-blue-50/40">
+                                    <td class="px-4 py-3 text-center"><input form="asset-receipt-form" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" name="selected[]" value="used:{{ $asset['key'] }}" aria-label="Pilih {{ $asset['kode'] }} untuk tanda terima"></td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $asset['jenis'] }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $asset['kode'] }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $asset['nama'] }}</td>
+                                    <td class="whitespace-nowrap px-4 py-3 text-gray-600">{{ $asset['tanggal_tanda_terima_asset'] ? \Carbon\Carbon::parse($asset['tanggal_tanda_terima_asset'])->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $asset['kondisi_fisik'] }}</td>
+                                    <td class="px-4 py-3 text-gray-700">{{ $asset['detail'] }}</td>
                                 </tr>
                             @endforeach
                         </tbody>

@@ -1508,6 +1508,9 @@ Route::middleware([
         Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
             ->name('karyawan.show')
             ->middleware('can:master-karyawan-view');
+        Route::post('karyawan/{karyawan}/print-asset-tanda-terima', [KaryawanController::class, 'printAssetTandaTerima'])
+            ->name('karyawan.asset-tanda-terima.print')
+            ->middleware('can:master-karyawan-view');
         Route::post('karyawan/{karyawan}/apd', [KaryawanController::class, 'storeApd'])
             ->name('karyawan.apd.store')
             ->middleware('can:master-karyawan-update');

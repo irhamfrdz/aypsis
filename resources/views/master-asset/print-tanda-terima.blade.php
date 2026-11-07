@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Pernyataan Serah Terima dan Pengembalian Aset - {{ $asset->kode_asset }}</title>
+    <title>Surat Pernyataan Serah Terima dan Pengembalian Aset - {{ $asset->kode_asset ?? $karyawan->nama_lengkap }}</title>
     <style>
         @page { size: letter portrait; margin: 25.4mm; }
         * { box-sizing: border-box; }
@@ -48,10 +48,10 @@
 </head>
 <body @unless($isPdf ?? false) onload="window.print()" @endunless>
     @php
-        $karyawan = $asset->karyawan;
+        $karyawan = $karyawan ?? $asset->karyawan;
         $namaPemegang = $karyawan?->nama_lengkap ?: '........................................';
         $tanggalSurat = $asset->tanggal_tanda_terima ?? now();
-        $kota = match ($asset->lokasi_asset ?: $asset->lokasi) {
+        $kota = match (($asset->lokasi_asset ?? null) ?: ($asset->lokasi ?? null)) {
             'JKT', 'Jakarta' => 'Jakarta',
             'BTM', 'Batam' => 'Batam',
             'PNG' => 'PNG',
@@ -62,7 +62,7 @@
     @unless($isPdf ?? false)
     <div class="action-bar">
         <button type="button" class="print" onclick="window.print()">Cetak Dokumen</button>
-        <a class="download" href="{{ route('asset.download-tanda-terima', $asset) }}">Download PDF</a>
+        @isset($asset)<a class="download" href="{{ route('asset.download-tanda-terima', $asset) }}">Download PDF</a>@endisset
         <button type="button" onclick="window.close()">Tutup</button>
     </div>
     @endunless
@@ -91,6 +91,17 @@
                 </tr>
             </thead>
             <tbody>
+                @isset($receiptItems)
+                @foreach($receiptItems as $item)
+                <tr>
+                    <td class="number">{{ $loop->iteration }}.</td>
+                    <td>{{ $item['nama'] }}</td>
+                    <td>{{ $item['model'] }}</td>
+                    <td>{{ $item['serial'] }}</td>
+                    <td>{{ $item['kondisi'] }}</td>
+                </tr>
+                @endforeach
+                @else
                 <tr>
                     <td class="number">1.</td>
                     <td>{{ $asset->nama_asset }}</td>
@@ -107,6 +118,7 @@
                     </td>
                     <td>{{ $asset->kondisi ?: '........................' }}</td>
                 </tr>
+                @endisset
             </tbody>
         </table>
 

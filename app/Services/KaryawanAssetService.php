@@ -68,6 +68,7 @@ class KaryawanAssetService
                     ->map(fn ($value, $key) => Str::headline($key).': '.$value)->implode(' · ');
 
                 $assets->push([
+                    'key' => $table.':'.$data['id'],
                     'sumber' => $source,
                     'jenis' => $firstValue(['kategori_asset']) ?? '-',
                     'tanggal_tanda_terima_asset' => $firstValue(['tanggal_tanda_terima_asset']),

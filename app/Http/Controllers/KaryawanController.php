@@ -1370,6 +1370,46 @@ class KaryawanController extends Controller
         return view('master-karyawan.show', compact('karyawan', 'assets', 'assetsApd', 'apdOptions', 'apdTransactions'));
     }
 
+    public function printAssetTandaTerima(Request $request, Karyawan $karyawan)
+    {
+        $data = $request->validate([
+            'selected' => ['required', 'array', 'min:1', 'max:200'],
+            'selected.*' => ['required', 'string', 'distinct', 'max:150'],
+        ]);
+
+        $available = collect();
+        foreach (\App\Models\KaryawanApdTransaction::where('karyawan_id', $karyawan->id)->get() as $transaction) {
+            $available->put('apd:'.$transaction->id, [
+                'nama' => $transaction->nama_barang,
+                'model' => 'Ukuran: '.($transaction->ukuran ?: '-').' · Jumlah: '.rtrim(rtrim((string) $transaction->qty, '0'), '.'),
+                'serial' => $transaction->nomor_transaksi,
+                'kondisi' => '-',
+            ]);
+        }
+        foreach (\App\Models\Asset::where('karyawan_id', $karyawan->id)->where('kategori', 'APD')->get() as $asset) {
+            $available->put('master:'.$asset->id, [
+                'nama' => $asset->nama_asset,
+                'model' => 'Merk: '.($asset->nama_merk ?: '-').' · Tipe: '.($asset->kategori ?: '-'),
+                'serial' => collect($asset->daftar_nomor_seri)->map(fn ($serial) => $serial['nomor'].(! empty($serial['ukuran']) ? ' ('.$serial['ukuran'].')' : ''))->implode(', ') ?: '-',
+                'kondisi' => $asset->kondisi ?: '-',
+            ]);
+        }
+        foreach (app(\App\Services\KaryawanAssetService::class)->forKaryawan($karyawan->id) as $asset) {
+            $available->put('used:'.$asset['key'], [
+                'nama' => $asset['nama'] !== '-' ? $asset['nama'] : $asset['jenis'],
+                'model' => $asset['detail'],
+                'serial' => $asset['kode'],
+                'kondisi' => $asset['kondisi_fisik'],
+            ]);
+        }
+        if (collect($data['selected'])->contains(fn ($key) => ! $available->has($key))) {
+            abort(403, 'Aset yang dipilih tidak tersedia untuk karyawan ini.');
+        }
+        $receiptItems = collect($data['selected'])->map(fn ($key) => $available->get($key));
+
+        return view('master-asset.print-tanda-terima', compact('karyawan', 'receiptItems'));
+    }
+
     public function storeApd(Request $request, Karyawan $karyawan)
     {
         $data = $request->validateWithBag('apd', [

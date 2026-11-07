@@ -37,9 +37,9 @@
         <div class="flex flex-wrap items-center justify-between gap-3"><div class="flex items-center gap-3"><span class="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-50 text-sm font-bold text-indigo-600">2</span><div><h2 class="font-bold text-gray-900">Pilih unit kendaraan</h2><p class="mt-1 text-xs text-gray-500">Pilih unit untuk melihat detail pemakaian ban.</p></div></div><span class="rounded-full border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-semibold text-gray-600">{{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</span></div>
         <div class="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
             @forelse($units as $vehicle)
-            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="flex items-center gap-3 rounded-xl border p-4 transition {{ (int) $unit === (int) $vehicle->mobil_id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50' }}"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"><i class="fas fa-truck" aria-hidden="true"></i></span><span class="min-w-0"><span class="block break-words font-bold text-gray-900">{{ $vehicle->unit_name ?: ($vehicle->mobil?->nomor_polisi && $vehicle->mobil->nomor_polisi !== '-' ? $vehicle->mobil->nomor_polisi : ($vehicle->mobil?->no_kir ?: 'Unit #'.$vehicle->mobil_id)) }}</span><span class="mt-1 block text-xs text-gray-500">{{ $vehicle->total }} catatan pemakaian</span></span></a>
+            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="flex items-center gap-3 rounded-xl border p-4 transition {{ (int) $unit === (int) $vehicle->mobil_id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-gray-200 hover:border-indigo-300 hover:bg-indigo-50' }}"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gray-100 text-gray-500"><i class="fas fa-truck" aria-hidden="true"></i></span><span class="min-w-0"><span class="block break-words font-bold text-gray-900">{{ $vehicle->unit_name ?: ($vehicle->mobil?->nomor_polisi && $vehicle->mobil->nomor_polisi !== '-' ? $vehicle->mobil->nomor_polisi : ($vehicle->mobil?->no_kir ?: 'Unit #'.$vehicle->mobil_id)) }}</span><span class="mt-1 block text-xs text-gray-500">{{ $vehicle->total }} catatan pemakaian ban</span><span class="mt-1 block text-xs font-semibold text-indigo-700">{{ $vehicle->ring_total ?? 0 }} kali penggantian Ring Velg</span></span></a>
             @empty
-            <p class="col-span-full py-5 text-center text-sm text-gray-500">Tidak ada pemakaian ban untuk unit kendaraan pada periode ini.</p>
+            <p class="col-span-full py-5 text-center text-sm text-gray-500">Tidak ada pemakaian ban atau Ring Velg untuk unit kendaraan pada periode ini.</p>
             @endforelse
         </div>
     </section>
@@ -84,6 +84,35 @@
             </table>
         </div>
         <div class="px-5 py-4">{{ $items->links() }}</div>
+    </div>
+    @endif
+
+    @if($ringItems)
+    <div class="mt-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div class="border-b border-gray-200 px-5 py-5 sm:px-6">
+            <h2 class="font-bold text-gray-900">Detail penggantian Ring Velg</h2>
+            <p class="mt-1 text-sm text-gray-500">Total penggantian pada periode terpilih: <span class="font-semibold text-indigo-700">{{ number_format($ringItems->total()) }} kali</span></p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <tr><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Jumlah</th><th class="px-4 py-3">Penerima</th><th class="px-4 py-3">Keterangan</th></tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    @forelse($ringItems as $ringItem)
+                        <tr class="transition hover:bg-gray-50">
+                            <td class="whitespace-nowrap px-4 py-3">{{ $ringItem->tanggal_keluar ? \Carbon\Carbon::parse($ringItem->tanggal_keluar)->format('d/m/Y') : '-' }}</td>
+                            <td class="px-4 py-3">{{ $ringItem->qty }}</td>
+                            <td class="px-4 py-3">{{ $ringItem->penerima?->nama_lengkap ?: ($ringItem->penerima_manual ?: '-') }}</td>
+                            <td class="px-4 py-3">{{ preg_replace('/^\[Ring Velg ID: \d+\]\s*/', '', $ringItem->keterangan ?? '') ?: '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="4" class="px-4 py-10 text-center text-gray-500">Belum ada penggantian Ring Velg untuk unit pada periode ini.</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        <div class="px-5 py-4">{{ $ringItems->links() }}</div>
     </div>
     @endif
 </div>

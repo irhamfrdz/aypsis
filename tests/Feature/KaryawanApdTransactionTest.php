@@ -27,7 +27,7 @@ class KaryawanApdTransactionTest extends TestCase
         DB::table('karyawans')->insert(['id' => 7, 'nama_lengkap' => 'Aan', 'nik' => '1679']);
         Schema::create('assets', function (Blueprint $table) {
             $table->id(); $table->string('nama_asset'); $table->string('kategori');
-            $table->string('nomor_seri')->nullable(); $table->text('nomor_seri_items')->nullable(); $table->decimal('kuantitas', 12, 2)->nullable(); $table->softDeletes();
+            $table->string('nomor_seri')->nullable(); $table->text('nomor_seri_items')->nullable(); $table->decimal('kuantitas', 12, 2)->nullable(); $table->unsignedBigInteger('karyawan_id')->nullable(); $table->softDeletes();
         });
         Schema::create('karyawan_apd_transactions', function (Blueprint $table) {
             $table->id(); $table->unsignedBigInteger('karyawan_id'); $table->unsignedBigInteger('asset_id');
@@ -45,6 +45,33 @@ class KaryawanApdTransactionTest extends TestCase
             ['id' => 1, 'nama_asset' => 'Helm', 'kategori' => 'APD', 'nomor_seri_items' => json_encode([['nomor' => 'H1', 'ukuran' => 'L']]), 'kuantitas' => 5],
             ['id' => 2, 'nama_asset' => 'Laptop', 'kategori' => 'Elektronik', 'nomor_seri_items' => null, 'kuantitas' => 5],
         ]);
+    }
+
+    public function test_print_receipt_uses_selected_employee_assets_and_rejects_other_employees_assets(): void
+    {
+        Schema::create('kendaraans', function (Blueprint $table) {
+            $table->id(); $table->unsignedBigInteger('karyawan_id'); $table->boolean('is_asset_karyawan');
+            $table->string('kode_no'); $table->string('catatan'); $table->string('kategori_asset');
+        });
+        DB::table('kendaraans')->insert([
+            ['id' => 1, 'karyawan_id' => 7, 'is_asset_karyawan' => 1, 'kode_no' => 'MOTOR-1', 'catatan' => 'Motor', 'kategori_asset' => 'Kendaraan'],
+            ['id' => 2, 'karyawan_id' => 8, 'is_asset_karyawan' => 1, 'kode_no' => 'MOTOR-2', 'catatan' => 'Motor lain', 'kategori_asset' => 'Kendaraan'],
+        ]);
+        KaryawanApdTransaction::create(['karyawan_id' => 7, 'asset_id' => 1, 'tanggal_serah_terima' => '2026-11-06', 'nama_barang' => 'Helm', 'qty' => 2]);
+        $employee = Karyawan::findOrFail(7);
+        $controller = new KaryawanController;
+        $view = $controller->printAssetTandaTerima(Request::create('/', 'POST', ['selected' => ['apd:1', 'used:kendaraans:1']]), $employee);
+        $this->assertCount(2, $view->getData()['receiptItems']);
+        $html = $view->render();
+        $this->assertStringContainsString('Helm', $html);
+        $this->assertStringContainsString('MOTOR-1', $html);
+        $this->assertStringNotContainsString('MOTOR-2', $html);
+        try {
+            $controller->printAssetTandaTerima(Request::create('/', 'POST', ['selected' => ['used:kendaraans:2']]), $employee);
+            $this->fail('Expected unauthorized asset to be rejected.');
+        } catch (\Symfony\Component\HttpKernel\Exception\HttpException $exception) {
+            $this->assertSame(403, $exception->getStatusCode());
+        }
     }
 
     public function test_records_apd_with_unique_transaction_number_and_selected_size(): void
