@@ -583,8 +583,8 @@
             <div>
                 <label for="approval-ttsj-container-type" class="mb-1 block text-sm font-medium text-gray-700">Jenis pengiriman <span class="text-red-600">*</span></label>
                 <select id="approval-ttsj-container-type" name="tipe_kontainer" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
-                    <option value="fcl" @selected(old('tipe_kontainer', 'fcl') === 'fcl')>FCL (Kontainer)</option>
-                    <option value="cargo" @selected(old('tipe_kontainer') === 'cargo')>Cargo</option>
+                    <option value="fcl" @selected(old('tipe_kontainer', 'cargo') === 'fcl')>FCL (Kontainer)</option>
+                    <option value="cargo" @selected(old('tipe_kontainer', 'cargo') === 'cargo')>Cargo</option>
                 </select>
             </div>
             <div id="approval-ttsj-container-fields" class="contents">
