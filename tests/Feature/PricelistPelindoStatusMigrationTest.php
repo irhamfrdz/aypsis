@@ -9,8 +9,38 @@ use Tests\TestCase;
 
 class PricelistPelindoStatusMigrationTest extends TestCase
 {
+    public function test_mobil_and_alat_berat_statuses_are_supported_by_schema(): void
+    {
+        Schema::dropIfExists('tagihan_pelindo_items');
+        Schema::dropIfExists('pricelist_pelindos');
+
+        Schema::create('pricelist_pelindos', function (Blueprint $table) {
+            $table->id();
+            $table->enum('status_kontainer', [
+                'empty', 'full', 'cargo', 'barang_berbahaya', 'lpg', 'besi_beton',
+            ])->nullable();
+        });
+
+        $migration = require database_path('migrations/2026_11_07_160000_add_mobil_alat_berat_to_pricelist_pelindo_status.php');
+        $migration->up();
+
+        DB::table('pricelist_pelindos')->insert([
+            ['id' => 1, 'status_kontainer' => 'mobil'],
+            ['id' => 2, 'status_kontainer' => 'alat_berat'],
+        ]);
+
+        $this->assertSame(['mobil', 'alat_berat'], DB::table('pricelist_pelindos')->orderBy('id')->pluck('status_kontainer')->all());
+
+        $migration->down();
+
+        $this->assertSame([null, null], DB::table('pricelist_pelindos')->orderBy('id')->pluck('status_kontainer')->all());
+    }
+
     public function test_renaming_b3_preserves_existing_pricelist_and_tagihan_items(): void
     {
+        Schema::dropIfExists('tagihan_pelindo_items');
+        Schema::dropIfExists('pricelist_pelindos');
+
         Schema::create('pricelist_pelindos', function (Blueprint $table) {
             $table->id();
             $table->enum('status_kontainer', ['empty', 'full', 'cargo', 'b3', 'lpg', 'besi_beton'])->nullable();

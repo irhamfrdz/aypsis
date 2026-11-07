@@ -173,7 +173,7 @@
         // Select options
         let selectOptions = '<option value="">-- Pilih Kegiatan --</option>';
         pricelistItems.forEach(item => {
-            const statusLabel = { barang_berbahaya: 'Barang Berbahaya', lpg: 'LPG', besi_beton: 'Besi Beton' }[item.status_kontainer] || (item.status_kontainer ? item.status_kontainer.charAt(0).toUpperCase() + item.status_kontainer.slice(1) : '');
+            const statusLabel = { barang_berbahaya: 'Barang Berbahaya', lpg: 'LPG', besi_beton: 'Besi Beton', alat_berat: 'Alat Berat' }[item.status_kontainer] || (item.status_kontainer ? item.status_kontainer.charAt(0).toUpperCase() + item.status_kontainer.slice(1) : '');
             const statusSuffix = statusLabel ? ` [${statusLabel}]` : '';
             const ukuranSuffix = item.ukuran ? ` (${item.ukuran}ft)` : '';
             const label = `${item.kegiatan}${item.lokasi ? ` - ${item.lokasi}` : ''}${ukuranSuffix}${statusSuffix} - Rp ${Number(item.tarif).toLocaleString('id-ID')}`;
@@ -207,6 +207,8 @@
                     <option value="Barang Berbahaya" ${statusKontainer === 'Barang Berbahaya' ? 'selected' : ''}>Barang Berbahaya</option>
                     <option value="LPG" ${statusKontainer === 'LPG' ? 'selected' : ''}>LPG</option>
                     <option value="Besi Beton" ${statusKontainer === 'Besi Beton' ? 'selected' : ''}>Besi Beton</option>
+                    <option value="Mobil" ${statusKontainer === 'Mobil' ? 'selected' : ''}>Mobil</option>
+                    <option value="Alat Berat" ${statusKontainer === 'Alat Berat' ? 'selected' : ''}>Alat Berat</option>
                 </select>
             </td>
             <td class="px-4 py-2">
@@ -266,7 +268,7 @@
             inputKegiatan.value = kegiatan;
             inputUkuran.value = ukuran;
             if (selectStatus) {
-                selectStatus.value = { barang_berbahaya: 'Barang Berbahaya', lpg: 'LPG', besi_beton: 'Besi Beton' }[status_kontainer] || (status_kontainer ? status_kontainer.charAt(0).toUpperCase() + status_kontainer.slice(1).toLowerCase() : '');
+                selectStatus.value = { barang_berbahaya: 'Barang Berbahaya', lpg: 'LPG', besi_beton: 'Besi Beton', alat_berat: 'Alat Berat' }[status_kontainer] || (status_kontainer ? status_kontainer.charAt(0).toUpperCase() + status_kontainer.slice(1).toLowerCase() : '');
             }
             inputTarif.value = tarif;
         } else {

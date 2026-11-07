@@ -90,7 +90,7 @@
                                 {{ $item->ukuran ?? '-' }}
                             </td>
                             <td class="px-4 py-3 text-xs text-gray-900">
-                                {{ ['barang_berbahaya' => 'Barang Berbahaya', 'lpg' => 'LPG', 'besi_beton' => 'Besi Beton'][$item->status_kontainer] ?? ucfirst($item->status_kontainer ?? '-') }}
+                                {{ ['barang_berbahaya' => 'Barang Berbahaya', 'lpg' => 'LPG', 'besi_beton' => 'Besi Beton', 'alat_berat' => 'Alat Berat'][$item->status_kontainer] ?? ucfirst($item->status_kontainer ?? '-') }}
                             </td>
                             <td class="px-4 py-3 text-xs font-semibold text-gray-900 text-right">
                                 {{ $item->formatted_tarif }}
