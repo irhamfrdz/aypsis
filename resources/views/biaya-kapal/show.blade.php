@@ -185,12 +185,12 @@
                     <h4 class="font-semibold text-gray-900">Kapal {{ $loop->iteration }}: {{ $kapalDetails->first()->nama_kapal }} / {{ $kapalDetails->first()->no_voyage }}</h4>
                     @foreach($kapalDetails->groupBy('jenis_tagihan') as $jenisTagihan => $barangDetails)
                     <div class="mt-3 rounded-lg border border-blue-200 bg-white p-3">
-                        <h5 class="mb-2 font-semibold text-gray-800">Jenis Tagihan: {{ $jenisTagihan ?: '-' }}</h5>
+                        <h5 class="mb-2 font-semibold text-gray-800">Jenis Tagihan: {{ $jenisTagihan ?: '-' }}@if($barangDetails->first()->lokasi) · Lokasi: {{ $barangDetails->first()->lokasi }}@endif</h5>
                         @foreach($barangDetails as $detail)
                         <div class="grid grid-cols-1 gap-3 border-t border-blue-100 py-2 text-sm md:grid-cols-3">
                         <div><span class="block text-gray-500">Barang</span><span class="font-semibold">{{ $detail->status_kontainer ? $detail->barang_label : '-' }}</span></div>
                         <div><span class="block text-gray-500">Jumlah</span><span class="font-semibold">{{ $detail->jumlah !== null ? number_format($detail->jumlah, 0, ',', '.') : '-' }}</span></div>
-                        <div><span class="block text-gray-500">Biaya per Barang</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.number_format($detail->biaya, 0, ',', '.') : '-' }}</span></div>
+                        <div><span class="block text-gray-500">Biaya</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.number_format($detail->biaya * $detail->jumlah, 0, ',', '.') : '-' }}</span></div>
                         </div>
                         @endforeach
                     </div>

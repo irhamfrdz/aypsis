@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class BiayaKapalPelindo extends Model
 {
-    protected $fillable = ['biaya_kapal_id', 'nama_kapal', 'no_voyage', 'jenis_tagihan', 'status_kontainer', 'ukuran', 'jumlah', 'biaya'];
+    protected $fillable = ['biaya_kapal_id', 'nama_kapal', 'no_voyage', 'jenis_tagihan', 'lokasi', 'status_kontainer', 'ukuran', 'jumlah', 'biaya'];
 
     public function getBarangLabelAttribute(): string
     {
