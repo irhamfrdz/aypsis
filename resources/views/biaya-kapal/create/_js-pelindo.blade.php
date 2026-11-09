@@ -175,15 +175,41 @@
                         ? 'Terdapat lebih dari satu tarif Kebersihan aktif untuk lokasi ini.'
                         : `Tarif Kebersihan dari Pricelist Pelindo ${locations[0]}.`;
         const extraCents = 1000000 + kebersihanCents;
-        const totalCents = barangCents + extraCents;
+        const subtotalCents = barangCents + extraCents;
+        const adjustmentInput = document.getElementById('pelindo_adjustment');
+        const adjustmentCents = (Number(adjustmentInput.value.replace(/\./g, '')) || 0) * 100;
+        const grandTotalCents = subtotalCents + adjustmentCents;
         const hasCompleteRow = rows.some(row =>
             row.querySelector('.pelindo-jumlah-input').value !== '' &&
             row.querySelector('.pelindo-biaya-input').value !== ''
         );
-        nominalInput.value = hasCompleteRow || locations.length > 0
-            ? (totalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
-            : '';
+        const showTotal = hasCompleteRow || locations.length > 0;
+        document.getElementById('pelindo_subtotal').value = showTotal
+            ? (subtotalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '';
+        document.getElementById('pelindo_grand_total').value = showTotal
+            ? (grandTotalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '';
+        nominalInput.value = showTotal
+            ? (Math.max(grandTotalCents, 0) / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '';
     }
+
+    const pelindoAdjustmentInput = document.getElementById('pelindo_adjustment');
+    function formatPelindoAdjustment() {
+        const value = pelindoAdjustmentInput.value.trim();
+        const negative = value.startsWith('-');
+        const digits = value.replace(/\D/g, '');
+        pelindoAdjustmentInput.value = digits
+            ? `${negative ? '-' : ''}${Number(digits).toLocaleString('id-ID')}`
+            : negative ? '-' : '';
+    }
+    formatPelindoAdjustment();
+    pelindoAdjustmentInput.addEventListener('input', function () {
+        formatPelindoAdjustment();
+        updatePelindoNominal();
+    });
+    pelindoAdjustmentInput.addEventListener('blur', function () {
+        if (!this.value || this.value === '-') this.value = '0';
+        updatePelindoNominal();
+    });
 
     function refreshPelindoSections() {
         const sections = [...pelindoSectionsContainer.querySelectorAll('.pelindo-section')];
@@ -348,6 +374,12 @@
         });
     });
     refreshPelindoSections();
+
+    jenisBiayaSelect.addEventListener('change', function () {
+        if ((selectedJenisBiaya.nama || '').toLowerCase().includes('tagihan pelindo')) {
+            updatePelindoNominal();
+        }
+    });
 
     window.addEventListener('DOMContentLoaded', function () {
         if (jenisBiayaSelect.value && selectedJenisBiaya.nama.toLowerCase().includes('tagihan pelindo')) {

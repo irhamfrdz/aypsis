@@ -10,6 +10,7 @@
             input.disabled = !isTagihanPelindo;
             input.required = isTagihanPelindo;
         });
+        document.getElementById('pelindo_adjustment').disabled = !isTagihanPelindo;
         
         // Reset visibility of standard fields
         if(nominalWrapper) {
@@ -1929,6 +1930,8 @@
             }
         }
         if (isTagihanPelindo) {
+            nominalWrapper.classList.add('hidden');
+            nominalInput.removeAttribute('required');
             kapalWrapper.classList.add('hidden');
             voyageWrapper.classList.add('hidden');
             blWrapper.classList.add('hidden');

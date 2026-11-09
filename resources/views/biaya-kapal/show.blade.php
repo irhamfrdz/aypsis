@@ -201,6 +201,11 @@
                     <div><span class="block text-gray-500">Biaya Admin Nota</span><span class="font-semibold">Rp {{ number_format($biayaKapal->pelindo_biaya_admin_nota ?? 0, 0, ',', '.') }}</span></div>
                     <div><span class="block text-gray-500">Biaya Kebersihan</span><span class="font-semibold">Rp {{ number_format($biayaKapal->pelindo_biaya_kebersihan ?? 0, 0, ',', '.') }}</span></div>
                 </div>
+                <div class="grid grid-cols-1 gap-3 rounded-lg border border-blue-200 bg-white p-4 text-sm md:grid-cols-3">
+                    <div><span class="block text-gray-500">Subtotal</span><span class="font-semibold">Rp {{ rtrim(rtrim(number_format($biayaKapal->nominal - ($biayaKapal->adjustment ?? 0), 2, ',', '.'), '0'), ',') }}</span></div>
+                    <div><span class="block text-gray-500">Adjustment</span><span class="font-semibold">{{ ($biayaKapal->adjustment ?? 0) > 0 ? '+ ' : '' }}Rp {{ rtrim(rtrim(number_format($biayaKapal->adjustment ?? 0, 2, ',', '.'), '0'), ',') }}</span></div>
+                    <div><span class="block text-gray-500">Grand Total</span><span class="font-semibold text-green-700">Rp {{ rtrim(rtrim(number_format($biayaKapal->nominal, 2, ',', '.'), '0'), ',') }}</span></div>
+                </div>
             </div>
             @endif
 
