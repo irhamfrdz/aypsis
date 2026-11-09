@@ -1,4 +1,4 @@
-<div class="pelindo-section rounded-lg border-2 border-blue-200 bg-blue-50 p-4">
+<div class="pelindo-section rounded-lg border-2 border-blue-200 bg-blue-50 p-4" data-section-index="{{ $index }}">
     <div class="mb-4 flex items-center justify-between">
         <h4 class="pelindo-section-title font-semibold text-gray-800">Kapal (Tagihan Pelindo)</h4>
         <button type="button" class="pelindo-remove-kapal hidden rounded-lg bg-red-500 px-3 py-1 text-sm text-white hover:bg-red-600">Hapus</button>
@@ -22,37 +22,13 @@
             @unless($isTemplate) @error('pelindo_sections.'.$index.'.voyage') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
         </div>
     </div>
-    <div class="mt-4">
-        <label class="mb-2 block text-sm font-medium text-gray-700">Jenis Tagihan <span class="text-red-500">*</span></label>
-        <select name="pelindo_sections[{{ $index }}][jenis_tagihan]" class="pelindo-jenis-tagihan-select w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
-            <option value="">-- Pilih Jenis Tagihan --</option>
-            @foreach($pelindoJenisTagihanOptions as $kegiatan)
-                <option value="{{ $kegiatan }}" @selected(($section['jenis_tagihan'] ?? '') === $kegiatan)>{{ $kegiatan }}</option>
-            @endforeach
-        </select>
-        @unless($isTemplate) @error('pelindo_sections.'.$index.'.jenis_tagihan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
+    <div class="pelindo-items mt-4 space-y-3">
+        @foreach(($section['items'] ?? []) ?: [[]] as $itemIndex => $item)
+            @include('biaya-kapal.create._pelindo-item', ['index' => $index, 'itemIndex' => $itemIndex, 'item' => $item, 'isTemplate' => $isTemplate])
+        @endforeach
     </div>
-    <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
-        <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Barang <span class="text-red-500">*</span></label>
-            <select name="pelindo_sections[{{ $index }}][barang]" data-old-value="{{ $section['barang'] ?? '' }}" class="pelindo-barang-select w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
-                <option value="">-- Pilih Jenis Tagihan Terlebih Dahulu --</option>
-            </select>
-            @unless($isTemplate) @error('pelindo_sections.'.$index.'.barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
-        </div>
-        <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Jumlah <span class="text-red-500">*</span></label>
-            <input type="number" name="pelindo_sections[{{ $index }}][jumlah]" value="{{ $section['jumlah'] ?? '' }}" min="1" step="1" class="pelindo-jumlah-input w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
-            @unless($isTemplate) @error('pelindo_sections.'.$index.'.jumlah') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
-        </div>
-        <div>
-            <label class="mb-2 block text-sm font-medium text-gray-700">Biaya <span class="text-red-500">*</span></label>
-            <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                <input type="number" name="pelindo_sections[{{ $index }}][biaya]" value="{{ $section['biaya'] ?? '' }}" min="0" step="1" class="pelindo-biaya-input w-full rounded-lg border border-gray-300 py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
-            </div>
-            <p class="mt-1 text-xs text-gray-500">Biaya per barang.</p>
-            @unless($isTemplate) @error('pelindo_sections.'.$index.'.biaya') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
-        </div>
-    </div>
+    @unless($isTemplate) @error('pelindo_sections.'.$index.'.items') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
+    <button type="button" class="pelindo-add-item mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-300 bg-white px-3 py-2 text-sm font-semibold text-blue-700 hover:bg-blue-100">
+        <i class="fas fa-plus" aria-hidden="true"></i> Tambah Jenis Tagihan dan Barang
+    </button>
 </div>
