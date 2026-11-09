@@ -438,6 +438,42 @@ class PembayaranPranotaCatController extends Controller
         }
     }
 
+    public function destroy($id)
+    {
+        if (! Gate::allows('pembayaran-pranota-cat-delete')) {
+            return redirect()->back()->with('error', 'Anda tidak memiliki izin untuk menghapus pembayaran ini.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            $pembayaran = PembayaranPranotaCat::with('paymentItems')->findOrFail($id);
+            $nomorPembayaran = $pembayaran->nomor_pembayaran;
+
+            if (! $this->coaTransactionService->deleteTransactionByReference($nomorPembayaran)) {
+                throw new \RuntimeException('Jurnal pembayaran gagal dihapus.');
+            }
+
+            $pembayaran->paymentItems()->delete();
+            $pembayaran->akunItems()->delete();
+            $pembayaran->delete();
+
+            DB::commit();
+
+            return redirect()->route('pembayaran-pranota-cat.index')
+                ->with('success', "Pembayaran pranota CAT {$nomorPembayaran} berhasil dihapus.");
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error deleting pembayaran pranota CAT', [
+                'pembayaran_id' => $id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('pembayaran-pranota-cat.index')
+                ->with('error', 'Gagal menghapus pembayaran pranota CAT: '.$e->getMessage());
+        }
+    }
+
     private function validateAkunTotal(array $akunItems, float $total): void
     {
         $akunCents = collect($akunItems)->sum(fn ($item) => (int) round((float) $item['nominal'] * 100));

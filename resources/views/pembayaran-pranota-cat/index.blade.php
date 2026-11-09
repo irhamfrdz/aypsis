@@ -141,6 +141,17 @@
                                    class="text-green-600 hover:text-green-900 mr-3" target="_blank">
                                     <i class="fas fa-print"></i> Print
                                 </a>
+                                @can('pembayaran-pranota-cat-delete')
+                                <span class="text-gray-300">|</span>
+                                <form action="{{ route('pembayaran-pranota-cat.destroy', $pembayaran->id) }}" method="POST" class="inline"
+                                      onsubmit="return confirm('Yakin ingin menghapus pembayaran {{ $pembayaran->nomor_pembayaran }}?')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-red-600 hover:text-red-900 mx-3">
+                                        <i class="fas fa-trash"></i> Hapus
+                                    </button>
+                                </form>
+                                @endcan
                                 @can('audit-log-view')
                                 <span class="text-gray-300">|</span>
                                 <button type="button"
