@@ -94,14 +94,23 @@ class PengisianTanggalDokumenController extends Controller
         $base = DB::table('manifests')->where('nama_kapal', $kapal->nama_kapal)
             ->where('no_voyage', $validated['no_voyage']);
 
-        $bls = (clone $base)->whereNotNull('nomor_bl')->where('nomor_bl', '!=', '')
-            ->distinct()->orderBy('nomor_bl')->pluck('nomor_bl')
-            ->map(fn ($number) => ['type' => 'BL', 'number' => $number]);
-        $receipts = (clone $base)->whereNotNull('nomor_tanda_terima')->where('nomor_tanda_terima', '!=', '')
-            ->distinct()->orderBy('nomor_tanda_terima')->pluck('nomor_tanda_terima')
-            ->map(fn ($number) => ['type' => 'TANDA_TERIMA', 'number' => $number]);
+        $documents = collect([
+            ['column' => 'nomor_bl', 'type' => 'BL'],
+            ['column' => 'nomor_tanda_terima', 'type' => 'TANDA_TERIMA'],
+        ])->flatMap(function (array $documentType) use ($base) {
+            $column = $documentType['column'];
 
-        return response()->json(['documents' => $bls->concat($receipts)->values()]);
+            return (clone $base)->whereNotNull($column)->where($column, '!=', '')
+                ->select($column, 'nomor_kontainer')->orderBy($column)->get()
+                ->groupBy($column)
+                ->map(fn ($rows, $number) => [
+                    'type' => $documentType['type'],
+                    'number' => $number,
+                    'containers' => $rows->pluck('nomor_kontainer')->filter()->unique()->values(),
+                ])->values();
+        })->values();
+
+        return response()->json(['documents' => $documents]);
     }
 
     private function saveRecord(Request $request, PengisianTanggalDokumen $record)

@@ -184,7 +184,11 @@ document.addEventListener('DOMContentLoaded', () => {
         reset(number, '-- Pilih Nomor Dokumen --');
         const response = await fetch(`${endpoint}/get-documents?kapal_id=${encodeURIComponent(kapal.value)}&no_voyage=${encodeURIComponent(voyage.value)}`, {headers: {'Accept': 'application/json'}});
         const data = await response.json();
-        data.documents.filter(item => item.type === type.value).forEach(item => addOption(number, item.number, item.number, item.number === selected));
+        data.documents.filter(item => item.type === type.value).forEach(item => {
+            const containers = Array.isArray(item.containers) ? item.containers.filter(Boolean).join(', ') : '';
+            const label = containers ? `${item.number} — Kontainer: ${containers}` : item.number;
+            addOption(number, item.number, label, item.number === selected);
+        });
         number.disabled = false;
         if (window.jQuery && jQuery.fn.select2) jQuery(number).trigger('change.select2');
     }
