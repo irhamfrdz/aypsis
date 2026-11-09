@@ -14,6 +14,10 @@
         document.getElementById('pelindo_biaya').disabled = !isTagihanPelindo;
         document.getElementById('pelindo_kapal').required = isTagihanPelindo;
         document.getElementById('pelindo_voyage').required = isTagihanPelindo;
+        pelindoWrapper.querySelectorAll('.pelindo-kapal-row:not(:first-child) select').forEach(select => {
+            select.disabled = !isTagihanPelindo;
+            select.required = isTagihanPelindo;
+        });
         document.getElementById('pelindo_jenis_tagihan').required = isTagihanPelindo;
         document.getElementById('pelindo_barang').required = isTagihanPelindo;
         document.getElementById('pelindo_jumlah').required = isTagihanPelindo;

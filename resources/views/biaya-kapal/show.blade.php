@@ -177,28 +177,37 @@
             </div>
             @endif
 
-            @if($biayaKapal->pelindoDetail?->jenis_tagihan)
+            @if($biayaKapal->pelindoDetails->isNotEmpty())
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Kapal dan Voyage Pelindo</label>
+                @foreach($biayaKapal->pelindoDetails as $detail)
+                    <p class="text-sm font-semibold text-gray-900">{{ $detail->nama_kapal }} — {{ $detail->no_voyage }}</p>
+                @endforeach
+            </div>
+            @endif
+
+            @if($biayaKapal->pelindoDetails->first()?->jenis_tagihan)
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Tagihan Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetail->jenis_tagihan }}</p>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetails->first()->jenis_tagihan }}</p>
             </div>
             @endif
 
-            @if($biayaKapal->pelindoDetail?->status_kontainer)
+            @if($biayaKapal->pelindoDetails->first()?->status_kontainer)
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Barang Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetail->barang_label }}</p>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetails->first()->barang_label }}</p>
             </div>
             @endif
 
-            @if($biayaKapal->pelindoDetail?->jumlah !== null)
+            @if($biayaKapal->pelindoDetails->first()?->jumlah !== null)
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Jumlah Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ number_format($biayaKapal->pelindoDetail->jumlah, 0, ',', '.') }}</p>
+                <p class="text-lg font-semibold text-gray-900">{{ number_format($biayaKapal->pelindoDetails->first()->jumlah, 0, ',', '.') }}</p>
             </div>
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Biaya per Barang Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($biayaKapal->pelindoDetail->biaya, 0, ',', '.') }}</p>
+                <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($biayaKapal->pelindoDetails->first()->biaya, 0, ',', '.') }}</p>
             </div>
             @endif
 

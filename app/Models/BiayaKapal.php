@@ -15,6 +15,11 @@ class BiayaKapal extends Model
         return $this->hasOne(BiayaKapalPelindo::class);
     }
 
+    public function pelindoDetails()
+    {
+        return $this->hasMany(BiayaKapalPelindo::class)->orderBy('id');
+    }
+
     protected $table = 'biaya_kapals';
 
     protected $fillable = [

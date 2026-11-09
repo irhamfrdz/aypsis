@@ -835,6 +835,9 @@ class BiayaKapalController extends Controller
             'no_voyage.*' => 'string|max:255',
             'pelindo_kapal' => 'nullable|string|max:255',
             'pelindo_voyage' => 'nullable|string|max:255',
+            'pelindo_tambahan' => 'nullable|array',
+            'pelindo_tambahan.*.kapal' => 'nullable|string|max:255',
+            'pelindo_tambahan.*.voyage' => 'nullable|string|max:255',
             'pelindo_jenis_tagihan' => 'nullable|string|max:255',
             'pelindo_barang' => 'nullable|string|max:255',
             'pelindo_jumlah' => 'nullable|integer|min:1|max:4294967295',
@@ -1293,6 +1296,9 @@ class BiayaKapalController extends Controller
             $request->validate([
                 'pelindo_kapal' => 'required|string|max:255',
                 'pelindo_voyage' => 'required|string|max:255',
+                'pelindo_tambahan' => 'nullable|array',
+                'pelindo_tambahan.*.kapal' => 'required|string|max:255',
+                'pelindo_tambahan.*.voyage' => 'required|string|max:255',
                 'pelindo_jenis_tagihan' => 'required|string|max:255',
                 'pelindo_barang' => 'required|string|max:255',
                 'pelindo_jumlah' => 'required|integer|min:1|max:4294967295',
@@ -1307,6 +1313,26 @@ class BiayaKapalController extends Controller
                 throw ValidationException::withMessages([
                     'pelindo_voyage' => 'Kapal dan voyage harus sesuai dengan data manifest.',
                 ]);
+            }
+
+            $pelindoKapalVoyages = [[
+                'kapal' => $validated['pelindo_kapal'],
+                'voyage' => $validated['pelindo_voyage'],
+            ]];
+            foreach ($validated['pelindo_tambahan'] ?? [] as $index => $tambahan) {
+                if (! Manifest::where('nama_kapal', $tambahan['kapal'])
+                    ->where('no_voyage', $tambahan['voyage'])->exists()) {
+                    throw ValidationException::withMessages([
+                        "pelindo_tambahan.$index.voyage" => 'Kapal dan voyage harus sesuai dengan data manifest.',
+                    ]);
+                }
+
+                if (in_array($tambahan, $pelindoKapalVoyages, true)) {
+                    throw ValidationException::withMessages([
+                        "pelindo_tambahan.$index.voyage" => 'Kapal dan voyage ini sudah dipilih.',
+                    ]);
+                }
+                $pelindoKapalVoyages[] = $tambahan;
             }
 
             [$pelindoUkuran, $pelindoStatus] = array_pad(explode('|', $validated['pelindo_barang'], 2), 2, '');
@@ -1326,8 +1352,8 @@ class BiayaKapalController extends Controller
                 ]);
             }
 
-            $validated['nama_kapal'] = [$validated['pelindo_kapal']];
-            $validated['no_voyage'] = [$validated['pelindo_voyage']];
+            $validated['nama_kapal'] = array_column($pelindoKapalVoyages, 'kapal');
+            $validated['no_voyage'] = array_column($pelindoKapalVoyages, 'voyage');
             if ($validated['pelindo_biaya'] > intdiv(9999999999999, $validated['pelindo_jumlah'])) {
                 throw ValidationException::withMessages([
                     'pelindo_biaya' => 'Total biaya melebihi batas nominal yang diperbolehkan.',
@@ -1339,7 +1365,7 @@ class BiayaKapalController extends Controller
         $pelindoJenisTagihan = $validated['pelindo_jenis_tagihan'] ?? null;
         $pelindoJumlah = $validated['pelindo_jumlah'] ?? null;
         $pelindoBiaya = $validated['pelindo_biaya'] ?? null;
-        unset($validated['pelindo_kapal'], $validated['pelindo_voyage'], $validated['pelindo_jenis_tagihan'], $validated['pelindo_barang'], $validated['pelindo_jumlah'], $validated['pelindo_biaya']);
+        unset($validated['pelindo_kapal'], $validated['pelindo_voyage'], $validated['pelindo_tambahan'], $validated['pelindo_jenis_tagihan'], $validated['pelindo_barang'], $validated['pelindo_jumlah'], $validated['pelindo_biaya']);
 
         $this->validateOppOptPenumpukanDateRanges($request);
 
@@ -1445,16 +1471,18 @@ class BiayaKapalController extends Controller
             $biayaKapal = BiayaKapal::create($validated);
 
             if ($isTagihanPelindo) {
-                BiayaKapalPelindo::create([
-                    'biaya_kapal_id' => $biayaKapal->id,
-                    'nama_kapal' => $validated['nama_kapal'][0],
-                    'no_voyage' => $validated['no_voyage'][0],
-                    'jenis_tagihan' => $pelindoJenisTagihan,
-                    'status_kontainer' => $pelindoStatus,
-                    'ukuran' => $pelindoUkuran ?: null,
-                    'jumlah' => $pelindoJumlah,
-                    'biaya' => $pelindoBiaya,
-                ]);
+                foreach ($pelindoKapalVoyages as $index => $kapalVoyage) {
+                    BiayaKapalPelindo::create([
+                        'biaya_kapal_id' => $biayaKapal->id,
+                        'nama_kapal' => $kapalVoyage['kapal'],
+                        'no_voyage' => $kapalVoyage['voyage'],
+                        'jenis_tagihan' => $index === 0 ? $pelindoJenisTagihan : null,
+                        'status_kontainer' => $index === 0 ? $pelindoStatus : null,
+                        'ukuran' => $index === 0 ? ($pelindoUkuran ?: null) : null,
+                        'jumlah' => $index === 0 ? $pelindoJumlah : null,
+                        'biaya' => $index === 0 ? $pelindoBiaya : null,
+                    ]);
+                }
             }
 
             // BIAYA TRUCKING SECTIONS: Store trucking details
@@ -3201,7 +3229,7 @@ class BiayaKapalController extends Controller
     {
         $biayaKapal->load([
             'klasifikasiBiaya',
-            'pelindoDetail',
+            'pelindoDetails',
             'barangDetails.pricelistBuruh',
             'airDetails',
             'tkbmDetails.pricelistTkbm',
