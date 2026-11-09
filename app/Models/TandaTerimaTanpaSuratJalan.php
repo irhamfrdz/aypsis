@@ -10,7 +10,19 @@ class TandaTerimaTanpaSuratJalan extends Model
 {
     use AsuransiManageable, HasFactory;
 
+    protected static function booted(): void
+    {
+        static::saving(function (self $receipt): void {
+            if ($receipt->isDirty('no_tanda_terima')) {
+                $receipt->no_tanda_terima_digest = $receipt->no_tanda_terima === null
+                    ? null : hash('sha256', mb_strtolower($receipt->no_tanda_terima));
+            }
+        });
+    }
+
     protected $table = 'tanda_terima_tanpa_surat_jalan';
+
+    protected $attributes = ['satuan_barang' => 'unit'];
 
     public function shipperJb()
     {

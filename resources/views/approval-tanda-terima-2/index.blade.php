@@ -522,7 +522,7 @@
             <h3 class="sm:col-span-2 text-base font-semibold text-indigo-800">1. Data Tanda Terima dan Shipper / Consignee</h3>
             <div>
                 <label for="approval-ttsj-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-number" name="no_tanda_terima" value="{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-number" name="no_tanda_terima" value="{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
                 <label for="approval-ttsj-date" class="mb-1 block text-sm font-medium text-gray-700">Tanggal tanda terima <span class="text-red-600">*</span></label>
@@ -566,7 +566,7 @@
                                     @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
                                         <textarea id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" rows="2" disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500">{{ old($field) }}</textarea>
                                     @else
-                                        <input id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" value="{{ old($field) }}" maxlength="255" {{ in_array($field, ['shipper', 'consignee']) ? 'required' : '' }} disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500">
+                                        <input id="approval-ttsj-field-{{ $field }}" name="{{ $field }}" data-ttsj-shipper-field="{{ $field }}" value="{{ old($field) }}" {{ in_array($field, ['shipper', 'consignee']) ? 'required' : '' }} disabled hidden class="mt-1 rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500">
                                     @endif
                                     @error($field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
@@ -578,7 +578,7 @@
             <p class="sm:col-span-2 text-xs text-gray-500">Klik data yang ingin diubah. Perubahan disimpan sebagai salinan untuk tanda terima ini; data master asli tetap tersedia.</p>
             <div>
                 <label for="approval-ttsj-destination" class="mb-1 block text-sm font-medium text-gray-700">Tujuan pengiriman <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-destination" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman', $destination === 'tanjung-pinang' ? 'Tanjung Pinang' : ucfirst($destination)) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
                 <label for="approval-ttsj-container-type" class="mb-1 block text-sm font-medium text-gray-700">Jenis pengiriman <span class="text-red-600">*</span></label>
@@ -590,15 +590,15 @@
             <div id="approval-ttsj-container-fields" class="contents">
                 <div>
                     <label for="approval-ttsj-container" class="mb-1 block text-sm font-medium text-gray-700">Nomor kontainer <span class="text-red-600">*</span></label>
-                    <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                    <input id="approval-ttsj-container" name="no_kontainer" value="{{ old('no_kontainer') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                 </div>
             <div>
                 <label for="approval-ttsj-size" class="mb-1 block text-sm font-medium text-gray-700">Ukuran kontainer</label>
-                <input id="approval-ttsj-size" name="size_kontainer" value="{{ old('size_kontainer') }}" maxlength="50" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-size" name="size_kontainer" value="{{ old('size_kontainer') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
                 <label for="approval-ttsj-seal" class="mb-1 block text-sm font-medium text-gray-700">Nomor seal</label>
-                <input id="approval-ttsj-seal" name="no_seal" value="{{ old('no_seal') }}" maxlength="255" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-ttsj-seal" name="no_seal" value="{{ old('no_seal') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             </div>
         </div>
@@ -672,7 +672,7 @@
         <div class="space-y-4 px-5 py-5 sm:px-6">
             <div id="approval-receipt-number-field">
                 <label for="approval-receipt-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
-                <input id="approval-receipt-number" name="nomor_tanda_terima" type="text" maxlength="255" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <input id="approval-receipt-number" name="nomor_tanda_terima" type="text" @if($type !== 'ttsj') maxlength="255" @endif required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div>
                 <div class="mb-1 flex items-center justify-between gap-3">
@@ -728,7 +728,7 @@
                                     @elseif(in_array($field, ['alamat_shipper', 'alamat_consignee', 'alamat_notify_party_consignee', 'delivery_address_contact_person']))
                                         <textarea id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" rows="2" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" disabled hidden></textarea>
                                     @else
-                                        <input id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" type="text" maxlength="255" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" {{ $field === 'shipper' ? 'required' : '' }} disabled hidden>
+                                        <input id="approval-field-{{ $field }}" name="{{ $field }}" data-shipper-field="{{ $field }}" type="text" class="mt-1 w-full rounded-lg border border-gray-300 bg-white px-2 py-2 text-sm text-gray-800 focus:border-indigo-500 focus:ring-indigo-500" {{ $field === 'shipper' ? 'required' : '' }} disabled hidden>
                                     @endif
                                 </div>
                             @endforeach

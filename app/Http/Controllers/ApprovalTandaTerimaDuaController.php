@@ -67,7 +67,7 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         $filters = $request->validate([
             'type' => 'nullable|in:fcl,lcl,ttsj',
-            'search' => 'nullable|string|max:300',
+            'search' => 'nullable|string',
             'status' => 'nullable|in:belum,sudah,belum_lengkap',
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
             'manifest_status' => 'nullable|in:belum,sudah,semua',
@@ -320,7 +320,7 @@ class ApprovalTandaTerimaDuaController extends Controller
     public function storeTtsj(Request $request): RedirectResponse
     {
         $data = $request->validate([
-            'no_tanda_terima' => ['required', 'string', 'max:255'],
+            'no_tanda_terima' => ['required', 'string'],
             'shipper_jb_id' => ['required', 'integer', 'exists:shipper_consignees,id'],
             'tanggal_tanda_terima' => [
                 'required',
@@ -331,25 +331,25 @@ class ApprovalTandaTerimaDuaController extends Controller
                     }
                 },
             ],
-            'tujuan_pengiriman' => ['required', 'string', 'max:255'],
+            'tujuan_pengiriman' => ['required', 'string'],
             'tipe_kontainer' => ['required', 'in:fcl,cargo'],
             'manifest_goods' => ['required', 'array', 'size:1'],
-            'manifest_goods.0.nama_barang' => ['required', 'string', 'max:255'],
-            'manifest_goods.0.hs_codes' => ['nullable', 'string', 'max:4000'],
+            'manifest_goods.0.nama_barang' => ['required', 'string'],
+            'manifest_goods.0.hs_codes' => ['nullable', 'string'],
             'manifest_goods.0.jumlah' => ['required', 'integer', 'min:1'],
-            'manifest_goods.0.satuan' => ['required', 'string', 'max:100'],
-            'manifest_goods.0.ukuran' => ['nullable', 'string', 'max:255'],
+            'manifest_goods.0.satuan' => ['required', 'string'],
+            'manifest_goods.0.ukuran' => ['nullable', 'string'],
             'manifest_goods.0.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'manifest_goods.0.meter_kubik' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'goods' => ['required', 'array', 'size:1'],
-            'goods.0.nama_barang' => ['required', 'string', 'max:255'],
+            'goods.0.nama_barang' => ['required', 'string'],
             'goods.0.jumlah' => ['required', 'integer', 'min:1'],
-            'goods.0.satuan' => ['required', 'string', 'max:100'],
-            'goods.0.ukuran' => ['nullable', 'string', 'max:255'],
-            'no_kontainer' => ['required_if:tipe_kontainer,fcl', 'nullable', 'string', 'max:255'],
-            'size_kontainer' => ['nullable', 'string', 'max:50'],
-            'no_seal' => ['nullable', 'string', 'max:255'],
-            'keterangan_barang' => ['nullable', 'string', 'max:2000'],
+            'goods.0.satuan' => ['required', 'string'],
+            'goods.0.ukuran' => ['nullable', 'string'],
+            'no_kontainer' => ['required_if:tipe_kontainer,fcl', 'nullable', 'string'],
+            'size_kontainer' => ['nullable', 'string'],
+            'no_seal' => ['nullable', 'string'],
+            'keterangan_barang' => ['nullable', 'string'],
         ]);
 
         [$shipper, $shipperFields] = $this->validateShipperSelection($request);
@@ -422,7 +422,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         return redirect()->route('approval-tanda-terima-2.index', [
             'type' => 'ttsj',
             'destination' => '',
-            'search' => $number,
+            'search' => strlen($number) <= 1500 ? $number : '',
         ])->with('success', 'Tanda terima tanpa surat jalan berhasil ditambahkan.');
     }
 
@@ -591,7 +591,10 @@ class ApprovalTandaTerimaDuaController extends Controller
         $request->merge(['nomor_tanda_terima' => trim((string) $request->input('nomor_tanda_terima'))]);
         $numberColumn = $sourceType === 'ttsj' ? 'no_tanda_terima' : 'nomor_tanda_terima';
         $numberData = $request->validate([
-            'nomor_tanda_terima' => ['required', 'string', 'max:255', Rule::unique($item->getTable(), $numberColumn)->ignore($item->id)],
+            'nomor_tanda_terima' => array_filter([
+                'required', 'string', $sourceType === 'ttsj' ? null : 'max:255',
+                Rule::unique($item->getTable(), $numberColumn)->ignore($item->id),
+            ]),
         ]);
         $receiptNumber = trim($numberData['nomor_tanda_terima']);
         if ($sourceType === 'ttsj' && TandaTerimaTanpaSuratJalan::query()
@@ -649,18 +652,18 @@ class ApprovalTandaTerimaDuaController extends Controller
     {
         $validated = $request->validate([
             'shipper_jb_id' => 'required|integer|exists:shipper_consignees,id',
-            'shipper' => 'sometimes|required|string|max:255',
-            'alamat_shipper' => 'nullable|string|max:10000',
-            'npwp_shipper' => 'nullable|string|max:255',
-            'consignee' => 'nullable|string|max:255',
-            'alamat_consignee' => 'nullable|string|max:10000',
-            'npwp_consignee' => 'nullable|string|max:255',
-            'notify_party_consignee' => 'nullable|string|max:255',
-            'alamat_notify_party_consignee' => 'nullable|string|max:10000',
-            'npwp_notify_party_consignee' => 'nullable|string|max:255',
-            'delivery_address_contact_person' => 'nullable|string|max:10000',
-            'document_ppftz_03' => 'nullable|string|max:255',
-            'condition' => 'nullable|string|max:255',
+            'shipper' => 'sometimes|required|string',
+            'alamat_shipper' => 'nullable|string',
+            'npwp_shipper' => 'nullable|string',
+            'consignee' => 'nullable|string',
+            'alamat_consignee' => 'nullable|string',
+            'npwp_consignee' => 'nullable|string',
+            'notify_party_consignee' => 'nullable|string',
+            'alamat_notify_party_consignee' => 'nullable|string',
+            'npwp_notify_party_consignee' => 'nullable|string',
+            'delivery_address_contact_person' => 'nullable|string',
+            'document_ppftz_03' => 'nullable|string',
+            'condition' => 'nullable|string',
             'status' => 'sometimes|required|boolean',
         ]);
         $shipper = ShipperConsignee::findOrFail($validated['shipper_jb_id']);
@@ -801,20 +804,20 @@ class ApprovalTandaTerimaDuaController extends Controller
             'goods' => 'required|array|size:1',
             'goods.*.nama_barang' => 'required|string',
             'goods.*.jumlah' => 'nullable|integer|min:0',
-            'goods.*.satuan' => 'nullable|string|max:100',
-            'goods.*.ukuran' => 'nullable|string|max:255',
-            'goods.*.keterangan_barang' => 'nullable|string|max:2000',
+            'goods.*.satuan' => 'nullable|string',
+            'goods.*.ukuran' => 'nullable|string',
+            'goods.*.keterangan_barang' => 'nullable|string',
             'manifest_goods' => 'nullable|array|max:1',
             'manifest_goods.*.nama_barang' => 'required|string',
-            'manifest_goods.*.hs_code' => 'nullable|string|max:255',
-            'manifest_goods.*.hs_codes' => 'nullable|string|max:4000',
+            'manifest_goods.*.hs_code' => 'nullable|string',
+            'manifest_goods.*.hs_codes' => 'nullable|string',
             'manifest_goods.*.jumlah' => 'nullable|integer|min:0',
-            'manifest_goods.*.satuan' => 'nullable|string|max:100',
-            'manifest_goods.*.ukuran' => 'nullable|string|max:255',
+            'manifest_goods.*.satuan' => 'nullable|string',
+            'manifest_goods.*.ukuran' => 'nullable|string',
             'manifest_goods.*.meter_kubik' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
             'manifest_goods.*.tonase' => ['nullable', 'string', 'max:30', 'regex:/^(?:\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)$/'],
-            'manifest_goods.*.keterangan_barang' => 'nullable|string|max:2000',
-            'keterangan_barang' => 'nullable|string|max:2000',
+            'manifest_goods.*.keterangan_barang' => 'nullable|string',
+            'keterangan_barang' => 'nullable|string',
         ]);
 
         return $validated;
