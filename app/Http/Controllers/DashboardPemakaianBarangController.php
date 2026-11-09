@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\StockAmprahanUsage;
+use App\Models\StockBanDalamUsage;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -43,8 +44,9 @@ class DashboardPemakaianBarangController extends Controller
         }
         // Same branch restriction as valuasi pemakaian.
         $user = $request->user();
-        if ($user && $user->karyawan && strtoupper($user->karyawan->cabang ?? '') === 'BATAM'
-            && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin')) {
+        $batamOnly = $user && $user->karyawan && strtoupper($user->karyawan->cabang ?? '') === 'BATAM'
+            && ! $user->hasRole('Super Admin') && ! $user->hasRole('Admin');
+        if ($batamOnly) {
             $query->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%BATAM%'));
         }
         $kategori = $filters['kategori_pemakai'];
@@ -80,6 +82,26 @@ class DashboardPemakaianBarangController extends Controller
                     $cards[$id] = ['nama' => $categories[$kategori].' #'.$id, 'saldo_awal' => 0, 'saldo_berjalan' => 0];
                 }
                 $cards[$id][$balance] += $nilai;
+            }
+        }
+        if ($kategori === 'kendaraan') {
+            $banPerutQuery = StockBanDalamUsage::query()
+                ->join('stock_ban_dalams', 'stock_ban_dalams.id', '=', 'stock_ban_dalam_usages.stock_ban_dalam_id')
+                ->join('nama_stock_bans', 'nama_stock_bans.id', '=', 'stock_ban_dalams.nama_stock_ban_id')
+                ->whereRaw('LOWER(nama_stock_bans.nama) like ?', ['%ban perut%'])
+                ->whereNotNull('stock_ban_dalam_usages.mobil_id')
+                ->whereDate('stock_ban_dalam_usages.tanggal_keluar', '>=', $fromDate->toDateString())
+                ->whereDate('stock_ban_dalam_usages.tanggal_keluar', '<=', $toDate->toDateString());
+            if ($batamOnly) {
+                $banPerutQuery->where('stock_ban_dalams.lokasi', 'like', '%BATAM%');
+            }
+            $banPerutCounts = $banPerutQuery
+                ->selectRaw('stock_ban_dalam_usages.mobil_id, COUNT(*) as total')
+                ->groupBy('stock_ban_dalam_usages.mobil_id')->get();
+            foreach ($banPerutCounts as $count) {
+                if (isset($cards[$count->mobil_id])) {
+                    $cards[$count->mobil_id]['ban_perut_total'] = $count->total;
+                }
             }
         }
         $cards = collect($cards)->sortBy('nama')->values();

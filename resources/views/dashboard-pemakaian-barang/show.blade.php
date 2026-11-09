@@ -42,6 +42,12 @@
                             <p class="text-xs text-indigo-600">Saldo Berjalan</p>
                             <p class="text-lg font-bold text-indigo-900 mt-1 break-words">Rp {{ number_format($card['saldo_berjalan'], 2, ',', '.') }}</p>
                         </div>
+                        @if($kategori === 'kendaraan')
+                            <div class="mt-3 pt-3 border-t border-gray-200">
+                                <p class="text-xs text-gray-500">Penggantian Ban Perut</p>
+                                <p class="text-base font-semibold text-indigo-700 mt-1">{{ number_format($card['ban_perut_total'] ?? 0) }} kali</p>
+                            </div>
+                        @endif
                     </article>
                 @empty
                     <p class="col-span-full py-10 text-center text-gray-500">Belum ada pemakai untuk kategori ini.</p>
