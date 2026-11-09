@@ -208,6 +208,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             ->orWhere('nama_akun', 'LIKE', '%bank%')
             ->orWhere('nama_akun', 'LIKE', '%kas%')
             ->orderBy('nama_akun')->get();
+        $akunBiaya = Coa::orderBy('nomor_akun')->get();
         $pranotas = PranotaInvoiceVendorSupir::where('vendor_id', $pembayaran->vendor_id)
             ->where(function ($query) use ($pembayaran) {
                 $query->where('status_pembayaran', '!=', 'lunas')
@@ -215,7 +216,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             })->orderBy('tanggal_pranota', 'desc')->get();
         $selectedItems = $pembayaran->items->keyBy('pranota_id');
 
-        return view('pembayaran-pranota-invoice-vendor-supir.edit', compact('pembayaran', 'vendors', 'akunCoa', 'pranotas', 'selectedItems'));
+        return view('pembayaran-pranota-invoice-vendor-supir.edit', compact('pembayaran', 'vendors', 'akunCoa', 'akunBiaya', 'pranotas', 'selectedItems'));
     }
 
     public function update(Request $request, PembayaranPranotaVendorSupir $pembayaran)
@@ -223,6 +224,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         $data = $request->validate([
             'tanggal_pembayaran' => 'required|date', 'nomor_accurate' => 'nullable|string|max:255',
             'bank' => 'required|string|max:255', 'metode_pembayaran' => 'required|in:debit,kredit',
+            'akun_biaya_coa_id' => 'required|exists:akun_coa,id',
             'total_tagihan_penyesuaian' => 'nullable|numeric', 'alasan_penyesuaian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string', 'pranota_ids' => 'required|array|min:1',
             'pranota_ids.*' => 'required|integer|distinct|exists:pranota_invoice_vendor_supirs,id',
@@ -248,6 +250,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             $pembayaran->update([
                 'tanggal_pembayaran' => $data['tanggal_pembayaran'], 'nomor_accurate' => $data['nomor_accurate'] ?? null,
                 'bank' => $data['bank'], 'metode_pembayaran' => $data['metode_pembayaran'], 'total_pembayaran' => $total,
+                'akun_biaya_coa_id' => $data['akun_biaya_coa_id'],
                 'total_tagihan_penyesuaian' => $adjustment, 'total_tagihan_setelah_penyesuaian' => $finalTotal,
                 'alasan_penyesuaian' => $data['alasan_penyesuaian'] ?? null, 'keterangan' => $data['keterangan'] ?? null,
                 'updated_by' => Auth::id(),
@@ -264,9 +267,10 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                 }
             }
             $debit = strtolower($data['metode_pembayaran']) === 'debit';
+            $akunBiaya = Coa::findOrFail($data['akun_biaya_coa_id']);
             $entries = $debit
-                ? [['nama_akun' => $data['bank'], 'jumlah' => $finalTotal], ['nama_akun' => 'Biaya Uang Jalan Vendor', 'jumlah' => $finalTotal]]
-                : [['nama_akun' => 'Biaya Uang Jalan Vendor', 'jumlah' => $finalTotal], ['nama_akun' => $data['bank'], 'jumlah' => $finalTotal]];
+                ? [['nama_akun' => $data['bank'], 'jumlah' => $finalTotal], ['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $finalTotal]]
+                : [['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $finalTotal], ['nama_akun' => $data['bank'], 'jumlah' => $finalTotal]];
             if (! $this->coaTransactionService->recordDoubleEntry($entries[0], $entries[1], $data['tanggal_pembayaran'], $pembayaran->nomor_pembayaran, 'Pembayaran Pranota Invoice Vendor', 'Pembayaran Pranota Vendor - '.$pembayaran->nomor_pembayaran)) {
                 throw new \RuntimeException('Jurnal COA gagal dibuat. Periksa akun bank dan akun biaya.');
             }

@@ -17,6 +17,7 @@ class PembayaranPranotaVendorSupir extends Model
         'alasan_penyesuaian',
         'metode_pembayaran',
         'bank',
+        'akun_biaya_coa_id',
         'keterangan',
         'bukti_pembayaran',
         'created_by',
@@ -35,6 +36,11 @@ class PembayaranPranotaVendorSupir extends Model
     public function items()
     {
         return $this->hasMany(PembayaranPranotaVendorSupirItem::class, 'pembayaran_id');
+    }
+
+    public function akunBiayaCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_biaya_coa_id');
     }
 
     public function creator()
