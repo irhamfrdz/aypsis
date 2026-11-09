@@ -122,23 +122,23 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
             $query->whereNotExists($manifestByNumber);
         } elseif ($manifestStatus === 'sudah') {
-            $query->where(function ($query) use ($type, $manifestByNumber) {
-                $query->whereExists($manifestByNumber);
-                if ($type === 'fcl') {
-                    $query->orWhereHas('prospeks.manifests');
-                }
-            });
-
             if ($voyageSearch !== '') {
                 $query->where(function ($query) use ($type, $manifestByNumber, $voyageSearch) {
                     $query->whereExists(function ($manifestQuery) use ($manifestByNumber, $voyageSearch) {
                         $manifestByNumber($manifestQuery);
-                        $manifestQuery->where('manifests.no_voyage', 'like', '%'.$voyageSearch.'%');
+                        $manifestQuery->where('manifests.no_voyage', $voyageSearch);
                     });
 
                     if ($type === 'fcl') {
                         $query->orWhereHas('prospeks.manifests', fn ($manifestQuery) =>
-                            $manifestQuery->where('no_voyage', 'like', '%'.$voyageSearch.'%'));
+                            $manifestQuery->where('no_voyage', $voyageSearch));
+                    }
+                });
+            } else {
+                $query->where(function ($query) use ($type, $manifestByNumber) {
+                    $query->whereExists($manifestByNumber);
+                    if ($type === 'fcl') {
+                        $query->orWhereHas('prospeks.manifests');
                     }
                 });
             }
@@ -158,7 +158,7 @@ class ApprovalTandaTerimaDuaController extends Controller
                             $manifestByNumber($manifestQuery);
                             $manifestQuery->where('manifests.nomor_kontainer', 'like', "%{$search}%");
                             if ($manifestStatus === 'sudah' && $voyageSearch !== '') {
-                                $manifestQuery->where('manifests.no_voyage', 'like', "%{$voyageSearch}%");
+                                $manifestQuery->where('manifests.no_voyage', $voyageSearch);
                             }
                         });
                     }
