@@ -18,6 +18,7 @@ class BpjsPaymentParts
         $groups = [];
         $creditAccounts = [];
         $resolver = new BpjsJournalAccount;
+        $amountResolver = new BpjsJournalAmounts;
         $pranota->loadMissing('details.karyawan');
         foreach ($pranota->details as $detail) {
             $jkn = round((float) $detail->bpjs_kesehatan + (float) $detail->bpjs_ketenagakerjaan, 2);
@@ -57,6 +58,11 @@ class BpjsPaymentParts
                     'nik' => $employee?->nik ?: '-', 'nama' => $employee?->nama_lengkap ?: 'Karyawan tidak tersedia',
                     'amount' => $amount,
                 ];
+                [$tunjangan, $biaya, $hutang] = $amountResolver->forDetail($detail, $component);
+                $employeeIndex = array_key_last($groups[$key]['employees']);
+                $groups[$key]['employees'][$employeeIndex]['tunjangan'] = $tunjangan;
+                $groups[$key]['employees'][$employeeIndex]['biaya'] = $biaya;
+                $groups[$key]['employees'][$employeeIndex]['hutang'] = $hutang;
             }
         }
 

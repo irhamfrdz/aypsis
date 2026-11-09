@@ -262,8 +262,12 @@ class PranotaBpjsController extends Controller
     public function show(PranotaBpjsHeader $pranota_bpj)
     {
         $pranota_bpj->load('details.karyawan', 'createdBy');
+        $paidJournal = DB::table('pembayaran_pranota_bpjs_parts')
+            ->where('pranota_bpjs_header_id', $pranota_bpj->id)
+            ->selectRaw('SUM(tunjangan) as tunjangan, SUM(biaya) as biaya, SUM(hutang) as hutang, SUM(subtotal) as grand_total')
+            ->first();
 
-        return view('pranota-bpjs.show', compact('pranota_bpj'));
+        return view('pranota-bpjs.show', compact('pranota_bpj', 'paidJournal'));
     }
 
     public function exportExcel(PranotaBpjsHeader $pranota_bpj)

@@ -132,6 +132,12 @@
             <p class="rounded-lg border border-amber-200 bg-amber-50 p-3 mb-4 text-sm text-amber-900">Pranota ini memuat data lama tanpa rincian PPU/BPU terpisah. Nominalnya ditampilkan pada kolom Jamsostek Gabungan dan tetap masuk Grand Total. Total PPU/BPU di atas hanya menjumlahkan rincian yang tersedia.</p>
         @endif
         <div class="mb-8">
+            @if($paidJournal && $paidJournal->grand_total !== null)
+                <div class="mb-6 overflow-x-auto rounded-lg border border-gray-200">
+                    <h3 class="border-b p-4 font-semibold text-gray-800">Rincian Jurnal Pembayaran Tersimpan</h3>
+                    <table class="w-full text-sm text-left"><thead class="bg-gray-50 text-xs uppercase text-gray-500"><tr><th class="p-3">Variabel</th><th class="p-3 text-right">Nominal Dibayar</th></tr></thead><tbody class="divide-y"><tr><td class="p-3">TUNJANGAN</td><td class="p-3 text-right">Rp {{ number_format($paidJournal->tunjangan, 2, ',', '.') }}</td></tr><tr><td class="p-3">BIAYA</td><td class="p-3 text-right">Rp {{ number_format($paidJournal->biaya, 2, ',', '.') }}</td></tr><tr><td class="p-3">HUTANG</td><td class="p-3 text-right">Rp {{ number_format($paidJournal->hutang, 2, ',', '.') }}</td></tr></tbody><tfoot class="bg-emerald-50 font-bold"><tr><td class="p-3">Grand Total</td><td class="p-3 text-right">Rp {{ number_format($paidJournal->grand_total, 2, ',', '.') }}</td></tr></tfoot></table>
+                </div>
+            @endif
             <h3 class="text-lg font-bold text-gray-800 mb-2">Rincian Iuran BPJS Karyawan</h3>
             <p class="text-xs text-gray-500 mb-4 print:hidden">Geser tabel ke kanan untuk melihat seluruh komponen dan ringkasan tunjangan. Ringkasan tidak ditambahkan kembali ke Grand Total.</p>
             <div class="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-3 print:hidden">

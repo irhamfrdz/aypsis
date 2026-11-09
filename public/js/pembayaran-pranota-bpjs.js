@@ -7,10 +7,31 @@ document.addEventListener('DOMContentLoaded', function () {
     const credit = document.getElementById('bank_coa_id');
     const message = document.getElementById('credit-account-message');
     const groupSelect = document.getElementById('payment-group');
+    const bankSearch = document.getElementById('bank-search');
+    const bankSelect = document.getElementById('akun_coa_id');
     const details = document.getElementById('payment-details');
     const branchFilter = document.getElementById('employee-branch-filter');
     const nameSearch = document.getElementById('employee-name-search');
     const normalize = value => String(value || '').trim().replace(/\s+/g, ' ').toLocaleUpperCase('id-ID');
+    if (bankSearch && bankSelect) {
+        const bankOptions = Array.from(bankSelect.options).slice(1);
+        bankSearch.addEventListener('input', function () {
+            const query = normalize(bankSearch.value);
+            let visibleCount = 0;
+            bankOptions.forEach(option => {
+                const matches = normalize(option.dataset.search || option.textContent).includes(query);
+                option.hidden = !matches;
+                if (matches) visibleCount++;
+            });
+            document.getElementById('bank-search-empty').classList.toggle('hidden', visibleCount > 0);
+            if (bankSelect.selectedOptions[0]?.hidden) bankSelect.value = '';
+        });
+        bankSelect.addEventListener('change', function () {
+            bankSearch.value = '';
+            bankOptions.forEach(option => { option.hidden = false; });
+            document.getElementById('bank-search-empty').classList.add('hidden');
+        });
+    }
     function updateTotal() {
         const selectedTypes = boxes.filter(box => box.checked);
         const selectedKeys = new Set(selectedTypes.map(box => box.value));
@@ -51,6 +72,13 @@ document.addEventListener('DOMContentLoaded', function () {
         if (empty) empty.hidden = selectedTypes.length > 0;
         const cents = selected.reduce((sum, box) => sum + Math.round(Number(box.dataset.amount) * 100), 0);
         output.textContent = 'Rp ' + (cents / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        let journalGrandTotalCents = 0;
+        ['tunjangan', 'biaya', 'hutang'].forEach(field => {
+            const totalCents = selected.reduce((sum, box) => sum + Math.round(Number(box.dataset[field] || 0) * 100), 0);
+            journalGrandTotalCents += totalCents;
+            document.getElementById('selected-' + field).textContent = 'Rp ' + (totalCents / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        });
+        document.getElementById('selected-journal-grand-total').textContent = 'Rp ' + (journalGrandTotalCents / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const missing = selected.some(box => !box.dataset.creditId);
         const accounts = new Map();
         selected.forEach(box => {

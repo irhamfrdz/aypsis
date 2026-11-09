@@ -106,6 +106,12 @@ class PembayaranPranotaBpjsController extends Controller
                         }
                         $creditAmounts = (new \App\Services\BpjsJournalAccount)->selectedAmounts(array_values($selected));
                         $parts = array_merge(...array_column(array_values($selected), 'parts'));
+                        $detailMap = $pranota->details->keyBy('id');
+                        $amountResolver = new \App\Services\BpjsJournalAmounts;
+                        foreach ($parts as &$part) {
+                            [$part['tunjangan'], $part['biaya'], $part['hutang']] = $amountResolver->forDetail($detailMap->get($part['pranota_bpjs_detail_id']), $part['komponen']);
+                        }
+                        unset($part);
                         $subtotal = round(array_sum(array_column($parts, 'subtotal')), 2);
                         $paid = round((float) $pranota->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal'), 2);
                         if ($subtotal <= 0 || $paid + $subtotal > round((float) $pranota->grand_total, 2)) {
@@ -196,6 +202,33 @@ class PembayaranPranotaBpjsController extends Controller
         $parts = DB::table('pembayaran_pranota_bpjs_parts')->where('pembayaran_pranota_bpjs_id', $payment->id)
             ->selectRaw('komponen, tipe, SUM(subtotal) as subtotal')->groupBy('komponen', 'tipe')->get();
 
-        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts'));
+        $journalAmounts = [];
+        $amountResolver = new \App\Services\BpjsJournalAmounts;
+        $paidParts = DB::table('pembayaran_pranota_bpjs_parts')
+            ->where('pembayaran_pranota_bpjs_id', $payment->id)
+            ->join('pranota_bpjs_details', 'pranota_bpjs_details.id', '=', 'pembayaran_pranota_bpjs_parts.pranota_bpjs_detail_id')
+            ->select('pembayaran_pranota_bpjs_parts.komponen', 'pembayaran_pranota_bpjs_parts.tipe', 'pranota_bpjs_details.*')->get();
+        foreach ($paidParts as $paidPart) {
+            $detail = new \App\Models\PranotaBpjsDetail((array) $paidPart);
+            [$tunjangan, $biaya, $hutang] = $amountResolver->forDetail($detail, $paidPart->komponen);
+            $key = $paidPart->komponen.'|'.$paidPart->tipe;
+            $journalAmounts[$key] ??= ['tunjangan' => 0, 'biaya' => 0, 'hutang' => 0];
+            $journalAmounts[$key]['tunjangan'] += $tunjangan;
+            $journalAmounts[$key]['biaya'] += $biaya;
+            $journalAmounts[$key]['hutang'] += $hutang;
+        }
+
+        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts', 'journalAmounts'));
+    }
+
+    public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        $payment = $pembayaran_pranota_bpj->load(['pranotas', 'bank', 'akunCoa', 'createdBy']);
+        $parts = DB::table('pembayaran_pranota_bpjs_parts')
+            ->where('pembayaran_pranota_bpjs_id', $payment->id)
+            ->selectRaw('komponen, tipe, SUM(subtotal) as subtotal, SUM(tunjangan) as tunjangan, SUM(biaya) as biaya, SUM(hutang) as hutang')
+            ->groupBy('komponen', 'tipe')->get();
+
+        return view('pembayaran-pranota-bpjs.print', compact('payment', 'parts'));
     }
 }
