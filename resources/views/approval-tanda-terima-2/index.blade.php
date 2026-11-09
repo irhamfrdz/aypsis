@@ -129,7 +129,7 @@
         </div>
     @endif
 
-    <form method="GET" action="{{ route('approval-tanda-terima-2.index') }}" class="mb-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+    <form method="GET" action="{{ route('approval-tanda-terima-2.index') }}" autocomplete="off" class="mb-5 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex items-center gap-3 border-b border-gray-100 bg-gray-50/80 px-5 py-4 sm:px-6">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700">
                 <i class="fas fa-filter" aria-hidden="true"></i>
@@ -144,7 +144,7 @@
                 <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Nomor tanda terima, nomor kontainer, pengirim, atau nama barang</label>
                 <div class="relative">
                     <i class="fas fa-search pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" aria-hidden="true"></i>
-                    <input id="search" name="search" type="search" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Contoh: JB1001, JB1002, JB1003">
+                    <input id="search" name="search" type="search" autocomplete="off" value="{{ request('search') }}" class="h-11 w-full rounded-xl border border-gray-300 bg-white pl-11 pr-4 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200" placeholder="Contoh: JB1001, JB1002, JB1003">
                 </div>
                 <p class="mt-2 text-xs text-gray-500">Pisahkan beberapa kata kunci dengan koma. Pilihan export tetap tersimpan saat Anda mencari lagi atau pindah halaman pada jenis tanda terima yang sama.</p>
             </div>
