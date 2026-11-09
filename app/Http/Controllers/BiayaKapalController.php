@@ -3856,7 +3856,9 @@ class BiayaKapalController extends Controller
                     : ($tariffKey === 'lcl' ? 500000 : 0);
                 $adjustment = (float) ($detail->container_adjustments[$id] ?? 0);
                 $rate = max(0, $baseRate + $adjustment);
-                $label = ($tariffKey === 'lcl' ? 'LCL ' : '').($size ? $size.'ft' : 'Kontainer');
+                $label = $tariffKey === 'cargo'
+                    ? 'Cargo'
+                    : (($tariffKey === 'lcl' ? 'LCL ' : '').($size ? $size.'ft' : 'Kontainer'));
                 $groupKey = $label.'|'.$rate;
 
                 if (! $rateLines->has($groupKey)) {
