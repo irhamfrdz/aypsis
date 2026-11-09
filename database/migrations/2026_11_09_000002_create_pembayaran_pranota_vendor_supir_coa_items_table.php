@@ -15,7 +15,7 @@ return new class extends Migration
             $table->decimal('nominal', 15, 2);
             $table->string('memo', 500)->nullable();
             $table->timestamps();
-            $table->index(['pembayaran_id', 'akun_coa_id']);
+            $table->index(['pembayaran_id', 'akun_coa_id'], 'pvs_coa_payment_account_idx');
         });
     }
 
