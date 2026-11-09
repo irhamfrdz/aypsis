@@ -183,12 +183,6 @@
                         <option value="semua" @selected($manifestStatus === 'semua')>Semua</option>
                     </select>
                 </div>
-                @if($manifestStatus === 'sudah')
-                    <div>
-                        <label for="voyage" class="mb-2 block text-sm font-semibold text-gray-700">Nomor voyage</label>
-                        <input id="voyage" name="voyage" type="search" value="{{ request('voyage') }}" placeholder="Cari nomor voyage" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 placeholder:text-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
-                    </div>
-                @endif
             </div>
         </div>
         <div class="flex flex-col-reverse gap-2 border-t border-gray-100 bg-gray-50/80 px-5 py-4 sm:flex-row sm:justify-end sm:px-6">
@@ -200,6 +194,66 @@
             </button>
         </div>
     </form>
+
+    <dialog id="approval-voyage-dialog" class="w-[min(28rem,calc(100%-2rem))] rounded-2xl border-0 p-0 shadow-2xl backdrop:bg-gray-900/50" aria-labelledby="approval-voyage-title">
+        <form id="approval-voyage-form" method="dialog" class="space-y-5 p-6">
+            <div>
+                <h2 id="approval-voyage-title" class="text-lg font-semibold text-gray-900">Masukkan nomor voyage</h2>
+                <p class="mt-1 text-sm text-gray-600">Nomor voyage digunakan untuk mencari tanda terima yang sudah naik kapal.</p>
+            </div>
+            <div>
+                <label for="approval-voyage-input" class="mb-2 block text-sm font-semibold text-gray-700">Nomor voyage</label>
+                <input id="approval-voyage-input" type="text" value="{{ request('voyage') }}" required maxlength="255" autocomplete="off" placeholder="Contoh: AS20JP26" class="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                <p id="approval-voyage-error" class="mt-1 hidden text-xs text-red-600">Nomor voyage wajib diisi.</p>
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" id="approval-voyage-cancel" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">Batal</button>
+                <button type="submit" value="apply" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Terapkan filter</button>
+            </div>
+        </form>
+    </dialog>
+    <script>
+        (() => {
+            const select = document.getElementById('manifest_status');
+            const form = select?.form;
+            const dialog = document.getElementById('approval-voyage-dialog');
+            const voyageInput = document.getElementById('approval-voyage-input');
+            const error = document.getElementById('approval-voyage-error');
+            if (!select || !form || !dialog || !voyageInput) return;
+
+            const hiddenVoyage = document.createElement('input');
+            hiddenVoyage.type = 'hidden';
+            hiddenVoyage.name = 'voyage';
+            hiddenVoyage.value = @json(request('voyage', ''));
+            form.append(hiddenVoyage);
+
+            select.addEventListener('change', () => {
+                if (select.value !== 'sudah') return;
+                voyageInput.value = hiddenVoyage.value;
+                error.classList.add('hidden');
+                dialog.showModal();
+                requestAnimationFrame(() => voyageInput.focus());
+            });
+
+            document.getElementById('approval-voyage-cancel')?.addEventListener('click', () => {
+                dialog.close();
+                select.value = @json(request('manifest_status', 'belum'));
+            });
+
+            dialog.addEventListener('close', () => {
+                if (dialog.returnValue !== 'apply') return;
+                const voyage = voyageInput.value.trim();
+                if (!voyage) {
+                    dialog.showModal();
+                    error.classList.remove('hidden');
+                    voyageInput.focus();
+                    return;
+                }
+                hiddenVoyage.value = voyage;
+                form.requestSubmit();
+            });
+        })();
+    </script>
 
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 px-5 py-4">
