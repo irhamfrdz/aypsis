@@ -16,6 +16,38 @@
         'tanggal_terima_ppftz_cabang' => 'Tanggal Terima PPFTZ dari Cabang',
     ];
 @endphp
+<style>
+    #nomor_dokumen + .select2-container { width: 100% !important; }
+    #nomor_dokumen + .select2-container .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: .5rem;
+        background: #fff;
+    }
+    #nomor_dokumen + .select2-container .select2-selection__rendered {
+        padding-left: .75rem;
+        padding-right: 2rem;
+        color: #1f2937;
+        font-size: .875rem;
+        line-height: 40px;
+    }
+    #nomor_dokumen + .select2-container .select2-selection__arrow { height: 40px; right: .35rem; }
+    #nomor_dokumen + .select2-container.select2-container--focus .select2-selection--single,
+    #nomor_dokumen + .select2-container.select2-container--open .select2-selection--single {
+        border-color: #3b82f6;
+        outline: 2px solid transparent;
+        box-shadow: 0 0 0 2px rgb(59 130 246 / .2);
+    }
+    .select2-dropdown { border-color: #d1d5db; border-radius: .5rem; overflow: hidden; }
+    .select2-search--dropdown { padding: .5rem; }
+    .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: .375rem;
+        padding: .5rem .625rem;
+        outline: none;
+    }
+    .select2-search--dropdown .select2-search__field:focus { border-color: #3b82f6; box-shadow: 0 0 0 2px rgb(59 130 246 / .15); }
+</style>
 <div class="container mx-auto max-w-6xl px-4 py-6 lg:px-6">
     <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -107,7 +139,20 @@ document.addEventListener('DOMContentLoaded', () => {
     const initialNumber = number.dataset.selected;
     const endpoint = '{{ url('/pengisian-tanggal-dokumen') }}';
 
-    const reset = (select, label) => { select.innerHTML = `<option value="">${label}</option>`; select.disabled = true; };
+    if (window.jQuery && jQuery.fn.select2) {
+        jQuery(number).select2({
+            placeholder: '-- Pilih Nomor Dokumen --',
+            width: '100%',
+            minimumResultsForSearch: 0,
+            language: { noResults: () => 'Nomor tidak ditemukan' },
+        });
+    }
+
+    const reset = (select, label) => {
+        select.innerHTML = `<option value="">${label}</option>`;
+        select.disabled = true;
+        if (select === number && window.jQuery && jQuery.fn.select2) jQuery(select).trigger('change.select2');
+    };
     const addOption = (select, value, label, selected = false) => {
         const option = document.createElement('option'); option.value = value; option.textContent = label; option.selected = selected; select.appendChild(option);
     };
@@ -141,6 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const data = await response.json();
         data.documents.filter(item => item.type === type.value).forEach(item => addOption(number, item.number, item.number, item.number === selected));
         number.disabled = false;
+        if (window.jQuery && jQuery.fn.select2) jQuery(number).trigger('change.select2');
     }
 
     kapal.addEventListener('change', () => loadVoyages());
