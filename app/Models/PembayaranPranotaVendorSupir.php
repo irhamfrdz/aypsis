@@ -43,6 +43,11 @@ class PembayaranPranotaVendorSupir extends Model
         return $this->belongsTo(Coa::class, 'akun_biaya_coa_id');
     }
 
+    public function akunBiayaItems()
+    {
+        return $this->hasMany(PembayaranPranotaVendorSupirCoaItem::class, 'pembayaran_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

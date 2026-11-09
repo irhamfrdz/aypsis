@@ -202,7 +202,7 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
 
     public function edit(PembayaranPranotaVendorSupir $pembayaran)
     {
-        $pembayaran->load('items.pranota');
+        $pembayaran->load('items.pranota', 'akunBiayaItems');
         $vendors = VendorSupir::orderBy('nama_vendor')->get();
         $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
             ->orWhere('nama_akun', 'LIKE', '%bank%')
@@ -215,8 +215,12 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     ->orWhereIn('id', $pembayaran->items->pluck('pranota_id'));
             })->orderBy('tanggal_pranota', 'desc')->get();
         $selectedItems = $pembayaran->items->keyBy('pranota_id');
+        $expenseItems = $pembayaran->akunBiayaItems;
+        if ($expenseItems->isEmpty() && $pembayaran->akun_biaya_coa_id) {
+            $expenseItems = collect([(object) ['akun_coa_id' => $pembayaran->akun_biaya_coa_id, 'nominal' => $pembayaran->total_tagihan_setelah_penyesuaian, 'memo' => null]]);
+        }
 
-        return view('pembayaran-pranota-invoice-vendor-supir.edit', compact('pembayaran', 'vendors', 'akunCoa', 'akunBiaya', 'pranotas', 'selectedItems'));
+        return view('pembayaran-pranota-invoice-vendor-supir.edit', compact('pembayaran', 'vendors', 'akunCoa', 'akunBiaya', 'pranotas', 'selectedItems', 'expenseItems'));
     }
 
     public function update(Request $request, PembayaranPranotaVendorSupir $pembayaran)
@@ -224,7 +228,10 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         $data = $request->validate([
             'tanggal_pembayaran' => 'required|date', 'nomor_accurate' => 'nullable|string|max:255',
             'bank' => 'required|string|max:255', 'metode_pembayaran' => 'required|in:debit,kredit',
-            'akun_biaya_coa_id' => 'required|exists:akun_coa,id',
+            'akun_biaya' => 'required|array|min:1',
+            'akun_biaya.*.akun_coa_id' => 'required|distinct|exists:akun_coa,id',
+            'akun_biaya.*.nominal' => 'required|numeric|min:0.01',
+            'akun_biaya.*.memo' => 'nullable|string|max:500',
             'total_tagihan_penyesuaian' => 'nullable|numeric', 'alasan_penyesuaian' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string', 'pranota_ids' => 'required|array|min:1',
             'pranota_ids.*' => 'required|integer|distinct|exists:pranota_invoice_vendor_supirs,id',
@@ -247,10 +254,14 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
             $adjustment = (float) ($data['total_tagihan_penyesuaian'] ?? 0);
             $finalTotal = $total + $adjustment;
             if ($finalTotal <= 0) throw new \RuntimeException('Total pembayaran setelah penyesuaian harus lebih dari nol.');
+            $accountCents = collect($data['akun_biaya'])->sum(fn ($item) => (int) round((float) $item['nominal'] * 100));
+            if ($accountCents !== (int) round($finalTotal * 100)) {
+                throw new \RuntimeException('Total nominal semua akun biaya harus sama dengan total pembayaran.');
+            }
             $pembayaran->update([
                 'tanggal_pembayaran' => $data['tanggal_pembayaran'], 'nomor_accurate' => $data['nomor_accurate'] ?? null,
                 'bank' => $data['bank'], 'metode_pembayaran' => $data['metode_pembayaran'], 'total_pembayaran' => $total,
-                'akun_biaya_coa_id' => $data['akun_biaya_coa_id'],
+                'akun_biaya_coa_id' => $data['akun_biaya'][0]['akun_coa_id'],
                 'total_tagihan_penyesuaian' => $adjustment, 'total_tagihan_setelah_penyesuaian' => $finalTotal,
                 'alasan_penyesuaian' => $data['alasan_penyesuaian'] ?? null, 'keterangan' => $data['keterangan'] ?? null,
                 'updated_by' => Auth::id(),
@@ -266,14 +277,28 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
                     foreach ($invoice->tagihanSupirVendors ?? [] as $tagihan) $tagihan->update(['status_pembayaran' => $status]);
                 }
             }
+            $pembayaran->akunBiayaItems()->delete();
             $debit = strtolower($data['metode_pembayaran']) === 'debit';
-            $akunBiaya = Coa::findOrFail($data['akun_biaya_coa_id']);
-            $entries = $debit
-                ? [['nama_akun' => $data['bank'], 'jumlah' => $finalTotal], ['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $finalTotal]]
-                : [['nama_akun' => $akunBiaya->nama_akun, 'coa_id' => $akunBiaya->id, 'jumlah' => $finalTotal], ['nama_akun' => $data['bank'], 'jumlah' => $finalTotal]];
-            if (! $this->coaTransactionService->recordDoubleEntry($entries[0], $entries[1], $data['tanggal_pembayaran'], $pembayaran->nomor_pembayaran, 'Pembayaran Pranota Invoice Vendor', 'Pembayaran Pranota Vendor - '.$pembayaran->nomor_pembayaran)) {
-                throw new \RuntimeException('Jurnal COA gagal dibuat. Periksa akun bank dan akun biaya.');
+            $memoBank = 'Pembayaran Pranota Vendor - '.$pembayaran->nomor_pembayaran;
+            foreach ($data['akun_biaya'] as $expenseItem) {
+                $account = Coa::findOrFail($expenseItem['akun_coa_id']);
+                $amount = (float) $expenseItem['nominal'];
+                $pembayaran->akunBiayaItems()->create(['akun_coa_id' => $account->id, 'nominal' => $amount, 'memo' => $expenseItem['memo'] ?? null]);
+                $expenseDebit = ! $debit;
+                $expenseTransaction = $this->coaTransactionService->recordTransaction(
+                    $account->nama_akun, $expenseDebit ? $amount : 0, $expenseDebit ? 0 : $amount,
+                    $data['tanggal_pembayaran'], $pembayaran->nomor_pembayaran,
+                    'Pembayaran Pranota Invoice Vendor', $expenseItem['memo'] ?: $memoBank, $account->id
+                );
+                if (! $expenseTransaction) throw new \RuntimeException('Jurnal COA biaya gagal dibuat untuk '.$account->nama_akun.'.');
             }
+            $bankDebit = $debit;
+            $bankTransaction = $this->coaTransactionService->recordTransaction(
+                $data['bank'], $bankDebit ? $finalTotal : 0, $bankDebit ? 0 : $finalTotal,
+                $data['tanggal_pembayaran'], $pembayaran->nomor_pembayaran,
+                'Pembayaran Pranota Invoice Vendor', $memoBank
+            );
+            if (! $bankTransaction) throw new \RuntimeException('Jurnal COA bank gagal dibuat.');
             DB::commit();
             return redirect()->route('pembayaran-pranota-invoice-vendor-supir.index')->with('success', 'Pembayaran berhasil diperbarui.');
         } catch (\Throwable $e) {
