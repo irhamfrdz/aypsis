@@ -3,6 +3,7 @@
     const pelindoWrapper = document.getElementById('pelindo_wrapper');
     const pelindoSectionsContainer = document.getElementById('pelindo_sections_container');
     let pelindoNextSectionIndex = Date.now();
+    let pelindoNextBarangIndex = Date.now();
 
     function updatePelindoVoyages(section) {
         const kapalSelect = section.querySelector('.pelindo-kapal-select');
@@ -21,28 +22,34 @@
 
     function updatePelindoBarang(section) {
         const kegiatan = section.querySelector('.pelindo-jenis-tagihan-select').value;
-        const barangSelect = section.querySelector('.pelindo-barang-select');
-        const previous = barangSelect.dataset.oldValue || barangSelect.value;
-        barangSelect.replaceChildren(new Option(
-            kegiatan ? '-- Pilih Barang --' : '-- Pilih Jenis Tagihan Terlebih Dahulu --', ''
-        ));
-        pelindoBarangOptions
-            .filter(option => option.kegiatan === kegiatan)
-            .forEach(option => barangSelect.add(new Option(option.label, option.value)));
-        if ([...barangSelect.options].some(option => option.value === previous)) {
-            barangSelect.value = previous;
-        }
-        delete barangSelect.dataset.oldValue;
+        section.querySelectorAll('.pelindo-barang-select').forEach(barangSelect => {
+            const previous = barangSelect.dataset.oldValue || barangSelect.value;
+            barangSelect.replaceChildren(new Option(
+                kegiatan ? '-- Pilih Barang --' : '-- Pilih Jenis Tagihan Terlebih Dahulu --', ''
+            ));
+            pelindoBarangOptions
+                .filter(option => option.kegiatan === kegiatan)
+                .forEach(option => barangSelect.add(new Option(option.label, option.value)));
+            if ([...barangSelect.options].some(option => option.value === previous)) {
+                barangSelect.value = previous;
+            }
+            delete barangSelect.dataset.oldValue;
+        });
     }
 
     function updatePelindoNominal() {
-        const total = [...pelindoSectionsContainer.querySelectorAll('.pelindo-section')]
-            .reduce((sum, section) => {
-                const jumlah = Number(section.querySelector('.pelindo-jumlah-input').value) || 0;
-                const biaya = Number(section.querySelector('.pelindo-biaya-input').value) || 0;
+        const rows = [...pelindoSectionsContainer.querySelectorAll('.pelindo-barang-row')];
+        const total = rows
+            .reduce((sum, row) => {
+                const jumlah = Number(row.querySelector('.pelindo-jumlah-input').value) || 0;
+                const biaya = Number(row.querySelector('.pelindo-biaya-input').value) || 0;
                 return sum + jumlah * biaya;
             }, 0);
-        nominalInput.value = total > 0 ? total.toLocaleString('id-ID') : '';
+        const hasCompleteRow = rows.some(row =>
+            row.querySelector('.pelindo-jumlah-input').value !== '' &&
+            row.querySelector('.pelindo-biaya-input').value !== ''
+        );
+        nominalInput.value = hasCompleteRow ? total.toLocaleString('id-ID') : '';
     }
 
     function refreshPelindoSections() {
@@ -50,6 +57,15 @@
         sections.forEach((section, index) => {
             section.querySelector('.pelindo-section-title').textContent = `Kapal ${index + 1} (Tagihan Pelindo)`;
             section.querySelector('.pelindo-remove-kapal').classList.toggle('hidden', sections.length === 1);
+            refreshPelindoBarangRows(section);
+        });
+    }
+
+    function refreshPelindoBarangRows(section) {
+        const rows = [...section.querySelectorAll('.pelindo-barang-row')];
+        rows.forEach((row, index) => {
+            row.querySelector('.pelindo-barang-title').textContent = `Barang ${index + 1}`;
+            row.querySelector('.pelindo-remove-barang').classList.toggle('hidden', rows.length === 1);
         });
     }
 
@@ -70,10 +86,38 @@
     });
 
     pelindoSectionsContainer.addEventListener('click', function (event) {
-        if (!event.target.matches('.pelindo-remove-kapal')) return;
-        event.target.closest('.pelindo-section').remove();
-        refreshPelindoSections();
-        updatePelindoNominal();
+        const addBarangButton = event.target.closest('.pelindo-add-barang');
+        if (addBarangButton) {
+            const section = addBarangButton.closest('.pelindo-section');
+            const holder = document.createElement('div');
+            holder.innerHTML = document.getElementById('pelindo_barang_template').innerHTML
+                .replaceAll('__SECTION__', section.dataset.sectionIndex)
+                .replaceAll('__BARANG__', String(pelindoNextBarangIndex++));
+            const row = holder.firstElementChild;
+            section.querySelector('.pelindo-barangs').append(row);
+            row.querySelectorAll('select, input').forEach(input => {
+                input.disabled = false;
+                input.required = true;
+            });
+            refreshPelindoBarangRows(section);
+            updatePelindoBarang(section);
+            row.querySelector('.pelindo-barang-select').focus();
+            return;
+        }
+
+        if (event.target.closest('.pelindo-remove-barang')) {
+            const section = event.target.closest('.pelindo-section');
+            event.target.closest('.pelindo-barang-row').remove();
+            refreshPelindoBarangRows(section);
+            updatePelindoNominal();
+            return;
+        }
+
+        if (event.target.closest('.pelindo-remove-kapal')) {
+            event.target.closest('.pelindo-section').remove();
+            refreshPelindoSections();
+            updatePelindoNominal();
+        }
     });
 
     pelindoSectionsContainer.addEventListener('change', function (event) {
@@ -82,7 +126,10 @@
             section.querySelector('.pelindo-voyage-select').value = '';
             updatePelindoVoyages(section);
         } else if (event.target.matches('.pelindo-jenis-tagihan-select')) {
-            section.querySelector('.pelindo-barang-select').value = '';
+            section.querySelectorAll('.pelindo-barang-select').forEach(select => {
+                select.value = '';
+                delete select.dataset.oldValue;
+            });
             updatePelindoBarang(section);
         }
     });
