@@ -1,6 +1,29 @@
 (() => {
     'use strict';
 
+    function formatLocalizedNumber(value) {
+        const clean = value.replace(/[^\d.,]/g, '');
+        const comma = clean.indexOf(',');
+        const decimalDot = comma === -1 && /^\d+\.\d{1,2}$/.test(clean);
+        const separator = comma >= 0 ? comma : (decimalDot ? clean.indexOf('.') : -1);
+        const whole = (separator >= 0 ? clean.slice(0, separator) : clean).replace(/\D/g, '');
+        const fraction = separator >= 0 ? clean.slice(separator + 1).replace(/\D/g, '') : null;
+        if (!whole && fraction === null) return '';
+        const grouped = (whole || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        return grouped + (fraction !== null ? ',' + fraction : '');
+    }
+    function formatNumberInput(input) {
+        const cursor = input.selectionStart;
+        const previousLength = input.value.length;
+        const formatted = formatLocalizedNumber(input.value);
+        if (formatted === input.value) return;
+        input.value = formatted;
+        if (cursor !== null && document.activeElement === input) {
+            const nextCursor = Math.max(0, Math.min(formatted.length, cursor + formatted.length - previousLength));
+            input.setSelectionRange(nextCursor, nextCursor);
+        }
+    }
+
     document.querySelectorAll('dialog.approval-goods-dialog[id]').forEach(dialog => {
         let opener;
         const form = dialog.querySelector('form');
@@ -11,28 +34,6 @@
             tonase: 'Tonase', keterangan_barang: 'Keterangan barang' };
         const placeholders = { nama_barang: 'Contoh: Mesin industri', hs_codes: 'Contoh: 8479.89 (satu kode per baris)', jumlah: '0',
             satuan: 'Contoh: Unit, koli, karton', ukuran: 'Contoh: 40x40', tonase: 'Contoh: 5.825 atau 5,825', meter_kubik: 'Contoh: 13.728 atau 13,728', keterangan_barang: 'Catatan tambahan (opsional)' };
-        function formatLocalizedNumber(value) {
-            const clean = value.replace(/[^\d.,]/g, '');
-            const comma = clean.indexOf(',');
-            const decimalDot = comma === -1 && /^\d+\.\d{1,2}$/.test(clean);
-            const separator = comma >= 0 ? comma : (decimalDot ? clean.indexOf('.') : -1);
-            const whole = (separator >= 0 ? clean.slice(0, separator) : clean).replace(/\D/g, '');
-            const fraction = separator >= 0 ? clean.slice(separator + 1).replace(/\D/g, '') : null;
-            if (!whole && fraction === null) return '';
-            const grouped = (whole || '0').replace(/\B(?=(\d{3})+(?!\d))/g, '.');
-            return grouped + (fraction !== null ? ',' + fraction : '');
-        }
-        function formatNumberInput(input) {
-            const cursor = input.selectionStart;
-            const previousLength = input.value.length;
-            const formatted = formatLocalizedNumber(input.value);
-            if (formatted === input.value) return;
-            input.value = formatted;
-            if (cursor !== null && document.activeElement === input) {
-                const nextCursor = Math.max(0, Math.min(formatted.length, cursor + formatted.length - previousLength));
-                input.setSelectionRange(nextCursor, nextCursor);
-            }
-        }
         function labelRow(row, section) {
             const headings = Array.from(section.querySelectorAll('thead th'));
             Array.from(row.children).forEach((cell, index) => {
@@ -134,6 +135,12 @@
                 }
             });
         });
+    });
+
+    const newReceiptDialog = document.getElementById('approval-ttsj-dialog');
+    newReceiptDialog?.querySelectorAll('[name="manifest_goods[0][tonase]"], [name="manifest_goods[0][meter_kubik]"]').forEach(input => {
+        formatNumberInput(input);
+        input.addEventListener('input', () => formatNumberInput(input));
     });
 })();
 
