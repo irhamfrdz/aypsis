@@ -71,6 +71,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'status' => 'nullable|in:belum,sudah,belum_lengkap',
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
             'manifest_status' => 'nullable|in:belum,sudah,semua',
+            'voyage' => 'nullable|string|max:255',
         ]);
         $type = $filters['type'] ?? 'fcl';
         $destination = $filters['destination'] ?? 'batam';
@@ -126,6 +127,21 @@ class ApprovalTandaTerimaDuaController extends Controller
                     $query->orWhereHas('prospeks.manifests');
                 }
             });
+
+            $voyageSearch = trim((string) ($filters['voyage'] ?? ''));
+            if ($voyageSearch !== '') {
+                $query->where(function ($query) use ($type, $manifestByNumber, $voyageSearch) {
+                    $query->whereExists(function ($manifestQuery) use ($manifestByNumber, $voyageSearch) {
+                        $manifestByNumber($manifestQuery);
+                        $manifestQuery->where('manifests.no_voyage', 'like', '%'.$voyageSearch.'%');
+                    });
+
+                    if ($type === 'fcl') {
+                        $query->orWhereHas('prospeks.manifests', fn ($manifestQuery) =>
+                            $manifestQuery->where('no_voyage', 'like', '%'.$voyageSearch.'%'));
+                    }
+                });
+            }
         }
 
         if ($request->filled('search')) {
