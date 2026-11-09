@@ -421,7 +421,12 @@
         });
         console.log('=========================');
         
-        if (nominalInput && nominalInput.value) nominalInput.value = nominalInput.value.replace(/\./g, '');
+        if (nominalInput && nominalInput.value) {
+            const cleanNominal = nominalInput.value.replace(/\./g, '');
+            nominalInput.value = (selectedJenisBiaya.nama || '').toLowerCase().includes('tagihan pelindo')
+                ? cleanNominal.replace(',', '.')
+                : cleanNominal;
+        }
         if (ppnInput && ppnInput.value) ppnInput.value = ppnInput.value.replace(/\./g, '');
         if (pphInput && pphInput.value) pphInput.value = pphInput.value.replace(/\./g, '');
         

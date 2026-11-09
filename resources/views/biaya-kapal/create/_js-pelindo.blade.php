@@ -68,11 +68,13 @@
         const jumlah = Number(jumlahInput.value);
         if (!option?.value || jumlahInput.value === '' || !Number.isFinite(tarif) || !Number.isFinite(jumlah)) {
             biayaInput.value = '';
+            biayaInput.dataset.cents = '';
             hint.textContent = 'Tarif Pricelist Pelindo × Jumlah.';
         } else {
-            const biaya = Math.round(tarif * 100) * jumlah / 100;
-            biayaInput.value = biaya.toFixed(2);
-            hint.textContent = `Tarif Rp ${tarif.toLocaleString('id-ID')} × ${jumlah} barang.`;
+            const biayaCents = Math.round(tarif * 100) * jumlah;
+            biayaInput.dataset.cents = String(biayaCents);
+            biayaInput.value = (biayaCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 });
+            hint.textContent = `Tarif Rp ${tarif.toLocaleString('id-ID', { maximumFractionDigits: 2 })} × ${jumlah} barang.`;
         }
         updatePelindoNominal();
     }
@@ -140,16 +142,15 @@
 
     function updatePelindoNominal() {
         const rows = [...pelindoSectionsContainer.querySelectorAll('.pelindo-barang-row')];
-        const total = rows
-            .reduce((sum, row) => {
-                const biaya = Number(row.querySelector('.pelindo-biaya-input').value) || 0;
-                return sum + biaya;
-            }, 0);
+        const totalCents = rows.reduce((sum, row) =>
+            sum + (Number(row.querySelector('.pelindo-biaya-input').dataset.cents) || 0), 0);
         const hasCompleteRow = rows.some(row =>
             row.querySelector('.pelindo-jumlah-input').value !== '' &&
             row.querySelector('.pelindo-biaya-input').value !== ''
         );
-        nominalInput.value = hasCompleteRow ? total.toLocaleString('id-ID') : '';
+        nominalInput.value = hasCompleteRow
+            ? (totalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
+            : '';
     }
 
     function refreshPelindoSections() {

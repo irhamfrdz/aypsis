@@ -21,7 +21,7 @@
             <label class="mb-2 block text-sm font-medium text-gray-700">Biaya <span class="text-red-500">*</span></label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                <input type="number" name="pelindo_sections[{{ $index }}][tagihans][{{ $tagihanIndex }}][barangs][{{ $barangIndex }}][biaya]" value="{{ $barang['biaya'] ?? '' }}" min="0" step="0.01" readonly class="pelindo-biaya-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
+                <input type="text" name="pelindo_sections[{{ $index }}][tagihans][{{ $tagihanIndex }}][barangs][{{ $barangIndex }}][biaya]" value="{{ $barang['biaya'] ?? '' }}" readonly class="pelindo-biaya-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
             </div>
             <p class="pelindo-biaya-hint mt-1 text-xs text-gray-500">Tarif Pricelist Pelindo × Jumlah.</p>
             @unless($isTemplate) @error('pelindo_sections.'.$index.'.tagihans.'.$tagihanIndex.'.barangs.'.$barangIndex.'.biaya') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
