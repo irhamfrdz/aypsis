@@ -273,7 +273,10 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('L', $this->parseWage($employee?->dpp_bp_jamsostek ?? $employee?->dpp_jkn ?? 0));
         foreach (['M' => 'jht_biaya', 'N' => 'jht_hutang', 'O' => 'jkk_tunjangan', 'P' => 'jkm_tunjangan', 'Q' => 'jp_biaya', 'R' => 'jp_hutang'] as $column => $field) $set($column, $value($field));
         $set('S', $totalPpu);
-        foreach (['T' => 'noncrew_jht_biaya', 'U' => 'jkk_hutang', 'V' => 'bpu_jkk_tunjangan', 'W' => 'bpu_jkm'] as $column => $field) $set($column, $value($field));
+        $set('T', $value('noncrew_jht_biaya'));
+        $set('U', $value('jkk_hutang') + $value('noncrew_jht_hutang'));
+        $set('V', $value('bpu_jkk_tunjangan') + $value('noncrew_jkk_tunjangan'));
+        $set('W', $value('bpu_jkm') + $value('noncrew_jkm_tunjangan'));
         $set('X', $totalBpu);
         $set('Y', (float) $detail->kis_tunjangan);
         $set('Z', $jkn1);
