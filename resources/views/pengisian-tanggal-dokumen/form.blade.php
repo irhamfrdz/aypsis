@@ -16,29 +16,39 @@
         'tanggal_terima_ppftz_cabang' => 'Tanggal Terima PPFTZ dari Cabang',
     ];
 @endphp
-<div class="container mx-auto px-4 py-6 max-w-5xl">
-    <div class="flex items-center justify-between mb-6">
+<div class="container mx-auto max-w-6xl px-4 py-6 lg:px-6">
+    <div class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-            <h1 class="text-2xl font-bold text-gray-800">{{ $record->exists ? 'Ubah Tanggal Dokumen' : 'Pengisian Tanggal Dokumen' }}</h1>
-            <p class="text-sm text-gray-600 mt-1">Catat tanggal penerimaan dan pengiriman dokumen berdasarkan kapal, voyage, dan nomor dokumen.</p>
+            <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-blue-700">Administrasi dokumen</p>
+            <h1 class="text-2xl font-bold tracking-tight text-gray-900">{{ $record->exists ? 'Ubah Tanggal Dokumen' : 'Pengisian Tanggal Dokumen' }}</h1>
+            <p class="mt-1 text-sm text-gray-500">Catat proses dokumen berdasarkan kapal, voyage, dan nomor dokumen.</p>
         </div>
-        <a href="{{ route('pengisian-tanggal-dokumen.index') }}" class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm">Kembali</a>
+        <a href="{{ route('pengisian-tanggal-dokumen.index') }}" class="inline-flex items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 shadow-sm transition hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <i class="fa-solid fa-arrow-left text-xs" aria-hidden="true"></i> Kembali
+        </a>
     </div>
 
     @if($errors->any())
-        <div class="mb-5 p-4 rounded-lg bg-red-50 border border-red-200 text-red-700 text-sm">
+        <div class="mb-5 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">
             <ul class="list-disc list-inside">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
     @endif
 
-    <form method="POST" action="{{ $formAction }}" class="bg-white rounded-xl border border-gray-200 shadow-sm p-5 md:p-7">
+    <form method="POST" action="{{ $formAction }}" class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         @csrf
         @if($formMethod !== 'POST') @method($formMethod) @endif
-        <h2 class="font-semibold text-gray-800 mb-4">Identitas Dokumen</h2>
-        <div class="grid md:grid-cols-2 gap-5">
+        <section class="p-5 sm:p-7">
+            <div class="mb-5 flex items-start gap-3">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><i class="fa-regular fa-file-lines" aria-hidden="true"></i></span>
+                <div>
+                    <h2 class="font-semibold text-gray-900">Identitas Dokumen</h2>
+                    <p class="mt-0.5 text-sm text-gray-500">Pilih data dokumen yang akan dicatat tanggal prosesnya.</p>
+                </div>
+            </div>
+            <div class="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
-                <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-1">Kapal <span class="text-red-500">*</span></label>
-                <select id="kapal_id" name="kapal_id" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <label for="kapal_id" class="mb-1.5 block text-sm font-medium text-gray-700">Kapal <span class="text-red-500">*</span></label>
+                <select id="kapal_id" name="kapal_id" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Pilih Kapal --</option>
                     @foreach($kapals as $kapal)
                         <option value="{{ $kapal->id }}" @selected(old('kapal_id', $record->kapal_id) == $kapal->id)>{{ $kapal->nama_kapal }}</option>
@@ -46,30 +56,42 @@
                 </select>
             </div>
             <div>
-                <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-1">Voyage <span class="text-red-500">*</span></label>
-                <select id="no_voyage" name="no_voyage" required data-selected="{{ old('no_voyage', $record->no_voyage) }}" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" disabled><option value="">-- Pilih Kapal Terlebih Dahulu --</option></select>
+                <label for="no_voyage" class="mb-1.5 block text-sm font-medium text-gray-700">Voyage <span class="text-red-500">*</span></label>
+                <select id="no_voyage" name="no_voyage" required data-selected="{{ old('no_voyage', $record->no_voyage) }}" class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled><option value="">-- Pilih Kapal Terlebih Dahulu --</option></select>
             </div>
             <div>
-                <label for="jenis_dokumen" class="block text-sm font-medium text-gray-700 mb-1">Jenis Nomor <span class="text-red-500">*</span></label>
-                <select id="jenis_dokumen" name="jenis_dokumen" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" disabled data-selected="{{ old('jenis_dokumen', $record->jenis_dokumen) }}"><option value="">-- Pilih Voyage Terlebih Dahulu --</option></select>
+                <label for="jenis_dokumen" class="mb-1.5 block text-sm font-medium text-gray-700">Jenis Nomor <span class="text-red-500">*</span></label>
+                <select id="jenis_dokumen" name="jenis_dokumen" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('jenis_dokumen', $record->jenis_dokumen) }}"><option value="">-- Pilih Voyage Terlebih Dahulu --</option></select>
             </div>
             <div>
-                <label for="nomor_dokumen" class="block text-sm font-medium text-gray-700 mb-1">Nomor BL / Nomor Tanda Terima <span class="text-red-500">*</span></label>
-                <select id="nomor_dokumen" name="nomor_dokumen" required class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500" disabled data-selected="{{ old('nomor_dokumen', $record->nomor_dokumen) }}"><option value="">-- Pilih Jenis Nomor Terlebih Dahulu --</option></select>
+                <label for="nomor_dokumen" class="mb-1.5 block text-sm font-medium text-gray-700">Nomor BL / Nomor Tanda Terima <span class="text-red-500">*</span></label>
+                <select id="nomor_dokumen" name="nomor_dokumen" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('nomor_dokumen', $record->nomor_dokumen) }}"><option value="">-- Pilih Jenis Nomor Terlebih Dahulu --</option></select>
             </div>
         </div>
+        </section>
 
-        <h2 class="font-semibold text-gray-800 mt-8 mb-4">Tanggal Proses Dokumen</h2>
-        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <section class="border-t border-gray-200 bg-gray-50/70 p-5 sm:p-7">
+        <div class="mb-5 flex items-start gap-3">
+            <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i></span>
+            <div>
+                <h2 class="font-semibold text-gray-900">Tanggal Proses Dokumen</h2>
+                <p class="mt-0.5 text-sm text-gray-500">Isi tanggal yang sudah diketahui. Kolom yang belum ada datanya boleh dikosongkan.</p>
+            </div>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($dateFields as $field => $label)
-                <div>
-                    <label for="{{ $field }}" class="block text-sm font-medium text-gray-700 mb-1">{{ $label }}</label>
-                    <input type="date" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $record->$field?->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+                <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                    <label for="{{ $field }}" class="mb-2 flex min-h-10 items-start text-sm font-medium leading-5 text-gray-700">{{ $label }}</label>
+                    <input type="date" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $record->$field?->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
             @endforeach
         </div>
-        <div class="flex justify-end mt-8">
-            <button type="submit" class="px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-medium">Simpan Tanggal Dokumen</button>
+        </section>
+        <div class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
+            <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Wajib diisi</p>
+            <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Simpan Tanggal Dokumen
+            </button>
         </div>
     </form>
 </div>
