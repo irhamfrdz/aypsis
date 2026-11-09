@@ -288,7 +288,12 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('AK', $detail->summaryBurden('non_kary'));
         $set('AL', (string) ($detail->no_voucher ?? ''));
         $set('AM', 'x'); $set('AN', 'x'); $set('AO', 'x');
-        $set('AP', $totalPpu + $totalBpu);
+        $normalize = fn ($value) => preg_replace('/[\s_-]+/u', '', mb_strtoupper(trim((string) $value)));
+        $isAlexindoPluitCrew = $normalize($jamsostekType) === 'BPUALEXINDOPLUIT'
+            && $normalize($jamsostekGroup) === 'CREW';
+        $set('AP', $isAlexindoPluitCrew
+            ? $value('noncrew_jht_biaya') + $value('bpu_jkk_tunjangan') + $value('bpu_jkm')
+            : $totalPpu + $totalBpu);
         $set('AQ', $value('jkk_hutang') + $value('noncrew_jht_hutang'));
         $set('AR', (float) $detail->kis_tunjangan);
         $set('AS', $jkn1);
