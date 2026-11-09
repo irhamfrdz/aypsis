@@ -64,6 +64,9 @@
         const jumlahInput = row.querySelector('.pelindo-jumlah-input');
         const biayaInput = row.querySelector('.pelindo-biaya-input');
         const hint = row.querySelector('.pelindo-biaya-hint');
+        const isCargo = option?.dataset.countKey === '|cargo';
+        jumlahInput.step = isCargo ? '0.001' : '1';
+        jumlahInput.min = isCargo ? '0.001' : '1';
         const tarif = Number(option?.dataset.tarif);
         const jumlah = Number(jumlahInput.value);
         if (!option?.value || jumlahInput.value === '' || !Number.isFinite(tarif) || !Number.isFinite(jumlah)) {
@@ -71,10 +74,10 @@
             biayaInput.dataset.cents = '';
             hint.textContent = 'Tarif Pricelist Pelindo × Jumlah.';
         } else {
-            const biayaCents = Math.round(tarif * 100) * jumlah;
+            const biayaCents = Math.round(Math.round(tarif * 100) * jumlah);
             biayaInput.dataset.cents = String(biayaCents);
             biayaInput.value = (biayaCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 });
-            hint.textContent = `Tarif Rp ${tarif.toLocaleString('id-ID', { maximumFractionDigits: 2 })} × ${jumlah} barang.`;
+            hint.textContent = `Tarif Rp ${tarif.toLocaleString('id-ID', { maximumFractionDigits: 2 })} × ${jumlah} ${isCargo ? 'ton' : 'barang'}.`;
         }
         updatePelindoNominal();
     }
@@ -120,7 +123,9 @@
             const count = Number(counts[countKey] || 0);
             jumlahInput.value = count > 0 ? count : '';
             hint.textContent = count > 0
-                ? 'Jumlah dari manifest; dapat disesuaikan.'
+                ? (countKey === '|cargo'
+                    ? 'Total tonnage Cargo dari manifest; dapat disesuaikan.'
+                    : 'Jumlah dari manifest; dapat disesuaikan.')
                 : 'Barang ini tidak ditemukan pada manifest. Isi jumlah secara manual bila diperlukan.';
             updatePelindoBiaya(row);
         } catch (error) {

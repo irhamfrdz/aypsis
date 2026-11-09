@@ -158,9 +158,10 @@ class BiayaKapalController extends Controller
 
         $manifests = Manifest::where('nama_kapal', $data['kapal'])
             ->where('no_voyage', $data['voyage'])
-            ->get(['id', 'nomor_kontainer', 'size_kontainer', 'tipe_kontainer', 'nama_barang']);
+            ->get(['id', 'nomor_kontainer', 'size_kontainer', 'tipe_kontainer', 'nama_barang', 'tonnage']);
 
         $groups = [];
+        $cargoTonnageMilli = 0;
         foreach ($manifests as $manifest) {
             $size = (string) $manifest->size_kontainer;
             $type = strtoupper(trim((string) $manifest->tipe_kontainer));
@@ -186,8 +187,8 @@ class BiayaKapalController extends Controller
                     $groups[$key][$unit] = true;
                 }
             } else {
-                foreach ($units as $unit) {
-                    $groups['|cargo'][$unit] = true;
+                if (is_numeric($manifest->tonnage) && (float) $manifest->tonnage > 0) {
+                    $cargoTonnageMilli += (int) round((float) $manifest->tonnage * 1000);
                 }
             }
 
@@ -207,7 +208,8 @@ class BiayaKapalController extends Controller
         }
 
         return response()->json([
-            'counts' => collect($groups)->map(fn ($units) => count($units)),
+            'counts' => collect($groups)->map(fn ($units) => count($units))
+                ->put('|cargo', $cargoTonnageMilli / 1000),
         ]);
     }
 
@@ -912,7 +914,7 @@ class BiayaKapalController extends Controller
             'pelindo_sections.*.tagihans.*.lokasi' => 'nullable|string|max:255',
             'pelindo_sections.*.tagihans.*.barangs' => 'nullable|array',
             'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'nullable|integer',
-            'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'nullable|integer|min:1|max:4294967295',
+            'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'nullable|numeric|min:0.001|max:4294967295|decimal:0,3',
             'no_bl' => 'nullable|array',
             'no_bl.*' => 'string|max:255',
             'jenis_biaya' => 'required|string|max:255',
@@ -1374,7 +1376,7 @@ class BiayaKapalController extends Controller
                 'pelindo_sections.*.tagihans.*.lokasi' => 'required|string|max:255',
                 'pelindo_sections.*.tagihans.*.barangs' => 'required|array|min:1',
                 'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'required|integer',
-                'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'required|integer|min:1|max:4294967295',
+                'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'required|numeric|min:0.001|max:4294967295|decimal:0,3',
             ]);
 
             $pelindoKapalVoyages = [];
@@ -1417,13 +1419,25 @@ class BiayaKapalController extends Controller
                             ]);
                         }
 
+                        $quantityMilli = (int) round((float) $barang['jumlah'] * 1000);
+                        if ($pricelist->status_kontainer !== 'cargo' && $quantityMilli % 1000 !== 0) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.jumlah" => 'Jumlah barang selain Cargo harus berupa bilangan bulat.',
+                            ]);
+                        }
+
                         $tarifCents = (int) str_replace('.', '', $pricelist->tarif);
-                        if ($tarifCents > intdiv(999999999999900 - $pelindoTotalCents, $barang['jumlah'])) {
+                        if ($tarifCents > intdiv(PHP_INT_MAX - 500, $quantityMilli)) {
                             throw ValidationException::withMessages([
                                 "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
                             ]);
                         }
-                        $lineCents = $barang['jumlah'] * $tarifCents;
+                        $lineCents = intdiv($tarifCents * $quantityMilli + 500, 1000);
+                        if ($lineCents > 999999999999900 - $pelindoTotalCents) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
+                            ]);
+                        }
                         $pelindoTotalCents += $lineCents;
                         $pelindoDetailsToSave[] = [
                             'nama_kapal' => $section['kapal'],

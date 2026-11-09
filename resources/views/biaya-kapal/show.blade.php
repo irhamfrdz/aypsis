@@ -189,8 +189,8 @@
                         @foreach($barangDetails as $detail)
                         <div class="grid grid-cols-1 gap-3 border-t border-blue-100 py-2 text-sm md:grid-cols-3">
                         <div><span class="block text-gray-500">Barang</span><span class="font-semibold">{{ $detail->status_kontainer ? $detail->barang_label : '-' }}</span></div>
-                        <div><span class="block text-gray-500">Jumlah</span><span class="font-semibold">{{ $detail->jumlah !== null ? number_format($detail->jumlah, 0, ',', '.') : '-' }}</span></div>
-                        <div><span class="block text-gray-500">Biaya</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.number_format($detail->biaya * $detail->jumlah, 0, ',', '.') : '-' }}</span></div>
+                        <div><span class="block text-gray-500">Jumlah</span><span class="font-semibold">{{ $detail->jumlah !== null ? ($detail->status_kontainer === 'cargo' ? rtrim(rtrim(number_format($detail->jumlah, 3, ',', '.'), '0'), ',').' ton' : number_format($detail->jumlah, 0, ',', '.')) : '-' }}</span></div>
+                        <div><span class="block text-gray-500">Biaya</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.rtrim(rtrim(number_format($detail->biaya * $detail->jumlah, 2, ',', '.'), '0'), ',') : '-' }}</span></div>
                         </div>
                         @endforeach
                     </div>
