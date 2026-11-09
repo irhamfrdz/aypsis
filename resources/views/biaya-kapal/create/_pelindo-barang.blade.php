@@ -14,6 +14,7 @@
         <div>
             <label class="mb-2 block text-sm font-medium text-gray-700">Jumlah <span class="text-red-500">*</span></label>
             <input type="number" name="pelindo_sections[{{ $index }}][tagihans][{{ $tagihanIndex }}][barangs][{{ $barangIndex }}][jumlah]" value="{{ $barang['jumlah'] ?? '' }}" min="1" step="1" class="pelindo-jumlah-input w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" disabled>
+            <p class="pelindo-jumlah-hint mt-1 text-xs text-gray-500">Terisi otomatis dari manifest kapal dan voyage; dapat disesuaikan.</p>
             @unless($isTemplate) @error('pelindo_sections.'.$index.'.tagihans.'.$tagihanIndex.'.barangs.'.$barangIndex.'.jumlah') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror @endunless
         </div>
         <div>

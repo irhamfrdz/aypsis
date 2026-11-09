@@ -147,6 +147,71 @@ class BiayaKapalController extends Controller
     }
 
     /**
+     * Count manifest goods for the selected Pelindo ship and voyage.
+     */
+    public function getPelindoJumlah(Request $request)
+    {
+        $data = $request->validate([
+            'kapal' => 'required|string|max:255',
+            'voyage' => 'required|string|max:255',
+        ]);
+
+        $manifests = Manifest::where('nama_kapal', $data['kapal'])
+            ->where('no_voyage', $data['voyage'])
+            ->get(['id', 'nomor_kontainer', 'size_kontainer', 'tipe_kontainer', 'nama_barang']);
+
+        $groups = [];
+        foreach ($manifests as $manifest) {
+            $size = (string) $manifest->size_kontainer;
+            $type = strtoupper(trim((string) $manifest->tipe_kontainer));
+            $name = strtoupper(trim((string) $manifest->nama_barang));
+            $numbers = preg_split('/[,;\r\n]+/', (string) $manifest->nomor_kontainer);
+            $units = collect($numbers)
+                ->map(fn ($number) => strtoupper(preg_replace('/\s+/', '', trim($number))))
+                ->filter(fn ($number) => $number !== '' && ! in_array($number, ['-', 'N/A', 'NULL'], true))
+                ->unique()
+                ->values()
+                ->all();
+            if ($units === []) {
+                $units = ['manifest-'.$manifest->id];
+            }
+
+            $sizeMatch = preg_match('/(?:^|\D)(20|40)(?:\D|$)/', $size, $matches);
+            if ($sizeMatch && $type !== 'CARGO') {
+                $isEmpty = str_contains($name, 'EMPTY')
+                    || ($type === 'FCL' && (empty($manifest->nomor_kontainer)
+                        || str_starts_with(strtoupper((string) $manifest->nomor_kontainer), 'CARGO-')));
+                $key = $matches[1].'|'.($isEmpty ? 'empty' : 'full');
+                foreach ($units as $unit) {
+                    $groups[$key][$unit] = true;
+                }
+            } else {
+                foreach ($units as $unit) {
+                    $groups['|cargo'][$unit] = true;
+                }
+            }
+
+            foreach ([
+                'barang_berbahaya' => ['BARANG BERBAHAYA', 'B3'],
+                'lpg' => ['LPG'],
+                'besi_beton' => ['BESI BETON'],
+                'mobil' => ['MOBIL'],
+                'alat_berat' => ['ALAT BERAT'],
+            ] as $status => $keywords) {
+                if (collect($keywords)->contains(fn ($keyword) => str_contains($name, $keyword))) {
+                    foreach ($units as $unit) {
+                        $groups['|'.$status][$unit] = true;
+                    }
+                }
+            }
+        }
+
+        return response()->json([
+            'counts' => collect($groups)->map(fn ($units) => count($units)),
+        ]);
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
     public function create()

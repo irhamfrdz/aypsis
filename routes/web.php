@@ -3089,6 +3089,9 @@ Route::middleware([
         Route::get('biaya-kapal/get-next-invoice-number', [\App\Http\Controllers\BiayaKapalController::class, 'getNextInvoiceNumber'])
             ->name('biaya-kapal.get-next-invoice-number')
             ->middleware('can:biaya-kapal-create');
+        Route::get('biaya-kapal/pelindo-jumlah', [\App\Http\Controllers\BiayaKapalController::class, 'getPelindoJumlah'])
+            ->name('biaya-kapal.pelindo-jumlah')
+            ->middleware('can:biaya-kapal-create');
         Route::get('biaya-kapal/get-voyages/{namaKapal}', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByShip'])
             ->name('biaya-kapal.get-voyages');
         Route::get('biaya-kapal/get-voyages-by-date', [\App\Http\Controllers\BiayaKapalController::class, 'getVoyagesByDateRange'])

@@ -1,7 +1,9 @@
     const pelindoManifestVoyages = @json($pelindoManifestVoyages);
     const pelindoBarangOptions = @json($pelindoBarangOptions);
+    const pelindoJumlahUrl = @json(route('biaya-kapal.pelindo-jumlah'));
     const pelindoWrapper = document.getElementById('pelindo_wrapper');
     const pelindoSectionsContainer = document.getElementById('pelindo_sections_container');
+    const pelindoCountCache = new Map();
     let pelindoNextSectionIndex = Date.now();
     let pelindoNextTagihanIndex = Date.now();
     let pelindoNextBarangIndex = Date.now();
@@ -36,6 +38,65 @@
             }
             delete barangSelect.dataset.oldValue;
         });
+    }
+
+    function getPelindoCounts(kapal, voyage) {
+        const key = `${kapal}|${voyage}`;
+        if (!pelindoCountCache.has(key)) {
+            const url = new URL(pelindoJumlahUrl, window.location.origin);
+            url.searchParams.set('kapal', kapal);
+            url.searchParams.set('voyage', voyage);
+            const request = fetch(url, { headers: { Accept: 'application/json' } })
+                .then(response => {
+                    if (!response.ok) throw new Error('Gagal mengambil jumlah dari manifest.');
+                    return response.json();
+                })
+                .then(data => data.counts || {})
+                .catch(error => {
+                    pelindoCountCache.delete(key);
+                    throw error;
+                });
+            pelindoCountCache.set(key, request);
+        }
+        return pelindoCountCache.get(key);
+    }
+
+    async function updatePelindoJumlah(row) {
+        const section = row.closest('.pelindo-section');
+        const kapal = section.querySelector('.pelindo-kapal-select').value;
+        const voyage = section.querySelector('.pelindo-voyage-select').value;
+        const barang = row.querySelector('.pelindo-barang-select').value;
+        const jumlahInput = row.querySelector('.pelindo-jumlah-input');
+        const hint = row.querySelector('.pelindo-jumlah-hint');
+        const selection = `${kapal}|${voyage}|${barang}`;
+        row.dataset.countSelection = selection;
+        if (!kapal || !voyage || !barang || row.dataset.manualJumlah === '1') return;
+
+        hint.textContent = 'Menghitung jumlah dari manifest...';
+        try {
+            const counts = await getPelindoCounts(kapal, voyage);
+            if (row.dataset.countSelection !== selection || row.dataset.manualJumlah === '1') return;
+            const count = Number(counts[barang] || 0);
+            jumlahInput.value = count > 0 ? count : '';
+            hint.textContent = count > 0
+                ? 'Jumlah dari manifest; dapat disesuaikan.'
+                : 'Barang ini tidak ditemukan pada manifest. Isi jumlah secara manual bila diperlukan.';
+            updatePelindoNominal();
+        } catch (error) {
+            if (row.dataset.countSelection === selection) {
+                hint.textContent = 'Jumlah tidak dapat dimuat. Isi secara manual.';
+            }
+        }
+    }
+
+    function resetPelindoJumlah(container) {
+        container.querySelectorAll('.pelindo-barang-row').forEach(row => {
+            row.dataset.manualJumlah = '';
+            row.dataset.countSelection = '';
+            row.querySelector('.pelindo-jumlah-input').value = '';
+            row.querySelector('.pelindo-jumlah-hint').textContent = 'Terisi otomatis dari manifest kapal dan voyage; dapat disesuaikan.';
+        });
+        updatePelindoNominal();
     }
 
     function updatePelindoNominal() {
@@ -163,6 +224,10 @@
         if (event.target.matches('.pelindo-kapal-select')) {
             section.querySelector('.pelindo-voyage-select').value = '';
             updatePelindoVoyages(section);
+            resetPelindoJumlah(section);
+        } else if (event.target.matches('.pelindo-voyage-select')) {
+            resetPelindoJumlah(section);
+            section.querySelectorAll('.pelindo-barang-row').forEach(updatePelindoJumlah);
         } else if (event.target.matches('.pelindo-jenis-tagihan-select')) {
             const tagihan = event.target.closest('.pelindo-tagihan');
             tagihan.querySelectorAll('.pelindo-barang-select').forEach(select => {
@@ -170,16 +235,33 @@
                 delete select.dataset.oldValue;
             });
             updatePelindoBarang(tagihan);
+            resetPelindoJumlah(tagihan);
+        } else if (event.target.matches('.pelindo-barang-select')) {
+            const row = event.target.closest('.pelindo-barang-row');
+            row.dataset.manualJumlah = '';
+            row.dataset.countSelection = '';
+            row.querySelector('.pelindo-jumlah-input').value = '';
+            updatePelindoNominal();
+            updatePelindoJumlah(row);
         }
     });
 
     pelindoSectionsContainer.addEventListener('input', function (event) {
-        if (event.target.matches('.pelindo-jumlah-input, .pelindo-biaya-input')) updatePelindoNominal();
+        if (event.target.matches('.pelindo-jumlah-input')) {
+            event.target.closest('.pelindo-barang-row').dataset.manualJumlah = '1';
+            updatePelindoNominal();
+        } else if (event.target.matches('.pelindo-biaya-input')) {
+            updatePelindoNominal();
+        }
     });
 
     pelindoSectionsContainer.querySelectorAll('.pelindo-section').forEach(section => {
         updatePelindoVoyages(section);
         section.querySelectorAll('.pelindo-tagihan').forEach(updatePelindoBarang);
+        section.querySelectorAll('.pelindo-barang-row').forEach(row => {
+            row.dataset.manualJumlah = row.querySelector('.pelindo-jumlah-input').value ? '1' : '';
+            updatePelindoJumlah(row);
+        });
     });
     refreshPelindoSections();
 
