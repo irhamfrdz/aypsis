@@ -33,6 +33,8 @@ class BiayaKapal extends Model
         'lokasi',
         'vendor_id',
         'nominal',
+        'pelindo_biaya_admin_nota',
+        'pelindo_biaya_kebersihan',
         'adjustment',
         'dp',
         'sisa_pembayaran',
@@ -53,6 +55,8 @@ class BiayaKapal extends Model
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'pelindo_biaya_admin_nota' => 'decimal:2',
+        'pelindo_biaya_kebersihan' => 'decimal:2',
         'adjustment' => 'decimal:2',
         'dp' => 'decimal:2',
         'sisa_pembayaran' => 'decimal:2',

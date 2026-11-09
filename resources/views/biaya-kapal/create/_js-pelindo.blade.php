@@ -147,16 +147,29 @@
 
     function updatePelindoNominal() {
         const rows = [...pelindoSectionsContainer.querySelectorAll('.pelindo-barang-row')];
-        const totalCents = rows.reduce((sum, row) =>
+        const barangCents = rows.reduce((sum, row) =>
             sum + (Number(row.querySelector('.pelindo-biaya-input').dataset.cents) || 0), 0);
+        const extraCents = [...pelindoWrapper.querySelectorAll('.pelindo-extra-fee-input')]
+            .reduce((sum, input) => sum + (Number(input.value.replace(/\D/g, '')) || 0) * 100, 0);
+        const totalCents = barangCents + extraCents;
         const hasCompleteRow = rows.some(row =>
             row.querySelector('.pelindo-jumlah-input').value !== '' &&
             row.querySelector('.pelindo-biaya-input').value !== ''
         );
-        nominalInput.value = hasCompleteRow
+        nominalInput.value = hasCompleteRow || extraCents > 0
             ? (totalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
             : '';
     }
+
+    pelindoWrapper.querySelectorAll('.pelindo-extra-fee-input').forEach(input => {
+        const digits = input.value.replace(/\D/g, '');
+        input.value = digits ? Number(digits).toLocaleString('id-ID') : '';
+        input.addEventListener('input', function () {
+            const digits = this.value.replace(/\D/g, '');
+            this.value = digits ? Number(digits).toLocaleString('id-ID') : '';
+            updatePelindoNominal();
+        });
+    });
 
     function refreshPelindoSections() {
         const sections = [...pelindoSectionsContainer.querySelectorAll('.pelindo-section')];
