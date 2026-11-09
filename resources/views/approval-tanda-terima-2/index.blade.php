@@ -257,6 +257,7 @@
                     @forelse($items as $item)
                         @php
                             $number = $type === 'fcl' ? ($item->nomor_tanda_terima ?: $item->no_surat_jalan) : ($type === 'lcl' ? $item->nomor_tanda_terima : ($item->no_tanda_terima ?: $item->nomor_tanda_terima));
+                            $numberDisplay = is_string($number) ? preg_replace('/\s*,\s*/u', "\n", $number) : $number;
                             $sender = $type === 'lcl' ? $item->nama_pengirim : $item->pengirim;
                             $date = $type === 'fcl' ? $item->tanggal : $item->tanggal_tanda_terima;
                             $containerNumber = $type === 'lcl' ? $item->nomor_kontainer : $item->no_kontainer;
@@ -303,7 +304,7 @@
                                     <span class="approval-order-number">{{ $items->firstItem() + $loop->index }}</span>
                                 </span>
                             </td>
-                            <td data-label="Tanda Terima" class="approval-receipt-number font-semibold text-gray-900">{{ $number ?: 'Tanpa nomor' }}@if($type === 'fcl' && filled($item->nomor_tanda_terima))<div class="text-xs font-normal text-gray-500">Surat jalan: {{ $item->no_surat_jalan }}</div>@endif</td>
+                            <td data-label="Tanda Terima" class="approval-receipt-number whitespace-pre-line break-words font-semibold text-gray-900">{{ $numberDisplay ?: 'Tanpa nomor' }}@if($type === 'fcl' && filled($item->nomor_tanda_terima))<div class="text-xs font-normal text-gray-500">Surat jalan: {{ $item->no_surat_jalan }}</div>@endif</td>
                             <td data-label="Tanggal" class="text-gray-600">{{ $date ? \Illuminate\Support\Carbon::parse($date)->format('d/m/Y') : '-' }}</td>
                             <td data-label="Nomor Kontainer" class="font-medium text-gray-700">{{ $containerNumber ?: '-' }}</td>
                             <td data-label="Jumlah / Satuan Manifest" class="text-gray-700">
