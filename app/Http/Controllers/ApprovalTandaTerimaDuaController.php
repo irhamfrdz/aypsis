@@ -405,7 +405,6 @@ class ApprovalTandaTerimaDuaController extends Controller
                 'jenis_barang' => $perincian['nama_barang'],
                 'jumlah_barang' => $perincian['jumlah'],
                 'satuan_barang' => $perincian['satuan'],
-                'status' => 'draft',
                 'created_by' => $request->user()?->name,
             ]);
             $this->saveShipperApprovalOverride('ttsj', $receipt->id, 'main', $shipper, $shipperFields);
