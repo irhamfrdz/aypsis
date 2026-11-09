@@ -9,7 +9,7 @@
         </button>
     </div>
     <div id="pelindo_sections_container" class="space-y-4">
-        @foreach(old('pelindo_sections', []) ?: [[]] as $index => $section)
+        @foreach(old('pelindo_sections', $pelindoSections ?? []) ?: [[]] as $index => $section)
             @include('biaya-kapal.create._pelindo-card', ['index' => $index, 'section' => $section, 'isTemplate' => false])
         @endforeach
     </div>
@@ -47,7 +47,7 @@
             <label for="pelindo_adjustment" class="mb-2 block text-sm font-medium text-gray-700">Adjustment</label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                <input type="text" inputmode="numeric" id="pelindo_adjustment" name="pelindo_adjustment" value="{{ old('pelindo_adjustment', '0') }}" disabled class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                <input type="text" inputmode="numeric" id="pelindo_adjustment" name="pelindo_adjustment" value="{{ old('pelindo_adjustment', $pelindoAdjustment ?? '0') }}" disabled class="w-full rounded-lg border border-gray-300 bg-white py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
             </div>
             <p class="mt-1 text-xs text-gray-500">Gunakan tanda minus untuk pengurangan.</p>
             @error('pelindo_adjustment') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror

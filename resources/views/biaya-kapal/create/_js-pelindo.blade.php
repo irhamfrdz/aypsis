@@ -151,6 +151,7 @@
     }
 
     function updatePelindoNominal() {
+        if (!(selectedJenisBiaya.nama || '').toLowerCase().includes('tagihan pelindo')) return;
         const rows = [...pelindoSectionsContainer.querySelectorAll('.pelindo-barang-row')];
         const barangCents = rows.reduce((sum, row) =>
             sum + (Number(row.querySelector('.pelindo-biaya-input').dataset.cents) || 0), 0);

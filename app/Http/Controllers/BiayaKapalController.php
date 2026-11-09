@@ -147,6 +147,150 @@ class BiayaKapalController extends Controller
         }
     }
 
+    private function preparePelindoSections(Request $request, array $validated): array
+    {
+        $isTagihanPelindo = KlasifikasiBiaya::where('kode', $validated['jenis_biaya'])
+            ->whereRaw('LOWER(nama) LIKE ?', ['%tagihan pelindo%'])
+            ->exists();
+
+        $pelindoDetailsToSave = [];
+        if ($isTagihanPelindo) {
+            $request->validate([
+                'pelindo_sections' => 'required|array|min:1',
+                'pelindo_sections.*.kapal' => 'required|string|max:255',
+                'pelindo_sections.*.voyage' => 'required|string|max:255',
+                'pelindo_sections.*.tagihans' => 'required|array|min:1',
+                'pelindo_sections.*.tagihans.*.jenis_tagihan' => 'required|string|max:255',
+                'pelindo_sections.*.tagihans.*.lokasi' => 'required|string|max:255',
+                'pelindo_sections.*.tagihans.*.barangs' => 'required|array|min:1',
+                'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'required|integer',
+                'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'required|numeric|min:0.001|max:4294967295|decimal:0,3',
+            ]);
+
+            $pelindoKapalVoyages = [];
+            $selectedPelindoPairs = [];
+            $pelindoTotalCents = 0;
+            foreach ($validated['pelindo_sections'] as $index => $section) {
+                if (! $this->pelindoManifestQuery($section['kapal'], $section['voyage'])->exists()) {
+                    throw ValidationException::withMessages([
+                        "pelindo_sections.$index.voyage" => 'Kapal dan voyage harus sesuai dengan data manifest.',
+                    ]);
+                }
+
+                $kapalVoyage = ['kapal' => $section['kapal'], 'voyage' => $section['voyage']];
+                $pairKey = $this->normalizePelindoKapal($section['kapal']).'|'.$section['voyage'];
+                if (in_array($pairKey, $selectedPelindoPairs, true)) {
+                    throw ValidationException::withMessages([
+                        "pelindo_sections.$index.voyage" => 'Kapal dan voyage ini sudah dipilih.',
+                    ]);
+                }
+                $selectedPelindoPairs[] = $pairKey;
+                $pelindoKapalVoyages[] = $kapalVoyage;
+
+                $selectedJenisTagihan = [];
+                foreach ($section['tagihans'] as $tagihanIndex => $tagihan) {
+                    if (in_array($tagihan['jenis_tagihan'], $selectedJenisTagihan, true)) {
+                        throw ValidationException::withMessages([
+                            "pelindo_sections.$index.tagihans.$tagihanIndex.jenis_tagihan" => 'Jenis tagihan ini sudah dipilih untuk kapal tersebut.',
+                        ]);
+                    }
+                    $selectedJenisTagihan[] = $tagihan['jenis_tagihan'];
+
+                    foreach ($tagihan['barangs'] as $barangIndex => $barang) {
+                        $pricelist = PricelistPelindo::aktif()
+                            ->whereKey($barang['barang'])
+                            ->where('kegiatan', $tagihan['jenis_tagihan'])
+                            ->where('lokasi', $tagihan['lokasi'])
+                            ->first();
+
+                        if (! $pricelist) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.barang" => 'Barang harus sesuai dengan jenis tagihan dan lokasi pada Pricelist Pelindo yang aktif.',
+                            ]);
+                        }
+
+                        $quantityMilli = (int) round((float) $barang['jumlah'] * 1000);
+                        if ($pricelist->status_kontainer !== 'cargo' && $quantityMilli % 1000 !== 0) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.jumlah" => 'Jumlah barang selain Cargo harus berupa bilangan bulat.',
+                            ]);
+                        }
+
+                        $tarifCents = (int) str_replace('.', '', $pricelist->tarif);
+                        if ($tarifCents > intdiv(PHP_INT_MAX - 500, $quantityMilli)) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
+                            ]);
+                        }
+                        $lineCents = intdiv($tarifCents * $quantityMilli + 500, 1000);
+                        if ($lineCents > 999999999999900 - $pelindoTotalCents) {
+                            throw ValidationException::withMessages([
+                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
+                            ]);
+                        }
+                        $pelindoTotalCents += $lineCents;
+                        $pelindoDetailsToSave[] = [
+                            'nama_kapal' => $section['kapal'],
+                            'no_voyage' => $section['voyage'],
+                            'jenis_tagihan' => $tagihan['jenis_tagihan'],
+                            'lokasi' => $tagihan['lokasi'],
+                            'status_kontainer' => $pricelist->status_kontainer,
+                            'ukuran' => $pricelist->ukuran,
+                            'jumlah' => $barang['jumlah'],
+                            'biaya' => $pricelist->tarif,
+                        ];
+                    }
+                }
+            }
+            $pelindoLocations = collect($validated['pelindo_sections'])
+                ->flatMap(fn ($section) => array_column($section['tagihans'], 'lokasi'))
+                ->unique()
+                ->values();
+            if ($pelindoLocations->count() !== 1) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Pilih satu lokasi yang sama untuk semua jenis tagihan agar tarif Kebersihan dapat ditentukan.',
+                ]);
+            }
+
+            $kebersihanPricelists = PricelistPelindo::aktif()
+                ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
+                ->where('lokasi', $pelindoLocations->first())
+                ->get(['tarif']);
+            if ($kebersihanPricelists->count() !== 1) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Tarif Kebersihan aktif untuk lokasi ini harus tersedia tepat satu pada Pricelist Pelindo.',
+                ]);
+            }
+
+            $kebersihanTarif = $kebersihanPricelists->first()->tarif;
+            $extraFeesCents = 1000000 + (int) str_replace('.', '', $kebersihanTarif);
+            if ($extraFeesCents > 999999999999900 - $pelindoTotalCents) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Total biaya melebihi batas nominal yang diperbolehkan.',
+                ]);
+            }
+            $pelindoTotalCents += $extraFeesCents;
+            $validated['pelindo_biaya_admin_nota'] = 10000;
+            $validated['pelindo_biaya_kebersihan'] = $kebersihanTarif;
+            $adjustment = (int) ($validated['pelindo_adjustment'] ?? 0);
+            $grandTotalCents = $pelindoTotalCents + $adjustment * 100;
+            if ($grandTotalCents < 0 || $grandTotalCents > 999999999999900) {
+                throw ValidationException::withMessages([
+                    'pelindo_adjustment' => 'Grand Total harus bernilai nol atau lebih dan tidak melebihi batas nominal.',
+                ]);
+            }
+            $validated['adjustment'] = $adjustment;
+            $validated['nama_kapal'] = array_column($pelindoKapalVoyages, 'kapal');
+            $validated['no_voyage'] = array_column($pelindoKapalVoyages, 'voyage');
+            $validated['nominal'] = sprintf('%d.%02d', intdiv($grandTotalCents, 100), $grandTotalCents % 100);
+        } else {
+            unset($validated['pelindo_biaya_admin_nota'], $validated['pelindo_biaya_kebersihan']);
+        }
+
+        unset($validated['pelindo_sections'], $validated['pelindo_adjustment']);
+        return [$validated, $pelindoDetailsToSave, $isTagihanPelindo];
+    }
+
     private function normalizePelindoKapal(string $kapal): string
     {
         $normalizedKapal = strtoupper(trim(str_replace('.', '', $kapal)));
@@ -1383,145 +1527,8 @@ class BiayaKapalController extends Controller
             'tanto.*.keterangan' => 'nullable|string',
         ]);
 
-        $isTagihanPelindo = KlasifikasiBiaya::where('kode', $validated['jenis_biaya'])
-            ->whereRaw('LOWER(nama) LIKE ?', ['%tagihan pelindo%'])
-            ->exists();
+        [$validated, $pelindoDetailsToSave, $isTagihanPelindo] = $this->preparePelindoSections($request, $validated);
 
-        $pelindoDetailsToSave = [];
-        if ($isTagihanPelindo) {
-            $request->validate([
-                'pelindo_sections' => 'required|array|min:1',
-                'pelindo_sections.*.kapal' => 'required|string|max:255',
-                'pelindo_sections.*.voyage' => 'required|string|max:255',
-                'pelindo_sections.*.tagihans' => 'required|array|min:1',
-                'pelindo_sections.*.tagihans.*.jenis_tagihan' => 'required|string|max:255',
-                'pelindo_sections.*.tagihans.*.lokasi' => 'required|string|max:255',
-                'pelindo_sections.*.tagihans.*.barangs' => 'required|array|min:1',
-                'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'required|integer',
-                'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'required|numeric|min:0.001|max:4294967295|decimal:0,3',
-            ]);
-
-            $pelindoKapalVoyages = [];
-            $selectedPelindoPairs = [];
-            $pelindoTotalCents = 0;
-            foreach ($validated['pelindo_sections'] as $index => $section) {
-                if (! $this->pelindoManifestQuery($section['kapal'], $section['voyage'])->exists()) {
-                    throw ValidationException::withMessages([
-                        "pelindo_sections.$index.voyage" => 'Kapal dan voyage harus sesuai dengan data manifest.',
-                    ]);
-                }
-
-                $kapalVoyage = ['kapal' => $section['kapal'], 'voyage' => $section['voyage']];
-                $pairKey = $this->normalizePelindoKapal($section['kapal']).'|'.$section['voyage'];
-                if (in_array($pairKey, $selectedPelindoPairs, true)) {
-                    throw ValidationException::withMessages([
-                        "pelindo_sections.$index.voyage" => 'Kapal dan voyage ini sudah dipilih.',
-                    ]);
-                }
-                $selectedPelindoPairs[] = $pairKey;
-                $pelindoKapalVoyages[] = $kapalVoyage;
-
-                $selectedJenisTagihan = [];
-                foreach ($section['tagihans'] as $tagihanIndex => $tagihan) {
-                    if (in_array($tagihan['jenis_tagihan'], $selectedJenisTagihan, true)) {
-                        throw ValidationException::withMessages([
-                            "pelindo_sections.$index.tagihans.$tagihanIndex.jenis_tagihan" => 'Jenis tagihan ini sudah dipilih untuk kapal tersebut.',
-                        ]);
-                    }
-                    $selectedJenisTagihan[] = $tagihan['jenis_tagihan'];
-
-                    foreach ($tagihan['barangs'] as $barangIndex => $barang) {
-                        $pricelist = PricelistPelindo::aktif()
-                            ->whereKey($barang['barang'])
-                            ->where('kegiatan', $tagihan['jenis_tagihan'])
-                            ->where('lokasi', $tagihan['lokasi'])
-                            ->first();
-
-                        if (! $pricelist) {
-                            throw ValidationException::withMessages([
-                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.barang" => 'Barang harus sesuai dengan jenis tagihan dan lokasi pada Pricelist Pelindo yang aktif.',
-                            ]);
-                        }
-
-                        $quantityMilli = (int) round((float) $barang['jumlah'] * 1000);
-                        if ($pricelist->status_kontainer !== 'cargo' && $quantityMilli % 1000 !== 0) {
-                            throw ValidationException::withMessages([
-                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.jumlah" => 'Jumlah barang selain Cargo harus berupa bilangan bulat.',
-                            ]);
-                        }
-
-                        $tarifCents = (int) str_replace('.', '', $pricelist->tarif);
-                        if ($tarifCents > intdiv(PHP_INT_MAX - 500, $quantityMilli)) {
-                            throw ValidationException::withMessages([
-                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
-                            ]);
-                        }
-                        $lineCents = intdiv($tarifCents * $quantityMilli + 500, 1000);
-                        if ($lineCents > 999999999999900 - $pelindoTotalCents) {
-                            throw ValidationException::withMessages([
-                                "pelindo_sections.$index.tagihans.$tagihanIndex.barangs.$barangIndex.biaya" => 'Total biaya melebihi batas nominal yang diperbolehkan.',
-                            ]);
-                        }
-                        $pelindoTotalCents += $lineCents;
-                        $pelindoDetailsToSave[] = [
-                            'nama_kapal' => $section['kapal'],
-                            'no_voyage' => $section['voyage'],
-                            'jenis_tagihan' => $tagihan['jenis_tagihan'],
-                            'lokasi' => $tagihan['lokasi'],
-                            'status_kontainer' => $pricelist->status_kontainer,
-                            'ukuran' => $pricelist->ukuran,
-                            'jumlah' => $barang['jumlah'],
-                            'biaya' => $pricelist->tarif,
-                        ];
-                    }
-                }
-            }
-            $pelindoLocations = collect($validated['pelindo_sections'])
-                ->flatMap(fn ($section) => array_column($section['tagihans'], 'lokasi'))
-                ->unique()
-                ->values();
-            if ($pelindoLocations->count() !== 1) {
-                throw ValidationException::withMessages([
-                    'pelindo_biaya_kebersihan' => 'Pilih satu lokasi yang sama untuk semua jenis tagihan agar tarif Kebersihan dapat ditentukan.',
-                ]);
-            }
-
-            $kebersihanPricelists = PricelistPelindo::aktif()
-                ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
-                ->where('lokasi', $pelindoLocations->first())
-                ->get(['tarif']);
-            if ($kebersihanPricelists->count() !== 1) {
-                throw ValidationException::withMessages([
-                    'pelindo_biaya_kebersihan' => 'Tarif Kebersihan aktif untuk lokasi ini harus tersedia tepat satu pada Pricelist Pelindo.',
-                ]);
-            }
-
-            $kebersihanTarif = $kebersihanPricelists->first()->tarif;
-            $extraFeesCents = 1000000 + (int) str_replace('.', '', $kebersihanTarif);
-            if ($extraFeesCents > 999999999999900 - $pelindoTotalCents) {
-                throw ValidationException::withMessages([
-                    'pelindo_biaya_kebersihan' => 'Total biaya melebihi batas nominal yang diperbolehkan.',
-                ]);
-            }
-            $pelindoTotalCents += $extraFeesCents;
-            $validated['pelindo_biaya_admin_nota'] = 10000;
-            $validated['pelindo_biaya_kebersihan'] = $kebersihanTarif;
-            $adjustment = (int) ($validated['pelindo_adjustment'] ?? 0);
-            $grandTotalCents = $pelindoTotalCents + $adjustment * 100;
-            if ($grandTotalCents < 0 || $grandTotalCents > 999999999999900) {
-                throw ValidationException::withMessages([
-                    'pelindo_adjustment' => 'Grand Total harus bernilai nol atau lebih dan tidak melebihi batas nominal.',
-                ]);
-            }
-            $validated['adjustment'] = $adjustment;
-            $validated['nama_kapal'] = array_column($pelindoKapalVoyages, 'kapal');
-            $validated['no_voyage'] = array_column($pelindoKapalVoyages, 'voyage');
-            $validated['nominal'] = sprintf('%d.%02d', intdiv($grandTotalCents, 100), $grandTotalCents % 100);
-        } else {
-            unset($validated['pelindo_biaya_admin_nota'], $validated['pelindo_biaya_kebersihan']);
-        }
-
-        unset($validated['pelindo_sections'], $validated['pelindo_adjustment']);
 
         $this->validateOppOptPenumpukanDateRanges($request);
 
@@ -4149,7 +4156,73 @@ class BiayaKapalController extends Controller
             'tantoDetails',
             'umumDetails',
             'notaReturDetails',
+            'pelindoDetails',
         ]);
+
+        $pelindoBarangOptions = PricelistPelindo::aktif()
+            ->whereNotNull('status_kontainer')->where('status_kontainer', '!=', '')
+            ->whereNotNull('kegiatan')->where('kegiatan', '!=', '')
+            ->whereNotNull('lokasi')->where('lokasi', '!=', '')
+            ->get(['id', 'kegiatan', 'lokasi', 'status_kontainer', 'ukuran', 'tarif'])
+            ->filter(fn ($item) => ! in_array($item->status_kontainer, ['empty', 'full'], true)
+                || in_array((string) $item->ukuran, ['20', '40'], true))
+            ->map(function ($item) {
+                $status = $item->status_kontainer;
+                $ukuran = in_array($status, ['empty', 'full'], true) ? (string) $item->ukuran : '';
+                $labels = [
+                    'barang_berbahaya' => 'Barang Berbahaya', 'lpg' => 'LPG',
+                    'besi_beton' => 'Besi Beton', 'alat_berat' => 'Alat Berat',
+                ];
+
+                return [
+                    'kegiatan' => $item->kegiatan,
+                    'value' => (string) $item->id,
+                    'count_key' => $ukuran.'|'.$status,
+                    'lokasi' => $item->lokasi,
+                    'tarif' => $item->tarif,
+                    'label' => ($ukuran ? $ukuran.'ft ' : '').($labels[$status] ?? ucfirst($status)).' — '.$item->formatted_tarif,
+                ];
+            })->sortBy(fn ($option) => $option['kegiatan'].'|'.$option['label'])->values();
+        $pelindoJenisTagihanOptions = $pelindoBarangOptions->pluck('kegiatan')->unique()->values();
+        $pelindoLokasiOptions = $pelindoBarangOptions->pluck('lokasi')->filter()->unique()->sort()->values();
+        $pelindoKebersihanOptions = PricelistPelindo::aktif()
+            ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
+            ->whereNotNull('lokasi')->get(['id', 'lokasi', 'tarif'])
+            ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])->values();
+        $pelindoManifestVoyages = Manifest::query()
+            ->select('nama_kapal', 'no_voyage')
+            ->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')->where('no_voyage', '!=', '')
+            ->distinct()->orderBy('nama_kapal')->orderBy('no_voyage')->get();
+        $pelindoSections = [];
+        foreach ($biayaKapal->pelindoDetails as $detail) {
+            $sectionKey = $detail->nama_kapal.'|'.$detail->no_voyage;
+            $tagihanKey = $detail->jenis_tagihan.'|'.$detail->lokasi;
+            $pelindoSections[$sectionKey]['kapal'] = $detail->nama_kapal;
+            $pelindoSections[$sectionKey]['voyage'] = $detail->no_voyage;
+            $pelindoSections[$sectionKey]['tagihans'][$tagihanKey]['jenis_tagihan'] = $detail->jenis_tagihan;
+            $pelindoSections[$sectionKey]['tagihans'][$tagihanKey]['lokasi'] = $detail->lokasi;
+            $priceQuery = PricelistPelindo::aktif()
+                ->where('kegiatan', $detail->jenis_tagihan)
+                ->where('lokasi', $detail->lokasi)
+                ->where('status_kontainer', $detail->status_kontainer);
+            if (filled($detail->ukuran)) {
+                $priceQuery->where('ukuran', $detail->ukuran);
+            } else {
+                $priceQuery->where(fn ($query) => $query->whereNull('ukuran')->orWhere('ukuran', ''));
+            }
+            $price = $priceQuery->first();
+            $pelindoSections[$sectionKey]['tagihans'][$tagihanKey]['barangs'][] = [
+                'barang' => $price?->id,
+                'jumlah' => $detail->jumlah,
+                'biaya' => $detail->biaya,
+            ];
+        }
+        $pelindoSections = array_values(array_map(function ($section) {
+            $section['tagihans'] = array_values($section['tagihans']);
+
+            return $section;
+        }, $pelindoSections));
 
         // Get list of ships for dropdown
         $kapals = MasterKapal::where('status', 'aktif')
@@ -4289,7 +4362,13 @@ class BiayaKapalController extends Controller
             'pricelistBuruhBongkars',
             'allBuruhs',
             'banks',
-            'allInvoices'
+            'allInvoices',
+            'pelindoBarangOptions',
+            'pelindoJenisTagihanOptions',
+            'pelindoLokasiOptions',
+            'pelindoKebersihanOptions',
+            'pelindoManifestVoyages',
+            'pelindoSections'
         ));
     }
 
@@ -4302,7 +4381,7 @@ class BiayaKapalController extends Controller
         $data = $request->all();
 
         // Root fields
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'labuh_tambat_adjustment'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'labuh_tambat_adjustment', 'pelindo_adjustment'];
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && $data[$field] !== null) {
                 $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
@@ -4711,12 +4790,22 @@ class BiayaKapalController extends Controller
             'nama_kapal' => 'nullable|array',
             'nama_kapal.*' => 'string|max:255',
             'no_voyage' => 'nullable|array',
-            'no_voyage.*' => 'string',
+            'no_voyage.*' => 'string|max:255',
             'no_bl' => 'nullable|array',
-            'no_bl.*' => 'string',
+            'no_bl.*' => 'string|max:255',
             'jenis_biaya' => 'required|exists:klasifikasi_biayas,kode',
             'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
             'nominal' => 'nullable|numeric|min:0',
+            'pelindo_sections' => 'nullable|array',
+            'pelindo_sections.*.kapal' => 'nullable|string|max:255',
+            'pelindo_sections.*.voyage' => 'nullable|string|max:255',
+            'pelindo_sections.*.tagihans' => 'nullable|array',
+            'pelindo_sections.*.tagihans.*.jenis_tagihan' => 'nullable|string|max:255',
+            'pelindo_sections.*.tagihans.*.lokasi' => 'nullable|string|max:255',
+            'pelindo_sections.*.tagihans.*.barangs' => 'nullable|array',
+            'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'nullable|integer',
+            'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'nullable|numeric|min:0.001|max:4294967295|decimal:0,3',
+            'pelindo_adjustment' => 'nullable|integer|between:-9999999999999,9999999999999',
             'penerima' => 'nullable|string|max:255',
             'nama_vendor' => 'nullable|string|max:255',
             'nomor_rekening' => 'nullable|string|max:100',
@@ -4740,8 +4829,8 @@ class BiayaKapalController extends Controller
 
             // Buruh sections validation
             'kapal_sections' => 'nullable|array',
-            'kapal_sections.*.kapal' => 'nullable|string|max:255',
-            'kapal_sections.*.voyage' => 'nullable|string|max:255',
+            'kapal_sections.*.kapal' => 'required_with:kapal_sections|string|max:255',
+            'kapal_sections.*.voyage' => 'required_with:kapal_sections|string|max:255',
             'kapal_sections.*.kontainer' => 'nullable|array',
             'kapal_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
             'kapal_sections.*.kontainer.*.nominal' => 'nullable|numeric|min:0',
@@ -4753,8 +4842,8 @@ class BiayaKapalController extends Controller
             'kapal_sections.*.notes_adjustment' => 'nullable|string',
             'kapal_sections.*.tanggal_bayar' => 'nullable|date',
             'kapal_sections.*.tenaga_kerja' => 'nullable|array',
-            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'required|exists:buruhs,id',
-            'kapal_sections.*.tenaga_kerja.*.nominal' => 'required|numeric|min:0',
+            'kapal_sections.*.tenaga_kerja.*.buruh_id' => 'nullable|exists:buruhs,id',
+            'kapal_sections.*.tenaga_kerja.*.nominal' => 'nullable|numeric|min:0',
             'kapal_sections.*.nama_vendor' => 'nullable|string|max:255',
             'kapal_sections.*.master_customer_buruh_id' => 'nullable|exists:master_customer_buruhs,id',
             'kapal_sections.*.penerima' => 'nullable|string|max:255',
@@ -5071,7 +5160,60 @@ class BiayaKapalController extends Controller
             'perijinan_sections.*.items.*.pricelist_perijinan_id' => 'nullable|string',
             'perijinan_sections.*.items.*.nama_perijinan' => 'nullable|string',
             'perijinan_sections.*.items.*.tarif' => 'nullable|numeric|min:0',
+            'lokasi' => 'nullable|in:jakarta,batam',
+            'barang' => 'nullable|array',
+            'barang.*.barang_id' => 'required_with:barang|exists:pricelist_buruh,id',
+            'barang.*.jumlah' => 'required_with:barang|numeric|min:0',
+            'kapal_sections.*.barang' => 'nullable|array',
+            'kapal_sections.*.barang.*.barang_id' => 'nullable|exists:pricelist_buruh,id',
+            'kapal_sections.*.barang.*.jumlah' => 'nullable|numeric|min:0',
+            'air.*.biaya_agen' => 'nullable|numeric|min:0',
+            'tkbm_sections.*.total_sebelum_adjustment' => 'nullable|numeric|min:0',
+            'operasional_sections' => 'nullable|array',
+            'operasional_sections.*.total_nominal' => 'nullable|numeric|min:0',
+            'operasional_sections.*.dp' => 'nullable|numeric|min:0',
+            'operasional_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'thc_sections' => 'nullable|array',
+            'thc_sections.*.kapal' => 'nullable|string|max:255',
+            'thc_sections.*.voyage' => 'nullable|string|max:255',
+            'thc_sections.*.vendor' => 'nullable|string|max:255',
+            'thc_sections.*.tanda_terima' => 'nullable|array',
+            'thc_sections.*.tanda_terima.*.id' => 'nullable|numeric',
+            'thc_sections.*.kontainer' => 'nullable|array',
+            'thc_sections.*.kontainer.*.bl_id' => 'nullable|numeric',
+            'thc_sections.*.subtotal' => 'nullable|numeric|min:0',
+            'thc_sections.*.pph' => 'nullable|numeric|min:0',
+            'thc_sections.*.total_biaya' => 'nullable|numeric|min:0',
+            'dokumen_sections.*.vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
+            'dokumen_sections.*.nomor_bl' => 'nullable',
+            'freight_sections.*.biaya_dokumen' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.hari_massa_1' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.hari_massa_2' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.nominal_dp' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.dpp' => 'nullable|numeric|min:0',
+            'storage_sections.*.kontainer.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'storage_sections.*.payment_mode' => 'nullable|in:lunas,dp,pelunasan_dp',
+            'storage_sections.*.dp_storage_id' => 'nullable|exists:biaya_kapal_storages,id',
+            'storage_sections.*.nominal_dibayar' => 'nullable|numeric|min:0',
+            'storage_sections.*.sisa_pembayaran' => 'nullable|numeric|min:0',
+            'perijinan_sections.*.dari_tanggal' => 'nullable|date',
+            'perijinan_sections.*.sampai_tanggal' => 'nullable|date',
+            'labuh_tambat.*.ppn' => 'nullable|numeric|min:0',
+            'labuh_tambat.*.biaya_materai' => 'nullable|numeric|min:0',
+            'meratus.*.nomor_bls' => 'nullable|array',
+            'meratus.*.per_containers' => 'nullable|array',
+            'meratus.*.ppn' => 'nullable|numeric|min:0',
+            'meratus.*.pph_active' => 'nullable',
+            'meratus.*.ppn_active' => 'nullable',
+            'meratus.*.tanggal_dp' => 'nullable|required_if:meratus.*.payment_mode,dp|date',
+            'meratus.*.nama_bank' => 'nullable|required_if:meratus.*.payment_mode,dp|string|max:255',
+            'meratus.*.keterangan_dp' => 'nullable|string|max:5000',
+            'temas.*.bl_ids' => 'nullable|array',
+            'tanto.*.nomor_kontainers' => 'nullable|array',
+            'tanto.*.bl_ids' => 'nullable|array',
         ]);
+
+        [$validated, $pelindoDetailsToSave, $isTagihanPelindo] = $this->preparePelindoSections($request, $validated);
 
         $this->validateOppOptPenumpukanDateRanges($request);
 
@@ -5110,6 +5252,13 @@ class BiayaKapalController extends Controller
             }
 
             $biayaKapal->update($validated);
+
+            BiayaKapalPelindo::where('biaya_kapal_id', $biayaKapal->id)->delete();
+            if ($isTagihanPelindo) {
+                foreach ($pelindoDetailsToSave as $detail) {
+                    BiayaKapalPelindo::create(['biaya_kapal_id' => $biayaKapal->id] + $detail);
+                }
+            }
 
             // AIR UPDATE
             if ($request->has('air')) {

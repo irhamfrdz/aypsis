@@ -657,7 +657,7 @@
         window.isEditModeInitializing = true;
         
         // 1. Jenis Biaya
-        const currentJenis = "{{ $biayaKapal->jenis_biaya }}";
+        const currentJenis = @json(old('jenis_biaya', $biayaKapal->jenis_biaya));
         const jbOption = Array.from(document.querySelectorAll('.jenis-biaya-option')).find(o => o.getAttribute('data-kode') === currentJenis);
         if(jbOption) {
             jbOption.click();

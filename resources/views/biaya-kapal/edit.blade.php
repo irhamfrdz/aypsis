@@ -57,6 +57,8 @@
 @include('biaya-kapal.edit._section-meratus')
 @include('biaya-kapal.edit._section-temas')
 @include('biaya-kapal.edit._section-tanto')
+@php($pelindoAdjustment = $biayaKapal->pelindoDetails->isNotEmpty() ? (string) (int) $biayaKapal->adjustment : '0')
+@include('biaya-kapal.create._section-pelindo')
 
 {{-- Biaya Nota Retur --}}
 @include('biaya-kapal.create._section-nota-retur')
@@ -103,6 +105,26 @@
 @include('biaya-kapal.edit._js-meratus')
 @include('biaya-kapal.edit._js-temas')
 @include('biaya-kapal.edit._js-tanto')
+@include('biaya-kapal.create._js-pelindo')
+jenisBiayaSelect.addEventListener('change', function () {
+    const isPelindo = (selectedJenisBiaya.nama || '').toLowerCase().includes('tagihan pelindo');
+    pelindoWrapper.classList.toggle('hidden', !isPelindo);
+    pelindoWrapper.querySelectorAll('#pelindo_sections_container select, #pelindo_sections_container input').forEach(input => {
+        input.disabled = !isPelindo;
+        input.required = isPelindo;
+    });
+    document.getElementById('pelindo_adjustment').disabled = !isPelindo;
+    if (isPelindo) {
+        nominalWrapper.classList.add('hidden');
+        nominalInput.removeAttribute('required');
+        kapalWrapper.classList.add('hidden');
+        voyageWrapper.classList.add('hidden');
+        blWrapper.classList.add('hidden');
+        clearKapalSelections();
+        clearVoyageSelections();
+        clearBlSelections();
+    }
+});
 @include('biaya-kapal.create._js-nota-retur')
 @include('biaya-kapal.edit._js-umum-sections')
 @include('biaya-kapal.edit._js-perlengkapan-sections')
