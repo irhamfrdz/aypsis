@@ -289,8 +289,8 @@ class PranotaBpjsTemplateExport implements Responsable, WithColumnFormatting
         $set('AL', (string) ($detail->no_voucher ?? ''));
         $set('AM', 'x'); $set('AN', 'x'); $set('AO', 'x');
         $normalize = fn ($value) => preg_replace('/[\s_-]+/u', '', mb_strtoupper(trim((string) $value)));
-        $isAlexindoPluitCrew = $normalize($jamsostekType) === 'BPUALEXINDOPLUIT'
-            && $normalize($jamsostekGroup) === 'CREW';
+        $isAlexindoPluitCrew = $normalize($jamsostekGroup) === 'BPUALEXINDOPLUIT'
+            && $normalize($jamsostekType) === 'CREW';
         $set('AP', $isAlexindoPluitCrew
             ? $value('noncrew_jht_biaya') + $value('bpu_jkk_tunjangan') + $value('bpu_jkm')
             : $totalPpu + $totalBpu);
