@@ -200,6 +200,85 @@ class PembayaranPranotaInvoiceVendorSupirController extends Controller
         return view('pembayaran-pranota-invoice-vendor-supir.show', compact('pembayaran'));
     }
 
+    public function edit(PembayaranPranotaVendorSupir $pembayaran)
+    {
+        $pembayaran->load('items.pranota');
+        $vendors = VendorSupir::orderBy('nama_vendor')->get();
+        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%bank%')
+            ->orWhere('nama_akun', 'LIKE', '%kas%')
+            ->orderBy('nama_akun')->get();
+        $pranotas = PranotaInvoiceVendorSupir::where('vendor_id', $pembayaran->vendor_id)
+            ->where(function ($query) use ($pembayaran) {
+                $query->where('status_pembayaran', '!=', 'lunas')
+                    ->orWhereIn('id', $pembayaran->items->pluck('pranota_id'));
+            })->orderBy('tanggal_pranota', 'desc')->get();
+        $selectedItems = $pembayaran->items->keyBy('pranota_id');
+
+        return view('pembayaran-pranota-invoice-vendor-supir.edit', compact('pembayaran', 'vendors', 'akunCoa', 'pranotas', 'selectedItems'));
+    }
+
+    public function update(Request $request, PembayaranPranotaVendorSupir $pembayaran)
+    {
+        $data = $request->validate([
+            'tanggal_pembayaran' => 'required|date', 'nomor_accurate' => 'nullable|string|max:255',
+            'bank' => 'required|string|max:255', 'metode_pembayaran' => 'required|in:debit,kredit',
+            'total_tagihan_penyesuaian' => 'nullable|numeric', 'alasan_penyesuaian' => 'nullable|string|max:255',
+            'keterangan' => 'nullable|string', 'pranota_ids' => 'required|array|min:1',
+            'pranota_ids.*' => 'required|integer|distinct|exists:pranota_invoice_vendor_supirs,id',
+            'nominal_bayar' => 'required|array', 'nominal_bayar.*' => 'required|numeric|min:0.01',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $oldPranotaIds = $pembayaran->items()->pluck('pranota_id');
+            if (! $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal COA lama gagal dibatalkan.');
+            }
+            $pembayaran->items()->delete();
+            $total = 0;
+            foreach ($data['pranota_ids'] as $pranotaId) {
+                $nominal = (float) $data['nominal_bayar'][$pranotaId];
+                PembayaranPranotaVendorSupirItem::create(['pembayaran_id' => $pembayaran->id, 'pranota_id' => $pranotaId, 'nominal' => $nominal]);
+                $total += $nominal;
+            }
+            $adjustment = (float) ($data['total_tagihan_penyesuaian'] ?? 0);
+            $finalTotal = $total + $adjustment;
+            if ($finalTotal <= 0) throw new \RuntimeException('Total pembayaran setelah penyesuaian harus lebih dari nol.');
+            $pembayaran->update([
+                'tanggal_pembayaran' => $data['tanggal_pembayaran'], 'nomor_accurate' => $data['nomor_accurate'] ?? null,
+                'bank' => $data['bank'], 'metode_pembayaran' => $data['metode_pembayaran'], 'total_pembayaran' => $total,
+                'total_tagihan_penyesuaian' => $adjustment, 'total_tagihan_setelah_penyesuaian' => $finalTotal,
+                'alasan_penyesuaian' => $data['alasan_penyesuaian'] ?? null, 'keterangan' => $data['keterangan'] ?? null,
+                'updated_by' => Auth::id(),
+            ]);
+            foreach ($oldPranotaIds->merge($data['pranota_ids'])->unique() as $pranotaId) {
+                $pranota = PranotaInvoiceVendorSupir::with('invoiceTagihanVendors.tagihanSupirVendors')->find($pranotaId);
+                if (! $pranota) continue;
+                $paid = (float) PembayaranPranotaVendorSupirItem::where('pranota_id', $pranotaId)->sum('nominal');
+                $status = $paid >= (float) ($pranota->grand_total ?? $pranota->total_nominal) ? 'lunas' : ($paid > 0 ? 'sebagian' : 'belum lunas');
+                $pranota->update(['status_pembayaran' => $status]);
+                foreach ($pranota->invoiceTagihanVendors ?? [] as $invoice) {
+                    $invoice->update(['status_pembayaran' => $status]);
+                    foreach ($invoice->tagihanSupirVendors ?? [] as $tagihan) $tagihan->update(['status_pembayaran' => $status]);
+                }
+            }
+            $debit = strtolower($data['metode_pembayaran']) === 'debit';
+            $entries = $debit
+                ? [['nama_akun' => $data['bank'], 'jumlah' => $finalTotal], ['nama_akun' => 'Biaya Uang Jalan Vendor', 'jumlah' => $finalTotal]]
+                : [['nama_akun' => 'Biaya Uang Jalan Vendor', 'jumlah' => $finalTotal], ['nama_akun' => $data['bank'], 'jumlah' => $finalTotal]];
+            if (! $this->coaTransactionService->recordDoubleEntry($entries[0], $entries[1], $data['tanggal_pembayaran'], $pembayaran->nomor_pembayaran, 'Pembayaran Pranota Invoice Vendor', 'Pembayaran Pranota Vendor - '.$pembayaran->nomor_pembayaran)) {
+                throw new \RuntimeException('Jurnal COA gagal dibuat. Periksa akun bank dan akun biaya.');
+            }
+            DB::commit();
+            return redirect()->route('pembayaran-pranota-invoice-vendor-supir.index')->with('success', 'Pembayaran berhasil diperbarui.');
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Error update pembayaran vendor supir', ['id' => $pembayaran->id, 'error' => $e->getMessage()]);
+            return back()->withInput()->with('error', 'Gagal memperbarui pembayaran: '.$e->getMessage());
+        }
+    }
+
     public function updateAccurate(Request $request, $pembayaran)
     {
         $request->validate([

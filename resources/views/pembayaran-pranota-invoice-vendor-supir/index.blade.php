@@ -106,6 +106,12 @@
                             <a href="{{ route('pembayaran-pranota-invoice-vendor-supir.show', $pembayaran->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded text-emerald-600 bg-emerald-50 hover:bg-emerald-100 transition-colors" title="Lihat Detail">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                             </a>
+
+                            @can('pembayaran-pranota-invoice-vendor-supir-create')
+                            <a href="{{ route('pembayaran-pranota-invoice-vendor-supir.edit', $pembayaran->id) }}" class="inline-flex items-center justify-center w-8 h-8 rounded text-amber-600 bg-amber-50 hover:bg-amber-100 transition-colors" title="Edit Pembayaran">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                            </a>
+                            @endcan
                             
                             @if(!$pembayaran->is_synced)
                             <form action="{{ route('pembayaran-pranota-invoice-vendor-supir.sync-to-coa', $pembayaran->id) }}" method="POST" class="inline">

@@ -5340,6 +5340,8 @@ Route::middleware([
                 'create' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
                 'store' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
                 'show' => 'can:pembayaran-pranota-invoice-vendor-supir-view',
+                'edit' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
+                'update' => 'can:pembayaran-pranota-invoice-vendor-supir-create',
                 'destroy' => 'can:pembayaran-pranota-invoice-vendor-supir-delete',
             ]);
 
