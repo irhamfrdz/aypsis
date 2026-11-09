@@ -522,7 +522,8 @@
             <h3 class="sm:col-span-2 text-base font-semibold text-indigo-800">1. Data Tanda Terima dan Shipper / Consignee</h3>
             <div>
                 <label for="approval-ttsj-number" class="mb-1 block text-sm font-medium text-gray-700">Nomor tanda terima <span class="text-red-600">*</span></label>
-                <input id="approval-ttsj-number" name="no_tanda_terima" value="{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <textarea id="approval-ttsj-number" name="no_tanda_terima" rows="3" placeholder="LC012312, LC123120, LC231721" required class="w-full resize-y rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('no_tanda_terima', str_contains((string) request('search'), ',') ? '' : request('search')) }}</textarea>
+                <p class="mt-1 text-xs text-gray-500">Pisahkan nomor dengan koma atau tekan Enter untuk menaruh nomor berikutnya di baris baru.</p>
             </div>
             <div>
                 <label for="approval-ttsj-date" class="mb-1 block text-sm font-medium text-gray-700">Tanggal tanda terima <span class="text-red-600">*</span></label>
@@ -761,6 +762,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (dialog.dataset.reopen === 'true') dialog.showModal();
 
     const form = dialog.querySelector('form');
+    const receiptNumber = document.getElementById('approval-ttsj-number');
+    function normalizeReceiptNumbers() {
+        if (!receiptNumber) return;
+        const start = receiptNumber.selectionStart;
+        const before = receiptNumber.value;
+        const after = before.replace(/,\s*/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n');
+        if (after !== before) {
+            receiptNumber.value = after;
+            const cursor = before.slice(0, start).replace(/,\s*/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n[ \t]+/g, '\n').length;
+            receiptNumber.setSelectionRange(cursor, cursor);
+        }
+    }
+    receiptNumber?.addEventListener('input', normalizeReceiptNumbers);
+    normalizeReceiptNumbers();
     const containerType = document.getElementById('approval-ttsj-container-type');
     const containerFields = document.getElementById('approval-ttsj-container-fields');
     const containerNumber = document.getElementById('approval-ttsj-container');
