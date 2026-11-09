@@ -19,7 +19,10 @@
     <template id="pelindo_card_template">
         @include('biaya-kapal.create._pelindo-card', ['index' => '__INDEX__', 'section' => [], 'isTemplate' => true])
     </template>
+    <template id="pelindo_tagihan_template">
+        @include('biaya-kapal.create._pelindo-tagihan', ['index' => '__SECTION__', 'tagihanIndex' => '__TAGIHAN__', 'tagihan' => [], 'isTemplate' => true])
+    </template>
     <template id="pelindo_barang_template">
-        @include('biaya-kapal.create._pelindo-barang', ['index' => '__SECTION__', 'barangIndex' => '__BARANG__', 'barang' => [], 'isTemplate' => true])
+        @include('biaya-kapal.create._pelindo-barang', ['index' => '__SECTION__', 'tagihanIndex' => '__TAGIHAN__', 'barangIndex' => '__BARANG__', 'barang' => [], 'isTemplate' => true])
     </template>
 </div>

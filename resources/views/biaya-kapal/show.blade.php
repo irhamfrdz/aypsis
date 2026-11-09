@@ -180,15 +180,19 @@
             @if($biayaKapal->pelindoDetails->isNotEmpty())
             <div class="md:col-span-2 space-y-3">
                 <h3 class="font-semibold text-gray-800">Detail Tagihan Pelindo</h3>
-                @foreach($biayaKapal->pelindoDetails->groupBy(fn ($detail) => $detail->nama_kapal.'|'.$detail->no_voyage.'|'.$detail->jenis_tagihan) as $kapalDetails)
+                @foreach($biayaKapal->pelindoDetails->groupBy(fn ($detail) => $detail->nama_kapal.'|'.$detail->no_voyage) as $kapalDetails)
                 <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
                     <h4 class="font-semibold text-gray-900">Kapal {{ $loop->iteration }}: {{ $kapalDetails->first()->nama_kapal }} / {{ $kapalDetails->first()->no_voyage }}</h4>
-                    <p class="mb-3 text-sm text-gray-600">Jenis Tagihan: <span class="font-semibold text-gray-900">{{ $kapalDetails->first()->jenis_tagihan ?? '-' }}</span></p>
-                    @foreach($kapalDetails as $detail)
-                    <div class="grid grid-cols-1 gap-3 border-t border-blue-200 py-2 text-sm md:grid-cols-3">
+                    @foreach($kapalDetails->groupBy('jenis_tagihan') as $jenisTagihan => $barangDetails)
+                    <div class="mt-3 rounded-lg border border-blue-200 bg-white p-3">
+                        <h5 class="mb-2 font-semibold text-gray-800">Jenis Tagihan: {{ $jenisTagihan ?: '-' }}</h5>
+                        @foreach($barangDetails as $detail)
+                        <div class="grid grid-cols-1 gap-3 border-t border-blue-100 py-2 text-sm md:grid-cols-3">
                         <div><span class="block text-gray-500">Barang</span><span class="font-semibold">{{ $detail->status_kontainer ? $detail->barang_label : '-' }}</span></div>
                         <div><span class="block text-gray-500">Jumlah</span><span class="font-semibold">{{ $detail->jumlah !== null ? number_format($detail->jumlah, 0, ',', '.') : '-' }}</span></div>
                         <div><span class="block text-gray-500">Biaya per Barang</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.number_format($detail->biaya, 0, ',', '.') : '-' }}</span></div>
+                        </div>
+                        @endforeach
                     </div>
                     @endforeach
                 </div>

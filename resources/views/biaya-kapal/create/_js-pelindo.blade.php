@@ -3,6 +3,7 @@
     const pelindoWrapper = document.getElementById('pelindo_wrapper');
     const pelindoSectionsContainer = document.getElementById('pelindo_sections_container');
     let pelindoNextSectionIndex = Date.now();
+    let pelindoNextTagihanIndex = Date.now();
     let pelindoNextBarangIndex = Date.now();
 
     function updatePelindoVoyages(section) {
@@ -20,9 +21,9 @@
         delete voyageSelect.dataset.oldValue;
     }
 
-    function updatePelindoBarang(section) {
-        const kegiatan = section.querySelector('.pelindo-jenis-tagihan-select').value;
-        section.querySelectorAll('.pelindo-barang-select').forEach(barangSelect => {
+    function updatePelindoBarang(tagihan) {
+        const kegiatan = tagihan.querySelector('.pelindo-jenis-tagihan-select').value;
+        tagihan.querySelectorAll('.pelindo-barang-select').forEach(barangSelect => {
             const previous = barangSelect.dataset.oldValue || barangSelect.value;
             barangSelect.replaceChildren(new Option(
                 kegiatan ? '-- Pilih Barang --' : '-- Pilih Jenis Tagihan Terlebih Dahulu --', ''
@@ -57,12 +58,21 @@
         sections.forEach((section, index) => {
             section.querySelector('.pelindo-section-title').textContent = `Kapal ${index + 1} (Tagihan Pelindo)`;
             section.querySelector('.pelindo-remove-kapal').classList.toggle('hidden', sections.length === 1);
-            refreshPelindoBarangRows(section);
+            refreshPelindoTagihans(section);
         });
     }
 
-    function refreshPelindoBarangRows(section) {
-        const rows = [...section.querySelectorAll('.pelindo-barang-row')];
+    function refreshPelindoTagihans(section) {
+        const tagihans = [...section.querySelectorAll('.pelindo-tagihan')];
+        tagihans.forEach((tagihan, index) => {
+            tagihan.querySelector('.pelindo-tagihan-title').textContent = `Jenis Tagihan ${index + 1}`;
+            tagihan.querySelector('.pelindo-remove-tagihan').classList.toggle('hidden', tagihans.length === 1);
+            refreshPelindoBarangRows(tagihan);
+        });
+    }
+
+    function refreshPelindoBarangRows(tagihan) {
+        const rows = [...tagihan.querySelectorAll('.pelindo-barang-row')];
         rows.forEach((row, index) => {
             row.querySelector('.pelindo-barang-title').textContent = `Barang ${index + 1}`;
             row.querySelector('.pelindo-remove-barang').classList.toggle('hidden', rows.length === 1);
@@ -86,29 +96,57 @@
     });
 
     pelindoSectionsContainer.addEventListener('click', function (event) {
+        const addTagihanButton = event.target.closest('.pelindo-add-tagihan');
+        if (addTagihanButton) {
+            const section = addTagihanButton.closest('.pelindo-section');
+            const holder = document.createElement('div');
+            holder.innerHTML = document.getElementById('pelindo_tagihan_template').innerHTML
+                .replaceAll('__SECTION__', section.dataset.sectionIndex)
+                .replaceAll('__TAGIHAN__', String(pelindoNextTagihanIndex++));
+            const tagihan = holder.firstElementChild;
+            section.querySelector('.pelindo-tagihans').append(tagihan);
+            tagihan.querySelectorAll('select, input').forEach(input => {
+                input.disabled = false;
+                input.required = true;
+            });
+            refreshPelindoTagihans(section);
+            tagihan.querySelector('.pelindo-jenis-tagihan-select').focus();
+            return;
+        }
+
+        if (event.target.closest('.pelindo-remove-tagihan')) {
+            const section = event.target.closest('.pelindo-section');
+            event.target.closest('.pelindo-tagihan').remove();
+            refreshPelindoTagihans(section);
+            updatePelindoNominal();
+            return;
+        }
+
         const addBarangButton = event.target.closest('.pelindo-add-barang');
         if (addBarangButton) {
             const section = addBarangButton.closest('.pelindo-section');
+            const tagihan = addBarangButton.closest('.pelindo-tagihan');
             const holder = document.createElement('div');
             holder.innerHTML = document.getElementById('pelindo_barang_template').innerHTML
                 .replaceAll('__SECTION__', section.dataset.sectionIndex)
+                .replaceAll('__TAGIHAN__', tagihan.dataset.tagihanIndex)
                 .replaceAll('__BARANG__', String(pelindoNextBarangIndex++));
             const row = holder.firstElementChild;
-            section.querySelector('.pelindo-barangs').append(row);
+            tagihan.querySelector('.pelindo-barangs').append(row);
             row.querySelectorAll('select, input').forEach(input => {
                 input.disabled = false;
                 input.required = true;
             });
-            refreshPelindoBarangRows(section);
-            updatePelindoBarang(section);
+            refreshPelindoBarangRows(tagihan);
+            updatePelindoBarang(tagihan);
             row.querySelector('.pelindo-barang-select').focus();
             return;
         }
 
         if (event.target.closest('.pelindo-remove-barang')) {
-            const section = event.target.closest('.pelindo-section');
+            const tagihan = event.target.closest('.pelindo-tagihan');
             event.target.closest('.pelindo-barang-row').remove();
-            refreshPelindoBarangRows(section);
+            refreshPelindoBarangRows(tagihan);
             updatePelindoNominal();
             return;
         }
@@ -126,11 +164,12 @@
             section.querySelector('.pelindo-voyage-select').value = '';
             updatePelindoVoyages(section);
         } else if (event.target.matches('.pelindo-jenis-tagihan-select')) {
-            section.querySelectorAll('.pelindo-barang-select').forEach(select => {
+            const tagihan = event.target.closest('.pelindo-tagihan');
+            tagihan.querySelectorAll('.pelindo-barang-select').forEach(select => {
                 select.value = '';
                 delete select.dataset.oldValue;
             });
-            updatePelindoBarang(section);
+            updatePelindoBarang(tagihan);
         }
     });
 
@@ -140,7 +179,7 @@
 
     pelindoSectionsContainer.querySelectorAll('.pelindo-section').forEach(section => {
         updatePelindoVoyages(section);
-        updatePelindoBarang(section);
+        section.querySelectorAll('.pelindo-tagihan').forEach(updatePelindoBarang);
     });
     refreshPelindoSections();
 
