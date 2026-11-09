@@ -8,10 +8,16 @@
         pelindoWrapper.classList.toggle('hidden', !isTagihanPelindo);
         document.getElementById('pelindo_kapal').disabled = !isTagihanPelindo;
         document.getElementById('pelindo_voyage').disabled = !isTagihanPelindo;
+        document.getElementById('pelindo_jenis_tagihan').disabled = !isTagihanPelindo;
         document.getElementById('pelindo_barang').disabled = !isTagihanPelindo;
+        document.getElementById('pelindo_jumlah').disabled = !isTagihanPelindo;
+        document.getElementById('pelindo_biaya').disabled = !isTagihanPelindo;
         document.getElementById('pelindo_kapal').required = isTagihanPelindo;
         document.getElementById('pelindo_voyage').required = isTagihanPelindo;
+        document.getElementById('pelindo_jenis_tagihan').required = isTagihanPelindo;
         document.getElementById('pelindo_barang').required = isTagihanPelindo;
+        document.getElementById('pelindo_jumlah').required = isTagihanPelindo;
+        document.getElementById('pelindo_biaya').required = isTagihanPelindo;
         
         // Reset visibility of standard fields
         if(nominalWrapper) {

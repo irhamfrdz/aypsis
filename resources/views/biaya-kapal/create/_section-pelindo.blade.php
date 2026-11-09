@@ -21,13 +21,36 @@
         </div>
     </div>
     <div class="mt-4">
-        <label for="pelindo_barang" class="mb-2 block text-sm font-medium text-gray-700">Barang <span class="text-red-500">*</span></label>
-        <select id="pelindo_barang" name="pelindo_barang" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_barang') border-red-500 @enderror" disabled>
-            <option value="">-- Pilih Barang --</option>
-            @foreach($pelindoBarangOptions as $option)
-                <option value="{{ $option['value'] }}" @selected(old('pelindo_barang') === $option['value'])>{{ $option['label'] }}</option>
+        <label for="pelindo_jenis_tagihan" class="mb-2 block text-sm font-medium text-gray-700">Jenis Tagihan <span class="text-red-500">*</span></label>
+        <select id="pelindo_jenis_tagihan" name="pelindo_jenis_tagihan" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_jenis_tagihan') border-red-500 @enderror" disabled>
+            <option value="">-- Pilih Jenis Tagihan --</option>
+            @foreach($pelindoJenisTagihanOptions as $kegiatan)
+                <option value="{{ $kegiatan }}" @selected(old('pelindo_jenis_tagihan') === $kegiatan)>{{ $kegiatan }}</option>
             @endforeach
         </select>
-        @error('pelindo_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        @error('pelindo_jenis_tagihan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+    </div>
+    <div class="mt-4 grid grid-cols-1 gap-4 md:grid-cols-3">
+        <div>
+            <label for="pelindo_barang" class="mb-2 block text-sm font-medium text-gray-700">Barang <span class="text-red-500">*</span></label>
+            <select id="pelindo_barang" name="pelindo_barang" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_barang') border-red-500 @enderror" disabled>
+                <option value="">-- Pilih Jenis Tagihan Terlebih Dahulu --</option>
+            </select>
+            @error('pelindo_barang') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="pelindo_jumlah" class="mb-2 block text-sm font-medium text-gray-700">Jumlah <span class="text-red-500">*</span></label>
+            <input type="number" id="pelindo_jumlah" name="pelindo_jumlah" value="{{ old('pelindo_jumlah') }}" min="1" step="1" class="w-full rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_jumlah') border-red-500 @enderror" disabled>
+            @error('pelindo_jumlah') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="pelindo_biaya" class="mb-2 block text-sm font-medium text-gray-700">Biaya <span class="text-red-500">*</span></label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <input type="number" id="pelindo_biaya" name="pelindo_biaya" value="{{ old('pelindo_biaya') }}" min="0" step="1" class="w-full rounded-lg border border-gray-300 py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 @error('pelindo_biaya') border-red-500 @enderror" disabled>
+            </div>
+            <p class="mt-1 text-xs text-gray-500">Biaya per barang.</p>
+            @error('pelindo_biaya') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
     </div>
 </div>

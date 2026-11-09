@@ -177,10 +177,28 @@
             </div>
             @endif
 
+            @if($biayaKapal->pelindoDetail?->jenis_tagihan)
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Tagihan Pelindo</label>
+                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetail->jenis_tagihan }}</p>
+            </div>
+            @endif
+
             @if($biayaKapal->pelindoDetail?->status_kontainer)
             <div>
                 <label class="block text-sm font-medium text-gray-500 mb-1">Barang Pelindo</label>
                 <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetail->barang_label }}</p>
+            </div>
+            @endif
+
+            @if($biayaKapal->pelindoDetail?->jumlah !== null)
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Jumlah Pelindo</label>
+                <p class="text-lg font-semibold text-gray-900">{{ number_format($biayaKapal->pelindoDetail->jumlah, 0, ',', '.') }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500 mb-1">Biaya per Barang Pelindo</label>
+                <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($biayaKapal->pelindoDetail->biaya, 0, ',', '.') }}</p>
             </div>
             @endif
 
