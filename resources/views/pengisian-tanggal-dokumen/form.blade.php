@@ -48,7 +48,7 @@
             <div class="grid gap-x-6 gap-y-5 md:grid-cols-2">
             <div>
                 <label for="kapal_id" class="mb-1.5 block text-sm font-medium text-gray-700">Kapal <span class="text-red-500">*</span></label>
-                <select id="kapal_id" name="kapal_id" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                <select id="kapal_id" name="kapal_id" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                     <option value="">-- Pilih Kapal --</option>
                     @foreach($kapals as $kapal)
                         <option value="{{ $kapal->id }}" @selected(old('kapal_id', $record->kapal_id) == $kapal->id)>{{ $kapal->nama_kapal }}</option>
@@ -57,15 +57,15 @@
             </div>
             <div>
                 <label for="no_voyage" class="mb-1.5 block text-sm font-medium text-gray-700">Voyage <span class="text-red-500">*</span></label>
-                <select id="no_voyage" name="no_voyage" required data-selected="{{ old('no_voyage', $record->no_voyage) }}" class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled><option value="">-- Pilih Kapal Terlebih Dahulu --</option></select>
+                <select id="no_voyage" name="no_voyage" required data-selected="{{ old('no_voyage', $record->no_voyage) }}" class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled><option value="">-- Pilih Kapal Terlebih Dahulu --</option></select>
             </div>
             <div>
                 <label for="jenis_dokumen" class="mb-1.5 block text-sm font-medium text-gray-700">Jenis Nomor <span class="text-red-500">*</span></label>
-                <select id="jenis_dokumen" name="jenis_dokumen" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('jenis_dokumen', $record->jenis_dokumen) }}"><option value="">-- Pilih Voyage Terlebih Dahulu --</option></select>
+                <select id="jenis_dokumen" name="jenis_dokumen" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('jenis_dokumen', $record->jenis_dokumen) }}"><option value="">-- Pilih Voyage Terlebih Dahulu --</option></select>
             </div>
             <div>
                 <label for="nomor_dokumen" class="mb-1.5 block text-sm font-medium text-gray-700">Nomor BL / Nomor Tanda Terima <span class="text-red-500">*</span></label>
-                <select id="nomor_dokumen" name="nomor_dokumen" required class="w-full rounded-lg border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('nomor_dokumen', $record->nomor_dokumen) }}"><option value="">-- Pilih Jenis Nomor Terlebih Dahulu --</option></select>
+                <select id="nomor_dokumen" name="nomor_dokumen" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500 disabled:cursor-not-allowed disabled:bg-gray-50 disabled:text-gray-400" disabled data-selected="{{ old('nomor_dokumen', $record->nomor_dokumen) }}"><option value="">-- Pilih Jenis Nomor Terlebih Dahulu --</option></select>
             </div>
         </div>
         </section>
@@ -82,7 +82,7 @@
             @foreach($dateFields as $field => $label)
                 <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
                     <label for="{{ $field }}" class="mb-2 flex min-h-10 items-start text-sm font-medium leading-5 text-gray-700">{{ $label }}</label>
-                    <input type="date" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $record->$field?->format('Y-m-d')) }}" class="w-full rounded-lg border-gray-300 px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <input type="date" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $record->$field?->format('Y-m-d')) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
             @endforeach
         </div>
