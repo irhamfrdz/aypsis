@@ -20,6 +20,7 @@ class GpsDailyDistanceTest extends TestCase
             $table->decimal('lat', 10, 8);
             $table->decimal('lng', 11, 8);
             $table->integer('speed')->default(0);
+            $table->string('status')->nullable();
             $table->timestamp('recorded_at');
             $table->timestamps();
         });
@@ -29,6 +30,7 @@ class GpsDailyDistanceTest extends TestCase
             $table->unsignedBigInteger('mobil_id');
             $table->date('date');
             $table->decimal('distance_km', 12, 3)->default(0);
+            $table->unsignedInteger('idle_seconds')->nullable();
             $table->unsignedInteger('point_count')->default(0);
             $table->timestamps();
             $table->unique(['mobil_id', 'date']);
@@ -57,13 +59,28 @@ class GpsDailyDistanceTest extends TestCase
         $this->assertEquals(0, DB::table('gps_daily_distances')->where('mobil_id', 2)->where('date', '2026-10-16')->value('distance_km'));
     }
 
-    private function point(int $mobilId, string $lat, string $lng, string $recordedAt, int $speed = 0): void
+    public function test_idle_duration_counts_only_consecutive_engine_on_stops_with_short_gaps(): void
+    {
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 08:00:00', 0, 'Mesin Menyala');
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 08:05:00', 0, 'Mesin Menyala');
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 08:10:00', 0, 'Berhenti');
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 08:15:00', 0, 'Mesin Menyala');
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 09:00:00', 0, 'Mesin Menyala');
+        $this->point(1, '-6.20000000', '106.80000000', '2026-10-16 09:05:00', 0, 'Mesin Menyala');
+
+        app(GpsDailyDistanceService::class)->recalculate(1, '2026-10-16');
+
+        $this->assertSame(600, (int) DB::table('gps_daily_distances')->where('mobil_id', 1)->where('date', '2026-10-16')->value('idle_seconds'));
+    }
+
+    private function point(int $mobilId, string $lat, string $lng, string $recordedAt, int $speed = 0, ?string $status = null): void
     {
         DB::table('gps_histories')->insert([
             'mobil_id' => $mobilId,
             'lat' => $lat,
             'lng' => $lng,
             'speed' => $speed,
+            'status' => $status,
             'recorded_at' => $recordedAt,
             'created_at' => $recordedAt,
             'updated_at' => $recordedAt,

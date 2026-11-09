@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class GpsDailyDistance extends Model
 {
-    protected $fillable = ['mobil_id', 'date', 'distance_km', 'point_count'];
+    protected $fillable = ['mobil_id', 'date', 'distance_km', 'idle_seconds', 'point_count'];
 
     protected $casts = [
         'distance_km' => 'decimal:3',
+        'idle_seconds' => 'integer',
         'point_count' => 'integer',
     ];
 

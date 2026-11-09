@@ -33,7 +33,7 @@ class DashboardPerjalananKendaraanController extends Controller
 
             $vehicleStats = GpsDailyDistance::query()
                 ->select('mobil_id')
-                ->selectRaw('SUM(distance_km) as total_km, COUNT(*) as days_with_data, SUM(CASE WHEN distance_km > 0 THEN 1 ELSE 0 END) as moving_days')
+                ->selectRaw('SUM(distance_km) as total_km, COUNT(*) as days_with_data, SUM(CASE WHEN distance_km > 0 THEN 1 ELSE 0 END) as moving_days, SUM(idle_seconds) as idle_seconds, COUNT(idle_seconds) as days_with_idle_data')
                 ->whereBetween('date', [$tanggalDari, $tanggalSampai])
                 ->where('point_count', '>', 0)
                 ->groupBy('mobil_id')

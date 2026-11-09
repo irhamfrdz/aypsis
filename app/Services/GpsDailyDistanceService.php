@@ -13,7 +13,7 @@ class GpsDailyDistanceService
             ->whereDate('recorded_at', $date)
             ->orderBy('recorded_at')
             ->orderBy('id')
-            ->get(['lat', 'lng', 'speed', 'recorded_at']);
+            ->get(['lat', 'lng', 'speed', 'status', 'recorded_at']);
 
         $distanceKm = 0.0;
         $previous = null;
@@ -48,9 +48,10 @@ class GpsDailyDistanceService
         }
 
         if ($points->isNotEmpty()) {
+            $idleSeconds = app(GpsIdleDurationService::class)->calculate($points);
             GpsDailyDistance::updateOrCreate(
                 ['mobil_id' => $mobilId, 'date' => $date],
-                ['distance_km' => round($distanceKm, 3), 'point_count' => $points->count()]
+                ['distance_km' => round($distanceKm, 3), 'idle_seconds' => $idleSeconds, 'point_count' => $points->count()]
             );
         }
     }
