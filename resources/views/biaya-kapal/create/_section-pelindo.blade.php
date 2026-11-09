@@ -9,7 +9,7 @@
         </button>
     </div>
     <div id="pelindo_sections_container" class="space-y-4">
-        @foreach(old('pelindo_sections', []) ?: [[]] as $index => $section)
+        @foreach(old('pelindo_sections', [[]]) as $index => $section)
             @include('biaya-kapal.create._pelindo-card', ['index' => $index, 'section' => $section, 'isTemplate' => false])
         @endforeach
     </div>
@@ -18,8 +18,5 @@
     </button>
     <template id="pelindo_card_template">
         @include('biaya-kapal.create._pelindo-card', ['index' => '__INDEX__', 'section' => [], 'isTemplate' => true])
-    </template>
-    <template id="pelindo_item_template">
-        @include('biaya-kapal.create._pelindo-item', ['index' => '__SECTION__', 'itemIndex' => '__ITEM__', 'item' => [], 'isTemplate' => true])
     </template>
 </div>
