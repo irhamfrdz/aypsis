@@ -226,13 +226,24 @@
             hiddenVoyage.name = 'voyage';
             hiddenVoyage.value = @json(request('voyage', ''));
             form.append(hiddenVoyage);
+            let allowFilterSubmit = false;
+
+            const openVoyageDialog = () => {
+                voyageInput.value = hiddenVoyage.value;
+                error.classList.add('hidden');
+                if (!dialog.open) dialog.showModal();
+                requestAnimationFrame(() => voyageInput.focus());
+            };
 
             select.addEventListener('change', () => {
                 if (select.value !== 'sudah') return;
-                voyageInput.value = hiddenVoyage.value;
-                error.classList.add('hidden');
-                dialog.showModal();
-                requestAnimationFrame(() => voyageInput.focus());
+                openVoyageDialog();
+            });
+
+            form.addEventListener('submit', event => {
+                if (allowFilterSubmit || select.value !== 'sudah') return;
+                event.preventDefault();
+                openVoyageDialog();
             });
 
             document.getElementById('approval-voyage-cancel')?.addEventListener('click', () => {
@@ -250,6 +261,7 @@
                     return;
                 }
                 hiddenVoyage.value = voyage;
+                allowFilterSubmit = true;
                 form.requestSubmit();
             });
         })();
