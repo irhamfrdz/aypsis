@@ -35,6 +35,7 @@ use App\Models\SuratJalan;
 use App\Models\TandaTerima;
 use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaTanpaSuratJalan;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -146,6 +147,20 @@ class BiayaKapalController extends Controller
         }
     }
 
+    private function normalizePelindoKapal(string $kapal): string
+    {
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $kapal)));
+
+        return str_replace('  ', ' ', $normalizedKapal);
+    }
+
+    private function pelindoManifestQuery(string $kapal, string $voyage): Builder
+    {
+        return Manifest::query()
+            ->whereRaw("UPPER(REPLACE(REPLACE(TRIM(nama_kapal), '.', ''), '  ', ' ')) = ?", [$this->normalizePelindoKapal($kapal)])
+            ->where('no_voyage', $voyage);
+    }
+
     /**
      * Count manifest goods for the selected Pelindo ship and voyage.
      */
@@ -156,8 +171,7 @@ class BiayaKapalController extends Controller
             'voyage' => 'required|string|max:255',
         ]);
 
-        $manifests = Manifest::where('nama_kapal', $data['kapal'])
-            ->where('no_voyage', $data['voyage'])
+        $manifests = $this->pelindoManifestQuery($data['kapal'], $data['voyage'])
             ->get(['id', 'nomor_kontainer', 'size_kontainer', 'tipe_kontainer', 'nama_barang', 'tonnage']);
 
         $groups = [];
@@ -1388,21 +1402,23 @@ class BiayaKapalController extends Controller
             ]);
 
             $pelindoKapalVoyages = [];
+            $selectedPelindoPairs = [];
             $pelindoTotalCents = 0;
             foreach ($validated['pelindo_sections'] as $index => $section) {
-                if (! Manifest::where('nama_kapal', $section['kapal'])
-                    ->where('no_voyage', $section['voyage'])->exists()) {
+                if (! $this->pelindoManifestQuery($section['kapal'], $section['voyage'])->exists()) {
                     throw ValidationException::withMessages([
                         "pelindo_sections.$index.voyage" => 'Kapal dan voyage harus sesuai dengan data manifest.',
                     ]);
                 }
 
                 $kapalVoyage = ['kapal' => $section['kapal'], 'voyage' => $section['voyage']];
-                if (in_array($kapalVoyage, $pelindoKapalVoyages, true)) {
+                $pairKey = $this->normalizePelindoKapal($section['kapal']).'|'.$section['voyage'];
+                if (in_array($pairKey, $selectedPelindoPairs, true)) {
                     throw ValidationException::withMessages([
                         "pelindo_sections.$index.voyage" => 'Kapal dan voyage ini sudah dipilih.',
                     ]);
                 }
+                $selectedPelindoPairs[] = $pairKey;
                 $pelindoKapalVoyages[] = $kapalVoyage;
 
                 $selectedJenisTagihan = [];

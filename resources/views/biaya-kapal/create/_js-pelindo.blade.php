@@ -9,6 +9,10 @@
     let pelindoNextTagihanIndex = Date.now();
     let pelindoNextBarangIndex = Date.now();
 
+    function normalizePelindoKapal(namaKapal) {
+        return namaKapal.replace(/\./g, '').replace(/\s+/g, ' ').trim().toUpperCase();
+    }
+
     function updatePelindoVoyages(section) {
         const kapalSelect = section.querySelector('.pelindo-kapal-select');
         const voyageSelect = section.querySelector('.pelindo-voyage-select');
@@ -17,7 +21,7 @@
             kapalSelect.value ? '-- Pilih Voyage --' : '-- Pilih Kapal Terlebih Dahulu --', ''
         ));
         const voyages = [...new Set(pelindoManifestVoyages
-            .filter(item => item.nama_kapal === kapalSelect.value)
+            .filter(item => normalizePelindoKapal(item.nama_kapal) === normalizePelindoKapal(kapalSelect.value))
             .map(item => item.no_voyage))];
         voyages.forEach(voyage => voyageSelect.add(new Option(voyage, voyage)));
         if (voyages.includes(previous)) voyageSelect.value = previous;

@@ -25,10 +25,10 @@ class BiayaKapalPelindoJumlahTest extends TestCase
         });
 
         DB::table('manifests')->insert([
-            ['nama_kapal' => 'KM UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => null, 'size_kontainer' => null, 'tipe_kontainer' => 'CARGO', 'nama_barang' => 'Besi', 'tonnage' => '1.250'],
-            ['nama_kapal' => 'KM UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => null, 'size_kontainer' => null, 'tipe_kontainer' => 'CARGO', 'nama_barang' => 'Besi', 'tonnage' => '2,375'],
-            ['nama_kapal' => 'KM UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => 'LCL123', 'size_kontainer' => '20', 'tipe_kontainer' => 'LCL', 'nama_barang' => 'Barang', 'tonnage' => '5.000'],
-            ['nama_kapal' => 'KM UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => 'LCL123', 'size_kontainer' => '20', 'tipe_kontainer' => 'LCL', 'nama_barang' => 'Barang', 'tonnage' => '3.000'],
+            ['nama_kapal' => 'KM. UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => null, 'size_kontainer' => null, 'tipe_kontainer' => 'CARGO', 'nama_barang' => 'Besi', 'tonnage' => '1.250'],
+            ['nama_kapal' => 'KM. UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => null, 'size_kontainer' => null, 'tipe_kontainer' => 'CARGO', 'nama_barang' => 'Besi', 'tonnage' => '2,375'],
+            ['nama_kapal' => 'KM. UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => 'LCL123', 'size_kontainer' => '20', 'tipe_kontainer' => 'LCL', 'nama_barang' => 'Barang', 'tonnage' => '5.000'],
+            ['nama_kapal' => 'KM. UJI', 'no_voyage' => 'V001', 'nomor_kontainer' => 'LCL123', 'size_kontainer' => '20', 'tipe_kontainer' => 'LCL', 'nama_barang' => 'Barang', 'tonnage' => '3.000'],
             ['nama_kapal' => 'KM UJI', 'no_voyage' => 'V002', 'nomor_kontainer' => null, 'size_kontainer' => null, 'tipe_kontainer' => 'CARGO', 'nama_barang' => 'Besi', 'tonnage' => '10.000'],
         ]);
 
