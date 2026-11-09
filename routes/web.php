@@ -7160,6 +7160,22 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
         ->name('dokumen-tanda-terima.index')
         ->middleware('can:dokumen-tanda-terima-view');
 
+    // Pengisian tanggal proses dokumen BL / tanda terima
+    Route::get('pengisian-tanggal-dokumen', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'index'])
+        ->name('pengisian-tanggal-dokumen.index')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::get('pengisian-tanggal-dokumen/create', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'create'])
+        ->name('pengisian-tanggal-dokumen.create')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::post('pengisian-tanggal-dokumen', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'store'])
+        ->name('pengisian-tanggal-dokumen.store')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::get('pengisian-tanggal-dokumen/get-voyages', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'getVoyages'])
+        ->name('pengisian-tanggal-dokumen.get-voyages')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::get('pengisian-tanggal-dokumen/get-documents', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'getDocuments'])
+        ->name('pengisian-tanggal-dokumen.get-documents')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::get('pengisian-tanggal-dokumen/{pengisianTanggalDokumen}/edit', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'edit'])
+        ->name('pengisian-tanggal-dokumen.edit')->middleware('can:pengisian-tanggal-dokumen-manage');
+    Route::put('pengisian-tanggal-dokumen/{pengisianTanggalDokumen}', [\App\Http\Controllers\PengisianTanggalDokumenController::class, 'update'])
+        ->name('pengisian-tanggal-dokumen.update')->middleware('can:pengisian-tanggal-dokumen-manage');
+
     // 🚢 Naik Kapal Management
     Route::get('naik-kapal/select', [NaikKapalController::class, 'select'])
         ->name('naik-kapal.select')
