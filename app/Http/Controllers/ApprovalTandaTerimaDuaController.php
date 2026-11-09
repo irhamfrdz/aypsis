@@ -114,6 +114,7 @@ class ApprovalTandaTerimaDuaController extends Controller
                     }
                 });
         };
+        $voyageSearch = trim((string) ($filters['voyage'] ?? ''));
 
         if ($manifestStatus === 'belum') {
             if ($type === 'fcl') {
@@ -128,7 +129,6 @@ class ApprovalTandaTerimaDuaController extends Controller
                 }
             });
 
-            $voyageSearch = trim((string) ($filters['voyage'] ?? ''));
             if ($voyageSearch !== '') {
                 $query->where(function ($query) use ($type, $manifestByNumber, $voyageSearch) {
                     $query->whereExists(function ($manifestQuery) use ($manifestByNumber, $voyageSearch) {
@@ -149,26 +149,33 @@ class ApprovalTandaTerimaDuaController extends Controller
             $numberColumn = $this->numberColumn($type);
             $senderColumn = $type === 'lcl' ? 'nama_pengirim' : 'pengirim';
             $containerColumn = $type === 'lcl' ? 'nomor_kontainer' : 'no_kontainer';
+            $matchContainer = function ($containerQuery, string $search) use ($type, $containerColumn, $manifestByNumber, $manifestStatus, $voyageSearch) {
+                $containerQuery->where(function ($matches) use ($type, $containerColumn, $manifestByNumber, $manifestStatus, $voyageSearch, $search) {
+                    $matches->where($containerColumn, 'like', "%{$search}%");
+                    if ($type === 'lcl') {
+                        $matches->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
+                        $matches->orWhereExists(function ($manifestQuery) use ($manifestByNumber, $manifestStatus, $voyageSearch, $search) {
+                            $manifestByNumber($manifestQuery);
+                            $manifestQuery->where('manifests.nomor_kontainer', 'like', "%{$search}%");
+                            if ($manifestStatus === 'sudah' && $voyageSearch !== '') {
+                                $manifestQuery->where('manifests.no_voyage', 'like', "%{$voyageSearch}%");
+                            }
+                        });
+                    }
+                });
+            };
             if ($searches !== []) {
                 $containerMatches = [];
                 if (count($searches) === 1) {
                     $search = $searches[0];
-                    $containerMatches[$search] = (clone $query)->where(function ($containerQuery) use ($search, $containerColumn, $type) {
-                        $containerQuery->where($containerColumn, 'like', "%{$search}%");
-                        if ($type === 'lcl') {
-                            $containerQuery->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
-                        }
-                    })->exists();
+                    $containerMatches[$search] = (clone $query)->where(fn ($containerQuery) => $matchContainer($containerQuery, $search))->exists();
                 }
 
-                $query->where(function ($query) use ($searches, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
+                $query->where(function ($query) use ($searches, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable, $matchContainer) {
                     foreach ($searches as $search) {
-                        $query->orWhere(function ($query) use ($search, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable) {
+                        $query->orWhere(function ($query) use ($search, $containerMatches, $numberColumn, $senderColumn, $containerColumn, $type, $sourceTable, $matchContainer) {
                             if ($containerMatches[$search] ?? false) {
-                                $query->where($containerColumn, 'like', "%{$search}%");
-                                if ($type === 'lcl') {
-                                    $query->orWhereHas('kontainerPivot', fn ($pivot) => $pivot->where('nomor_kontainer', 'like', "%{$search}%"));
-                                }
+                                $matchContainer($query, $search);
 
                                 return;
                             }
