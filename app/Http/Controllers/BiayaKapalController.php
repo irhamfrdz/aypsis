@@ -252,6 +252,12 @@ class BiayaKapalController extends Controller
 
         $pelindoJenisTagihanOptions = $pelindoBarangOptions->pluck('kegiatan')->unique()->values();
         $pelindoLokasiOptions = $pelindoBarangOptions->pluck('lokasi')->filter()->unique()->sort()->values();
+        $pelindoKebersihanOptions = PricelistPelindo::aktif()
+            ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
+            ->whereNotNull('lokasi')
+            ->get(['id', 'lokasi', 'tarif'])
+            ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])
+            ->values();
 
         $pelindoManifestVoyages = Manifest::query()
             ->select('nama_kapal', 'no_voyage')
@@ -377,6 +383,7 @@ class BiayaKapalController extends Controller
             'pelindoBarangOptions',
             'pelindoJenisTagihanOptions',
             'pelindoLokasiOptions',
+            'pelindoKebersihanOptions',
             'pelindoManifestVoyages',
             'masterCustomerBuruhs',
             'penerimaBuktiPotongPphs',
@@ -418,7 +425,7 @@ class BiayaKapalController extends Controller
         $data = $request->all();
 
         // Root fields
-        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air', 'pelindo_biaya_admin_nota', 'pelindo_biaya_kebersihan'];
+        $fieldsToClean = ['nominal', 'ppn', 'pph', 'total_biaya', 'dp', 'sisa_pembayaran', 'pph_dokumen', 'grand_total_dokumen', 'biaya_materai', 'jasa_air', 'pph_air', 'grand_total_air'];
         foreach ($fieldsToClean as $field) {
             if (isset($data[$field]) && $data[$field] !== null) {
                 $data[$field] = str_replace(',', '.', str_replace('.', '', $data[$field]));
@@ -921,8 +928,6 @@ class BiayaKapalController extends Controller
             'lokasi' => 'nullable|in:jakarta,batam',
             'vendor_id' => 'nullable|exists:pricelist_biaya_dokumen,id',
             'nominal' => 'nullable|numeric|min:0',
-            'pelindo_biaya_admin_nota' => 'nullable|integer|min:0|max:9999999999999',
-            'pelindo_biaya_kebersihan' => 'nullable|integer|min:0|max:9999999999999',
             'penerima' => 'nullable|string|max:255',
             'nama_vendor' => 'nullable|string|max:255',
             'nomor_rekening' => 'nullable|string|max:100',
@@ -1454,17 +1459,36 @@ class BiayaKapalController extends Controller
                     }
                 }
             }
-            foreach (['pelindo_biaya_admin_nota', 'pelindo_biaya_kebersihan'] as $field) {
-                $fee = (int) ($validated[$field] ?? 0);
-                $feeCents = $fee * 100;
-                if ($feeCents > 999999999999900 - $pelindoTotalCents) {
-                    throw ValidationException::withMessages([
-                        $field => 'Total biaya melebihi batas nominal yang diperbolehkan.',
-                    ]);
-                }
-                $pelindoTotalCents += $feeCents;
-                $validated[$field] = $fee;
+            $pelindoLocations = collect($validated['pelindo_sections'])
+                ->flatMap(fn ($section) => array_column($section['tagihans'], 'lokasi'))
+                ->unique()
+                ->values();
+            if ($pelindoLocations->count() !== 1) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Pilih satu lokasi yang sama untuk semua jenis tagihan agar tarif Kebersihan dapat ditentukan.',
+                ]);
             }
+
+            $kebersihanPricelists = PricelistPelindo::aktif()
+                ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
+                ->where('lokasi', $pelindoLocations->first())
+                ->get(['tarif']);
+            if ($kebersihanPricelists->count() !== 1) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Tarif Kebersihan aktif untuk lokasi ini harus tersedia tepat satu pada Pricelist Pelindo.',
+                ]);
+            }
+
+            $kebersihanTarif = $kebersihanPricelists->first()->tarif;
+            $extraFeesCents = 1000000 + (int) str_replace('.', '', $kebersihanTarif);
+            if ($extraFeesCents > 999999999999900 - $pelindoTotalCents) {
+                throw ValidationException::withMessages([
+                    'pelindo_biaya_kebersihan' => 'Total biaya melebihi batas nominal yang diperbolehkan.',
+                ]);
+            }
+            $pelindoTotalCents += $extraFeesCents;
+            $validated['pelindo_biaya_admin_nota'] = 10000;
+            $validated['pelindo_biaya_kebersihan'] = $kebersihanTarif;
             $validated['nama_kapal'] = array_column($pelindoKapalVoyages, 'kapal');
             $validated['no_voyage'] = array_column($pelindoKapalVoyages, 'voyage');
             $validated['nominal'] = sprintf('%d.%02d', intdiv($pelindoTotalCents, 100), $pelindoTotalCents % 100);

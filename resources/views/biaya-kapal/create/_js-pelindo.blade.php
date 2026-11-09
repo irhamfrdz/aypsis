@@ -1,5 +1,6 @@
     const pelindoManifestVoyages = @json($pelindoManifestVoyages);
     const pelindoBarangOptions = @json($pelindoBarangOptions);
+    const pelindoKebersihanOptions = @json($pelindoKebersihanOptions);
     const pelindoJumlahUrl = @json(route('biaya-kapal.pelindo-jumlah'));
     const pelindoWrapper = document.getElementById('pelindo_wrapper');
     const pelindoSectionsContainer = document.getElementById('pelindo_sections_container');
@@ -149,27 +150,40 @@
         const rows = [...pelindoSectionsContainer.querySelectorAll('.pelindo-barang-row')];
         const barangCents = rows.reduce((sum, row) =>
             sum + (Number(row.querySelector('.pelindo-biaya-input').dataset.cents) || 0), 0);
-        const extraCents = [...pelindoWrapper.querySelectorAll('.pelindo-extra-fee-input')]
-            .reduce((sum, input) => sum + (Number(input.value.replace(/\D/g, '')) || 0) * 100, 0);
+        const adminInput = document.getElementById('pelindo_biaya_admin_nota');
+        const kebersihanInput = document.getElementById('pelindo_biaya_kebersihan');
+        const kebersihanHint = document.getElementById('pelindo_kebersihan_hint');
+        const locations = [...new Set([...pelindoSectionsContainer.querySelectorAll('.pelindo-lokasi-select')]
+            .map(input => input.value).filter(Boolean))];
+        const matchingPricelists = locations.length === 1
+            ? pelindoKebersihanOptions.filter(item => item.lokasi === locations[0])
+            : [];
+        const kebersihanCents = matchingPricelists.length === 1
+            ? Math.round(Number(matchingPricelists[0].tarif) * 100)
+            : 0;
+        adminInput.value = '10.000';
+        kebersihanInput.value = matchingPricelists.length === 1
+            ? (kebersihanCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
+            : '';
+        kebersihanHint.textContent = locations.length > 1
+            ? 'Pilih satu lokasi yang sama untuk semua jenis tagihan.'
+            : locations.length === 0
+                ? 'Pilih lokasi tagihan untuk melihat tarif Kebersihan.'
+                : matchingPricelists.length === 0
+                    ? 'Tarif Kebersihan aktif untuk lokasi ini belum tersedia.'
+                    : matchingPricelists.length > 1
+                        ? 'Terdapat lebih dari satu tarif Kebersihan aktif untuk lokasi ini.'
+                        : `Tarif Kebersihan dari Pricelist Pelindo ${locations[0]}.`;
+        const extraCents = 1000000 + kebersihanCents;
         const totalCents = barangCents + extraCents;
         const hasCompleteRow = rows.some(row =>
             row.querySelector('.pelindo-jumlah-input').value !== '' &&
             row.querySelector('.pelindo-biaya-input').value !== ''
         );
-        nominalInput.value = hasCompleteRow || extraCents > 0
+        nominalInput.value = hasCompleteRow || locations.length > 0
             ? (totalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
             : '';
     }
-
-    pelindoWrapper.querySelectorAll('.pelindo-extra-fee-input').forEach(input => {
-        const digits = input.value.replace(/\D/g, '');
-        input.value = digits ? Number(digits).toLocaleString('id-ID') : '';
-        input.addEventListener('input', function () {
-            const digits = this.value.replace(/\D/g, '');
-            this.value = digits ? Number(digits).toLocaleString('id-ID') : '';
-            updatePelindoNominal();
-        });
-    });
 
     function refreshPelindoSections() {
         const sections = [...pelindoSectionsContainer.querySelectorAll('.pelindo-section')];

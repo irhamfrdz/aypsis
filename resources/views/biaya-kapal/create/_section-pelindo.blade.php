@@ -21,7 +21,7 @@
             <label for="pelindo_biaya_admin_nota" class="mb-2 block text-sm font-medium text-gray-700">Biaya Admin Nota</label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                <input type="text" inputmode="numeric" id="pelindo_biaya_admin_nota" name="pelindo_biaya_admin_nota" value="{{ old('pelindo_biaya_admin_nota') }}" placeholder="0" class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-white py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="pelindo_biaya_admin_nota" name="pelindo_biaya_admin_nota" value="10.000" readonly class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4">
             </div>
             @error('pelindo_biaya_admin_nota') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
@@ -29,8 +29,9 @@
             <label for="pelindo_biaya_kebersihan" class="mb-2 block text-sm font-medium text-gray-700">Biaya Kebersihan</label>
             <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
-                <input type="text" inputmode="numeric" id="pelindo_biaya_kebersihan" name="pelindo_biaya_kebersihan" value="{{ old('pelindo_biaya_kebersihan') }}" placeholder="0" class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-white py-2 pl-12 pr-4 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">
+                <input type="text" id="pelindo_biaya_kebersihan" name="pelindo_biaya_kebersihan" value="" readonly placeholder="Pilih lokasi tagihan" class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4">
             </div>
+            <p id="pelindo_kebersihan_hint" class="mt-1 text-xs text-gray-500">Terisi otomatis dari Pricelist Pelindo sesuai lokasi tagihan.</p>
             @error('pelindo_biaya_kebersihan') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
         </div>
     </div>
