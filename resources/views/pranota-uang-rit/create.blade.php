@@ -40,8 +40,8 @@
 
         <form action="{{ route('pranota-uang-rit.store') }}" method="POST" id="pranotaForm" class="space-y-3">
             @csrf
-            <input type="hidden" name="start_date" value="{{ request('start_date') }}">
-            <input type="hidden" name="end_date" value="{{ request('end_date') }}">
+            <input type="hidden" name="start_date" value="{{ old('start_date', $viewStartDate) }}">
+            <input type="hidden" name="end_date" value="{{ old('end_date', $viewEndDate) }}">
 
             @if(isset($viewStartDate) && isset($viewEndDate) && $viewStartDate && $viewEndDate)
             <div class="bg-yellow-50 border border-yellow-200 p-3 rounded-md">

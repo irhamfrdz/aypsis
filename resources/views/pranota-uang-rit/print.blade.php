@@ -194,6 +194,9 @@
         
         <div class="info-section">
             <div>GAJI SUPIR TGL: {{ $pranotaUangRit->tanggal ? $pranotaUangRit->tanggal->format('d M Y') : '' }}</div>
+            @if($pranotaUangRit->periode_dari && $pranotaUangRit->periode_sampai)
+                <div>PERIODE JARAK: {{ $pranotaUangRit->periode_dari->format('d/m/Y') }} - {{ $pranotaUangRit->periode_sampai->format('d/m/Y') }}</div>
+            @endif
             <div style="text-align: right; margin-top: -20px;">{{ $pranotaUangRit->no_pranota }}</div>
         </div>
         

@@ -361,6 +361,8 @@ class PranotaUangRitController extends Controller
     {
         $request->validate([
             'tanggal' => 'required|date',
+            'start_date' => 'required|date_format:Y-m-d',
+            'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
             'keterangan' => 'nullable|string',
             'surat_jalan_data' => 'sometimes|array',
             'surat_jalan_data.*.selected' => 'sometimes|boolean',
@@ -606,6 +608,8 @@ class PranotaUangRitController extends Controller
             $pranotaUangRit = PranotaUangRit::create([
                 'no_pranota' => $nomorPranota,
                 'tanggal' => $request->tanggal,
+                'periode_dari' => $request->start_date,
+                'periode_sampai' => $request->end_date,
                 'surat_jalan_id' => $firstSuratJalanId, // Referensi ke surat jalan pertama (bisa null jika hanya bongkaran)
                 'surat_jalan_bongkaran_id' => $firstSuratJalanBongkaranId, // Referensi ke surat jalan bongkaran pertama
                 'no_surat_jalan' => $combinedNoSuratJalan,
@@ -1340,10 +1344,19 @@ class PranotaUangRitController extends Controller
         $countedDays = [];
         if ($periodsByVehicle) {
             $allPeriods = collect($periodsByVehicle)->flatten(1);
-            $gpsDays = GpsDailyDistance::whereIn('mobil_id', array_keys($periodsByVehicle))
-                ->whereBetween('date', [$allPeriods->min('start'), $allPeriods->max('end')])
-                ->where('point_count', '>', 0)
-                ->get(['mobil_id', 'date', 'distance_km']);
+            $gpsStart = $allPeriods->min('start');
+            $gpsEnd = $allPeriods->max('end');
+            if ($pranotaUangRit->periode_dari && $pranotaUangRit->periode_sampai) {
+                $gpsStart = max($gpsStart, $pranotaUangRit->periode_dari->toDateString());
+                $gpsEnd = min($gpsEnd, $pranotaUangRit->periode_sampai->toDateString());
+            }
+
+            $gpsDays = $gpsStart <= $gpsEnd
+                ? GpsDailyDistance::whereIn('mobil_id', array_keys($periodsByVehicle))
+                    ->whereBetween('date', [$gpsStart, $gpsEnd])
+                    ->where('point_count', '>', 0)
+                    ->get(['mobil_id', 'date', 'distance_km'])
+                : collect();
 
             foreach ($gpsDays as $gpsDay) {
                 foreach ($periodsByVehicle[$gpsDay->mobil_id] as $period) {

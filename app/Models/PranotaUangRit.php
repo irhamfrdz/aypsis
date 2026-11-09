@@ -14,6 +14,8 @@ class PranotaUangRit extends Model
     protected $fillable = [
         'no_pranota',
         'tanggal',
+        'periode_dari',
+        'periode_sampai',
         'surat_jalan_id',
         'surat_jalan_bongkaran_id',
         'no_surat_jalan',
@@ -44,6 +46,8 @@ class PranotaUangRit extends Model
 
     protected $casts = [
         'tanggal' => 'date',
+        'periode_dari' => 'date',
+        'periode_sampai' => 'date',
         'tanggal_bayar' => 'date',
         'tanggal_bayar_kenek' => 'date',
         'approved_at' => 'datetime',
