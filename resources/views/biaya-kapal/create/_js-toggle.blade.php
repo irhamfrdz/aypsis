@@ -6,22 +6,10 @@
         const pelindoWrapper = document.getElementById('pelindo_wrapper');
         const isTagihanPelindo = selectedText.toLowerCase().includes('tagihan pelindo');
         pelindoWrapper.classList.toggle('hidden', !isTagihanPelindo);
-        document.getElementById('pelindo_kapal').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_voyage').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_jenis_tagihan').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_barang').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_jumlah').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_biaya').disabled = !isTagihanPelindo;
-        document.getElementById('pelindo_kapal').required = isTagihanPelindo;
-        document.getElementById('pelindo_voyage').required = isTagihanPelindo;
-        pelindoWrapper.querySelectorAll('.pelindo-kapal-row:not(:first-child) select').forEach(select => {
-            select.disabled = !isTagihanPelindo;
-            select.required = isTagihanPelindo;
+        pelindoWrapper.querySelectorAll('#pelindo_sections_container select, #pelindo_sections_container input').forEach(input => {
+            input.disabled = !isTagihanPelindo;
+            input.required = isTagihanPelindo;
         });
-        document.getElementById('pelindo_jenis_tagihan').required = isTagihanPelindo;
-        document.getElementById('pelindo_barang').required = isTagihanPelindo;
-        document.getElementById('pelindo_jumlah').required = isTagihanPelindo;
-        document.getElementById('pelindo_biaya').required = isTagihanPelindo;
         
         // Reset visibility of standard fields
         if(nominalWrapper) {

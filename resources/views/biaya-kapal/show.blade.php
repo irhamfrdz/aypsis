@@ -178,36 +178,19 @@
             @endif
 
             @if($biayaKapal->pelindoDetails->isNotEmpty())
-            <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Kapal dan Voyage Pelindo</label>
+            <div class="md:col-span-2 space-y-3">
+                <h3 class="font-semibold text-gray-800">Detail Tagihan Pelindo</h3>
                 @foreach($biayaKapal->pelindoDetails as $detail)
-                    <p class="text-sm font-semibold text-gray-900">{{ $detail->nama_kapal }} — {{ $detail->no_voyage }}</p>
+                <div class="rounded-lg border border-blue-200 bg-blue-50 p-4">
+                    <h4 class="mb-3 font-semibold text-gray-900">Kapal {{ $loop->iteration }}: {{ $detail->nama_kapal }} / {{ $detail->no_voyage }}</h4>
+                    <div class="grid grid-cols-1 gap-3 text-sm md:grid-cols-4">
+                        <div><span class="block text-gray-500">Jenis Tagihan</span><span class="font-semibold">{{ $detail->jenis_tagihan ?? '-' }}</span></div>
+                        <div><span class="block text-gray-500">Barang</span><span class="font-semibold">{{ $detail->status_kontainer ? $detail->barang_label : '-' }}</span></div>
+                        <div><span class="block text-gray-500">Jumlah</span><span class="font-semibold">{{ $detail->jumlah !== null ? number_format($detail->jumlah, 0, ',', '.') : '-' }}</span></div>
+                        <div><span class="block text-gray-500">Biaya per Barang</span><span class="font-semibold">{{ $detail->biaya !== null ? 'Rp '.number_format($detail->biaya, 0, ',', '.') : '-' }}</span></div>
+                    </div>
+                </div>
                 @endforeach
-            </div>
-            @endif
-
-            @if($biayaKapal->pelindoDetails->first()?->jenis_tagihan)
-            <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Jenis Tagihan Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetails->first()->jenis_tagihan }}</p>
-            </div>
-            @endif
-
-            @if($biayaKapal->pelindoDetails->first()?->status_kontainer)
-            <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Barang Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ $biayaKapal->pelindoDetails->first()->barang_label }}</p>
-            </div>
-            @endif
-
-            @if($biayaKapal->pelindoDetails->first()?->jumlah !== null)
-            <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Jumlah Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">{{ number_format($biayaKapal->pelindoDetails->first()->jumlah, 0, ',', '.') }}</p>
-            </div>
-            <div>
-                <label class="block text-sm font-medium text-gray-500 mb-1">Biaya per Barang Pelindo</label>
-                <p class="text-lg font-semibold text-gray-900">Rp {{ number_format($biayaKapal->pelindoDetails->first()->biaya, 0, ',', '.') }}</p>
             </div>
             @endif
 
