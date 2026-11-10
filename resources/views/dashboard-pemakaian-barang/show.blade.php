@@ -43,7 +43,6 @@
                             <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">{{ $categories[$kategori] }}</th>
                             <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Saldo Awal</th>
                             <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-indigo-700">Saldo Berjalan</th>
-                            <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-emerald-700">Total Biaya</th>
                             @if($kategori === 'kendaraan')
                                 <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Penggantian Ban Perut</th>
                             @endif
@@ -56,14 +55,13 @@
                                 <td class="px-4 py-3 text-sm font-semibold uppercase text-gray-800">{{ $card['nama'] }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">Rp {{ number_format($card['saldo_awal'], 2, ',', '.') }}</td>
                                 <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-indigo-900">Rp {{ number_format($card['saldo_berjalan'], 2, ',', '.') }}</td>
-                                <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp {{ number_format($card['saldo_awal'] + $card['saldo_berjalan'], 2, ',', '.') }}</td>
                                 @if($kategori === 'kendaraan')
                                     <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-indigo-700">{{ number_format($card['ban_perut_total'] ?? 0) }} kali</td>
                                 @endif
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ $kategori === 'kendaraan' ? 6 : 5 }}" class="px-4 py-10 text-center text-sm text-gray-500">Belum ada pemakai untuk kategori ini.</td>
+                                <td colspan="{{ $kategori === 'kendaraan' ? 5 : 4 }}" class="px-4 py-10 text-center text-sm text-gray-500">Belum ada pemakai untuk kategori ini.</td>
                             </tr>
                         @endforelse
                     </tbody>
@@ -73,9 +71,15 @@
                                 <th colspan="2" class="px-4 py-3 text-left text-sm font-bold text-gray-800">Total</th>
                                 <th class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-gray-800">Rp {{ number_format($totalSaldoAwal, 2, ',', '.') }}</th>
                                 <th class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-indigo-900">Rp {{ number_format($totalSaldoBerjalan, 2, ',', '.') }}</th>
-                                <th class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-emerald-700">Rp {{ number_format($totalSaldoAwal + $totalSaldoBerjalan, 2, ',', '.') }}</th>
                                 @if($kategori === 'kendaraan')
                                     <th class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-indigo-700">{{ number_format($totalBanPerut) }} kali</th>
+                                @endif
+                            </tr>
+                            <tr class="bg-indigo-50">
+                                <th colspan="2" class="px-4 py-3 text-left text-sm font-bold text-gray-800">Total Biaya (Saldo Awal + Saldo Berjalan)</th>
+                                <th colspan="2" class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-indigo-900">Rp {{ number_format($totalSaldoAwal + $totalSaldoBerjalan, 2, ',', '.') }}</th>
+                                @if($kategori === 'kendaraan')
+                                    <th></th>
                                 @endif
                             </tr>
                         </tfoot>
