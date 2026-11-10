@@ -437,8 +437,6 @@ class PembayaranPranotaObController extends Controller
             if (! empty($breakdownSupir)) {
                 foreach ($breakdownSupir as $breakdown) {
                     $totalPembayaran += (float) ($breakdown['grand_total'] ?? $breakdown['sisa'] ?? 0);
-                    // Potongan utang sudah masuk ke grand_total; akun piutang mencatat potongan yang sama.
-                    $totalPembayaran += (float) ($breakdown['potongan_utang'] ?? 0);
                 }
             } else {
                 // If no breakdown, keep original total
