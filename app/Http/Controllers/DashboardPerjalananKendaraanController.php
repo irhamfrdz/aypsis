@@ -27,49 +27,44 @@ class DashboardPerjalananKendaraanController extends Controller
             'metrics.*.unit' => ['required', 'string', 'max:20'],
         ]);
 
-        $apiKey = config('services.openai.key');
-        if (! $apiKey) {
-            return response()->json(['message' => 'OpenAI belum dikonfigurasi. Atur OPENAI_API_KEY di environment server.'], 503);
-        }
-
         $metrics = collect($validated['metrics'])->map(fn ($metric) => sprintf(
             '- %s: peringkat %d dari %d, nilai %s %s. Peringkat 1 adalah nilai tertinggi.',
             $metric['name'], $metric['rank'], $metric['total'], $metric['value'], $metric['unit']
         ))->implode("\n");
 
         try {
-            $response = Http::withToken($apiKey)
-                ->timeout(30)
-                ->post('https://api.openai.com/v1/responses', [
-                    'model' => config('services.openai.model', 'gpt-4.1-mini'),
-                    'instructions' => 'Tulis penjelasan ranking kendaraan dalam Bahasa Indonesia yang ringkas dan mudah dipahami. Jelaskan berdasarkan data yang diberikan saja, jangan menyimpulkan sebab mekanis atau perilaku yang tidak ada di data. Tegaskan ranking diurutkan dari nilai tertinggi, sehingga idle tinggi hanya berarti durasi idle tinggi. Sebutkan bahwa ranking adalah perbandingan pada periode yang dipilih.',
-                    'input' => "Periode: {$validated['period']}\nKendaraan: {$validated['vehicle']}\nSupir: ".($validated['driver'] ?: 'tidak tercatat')."\nData ranking:\n{$metrics}",
-                    'max_output_tokens' => 300,
+            $response = Http::timeout(60)
+                ->post(rtrim(config('services.ollama.url'), '/').'/api/chat', [
+                    'model' => config('services.ollama.model', 'llama3.2:3b'),
+                    'stream' => false,
+                    'options' => ['num_predict' => 300],
+                    'messages' => [
+                        ['role' => 'system', 'content' => 'Tulis penjelasan ranking kendaraan dalam Bahasa Indonesia yang ringkas dan mudah dipahami. Jelaskan berdasarkan data yang diberikan saja, jangan menyimpulkan sebab mekanis atau perilaku yang tidak ada di data. Tegaskan ranking diurutkan dari nilai tertinggi, sehingga idle tinggi hanya berarti durasi idle tinggi. Sebutkan bahwa ranking adalah perbandingan pada periode yang dipilih.'],
+                        ['role' => 'user', 'content' => "Periode: {$validated['period']}\nKendaraan: {$validated['vehicle']}\nSupir: ".($validated['driver'] ?: 'tidak tercatat')."\nData ranking:\n{$metrics}"],
+                    ],
                 ]);
 
             if (! $response->successful()) {
-                $apiError = (string) data_get($response->json(), 'error.message', 'No error message returned');
-                Log::warning('OpenAI ranking explanation request failed.', [
+                $apiError = (string) data_get($response->json(), 'error', 'No error message returned');
+                Log::warning('Ollama ranking explanation request failed.', [
                     'http_status' => $response->status(),
                     'api_error' => mb_substr($apiError, 0, 500),
                 ]);
 
-                return response()->json(['message' => 'OpenAI menolak permintaan (HTTP '.$response->status().'). Periksa log aplikasi untuk penyebabnya.'], 502);
+                return response()->json(['message' => 'Ollama menolak permintaan (HTTP '.$response->status().'). Pastikan Ollama aktif dan model tersedia.'], 502);
             }
 
-            $text = collect($response->json('output', []))
-                ->flatMap(fn ($item) => $item['content'] ?? [])
-                ->firstWhere('type', 'output_text')['text'] ?? null;
+            $text = $response->json('message.content');
 
             if (! is_string($text) || trim($text) === '') {
-                return response()->json(['message' => 'AI mengirim jawaban kosong. Silakan coba lagi.'], 502);
+            return response()->json(['message' => 'Ollama mengirim jawaban kosong. Silakan coba lagi.'], 502);
             }
 
             return response()->json(['explanation' => trim($text)]);
         } catch (\Throwable $exception) {
-            report($exception);
+            Log::warning('Ollama ranking explanation request failed.', ['message' => $exception->getMessage()]);
 
-            return response()->json(['message' => 'AI tidak bisa dihubungi saat ini. Coba lagi nanti.'], 502);
+            return response()->json(['message' => 'Ollama tidak bisa dihubungi. Pastikan service aktif di server.'], 502);
         }
     }
 
