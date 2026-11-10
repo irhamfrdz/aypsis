@@ -9,16 +9,32 @@ class PengisianTanggalDokumen extends Model
     protected $table = 'pengisian_tanggal_dokumens';
 
     protected $fillable = [
-        'kapal_id', 'nama_kapal', 'no_voyage', 'jenis_dokumen', 'nomor_dokumen', 'identifier_hash',
+        'cabang_id', 'kapal_id', 'nama_kapal', 'no_voyage', 'jenis_dokumen', 'nomor_dokumen', 'identifier_hash',
+        'tanggal_keluar_gate_tujuan',
+        'tanggal_keluar_gudang_ayp',
+        'tanggal_tiba_gudang_customer',
+        'tanggal_keluar_gudang_customer',
+        'tanggal_masuk_gate_tujuan',
         'tanggal_terima_dokumen_jkt_customer', 'tanggal_terima_dokumen_packinglist',
         'tanggal_dokumen_invoice_faktur_pajak', 'tanggal_kirim_dokumen_ppjk',
         'tanggal_terbit_sppb_ppftz', 'tanggal_terima_dokumen_dari_ppjk',
         'tanggal_kirim_dokumen_jakarta', 'tanggal_terima_sj_cabang', 'tanggal_terima_ppftz_cabang',
     ];
 
+    public function cabang()
+    {
+        return $this->belongsTo(Cabang::class);
+    }
+
     protected function casts(): array
     {
         return [
+            'tanggal_keluar_gate_tujuan' => 'date',
+            'tanggal_keluar_gudang_ayp' => 'date',
+            'tanggal_tiba_gudang_customer' => 'date',
+            'tanggal_keluar_gudang_customer' => 'date',
+            'tanggal_masuk_gate_tujuan' => 'date',
+
             'tanggal_terima_dokumen_jkt_customer' => 'date',
             'tanggal_terima_dokumen_packinglist' => 'date',
             'tanggal_dokumen_invoice_faktur_pajak' => 'date',

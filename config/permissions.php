@@ -22,6 +22,14 @@
 
 return [
     'modules' => [
+        'pengisian-tanggal-dokumen' => [
+            'name' => 'Pengisian Tanggal Dokumen',
+            'description' => 'Akses dan kelola tanggal dokumen',
+            'required' => true,
+            'sub_modules' => [
+                'pengisian-tanggal-dokumen-manage' => 'Akses dan kelola Pengisian Tanggal Dokumen',
+            ],
+        ],
         'invoice-kas-pinang' => [
             'name' => 'Invoice Kas Pinang',
             'description' => 'Pencatatan kas internal cabang Pinang',

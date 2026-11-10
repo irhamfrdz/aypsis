@@ -11,6 +11,12 @@ use Illuminate\Validation\Rule;
 class PengisianTanggalDokumenController extends Controller
 {
     private const DATE_FIELDS = [
+        'tanggal_keluar_gate_tujuan',
+        'tanggal_keluar_gudang_ayp',
+        'tanggal_tiba_gudang_customer',
+        'tanggal_keluar_gudang_customer',
+        'tanggal_masuk_gate_tujuan',
+
         'tanggal_terima_dokumen_jkt_customer',
         'tanggal_terima_dokumen_packinglist',
         'tanggal_dokumen_invoice_faktur_pajak',
@@ -24,7 +30,7 @@ class PengisianTanggalDokumenController extends Controller
 
     public function index()
     {
-        $records = PengisianTanggalDokumen::query()
+        $records = PengisianTanggalDokumen::with('cabang')
             ->when(request('kapal_id'), fn ($query, $kapalId) => $query->where('kapal_id', $kapalId))
             ->when(request('no_voyage'), fn ($query, $voyage) => $query->where('no_voyage', $voyage))
             ->when(request('search'), fn ($query, $search) => $query->where('nomor_dokumen', 'like', "%{$search}%"))
@@ -46,6 +52,7 @@ class PengisianTanggalDokumenController extends Controller
         return view('pengisian-tanggal-dokumen.form', [
             'record' => new PengisianTanggalDokumen(),
             'kapals' => $kapals,
+            'cabangs' => \App\Models\Cabang::orderBy('nama_cabang')->get(),
             'formAction' => route('pengisian-tanggal-dokumen.store'),
             'formMethod' => 'POST',
         ]);
@@ -59,6 +66,7 @@ class PengisianTanggalDokumenController extends Controller
         return view('pengisian-tanggal-dokumen.form', [
             'record' => $pengisianTanggalDokumen,
             'kapals' => $kapals,
+            'cabangs' => \App\Models\Cabang::orderBy('nama_cabang')->get(),
             'formAction' => route('pengisian-tanggal-dokumen.update', $pengisianTanggalDokumen),
             'formMethod' => 'PUT',
         ]);
@@ -116,12 +124,29 @@ class PengisianTanggalDokumenController extends Controller
     private function saveRecord(Request $request, PengisianTanggalDokumen $record)
     {
         $validated = $request->validate([
+            'cabang_id' => ['required', 'integer', 'exists:cabangs,id'],
             'kapal_id' => ['required', 'exists:master_kapals,id'],
             'no_voyage' => ['required', 'string', 'max:255'],
             'jenis_dokumen' => ['required', Rule::in(['BL', 'TANDA_TERIMA'])],
             'nomor_dokumen' => ['required', 'string', 'max:255'],
             ...array_fill_keys(self::DATE_FIELDS, ['nullable', 'date']),
         ]);
+
+        $cabang = \App\Models\Cabang::findOrFail($validated['cabang_id']);
+        if (preg_match('/\b(jakarta|jkt)\b/i', trim($cabang->nama_cabang))) {
+            // Preserve other branches' dates when Jakarta updates this document.
+            foreach (array_diff(self::DATE_FIELDS, [
+                'tanggal_kirim_dokumen_jakarta', 'tanggal_terima_sj_cabang', 'tanggal_terima_ppftz_cabang',
+            ]) as $field) {
+                unset($validated[$field]);
+            }
+        }
+
+        if (preg_match('/\bbatam\b/i', trim($cabang->nama_cabang))) {
+            foreach (['tanggal_kirim_dokumen_jakarta', 'tanggal_terima_sj_cabang', 'tanggal_terima_ppftz_cabang'] as $field) {
+                unset($validated[$field]);
+            }
+        }
 
         $kapal = MasterKapal::findOrFail($validated['kapal_id']);
         $exists = DB::table('manifests')->where('nama_kapal', $kapal->nama_kapal)

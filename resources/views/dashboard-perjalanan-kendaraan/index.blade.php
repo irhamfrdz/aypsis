@@ -33,7 +33,7 @@
             </div>
         @endif
 
-        <form method="GET" action="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] lg:items-end">
+        <form method="GET" action="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
             <div class="min-w-0">
                 <label for="tanggal_dari" class="mb-2 block text-sm font-semibold text-slate-700">Dari tanggal</label>
                 <input id="tanggal_dari" name="tanggal_dari" type="date" required value="{{ old('tanggal_dari', $tanggalDari) }}" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
@@ -42,7 +42,11 @@
                 <label for="tanggal_sampai" class="mb-2 block text-sm font-semibold text-slate-700">Sampai tanggal</label>
                 <input id="tanggal_sampai" name="tanggal_sampai" type="date" required min="{{ old('tanggal_dari', $tanggalDari) }}" value="{{ old('tanggal_sampai', $tanggalSampai) }}" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
             </div>
-            <button type="submit" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 sm:col-span-2 lg:col-span-1">
+            <div class="min-w-0">
+                <label for="search" class="mb-2 block text-sm font-semibold text-slate-700">Cari kendaraan / supir</label>
+                <input id="search" name="search" type="search" maxlength="100" value="{{ $search }}" placeholder="Nomor polisi, KIR, kode, atau supir" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
+            </div>
+            <button type="submit" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                 <i class="fas fa-chart-line" aria-hidden="true"></i> Tampilkan
             </button>
         </form>
@@ -86,7 +90,7 @@
             <div class="rounded-2xl border border-slate-200 bg-white px-6 py-12 text-center shadow-sm">
                 <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-xl text-slate-400"><i class="fas fa-truck" aria-hidden="true"></i></span>
                 <h3 class="mt-4 font-bold text-slate-800">Belum ada data perjalanan</h3>
-                <p class="mt-1 text-sm text-slate-500">Coba pilih periode lain yang memiliki data GPS.</p>
+                <p class="mt-1 text-sm text-slate-500">{{ $search !== '' ? 'Tidak ada kendaraan yang cocok dengan pencarian pada periode ini.' : 'Coba pilih periode lain yang memiliki data GPS.' }}</p>
             </div>
         @else
             <section class="space-y-4" aria-labelledby="ranking-title">

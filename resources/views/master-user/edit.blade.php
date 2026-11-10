@@ -2064,6 +2064,12 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                             </tr>
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule"><div class="flex items-center"><span class="text-sm mr-2">??</span><span>Pengisian Tanggal Dokumen</span></div></td>
+                                <td><input type="checkbox" name="permissions[pengisian-tanggal-dokumen][manage]" value="1" class="permission-checkbox" title="Izin akses dan kelola Pengisian Tanggal Dokumen" @checked(old('permissions.pengisian-tanggal-dokumen.manage', $user->can('pengisian-tanggal-dokumen-manage')))></td>
+                                <td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td><td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Tanda Terima Tanpa Surat Jalan Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

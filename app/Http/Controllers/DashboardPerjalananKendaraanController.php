@@ -67,6 +67,7 @@ class DashboardPerjalananKendaraanController extends Controller
 
     public function index(Request $request, RitSuratJalanService $ritService)
     {
+        $search = trim($request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? '');
         $hasReport = $request->hasAny(['tanggal_dari', 'tanggal_sampai']);
         $tanggalDari = (string) $request->query('tanggal_dari', '');
         $tanggalSampai = (string) $request->query('tanggal_sampai', '');
@@ -96,6 +97,15 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->get()
                 ->sortByDesc(fn ($row) => (float) $row->total_km)
                 ->values();
+
+            if ($search !== '') {
+                $normalize = fn ($value) => preg_replace('/\s+/u', '', mb_strtolower((string) $value));
+                $needle = $normalize($search);
+                $vehicleStats = $vehicleStats->filter(fn ($row) => collect([
+                    $row->mobil?->nomor_polisi, $row->mobil?->no_kir, $row->mobil?->kode_no,
+                    $row->mobil?->karyawan?->nama_lengkap, $row->mobil?->karyawan?->nama_panggilan,
+                ])->contains(fn ($value) => str_contains($normalize($value), $needle)))->values();
+            }
 
             if ($vehicleStats->isNotEmpty()) {
                 $amprahanUsages = app(VehicleAmprahanUsageService::class)->forVehicles(
@@ -189,6 +199,7 @@ class DashboardPerjalananKendaraanController extends Controller
             }
 
             $dailyTotals = GpsDailyDistance::query()
+                ->when($search !== '', fn ($query) => $query->whereIn('mobil_id', $vehicleStats->pluck('mobil_id')))
                 ->select('date')
                 ->selectRaw('SUM(distance_km) as total_km, COUNT(*) as vehicle_count')
                 ->whereBetween('date', [$tanggalDari, $tanggalSampai])
@@ -234,7 +245,7 @@ class DashboardPerjalananKendaraanController extends Controller
 
         return view('dashboard-perjalanan-kendaraan.index', compact(
             'hasReport', 'tanggalDari', 'tanggalSampai', 'vehicleStats', 'dailyTotals',
-            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance', 'rankings'
+            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance', 'rankings', 'search'
         ));
     }
 }

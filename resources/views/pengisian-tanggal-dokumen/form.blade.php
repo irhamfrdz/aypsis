@@ -5,15 +5,20 @@
 @section('content')
 @php
     $dateFields = [
-        'tanggal_terima_dokumen_jkt_customer' => 'Tanggal Terima Dokumen Jakarta / Customer',
-        'tanggal_terima_dokumen_packinglist' => 'Tanggal Terima Dokumen Packing List',
+        'tanggal_terima_dokumen_jkt_customer' => 'Tanggal Terima Dokumen dari JKT/ CUSTOMER',
+        'tanggal_terima_dokumen_packinglist' => 'Tanggal Packing List',
         'tanggal_dokumen_invoice_faktur_pajak' => 'Tanggal Dokumen Invoice & Faktur Pajak',
-        'tanggal_kirim_dokumen_ppjk' => 'Tanggal Kirim Dokumen ke PPJK',
-        'tanggal_terbit_sppb_ppftz' => 'Tanggal Penerbitan SPPB & PPFTZ',
-        'tanggal_terima_dokumen_dari_ppjk' => 'Tanggal Terima Dokumen dari PPJK',
-        'tanggal_kirim_dokumen_jakarta' => 'Tanggal Kirim Dokumen ke Jakarta',
-        'tanggal_terima_sj_cabang' => 'Tanggal Terima SJ dari Cabang',
-        'tanggal_terima_ppftz_cabang' => 'Tanggal Terima PPFTZ dari Cabang',
+        'tanggal_kirim_dokumen_ppjk' => 'Tanggal Kirim Dokumen PPJK',
+        'tanggal_terbit_sppb_ppftz' => 'Tanggal Penerbit SPPB & PPFTZ',
+        'tanggal_terima_dokumen_dari_ppjk' => 'Tanggal Terima Dokumen Dari PPJK',
+        'tanggal_keluar_gate_tujuan' => 'Tanggal Keluar Gate Tujuan',
+        'tanggal_keluar_gudang_ayp' => 'Tanggal Keluar Dari Gudang AYP',
+        'tanggal_tiba_gudang_customer' => 'Tanggal Tiba Di Gudang Customer',
+        'tanggal_keluar_gudang_customer' => 'Tanggal Keluar Dari Gudang Customer',
+        'tanggal_masuk_gate_tujuan' => 'Tanggal Masuk Gate Tujuan',
+        'tanggal_kirim_dokumen_jakarta' => 'Tanggal Kirim Dokumen Ke JKT',
+        'tanggal_terima_sj_cabang' => 'Tanggal SJ Dari Cabang',
+        'tanggal_terima_ppftz_cabang' => 'Tanggal Terima PPFTZ Dari Cabang',
     ];
 @endphp
 <style>
@@ -69,11 +74,27 @@
     <form method="POST" action="{{ $formAction }}" class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         @csrf
         @if($formMethod !== 'POST') @method($formMethod) @endif
+        <section class="border-b border-gray-200 p-5 sm:p-7">
+            <label for="cabang_id" class="mb-2 block font-semibold text-gray-900">1. Cabang yang Menginput <span class="text-red-500">*</span></label>
+            <p class="mb-3 text-sm text-gray-500">Pilih cabang terlebih dahulu untuk membuka seluruh kolom data dokumen.</p>
+            <select id="cabang_id" name="cabang_id" required class="w-full rounded-lg border-gray-300">
+                <option value="">-- Pilih Cabang --</option>
+                @foreach($cabangs as $cabang)
+                    <option value="{{ $cabang->id }}" data-nama="{{ $cabang->nama_cabang }}" @selected(old('cabang_id', $record->cabang_id) == $cabang->id)>{{ $cabang->nama_cabang }}</option>
+                @endforeach
+            </select>
+        </section>
+        <div id="cabang-notice" role="alert" tabindex="-1" hidden class="mx-5 mt-4 rounded-lg border border-amber-300 bg-amber-50 p-4 text-sm font-medium text-amber-800 sm:mx-7">
+            Pilih Cabang yang Menginput terlebih dahulu sebelum mengisi data dokumen.
+        </div>
+        <div id="dokumen-area" class="relative">
+        <button id="cabang-guard" type="button" @if(old('cabang_id', $record->cabang_id)) hidden @endif aria-label="Pilih Cabang yang Menginput terlebih dahulu untuk mengisi data dokumen" class="absolute inset-0 z-10 w-full cursor-not-allowed bg-transparent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-amber-400"></button>
+        <fieldset id="dokumen-fields" @disabled(!old('cabang_id', $record->cabang_id)) class="min-w-0 border-0 p-0">
         <section class="p-5 sm:p-7">
             <div class="mb-5 flex items-start gap-3">
                 <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700"><i class="fa-regular fa-file-lines" aria-hidden="true"></i></span>
                 <div>
-                    <h2 class="font-semibold text-gray-900">Identitas Dokumen</h2>
+                    <h2 class="font-semibold text-gray-900">2. Identitas Dokumen</h2>
                     <p class="mt-0.5 text-sm text-gray-500">Pilih data dokumen yang akan dicatat tanggal prosesnya.</p>
                 </div>
             </div>
@@ -102,26 +123,28 @@
         </div>
         </section>
 
-        <section class="border-t border-gray-200 bg-gray-50/70 p-5 sm:p-7">
+        <fieldset id="tanggal-fields" @disabled(!old('cabang_id', $record->cabang_id)) class="border-t border-gray-200 bg-gray-50/70 p-5 sm:p-7">
         <div class="mb-5 flex items-start gap-3">
             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-700"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i></span>
             <div>
-                <h2 class="font-semibold text-gray-900">Tanggal Proses Dokumen</h2>
+                <h2 class="font-semibold text-gray-900">3. Tanggal Proses Dokumen</h2>
                 <p class="mt-0.5 text-sm text-gray-500">Isi tanggal yang sudah diketahui. Kolom yang belum ada datanya boleh dikosongkan.</p>
             </div>
         </div>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @foreach($dateFields as $field => $label)
-                <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
+                <div data-date-field="{{ $field }}" class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors focus-within:border-blue-300">
                     <label for="{{ $field }}" class="mb-2 flex min-h-10 items-start text-sm font-medium leading-5 text-gray-700">{{ $label }}</label>
                     <input type="date" id="{{ $field }}" name="{{ $field }}" value="{{ old($field, $record->$field?->format('Y-m-d')) }}" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm text-gray-800 shadow-sm focus:border-blue-500 focus:ring-blue-500">
                 </div>
             @endforeach
         </div>
-        </section>
+        </fieldset>
+        </fieldset>
+        </div>
         <div class="flex flex-col-reverse gap-3 border-t border-gray-200 bg-white px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-7">
             <p class="text-xs text-gray-500"><span class="text-red-500">*</span> Wajib diisi</p>
-            <button type="submit" class="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            <button id="simpan-dokumen" type="submit" @disabled(!old('cabang_id', $record->cabang_id)) class="disabled:cursor-not-allowed disabled:opacity-50 inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 <i class="fa-regular fa-floppy-disk" aria-hidden="true"></i> Simpan Tanggal Dokumen
             </button>
         </div>
@@ -130,6 +153,43 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const cabang = document.getElementById('cabang_id');
+    const tanggalFields = document.getElementById('tanggal-fields');
+    const dokumenFields = document.getElementById('dokumen-fields');
+    const simpanDokumen = document.getElementById('simpan-dokumen');
+    const cabangGuard = document.getElementById('cabang-guard');
+    const cabangNotice = document.getElementById('cabang-notice');
+    cabangGuard.addEventListener('click', () => {
+        cabangNotice.hidden = false;
+        cabang.setAttribute('aria-invalid', 'true');
+        cabang.setAttribute('aria-describedby', 'cabang-notice');
+        cabang.focus();
+    });
+    function updateCabangAccess() {
+        const locked = !cabang.value;
+        dokumenFields.disabled = locked;
+        tanggalFields.disabled = locked;
+        simpanDokumen.disabled = locked;
+        cabangGuard.hidden = !locked;
+        const branchName = (cabang.selectedOptions[0]?.dataset.nama || '').trim().toLowerCase();
+        const isJakarta = /\b(jakarta|jkt)\b/.test(branchName);
+        const isBatam = /\bbatam\b/.test(branchName);
+        const movementFields = ["tanggal_keluar_gate_tujuan", "tanggal_keluar_gudang_ayp", "tanggal_tiba_gudang_customer", "tanggal_keluar_gudang_customer", "tanggal_masuk_gate_tujuan"];
+        const jakartaFields = ['tanggal_kirim_dokumen_jakarta', 'tanggal_terima_sj_cabang', 'tanggal_terima_ppftz_cabang'];
+        document.querySelectorAll('[data-date-field]').forEach(container => {
+            const field = container.dataset.dateField;
+            const visible = isJakarta ? jakartaFields.includes(field) : (isBatam ? !jakartaFields.includes(field) : !movementFields.includes(field));
+            container.hidden = !visible;
+            container.querySelector('input').disabled = !visible;
+        });
+        if (!locked) {
+            cabangNotice.hidden = true;
+            cabang.removeAttribute('aria-invalid');
+            cabang.removeAttribute('aria-describedby');
+        }
+    }
+    cabang.addEventListener('change', updateCabangAccess);
+    updateCabangAccess();
     const kapal = document.getElementById('kapal_id');
     const voyage = document.getElementById('no_voyage');
     const type = document.getElementById('jenis_dokumen');
