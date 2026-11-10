@@ -34,6 +34,7 @@ class PembayaranPranotaBpjsTest extends TestCase
         (require database_path('migrations/2026_11_03_100000_create_pembayaran_pranota_bpjs_tables.php'))->up();
         (require database_path('migrations/2026_11_03_110000_allow_split_bpjs_payments.php'))->up();
         (require database_path('migrations/2026_11_05_130000_add_bank_allocations_to_pembayaran_pranota_bpjs.php'))->up();
+        (require database_path('migrations/2026_11_10_180000_add_journal_allocations_to_bpjs_payments.php'))->up();
         (require database_path('migrations/2025_09_30_141213_create_nomor_terakhir_table.php'))->up();
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
@@ -48,6 +49,70 @@ class PembayaranPranotaBpjsTest extends TestCase
             ['id' => 1, 'nomor_akun' => '100', 'nama_akun' => 'Bank Uji', 'tipe_akun' => 'Bank', 'saldo' => 1000000],
             ['id' => 2, 'nomor_akun' => '200', 'nama_akun' => 'Hutang BPJS', 'tipe_akun' => 'Hutang', 'saldo' => -1000000],
         ]);
+    }
+
+    public function test_split_journal_posts_and_withdraws_all_bpjs_accounts(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '6101.001', 'nama_akun' => 'Gaji Jakarta', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6101.006', 'nama_akun' => 'Biaya BPJS Jakarta', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 5, 'nomor_akun' => '2103.002', 'nama_akun' => 'Utang Biaya BPJS', 'tipe_akun' => 'Hutang', 'saldo' => 0],
+        ]);
+        $detail = (new \App\Models\PranotaBpjsDetail)->newFromBuilder([
+            'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_bp_jamsostek' => 'KANTOR']]),
+            'rincian_bpjs' => json_encode(['jkk_tunjangan' => 10, 'jht_biaya' => 60, 'jht_hutang' => 30]),
+        ]);
+        $debits = (new \App\Services\BpjsPaymentJournal)->allocations([
+            ['credit_id' => 3, 'parts' => [['pranota_bpjs_detail_id' => 9, 'komponen' => 'jamsostek', 'subtotal' => 100]]],
+        ], collect([9 => $detail]));
+        $this->assertEquals([3 => 10, 4 => 60, 5 => 30], $debits);
+        $pranota = $this->pranota('paid', 100);
+        $allocations = [];
+        Coa::withoutEvents(function () use ($debits, &$allocations) {
+            foreach ($debits as $id => $amount) {
+                $coa = Coa::findOrFail($id);
+                $allocations[] = ['coa_id' => $id, 'subtotal' => $amount];
+                $this->assertTrue((new CoaTransactionService)->recordDoubleEntry(
+                    ['coa_id' => $id, 'nama_akun' => $coa->nama_akun, 'jumlah' => $amount],
+                    ['coa_id' => 1, 'nama_akun' => 'Bank Uji', 'jumlah' => $amount],
+                    '2026-11-01', 'TEST-SPLIT', 'Pembayaran Pranota BPJS'
+                ));
+            }
+        });
+        $this->assertEquals(999900, Coa::find(1)->saldo);
+        $this->assertEquals(60, Coa::find(4)->saldo);
+        $payment = PembayaranPranotaBpjs::create([
+            'nomor_pembayaran' => 'TEST-SPLIT', 'tanggal_pembayaran' => '2026-11-01',
+            'bank_coa_id' => 3, 'akun_coa_id' => 1, 'total_pembayaran' => 100,
+            'bank_allocations' => [['coa_id' => 3, 'subtotal' => 100]], 'journal_allocations' => $allocations,
+        ]);
+        $payment->pranotas()->attach($pranota->id, ['subtotal' => 100]);
+        Coa::withoutEvents(fn () => \App\Models\CoaTransaction::withoutEvents(fn () =>
+            (new PembayaranPranotaBpjsController(new CoaTransactionService))->destroy($payment)));
+        $this->assertEquals(1000000, Coa::find(1)->saldo);
+        foreach ([3, 4, 5] as $id) {
+            $this->assertEquals(0, Coa::find($id)->saldo);
+        }
+        $this->assertSame(0, DB::table('coa_transactions')->count());
+        $this->assertSame('unpaid', $pranota->fresh()->status);
+    }
+
+    public function test_batam_expense_uses_batam_coa_and_rejects_inconsistent_breakdown(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '6201.001', 'nama_akun' => 'Gaji Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6201.006', 'nama_akun' => 'Biaya BPJS Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+        ]);
+        $detail = (new \App\Models\PranotaBpjsDetail)->newFromBuilder([
+            'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_bp_jamsostek' => 'KANTOR']]),
+            'rincian_bpjs' => json_encode(['jkk_tunjangan' => 10, 'jht_biaya' => 90]),
+        ]);
+        $group = ['credit_id' => 3, 'parts' => [['pranota_bpjs_detail_id' => 9, 'komponen' => 'jamsostek', 'subtotal' => 100]]];
+        $service = new \App\Services\BpjsPaymentJournal;
+        $this->assertEquals([3 => 10, 4 => 90], $service->allocations([$group], collect([9 => $detail])));
+        $group['parts'][0]['subtotal'] = 110;
+        $this->expectException(ValidationException::class);
+        $service->allocations([$group], collect([9 => $detail]));
     }
 
     private function pranota(string $status = 'draft', float $total = 123456.78): PranotaBpjsHeader

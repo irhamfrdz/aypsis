@@ -74,6 +74,7 @@ class PembayaranPranotaBpjsController extends Controller
                 }
                 $allocations = [];
                 $creditAmounts = [];
+                $journalDebits = [];
                 foreach ($pranotas as $pranota) {
                     if (isset($data['group_keys'])) {
                         if ($pranotas->count() !== 1) {
@@ -102,6 +103,7 @@ class PembayaranPranotaBpjsController extends Controller
                             $selected = array_filter($selected, fn ($group) => count($group['parts']) > 0);
                         }
                         $creditAmounts = (new \App\Services\BpjsJournalAccount)->selectedAmounts(array_values($selected));
+                        $journalDebits = (new \App\Services\BpjsPaymentJournal)->allocations($selected, $pranota->details->keyBy('id'));
                         $parts = array_merge(...array_column(array_values($selected), 'parts'));
                         $detailMap = $pranota->details->keyBy('id');
                         $amountResolver = new \App\Services\BpjsJournalAmounts;
@@ -116,7 +118,17 @@ class PembayaranPranotaBpjsController extends Controller
                         }
                         $allocations[$pranota->id] = compact('subtotal', 'parts', 'paid');
                     } else {
-                        $allocations[$pranota->id] = ['subtotal' => (float) $pranota->grand_total, 'parts' => [], 'paid' => 0];
+                        $groups = (new \App\Services\BpjsPaymentParts)->groups($pranota);
+                        foreach ((new \App\Services\BpjsPaymentJournal)->allocations($groups, $pranota->details->keyBy('id')) as $id => $amount) {
+                            $journalDebits[$id] = round(($journalDebits[$id] ?? 0) + $amount, 2);
+                        }
+                        $parts = array_merge([], ...array_column(array_values($groups), 'parts'));
+                        $resolver = new \App\Services\BpjsJournalAmounts;
+                        foreach ($parts as &$part) {
+                            [$part['tunjangan'], $part['biaya'], $part['hutang']] = $resolver->forDetail($pranota->details->keyBy('id')->get($part['pranota_bpjs_detail_id']), $part['komponen']);
+                        }
+                        unset($part);
+                        $allocations[$pranota->id] = ['subtotal' => (float) $pranota->grand_total, 'parts' => $parts, 'paid' => 0];
                     }
                 }
                 $total = round(array_sum(array_column($allocations, 'subtotal')), 2);
@@ -126,14 +138,18 @@ class PembayaranPranotaBpjsController extends Controller
                 if (round(array_sum($creditAmounts), 2) !== $total) {
                     throw ValidationException::withMessages(['group_keys' => 'Total alokasi akun jurnal tidak sesuai total pembayaran.']);
                 }
-                if (array_key_exists((int) $data['akun_coa_id'], $creditAmounts)) {
+                if (array_key_exists((int) $data['akun_coa_id'], $creditAmounts) || array_key_exists((int) $data['akun_coa_id'], $journalDebits)) {
                     throw ValidationException::withMessages(['akun_coa_id' => 'Bank yang digunakan harus berbeda dengan Akun Bank dari jurnal.']);
                 }
+                if (round(array_sum($journalDebits), 2) !== $total) {
+                    throw ValidationException::withMessages(['group_keys' => 'Total rincian jurnal tidak sesuai pembayaran.']);
+                }
+                $coaIds = array_unique([...array_keys($creditAmounts), ...array_keys($journalDebits), $data['akun_coa_id']]);
                 // Lock accounts in a consistent order so concurrent payments preserve balances.
-                $accounts = Coa::whereIn('id', [...array_keys($creditAmounts), $data['akun_coa_id']])->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+                $accounts = Coa::whereIn('id', $coaIds)->orderBy('id')->lockForUpdate()->get()->keyBy('id');
                 $bank = $accounts->get(array_key_first($creditAmounts));
                 $account = $accounts->get($data['akun_coa_id']);
-                if (! $bank || ! $account || $accounts->count() !== count($creditAmounts) + 1) {
+                if (! $bank || ! $account || $accounts->count() !== count($coaIds)) {
                     throw ValidationException::withMessages(['bank_coa_id' => 'Pilih akun COA yang valid.']);
                 }
                 NomorTerakhir::firstOrCreate(['modul' => 'SIS'], ['nomor_terakhir' => 0, 'keterangan' => 'Nomor Pembayaran']);
@@ -145,12 +161,17 @@ class PembayaranPranotaBpjsController extends Controller
                     $coa = $accounts->get($coaId);
                     $bankAllocations[] = ['coa_id' => $coa->id, 'nomor_akun' => $coa->nomor_akun, 'nama_akun' => $coa->nama_akun, 'subtotal' => $amount];
                 }
+                $journalAllocations = [];
+                foreach ($journalDebits as $id => $amount) {
+                    $coa = $accounts->get($id);
+                    $journalAllocations[] = ['coa_id' => $id, 'nama_akun' => $coa->nama_akun, 'nomor_akun' => $coa->nomor_akun, 'subtotal' => $amount];
+                }
                 $payment = PembayaranPranotaBpjs::create([
                     'nomor_pembayaran' => $number, 'tanggal_pembayaran' => $data['tanggal_pembayaran'],
                     'bank_coa_id' => $bank->id, 'akun_coa_id' => $account->id,
                     'total_pembayaran' => $total, 'nomor_accurate' => $data['nomor_accurate'] ?? null,
                     'keterangan' => $data['keterangan'] ?? null, 'created_by' => auth()->id(),
-                    'bank_allocations' => $bankAllocations,
+                    'bank_allocations' => $bankAllocations, 'journal_allocations' => $journalAllocations,
                 ]);
                 foreach ($pranotas as $pranota) {
                     $allocation = $allocations[$pranota->id];
@@ -161,7 +182,7 @@ class PembayaranPranotaBpjsController extends Controller
                     $settled = round($allocation['paid'] + $allocation['subtotal'], 2) >= round((float) $pranota->grand_total, 2);
                     $pranota->update(['status' => $settled ? 'paid' : 'partial', 'updated_by' => auth()->id()]);
                 }
-                foreach ($bankAllocations as $allocation) {
+                foreach ($journalAllocations as $allocation) {
                     if (! $this->journal->recordDoubleEntry(
                         ['coa_id' => $allocation['coa_id'], 'nama_akun' => $allocation['nama_akun'], 'jumlah' => $allocation['subtotal']],
                         ['coa_id' => $account->id, 'nama_akun' => $account->nama_akun, 'jumlah' => $allocation['subtotal']],
@@ -193,7 +214,7 @@ class PembayaranPranotaBpjsController extends Controller
                 $payment = PembayaranPranotaBpjs::whereKey($pembayaran_pranota_bpj->id)->lockForUpdate()->firstOrFail();
                 $journals = \App\Models\CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)
                     ->where('jenis_transaksi', 'Pembayaran Pranota BPJS')->lockForUpdate()->get();
-                $expectedDebits = collect($payment->bank_allocations ?: [['coa_id' => $payment->bank_coa_id, 'subtotal' => $payment->total_pembayaran]])
+                $expectedDebits = collect($payment->journal_allocations ?? ($payment->bank_allocations ?: [['coa_id' => $payment->bank_coa_id, 'subtotal' => $payment->total_pembayaran]]))
                     ->groupBy('coa_id')->map(fn ($rows) => round($rows->sum('subtotal'), 2));
                 $byAccount = $journals->groupBy('coa_id');
                 $accounts = Coa::whereIn('id', $byAccount->keys())->orderBy('id')->lockForUpdate()->get()->keyBy('id');
