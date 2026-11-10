@@ -33,6 +33,7 @@ class TandaTerima extends Model
         'kontainer_details',
         'no_seal',
         'tujuan_pengiriman',
+        'gudang_tujuan_id',
         'pengirim',
         'pic_pengirim',
         'alamat_pengirim',

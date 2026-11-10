@@ -25,11 +25,13 @@ class DashboardPerjalananKendaraanController extends Controller
             'metrics.*.total' => ['required', 'integer', 'min:1'],
             'metrics.*.value' => ['required', 'string', 'max:40'],
             'metrics.*.unit' => ['required', 'string', 'max:20'],
+            'metrics.*.better' => ['required', 'in:higher,lower'],
         ]);
 
         $metrics = collect($validated['metrics'])->map(fn ($metric) => sprintf(
-            '- %s: peringkat %d dari %d, nilai %s %s. Peringkat 1 adalah nilai tertinggi.',
-            $metric['name'], $metric['rank'], $metric['total'], $metric['value'], $metric['unit']
+            '- %s: peringkat %d dari %d, nilai %s %s. %s',
+            $metric['name'], $metric['rank'], $metric['total'], $metric['value'], $metric['unit'],
+            $metric['better'] === 'lower' ? 'Nilai lebih rendah lebih baik.' : 'Nilai lebih tinggi lebih baik.'
         ))->implode("\n");
 
         try {
@@ -40,8 +42,8 @@ class DashboardPerjalananKendaraanController extends Controller
                     'keep_alive' => '10m',
                     'options' => ['num_predict' => 180, 'temperature' => 0.35],
                     'messages' => [
-                        ['role' => 'system', 'content' => 'Tulis satu paragraf penjelasan Bahasa Indonesia yang alami, seperti analis operasional menjelaskan kepada rekan kerja. Gunakan kalimat mengalir, bukan daftar atau pola berulang. Jelaskan posisi kendaraan dengan merujuk pada angka dan pembanding yang tersedia. Ranking diurutkan dari nilai tertinggi. Nilai idle tinggi hanya berarti durasi idle tinggi; jangan menyebutnya baik atau buruk. Jangan mengarang penyebab atau fakta yang tidak ada pada data. Maksimal 70 kata.'],
-                        ['role' => 'user', 'content' => "Jelaskan hasil ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data peringkat (nilai tertinggi lebih dulu):\n{$metrics}"],
+                        ['role' => 'system', 'content' => 'Tulis satu paragraf penjelasan Bahasa Indonesia yang alami dan mengalir. Jelaskan posisi kendaraan memakai angka dan pembanding yang tersedia. Perhatikan arah baik/buruk yang diberikan pada setiap variabel: peringkat 1 berarti posisi terbaik, bukan selalu angka terbesar. Idle lebih lama, lebih banyak pergantian ban/velg, dan lebih banyak pemakaian servis/barang dianggap lebih buruk. Jarak, hari bergerak, dan jumlah rit yang lebih tinggi dianggap lebih baik. Jangan mengarang sebab atau fakta di luar data. Maksimal 70 kata.'],
+                        ['role' => 'user', 'content' => "Jelaskan hasil ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data berikut sudah diurutkan sesuai kondisi terbaik ke terburuk:\n{$metrics}"],
                     ],
                 ]);
 
@@ -206,17 +208,17 @@ class DashboardPerjalananKendaraanController extends Controller
             $maxDailyDistance = (float) $dailyTotals->max('total_km');
 
             $rankingMetrics = [
-                'total_km' => ['label' => 'Jarak tempuh', 'unit' => 'km', 'direction' => 'desc'],
-                'moving_days' => ['label' => 'Hari bergerak', 'unit' => 'hari', 'direction' => 'desc'],
-                'idle_seconds' => ['label' => 'Durasi idle', 'unit' => 'jam', 'direction' => 'desc'],
-                'rit_count' => ['label' => 'Jumlah rit', 'unit' => 'rit', 'direction' => 'desc'],
-                'tire_replacement_count' => ['label' => 'Pergantian ban & velg', 'unit' => 'kali', 'direction' => 'desc'],
-                'usage_count' => ['label' => 'Pemakaian barang / servis', 'unit' => 'kali', 'direction' => 'desc'],
+                'total_km' => ['label' => 'Jarak tempuh', 'unit' => 'km', 'direction' => 'desc', 'better' => 'higher'],
+                'moving_days' => ['label' => 'Hari bergerak', 'unit' => 'hari', 'direction' => 'desc', 'better' => 'higher'],
+                'idle_seconds' => ['label' => 'Durasi idle', 'unit' => 'jam', 'direction' => 'asc', 'better' => 'lower'],
+                'rit_count' => ['label' => 'Jumlah rit', 'unit' => 'rit', 'direction' => 'desc', 'better' => 'higher'],
+                'tire_replacement_count' => ['label' => 'Pergantian ban & velg', 'unit' => 'kali', 'direction' => 'asc', 'better' => 'lower'],
+                'usage_count' => ['label' => 'Pemakaian barang / servis', 'unit' => 'kali', 'direction' => 'asc', 'better' => 'lower'],
             ];
 
             foreach ($rankingMetrics as $key => $metric) {
                 $rankings->put($key, $vehicleStats
-                    ->sortBy(fn ($row) => (float) ($key === 'usage_count' ? $row->amprahan_usages->count() : $row->{$key}), SORT_REGULAR, true)
+                    ->sortBy(fn ($row) => (float) ($key === 'usage_count' ? $row->amprahan_usages->count() : $row->{$key}), SORT_REGULAR, $metric['direction'] === 'desc')
                     ->values()
                     ->map(fn ($row, $index) => [
                         'rank' => $index + 1,
@@ -231,6 +233,7 @@ class DashboardPerjalananKendaraanController extends Controller
             $rankings = collect($rankingMetrics)->map(fn ($metric, $key) => [
                 'label' => $metric['label'],
                 'unit' => $metric['unit'],
+                'better' => $metric['better'],
                 'rows' => collect($rankings->get($key, [])),
             ]);
         }

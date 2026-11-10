@@ -92,7 +92,7 @@
             <section class="space-y-4" aria-labelledby="ranking-title">
                 <div>
                     <h3 id="ranking-title" class="text-lg font-bold text-slate-900">Ranking kendaraan per variabel</h3>
-                    <p class="mt-1 max-w-4xl text-sm leading-relaxed text-slate-600">Setiap daftar mengurutkan kendaraan dari nilai tertinggi ke terendah pada periode terpilih. Ranking menunjukkan banyaknya aktivitas atau pemakaian yang tercatat; nilai tinggi bukan otomatis berarti kendaraan bermasalah. Durasi idle yang tinggi berarti mesin lebih lama menyala saat kendaraan berhenti. Kendaraan tanpa data untuk suatu variabel dapat muncul dengan nilai nol.</p>
+                    <p class="mt-1 max-w-4xl text-sm leading-relaxed text-slate-600">Peringkat 1 adalah posisi terbaik untuk setiap variabel. Jarak tempuh, hari bergerak, dan jumlah rit diurutkan dari nilai tertinggi; durasi idle, pergantian ban/velg, dan pemakaian barang/servis diurutkan dari nilai terendah. Kendaraan tanpa data untuk suatu variabel dapat muncul dengan nilai nol.</p>
                 </div>
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
@@ -111,7 +111,7 @@
                                     $driverLabel = $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat');
                                     $aiMetrics = $rankings->map(function ($ranking) use ($vehicleLabel) {
                                         $entry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel);
-                                        return $entry ? ['name' => $ranking['label'], 'rank' => $entry['rank'], 'total' => $ranking['rows']->count(), 'value' => number_format($entry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.'), 'unit' => $ranking['unit']] : null;
+                                        return $entry ? ['name' => $ranking['label'], 'rank' => $entry['rank'], 'total' => $ranking['rows']->count(), 'value' => number_format($entry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.'), 'unit' => $ranking['unit'], 'better' => $ranking['better']] : null;
                                     })->filter()->values();
                                 @endphp
                                 <tr class="hover:bg-slate-50">

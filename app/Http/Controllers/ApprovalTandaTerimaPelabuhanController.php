@@ -56,9 +56,10 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
 
         foreach ($tandaTerimas as $tandaTerima) {
             $nomorKontainer = $this->nomorKontainers($tandaTerima)[0] ?? null;
-            $tandaTerima->gudang_tujuan_id = $nomorKontainer
-                ? ($lokasiKontainers->get($nomorKontainer) ?? $lokasiStock->get($nomorKontainer))
-                : null;
+            $tandaTerima->gudang_tujuan_id = $tandaTerima->gudang_tujuan_id
+                ?: ($nomorKontainer
+                    ? ($lokasiKontainers->get($nomorKontainer) ?? $lokasiStock->get($nomorKontainer))
+                    : null);
 
             $details = $tandaTerima->dimensi_details ?: $tandaTerima->dimensi_items ?: [];
             if ($details === []) {

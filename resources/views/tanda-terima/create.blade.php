@@ -1406,6 +1406,16 @@
                                         <i class="fas fa-search mr-1"></i>Ketik untuk mencari tujuan pengiriman
                                     </p>
                                 </div>
+                                <div>
+                                    <label for="gudang_tujuan_id" class="block text-xs font-medium text-gray-500 mb-2">Gudang Tujuan</label>
+                                    <select name="gudang_tujuan_id" id="gudang_tujuan_id" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('gudang_tujuan_id') border-red-500 @enderror">
+                                        <option value="">-- Pilih Gudang Tujuan --</option>
+                                        @foreach($gudangs as $gudang)
+                                            <option value="{{ $gudang->id }}" {{ (string) old('gudang_tujuan_id', $defaultGudangTujuanId) === (string) $gudang->id ? 'selected' : '' }}>{{ $gudang->nama_gudang }}</option>
+                                        @endforeach
+                                    </select>
+                                    @error('gudang_tujuan_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label for="estimasi_nama_kapal" class="block text-xs font-medium text-gray-500 mb-2">

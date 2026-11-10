@@ -503,8 +503,10 @@ class TandaTerimaController extends Controller
 
         // Get all master pengirim/penerima for dropdown
         $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
+        $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
+        $defaultGudangTujuanId = \App\Models\Gudang::whereRaw('LOWER(nama_gudang) LIKE ?', ['%customer%jakarta%'])->value('id');
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList'));
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList', 'gudangs', 'defaultGudangTujuanId'));
     }
 
     /**
@@ -567,6 +569,7 @@ class TandaTerimaController extends Controller
             'tonase' => 'nullable|array',
             'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
+            'gudang_tujuan_id' => 'nullable|exists:gudangs,id',
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
@@ -618,6 +621,7 @@ class TandaTerimaController extends Controller
             $tandaTerima->bukti_timbangan = $suratJalan->bukti_timbangan;
             $tandaTerima->bukti_timbangan_muat = $suratJalan->bukti_timbangan_muat;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
+            $tandaTerima->gudang_tujuan_id = $request->input('gudang_tujuan_id');
             $pengirimName = $request->pengirim;
             if ($pengirimName) {
                 $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();
