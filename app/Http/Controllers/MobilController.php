@@ -304,7 +304,7 @@ class MobilController extends Controller
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
             'ukuran_tractor_head' => [Rule::requiredIf($isTractorHead), 'nullable', Rule::in(['panjang', 'pendek'])],
-            'buntut_id' => [Rule::excludeIf(! $isTractorHead), Rule::requiredIf($isTractorHead), 'integer',
+            'buntut_id' => [Rule::excludeIf(! $isTractorHead), 'nullable', 'integer',
                 Rule::exists('mobils', 'id')->where(fn ($query) => $query
                     ->whereRaw('(UPPER(TRIM(jenis)) = ? OR UPPER(TRIM(jenis)) LIKE ?)', ['BUNTUT', 'BUNTUT %'])->where('id', '!=', $mobil->id))],
             'roda' => 'nullable|integer|min:1|max:50',

@@ -104,7 +104,7 @@
                 </div>
 
                 @include('master-mobil._ukuran-tractor-head')
-                @include('master-mobil._buntut-terpasang')
+                @include('master-mobil._buntut-terpasang', ['buntutOptional' => true])
 
                 <!-- Roda -->
                 <div>

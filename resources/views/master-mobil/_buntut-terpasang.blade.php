@@ -1,6 +1,6 @@
 <div id="buntut-terpasang-wrapper" @if(strtoupper(trim((string) old('jenis', $mobil->jenis ?? ''))) !== 'TRACTOR HEAD') hidden @endif>
     <label for="buntut_id" class="block text-sm font-medium text-gray-700">
-        Buntut Terpasang <span class="text-red-500">*</span>
+        Buntut Terpasang @unless($buntutOptional ?? false)<span class="text-red-500">*</span>@endunless
     </label>
     <select name="buntut_id" id="buntut_id" class="{{ $inputClasses }}">
         <option value="">-- Pilih buntut --</option>
