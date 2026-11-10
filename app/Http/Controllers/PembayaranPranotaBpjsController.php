@@ -257,7 +257,8 @@ class PembayaranPranotaBpjsController extends Controller
             ->join('pranota_bpjs_details', 'pranota_bpjs_details.id', '=', 'pembayaran_pranota_bpjs_parts.pranota_bpjs_detail_id')
             ->select('pembayaran_pranota_bpjs_parts.komponen', 'pembayaran_pranota_bpjs_parts.tipe', 'pranota_bpjs_details.*')->get();
         foreach ($paidParts as $paidPart) {
-            $detail = new \App\Models\PranotaBpjsDetail((array) $paidPart);
+            // Hydrate database values directly so JSON snapshots are decoded once.
+            $detail = (new \App\Models\PranotaBpjsDetail)->newFromBuilder((array) $paidPart);
             [$tunjangan, $biaya, $hutang] = $amountResolver->forDetail($detail, $paidPart->komponen);
             $key = $paidPart->komponen.'|'.$paidPart->tipe;
             $journalAmounts[$key] ??= ['tunjangan' => 0, 'biaya' => 0, 'hutang' => 0];
