@@ -94,20 +94,29 @@
                     <h3 id="ranking-title" class="text-lg font-bold text-slate-900">Ranking kendaraan per variabel</h3>
                     <p class="mt-1 max-w-4xl text-sm leading-relaxed text-slate-600">Setiap daftar mengurutkan kendaraan dari nilai tertinggi ke terendah pada periode terpilih. Ranking menunjukkan banyaknya aktivitas atau pemakaian yang tercatat; nilai tinggi bukan otomatis berarti kendaraan bermasalah. Durasi idle yang tinggi berarti mesin lebih lama menyala saat kendaraan berhenti. Kendaraan tanpa data untuk suatu variabel dapat muncul dengan nilai nol.</p>
                 </div>
-                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-                    @foreach($rankings as $ranking)
-                        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                            <h4 class="font-bold text-slate-800">{{ $ranking['label'] }}</h4>
-                            <ol class="mt-3 divide-y divide-slate-100">
-                                @foreach($ranking['rows'] as $entry)
-                                    <li class="flex items-center justify-between gap-3 py-2 text-sm">
-                                        <span class="flex min-w-0 items-center gap-2"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">{{ $entry['rank'] }}</span><span class="truncate font-medium text-slate-700">{{ $entry['vehicle'] }}</span></span>
-                                        <span class="shrink-0 font-bold text-slate-900">{{ number_format($entry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }} {{ $ranking['unit'] }}</span>
-                                    </li>
-                                @endforeach
-                            </ol>
-                        </article>
-                    @endforeach
+                <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
+                    <table class="min-w-full divide-y divide-slate-200 text-sm">
+                        <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                            <tr>
+                                <th class="whitespace-nowrap px-4 py-3">Kendaraan</th>
+                                @foreach($rankings as $ranking)<th class="whitespace-nowrap px-4 py-3">{{ $ranking['label'] }}</th>@endforeach
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-slate-100">
+                            @foreach($vehicleStats as $row)
+                                @php $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id; @endphp
+                                <tr class="hover:bg-slate-50">
+                                    <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
+                                    @foreach($rankings as $ranking)
+                                        @php $rankEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
+                                        <td class="whitespace-nowrap px-4 py-3 text-slate-700">
+                                            @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
+                                        </td>
+                                    @endforeach
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
