@@ -98,15 +98,17 @@
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                             <tr>
+                                <th class="whitespace-nowrap px-4 py-3">No.</th>
                                 <th class="whitespace-nowrap px-4 py-3">Kendaraan</th>
                                 <th class="whitespace-nowrap px-4 py-3">Nama supir</th>
                                 @foreach($rankings as $ranking)<th class="whitespace-nowrap px-4 py-3">{{ $ranking['label'] }}</th>@endforeach
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            @foreach($vehicleStats as $row)
+                            @foreach($vehicleStats as $index => $row)
                                 @php $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id; @endphp
                                 <tr class="hover:bg-slate-50">
+                                    <td class="whitespace-nowrap px-4 py-3 text-slate-500">{{ $index + 1 }}</td>
                                     <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</td>
                                     @foreach($rankings as $ranking)
