@@ -1,6 +1,7 @@
     const pelindoManifestVoyages = @json($pelindoManifestVoyages);
     const pelindoBarangOptions = @json($pelindoBarangOptions);
     const pelindoKebersihanOptions = @json($pelindoKebersihanOptions);
+    const pelindoPalkaOptions = @json($pelindoPalkaOptions);
     const pelindoJumlahUrl = @json(route('biaya-kapal.pelindo-jumlah'));
     const pelindoWrapper = document.getElementById('pelindo_wrapper');
     const pelindoSectionsContainer = document.getElementById('pelindo_sections_container');
@@ -156,6 +157,9 @@
         const barangCents = rows.reduce((sum, row) =>
             sum + (Number(row.querySelector('.pelindo-biaya-input').dataset.cents) || 0), 0);
         const adminInput = document.getElementById('pelindo_biaya_admin_nota');
+        const palkaJumlahInput = document.getElementById('pelindo_jumlah_palka');
+        const palkaBiayaInput = document.getElementById('pelindo_biaya_palka');
+        const palkaHint = document.getElementById('pelindo_palka_hint');
         const kebersihanInput = document.getElementById('pelindo_biaya_kebersihan');
         const kebersihanHint = document.getElementById('pelindo_kebersihan_hint');
         const locations = [...new Set([...pelindoSectionsContainer.querySelectorAll('.pelindo-lokasi-select')]
@@ -166,6 +170,27 @@
         const kebersihanCents = matchingPricelists.length === 1
             ? Math.round(Number(matchingPricelists[0].tarif) * 100)
             : 0;
+        const matchingPalkaPricelists = locations.length === 1
+            ? pelindoPalkaOptions.filter(item => item.lokasi === locations[0])
+            : [];
+        const palkaJumlah = Number(palkaJumlahInput.value || 0);
+        const palkaTarif = matchingPalkaPricelists.length === 1 ? Number(matchingPalkaPricelists[0].tarif) : 0;
+        const palkaCents = palkaJumlah > 0 && Number.isFinite(palkaTarif)
+            ? Math.round(Math.round(palkaTarif * 100) * palkaJumlah)
+            : 0;
+        palkaBiayaInput.value = palkaJumlah > 0 && matchingPalkaPricelists.length === 1
+            ? (palkaCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
+            : '';
+        palkaBiayaInput.dataset.cents = String(palkaCents);
+        palkaHint.textContent = palkaJumlah <= 0
+            ? 'Masukkan jumlah palka; biaya dihitung dari tarif Pricelist Pelindo.'
+            : locations.length !== 1
+                ? 'Pilih satu lokasi tagihan untuk menentukan tarif Palka.'
+                : matchingPalkaPricelists.length === 0
+                    ? 'Tarif Palka aktif untuk lokasi ini belum tersedia.'
+                    : matchingPalkaPricelists.length > 1
+                        ? 'Terdapat lebih dari satu tarif Palka aktif untuk lokasi ini.'
+                        : `Tarif Rp ${palkaTarif.toLocaleString('id-ID', { maximumFractionDigits: 2 })} × ${palkaJumlah} palka.`;
         adminInput.value = '10.000';
         kebersihanInput.value = matchingPricelists.length === 1
             ? (kebersihanCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 })
@@ -179,7 +204,7 @@
                     : matchingPricelists.length > 1
                         ? 'Terdapat lebih dari satu tarif Kebersihan aktif untuk lokasi ini.'
                         : `Tarif Kebersihan dari Pricelist Pelindo ${locations[0]}.`;
-        const extraCents = 1000000 + kebersihanCents;
+        const extraCents = 1000000 + kebersihanCents + palkaCents;
         const subtotalCents = barangCents + extraCents;
         const adjustmentInput = document.getElementById('pelindo_adjustment');
         const adjustmentCents = (Number(adjustmentInput.value.replace(/\./g, '')) || 0) * 100;
@@ -188,7 +213,7 @@
             row.querySelector('.pelindo-jumlah-input').value !== '' &&
             row.querySelector('.pelindo-biaya-input').value !== ''
         );
-        const showTotal = hasCompleteRow || locations.length > 0;
+        const showTotal = hasCompleteRow || locations.length > 0 || palkaJumlah > 0;
         document.getElementById('pelindo_subtotal').value = showTotal
             ? (subtotalCents / 100).toLocaleString('id-ID', { maximumFractionDigits: 2 }) : '';
         document.getElementById('pelindo_grand_total').value = showTotal
@@ -215,6 +240,7 @@
         if (!this.value || this.value === '-') this.value = '0';
         updatePelindoNominal();
     });
+    document.getElementById('pelindo_jumlah_palka').addEventListener('input', updatePelindoNominal);
 
     function refreshPelindoSections() {
         const sections = [...pelindoSectionsContainer.querySelectorAll('.pelindo-section')];

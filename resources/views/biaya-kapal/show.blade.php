@@ -197,8 +197,9 @@
                     @endforeach
                 </div>
                 @endforeach
-                <div class="grid grid-cols-1 gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4 text-sm md:grid-cols-3">
                     <div><span class="block text-gray-500">Biaya Admin Nota</span><span class="font-semibold">Rp {{ number_format($biayaKapal->pelindo_biaya_admin_nota ?? 0, 0, ',', '.') }}</span></div>
+                    <div><span class="block text-gray-500">Biaya Palka ({{ number_format($biayaKapal->pelindo_jumlah_palka ?? 0) }} palka)</span><span class="font-semibold">Rp {{ number_format($biayaKapal->pelindo_biaya_palka ?? 0, 0, ',', '.') }}</span></div>
                     <div><span class="block text-gray-500">Biaya Kebersihan</span><span class="font-semibold">Rp {{ number_format($biayaKapal->pelindo_biaya_kebersihan ?? 0, 0, ',', '.') }}</span></div>
                 </div>
                 <div class="grid grid-cols-1 gap-3 rounded-lg border border-blue-200 bg-white p-4 text-sm md:grid-cols-3">

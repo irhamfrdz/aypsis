@@ -165,6 +165,7 @@ class BiayaKapalController extends Controller
                 'pelindo_sections.*.tagihans.*.barangs' => 'required|array|min:1',
                 'pelindo_sections.*.tagihans.*.barangs.*.barang' => 'required|integer',
                 'pelindo_sections.*.tagihans.*.barangs.*.jumlah' => 'required|numeric|min:0.001|max:4294967295|decimal:0,3',
+                'pelindo_jumlah_palka' => 'nullable|integer|min:0|max:4294967295',
             ]);
 
             $pelindoKapalVoyages = [];
@@ -263,7 +264,31 @@ class BiayaKapalController extends Controller
             }
 
             $kebersihanTarif = $kebersihanPricelists->first()->tarif;
-            $extraFeesCents = 1000000 + (int) str_replace('.', '', $kebersihanTarif);
+            $palkaJumlah = (int) ($request->input('pelindo_jumlah_palka') ?? 0);
+            $palkaTarifCents = 0;
+            $palkaBiayaCents = 0;
+            if ($palkaJumlah > 0) {
+                $palkaPricelists = PricelistPelindo::aktif()
+                    ->where('status_kontainer', 'palka')
+                    ->where('lokasi', $pelindoLocations->first())
+                    ->get(['tarif']);
+
+                if ($palkaPricelists->count() !== 1) {
+                    throw ValidationException::withMessages([
+                        'pelindo_jumlah_palka' => 'Tarif Palka aktif untuk lokasi ini harus tersedia tepat satu pada Pricelist Pelindo.',
+                    ]);
+                }
+
+                $palkaTarifCents = (int) round((float) $palkaPricelists->first()->tarif * 100);
+                if ($palkaTarifCents > 0 && $palkaJumlah > intdiv(PHP_INT_MAX, $palkaTarifCents)) {
+                    throw ValidationException::withMessages([
+                        'pelindo_jumlah_palka' => 'Total biaya Palka melebihi batas nominal yang diperbolehkan.',
+                    ]);
+                }
+                $palkaBiayaCents = $palkaTarifCents * $palkaJumlah;
+            }
+
+            $extraFeesCents = 1000000 + (int) str_replace('.', '', $kebersihanTarif) + $palkaBiayaCents;
             if ($extraFeesCents > 999999999999900 - $pelindoTotalCents) {
                 throw ValidationException::withMessages([
                     'pelindo_biaya_kebersihan' => 'Total biaya melebihi batas nominal yang diperbolehkan.',
@@ -272,6 +297,8 @@ class BiayaKapalController extends Controller
             $pelindoTotalCents += $extraFeesCents;
             $validated['pelindo_biaya_admin_nota'] = 10000;
             $validated['pelindo_biaya_kebersihan'] = $kebersihanTarif;
+            $validated['pelindo_jumlah_palka'] = $palkaJumlah;
+            $validated['pelindo_biaya_palka'] = sprintf('%d.%02d', intdiv($palkaBiayaCents, 100), $palkaBiayaCents % 100);
             $adjustment = (int) ($validated['pelindo_adjustment'] ?? 0);
             $grandTotalCents = $pelindoTotalCents + $adjustment * 100;
             if ($grandTotalCents < 0 || $grandTotalCents > 999999999999900) {
@@ -284,7 +311,12 @@ class BiayaKapalController extends Controller
             $validated['no_voyage'] = array_column($pelindoKapalVoyages, 'voyage');
             $validated['nominal'] = sprintf('%d.%02d', intdiv($grandTotalCents, 100), $grandTotalCents % 100);
         } else {
-            unset($validated['pelindo_biaya_admin_nota'], $validated['pelindo_biaya_kebersihan']);
+            unset(
+                $validated['pelindo_biaya_admin_nota'],
+                $validated['pelindo_biaya_kebersihan'],
+                $validated['pelindo_jumlah_palka'],
+                $validated['pelindo_biaya_palka']
+            );
         }
 
         unset($validated['pelindo_sections'], $validated['pelindo_adjustment']);
@@ -416,6 +448,12 @@ class BiayaKapalController extends Controller
             ->get(['id', 'lokasi', 'tarif'])
             ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])
             ->values();
+        $pelindoPalkaOptions = PricelistPelindo::aktif()
+            ->where('status_kontainer', 'palka')
+            ->whereNotNull('lokasi')
+            ->get(['lokasi', 'tarif'])
+            ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])
+            ->values();
 
         $pelindoManifestVoyages = Manifest::query()
             ->select('nama_kapal', 'no_voyage')
@@ -542,6 +580,7 @@ class BiayaKapalController extends Controller
             'pelindoJenisTagihanOptions',
             'pelindoLokasiOptions',
             'pelindoKebersihanOptions',
+            'pelindoPalkaOptions',
             'pelindoManifestVoyages',
             'masterCustomerBuruhs',
             'penerimaBuktiPotongPphs',
@@ -4189,6 +4228,10 @@ class BiayaKapalController extends Controller
             ->whereRaw('LOWER(kegiatan) LIKE ?', ['%kebersihan%'])
             ->whereNotNull('lokasi')->get(['id', 'lokasi', 'tarif'])
             ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])->values();
+        $pelindoPalkaOptions = PricelistPelindo::aktif()
+            ->where('status_kontainer', 'palka')
+            ->whereNotNull('lokasi')->get(['lokasi', 'tarif'])
+            ->map(fn ($item) => ['lokasi' => $item->lokasi, 'tarif' => $item->tarif])->values();
         $pelindoManifestVoyages = Manifest::query()
             ->select('nama_kapal', 'no_voyage')
             ->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
@@ -4367,6 +4410,7 @@ class BiayaKapalController extends Controller
             'pelindoJenisTagihanOptions',
             'pelindoLokasiOptions',
             'pelindoKebersihanOptions',
+            'pelindoPalkaOptions',
             'pelindoManifestVoyages',
             'pelindoSections'
         ));

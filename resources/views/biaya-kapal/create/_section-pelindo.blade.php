@@ -16,7 +16,7 @@
     <button type="button" class="pelindo-add-kapal mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-blue-300 py-2 font-medium text-blue-700 hover:bg-blue-50">
         <i class="fas fa-plus-circle" aria-hidden="true"></i> Tambah Kapal Lainnya
     </button>
-    <div class="mt-4 grid grid-cols-1 gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 md:grid-cols-2">
+    <div class="mt-4 grid grid-cols-1 gap-4 rounded-lg border border-blue-200 bg-blue-50 p-4 md:grid-cols-2 xl:grid-cols-4">
         <div>
             <label for="pelindo_biaya_admin_nota" class="mb-2 block text-sm font-medium text-gray-700">Biaya Admin Nota</label>
             <div class="relative">
@@ -24,6 +24,19 @@
                 <input type="text" id="pelindo_biaya_admin_nota" name="pelindo_biaya_admin_nota" value="10.000" readonly class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4">
             </div>
             @error('pelindo_biaya_admin_nota') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="pelindo_jumlah_palka" class="mb-2 block text-sm font-medium text-gray-700">Jumlah Palka</label>
+            <input type="number" id="pelindo_jumlah_palka" name="pelindo_jumlah_palka" min="0" step="1" value="{{ old('pelindo_jumlah_palka', isset($biayaKapal) ? $biayaKapal->pelindo_jumlah_palka : '') }}" placeholder="0" class="w-full rounded-lg border border-gray-300 bg-white px-4 py-2">
+            <p id="pelindo_palka_hint" class="mt-1 text-xs text-gray-500">Masukkan jumlah palka; biaya dihitung dari tarif Pricelist Pelindo.</p>
+            @error('pelindo_jumlah_palka') <p class="mt-1 text-sm text-red-600">{{ $message }}</p> @enderror
+        </div>
+        <div>
+            <label for="pelindo_biaya_palka" class="mb-2 block text-sm font-medium text-gray-700">Biaya Palka</label>
+            <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
+                <input type="text" id="pelindo_biaya_palka" readonly value="" placeholder="Otomatis dihitung" class="pelindo-extra-fee-input w-full rounded-lg border border-gray-300 bg-gray-50 py-2 pl-12 pr-4">
+            </div>
         </div>
         <div>
             <label for="pelindo_biaya_kebersihan" class="mb-2 block text-sm font-medium text-gray-700">Biaya Kebersihan</label>
