@@ -37,10 +37,11 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->post(rtrim(config('services.ollama.url'), '/').'/api/chat', [
                     'model' => config('services.ollama.model', 'llama3.2:3b'),
                     'stream' => false,
-                    'options' => ['num_predict' => 300],
+                    'keep_alive' => '10m',
+                    'options' => ['num_predict' => 180, 'temperature' => 0.35],
                     'messages' => [
-                        ['role' => 'system', 'content' => 'Tulis penjelasan ranking kendaraan dalam Bahasa Indonesia yang ringkas dan mudah dipahami. Jelaskan berdasarkan data yang diberikan saja, jangan menyimpulkan sebab mekanis atau perilaku yang tidak ada di data. Tegaskan ranking diurutkan dari nilai tertinggi, sehingga idle tinggi hanya berarti durasi idle tinggi. Sebutkan bahwa ranking adalah perbandingan pada periode yang dipilih.'],
-                        ['role' => 'user', 'content' => "Periode: {$validated['period']}\nKendaraan: {$validated['vehicle']}\nSupir: ".($validated['driver'] ?: 'tidak tercatat')."\nData ranking:\n{$metrics}"],
+                        ['role' => 'system', 'content' => 'Tulis satu paragraf penjelasan Bahasa Indonesia yang alami, seperti analis operasional menjelaskan kepada rekan kerja. Gunakan kalimat mengalir, bukan daftar atau pola berulang. Jelaskan posisi kendaraan dengan merujuk pada angka dan pembanding yang tersedia. Ranking diurutkan dari nilai tertinggi. Nilai idle tinggi hanya berarti durasi idle tinggi; jangan menyebutnya baik atau buruk. Jangan mengarang penyebab atau fakta yang tidak ada pada data. Maksimal 70 kata.'],
+                        ['role' => 'user', 'content' => "Jelaskan hasil ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data peringkat (nilai tertinggi lebih dulu):\n{$metrics}"],
                     ],
                 ]);
 
