@@ -67,6 +67,21 @@ class DashboardPemakaianBarangController extends Controller
             // Offices are stored as text on usage records, not as a master relation.
             'kantor' => (clone $query)->reorder()->distinct()->pluck('kantor')->mapWithKeys(fn ($name) => [$name => $name]),
         };
+        $kapalIdRedirects = [];
+        if ($kategori === 'kapal') {
+            $yakinTangguhId = $names->search(fn ($name) => str_contains(strtoupper($name), 'YAKIN TANGGUH'));
+            if ($yakinTangguhId !== false) {
+                $alexindo8Ids = $names
+                    ->filter(fn ($name) => str_contains(strtoupper($name), 'ALEXINDO 8'))
+                    ->keys();
+
+                foreach ($alexindo8Ids as $alexindo8Id) {
+                    $kapalIdRedirects[$alexindo8Id] = $yakinTangguhId;
+                }
+
+                $names = $names->except($alexindo8Ids);
+            }
+        }
         $cards = $names->mapWithKeys(fn ($name, $id) => [$id => [
             'nama' => $name, 'saldo_awal' => 0, 'saldo_berjalan' => 0,
         ]])->all();
@@ -78,6 +93,7 @@ class DashboardPemakaianBarangController extends Controller
             $balance = Carbon::parse($usage->tanggal_pengambilan)->lt($fromDate) ? 'saldo_awal' : 'saldo_berjalan';
             $nilai = (float) $usage->jumlah * (float) ($usage->stockAmprahan->harga_satuan ?? 0);
             foreach ($ids as $id) {
+                $id = $kapalIdRedirects[$id] ?? $id;
                 if (! isset($cards[$id])) {
                     $cards[$id] = ['nama' => $categories[$kategori].' #'.$id, 'saldo_awal' => 0, 'saldo_berjalan' => 0];
                 }
