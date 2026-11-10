@@ -89,6 +89,28 @@
                 <p class="mt-1 text-sm text-slate-500">Coba pilih periode lain yang memiliki data GPS.</p>
             </div>
         @else
+            <section class="space-y-4" aria-labelledby="ranking-title">
+                <div>
+                    <h3 id="ranking-title" class="text-lg font-bold text-slate-900">Ranking kendaraan per variabel</h3>
+                    <p class="mt-1 max-w-4xl text-sm leading-relaxed text-slate-600">Setiap daftar mengurutkan kendaraan dari nilai tertinggi ke terendah pada periode terpilih. Ranking menunjukkan banyaknya aktivitas atau pemakaian yang tercatat; nilai tinggi bukan otomatis berarti kendaraan bermasalah. Durasi idle yang tinggi berarti mesin lebih lama menyala saat kendaraan berhenti. Kendaraan tanpa data untuk suatu variabel dapat muncul dengan nilai nol.</p>
+                </div>
+                <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    @foreach($rankings as $ranking)
+                        <article class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+                            <h4 class="font-bold text-slate-800">{{ $ranking['label'] }}</h4>
+                            <ol class="mt-3 divide-y divide-slate-100">
+                                @foreach($ranking['rows'] as $entry)
+                                    <li class="flex items-center justify-between gap-3 py-2 text-sm">
+                                        <span class="flex min-w-0 items-center gap-2"><span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-indigo-50 text-xs font-bold text-indigo-700">{{ $entry['rank'] }}</span><span class="truncate font-medium text-slate-700">{{ $entry['vehicle'] }}</span></span>
+                                        <span class="shrink-0 font-bold text-slate-900">{{ number_format($entry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }} {{ $ranking['unit'] }}</span>
+                                    </li>
+                                @endforeach
+                            </ol>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+
             <section aria-labelledby="kendaraan-title" class="space-y-4">
                 <div class="flex flex-wrap items-end justify-between gap-2">
                     <div>

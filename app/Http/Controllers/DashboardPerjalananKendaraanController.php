@@ -21,6 +21,7 @@ class DashboardPerjalananKendaraanController extends Controller
         $totalDistance = 0.0;
         $maxVehicleDistance = 0.0;
         $maxDailyDistance = 0.0;
+        $rankings = collect();
 
         if ($hasReport) {
             $dates = $request->validate([
@@ -145,11 +146,36 @@ class DashboardPerjalananKendaraanController extends Controller
             $totalDistance = (float) $vehicleStats->sum('total_km');
             $maxVehicleDistance = (float) $vehicleStats->max('total_km');
             $maxDailyDistance = (float) $dailyTotals->max('total_km');
+
+            $rankingMetrics = [
+                'total_km' => ['label' => 'Jarak tempuh', 'unit' => 'km', 'direction' => 'desc'],
+                'moving_days' => ['label' => 'Hari bergerak', 'unit' => 'hari', 'direction' => 'desc'],
+                'idle_seconds' => ['label' => 'Durasi idle', 'unit' => 'detik', 'direction' => 'desc'],
+                'rit_count' => ['label' => 'Jumlah rit', 'unit' => 'rit', 'direction' => 'desc'],
+                'tire_replacement_count' => ['label' => 'Pergantian ban & velg', 'unit' => 'kali', 'direction' => 'desc'],
+                'usage_count' => ['label' => 'Pemakaian barang / servis', 'unit' => 'kali', 'direction' => 'desc'],
+            ];
+
+            foreach ($rankingMetrics as $key => $metric) {
+                $rankings->put($key, $vehicleStats
+                    ->sortBy(fn ($row) => (float) ($key === 'usage_count' ? $row->amprahan_usages->count() : $row->{$key}), SORT_REGULAR, true)
+                    ->values()
+                    ->map(fn ($row, $index) => [
+                        'rank' => $index + 1,
+                        'vehicle' => $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id,
+                        'value' => (float) ($key === 'usage_count' ? $row->amprahan_usages->count() : $row->{$key}),
+                    ])->all());
+            }
+            $rankings = collect($rankingMetrics)->map(fn ($metric, $key) => [
+                'label' => $metric['label'],
+                'unit' => $metric['unit'],
+                'rows' => collect($rankings->get($key, [])),
+            ]);
         }
 
         return view('dashboard-perjalanan-kendaraan.index', compact(
             'hasReport', 'tanggalDari', 'tanggalSampai', 'vehicleStats', 'dailyTotals',
-            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance'
+            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance', 'rankings'
         ));
     }
 }
