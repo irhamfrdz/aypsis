@@ -488,6 +488,7 @@
                                         @foreach($gudangs as $g)
                                             <option value="{{ $g->id }}" 
                                                     data-is-zona="{{ str_contains(mb_strtolower($g->nama_gudang), 'zona') ? '1' : '0' }}"
+                                                    data-is-spm="{{ str_contains(mb_strtolower($g->nama_gudang), 'spm') ? '1' : '0' }}"
                                                     data-is-dpe="{{ str_contains(mb_strtolower($g->nama_gudang), 'dpe') ? '1' : '0' }}"
                                                     data-is-fortune="{{ str_contains(mb_strtolower($g->nama_gudang), 'fortune') ? '1' : '0' }}">{{ $g->nama_gudang }} {{ $g->lokasi ? '- ' . $g->lokasi : '' }}</option>
                                         @endforeach
@@ -572,12 +573,12 @@
                                         <option value="">--Pilih Harga OB--</option>
                                         @foreach($pricelists as $pl)
                                             <!-- Menghilangkan 'ft' dari size untuk matching dengan ukuran kontainer yang hanya berupa angka -->
-                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-is-zona="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'zona') ? '1' : '0' }}" data-is-dpe="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'dpe') ? '1' : '0' }}" data-is-fortune="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'fortune') ? '1' : '0' }}" data-biaya="{{ $pl->biaya }}">
+                                            <option value="{{ $pl->id }}" data-ukuran="{{ str_replace('ft', '', $pl->size_kontainer) }}" data-status-service="{{ $pl->status_service }}" data-status-kontainer="{{ $pl->status_kontainer }}" data-gudang-tujuan-id="{{ $pl->gudang_tujuan_id ?? '' }}" data-is-zona="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'zona') ? '1' : '0' }}" data-is-spm="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'spm') ? '1' : '0' }}" data-is-dpe="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'dpe') ? '1' : '0' }}" data-is-fortune="{{ str_contains(mb_strtolower($pl->gudangTujuan?->nama_gudang ?? ''), 'fortune') ? '1' : '0' }}" data-biaya="{{ $pl->biaya }}">
                                                 {{ $pl->status_service === 'service' ? 'Service' : ucfirst($pl->status_kontainer) }} - {{ $pl->gudangTujuan?->nama_gudang ?? 'Semua Gudang' }} - Rp {{ number_format($pl->biaya, 0, ',', '.') }}
                                             </option>
                                         @endforeach
                                     </select>
-                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Jika gudang asal Depo ZONA, DEPO DPE, atau Depo Fortune, menggunakan tarif khusus depo tersebut. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
+                                    <p class="text-[10px] text-gray-500 mt-1">Harga mengikuti ukuran dan status kontainer. Jika gudang asal Depo ZONA, Depo SPM, DEPO DPE, atau Depo Fortune, menggunakan tarif khusus depo tersebut. Tarif khusus tujuan diprioritaskan di atas tarif umum.</p>
                                 </div>
 
                                 <div>
@@ -699,6 +700,7 @@
         const gudangTujuanOption = document.getElementById('gudang_tujuan_id').selectedOptions[0];
         const originOption = document.getElementById('modal_gudang_id').selectedOptions[0];
         const isDepoZona = originOption?.dataset.isZona === '1';
+        const isDepoSpm = originOption?.dataset.isSpm === '1';
         const isDepoDpe = originOption?.dataset.isDpe === '1';
         const isDepoFortune = originOption?.dataset.isFortune === '1';
         const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
@@ -721,6 +723,15 @@
                 hasSpecificRate = true;
                 isMatchingSpecificOption = (option) =>
                     option.getAttribute('data-is-zona') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value);
+            }
+        } else if (isDepoSpm) {
+            const hasSpmRate = eligibleOptions.some(option =>
+                option.getAttribute('data-is-spm') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value)
+            );
+            if (hasSpmRate) {
+                hasSpecificRate = true;
+                isMatchingSpecificOption = (option) =>
+                    option.getAttribute('data-is-spm') === '1' || (originOption?.value && option.getAttribute('data-gudang-tujuan-id') === originOption.value);
             }
         } else if (isDepoDpe) {
             const hasDpeRate = eligibleOptions.some(option =>

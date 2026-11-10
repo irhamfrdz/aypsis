@@ -253,6 +253,7 @@ class ObAntarGudangController extends Controller
         $validated['is_langsung_antar'] = $request->boolean('is_langsung_antar');
         $gudangAsalInput = Gudang::find($validated['gudang_id']);
         $isInputZona = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'zona');
+        $isInputSpm = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'spm');
         $isInputDpe = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'dpe');
         $isInputFortune = $gudangAsalInput && str_contains(mb_strtolower($gudangAsalInput->nama_gudang), 'fortune');
 
@@ -273,7 +274,7 @@ class ObAntarGudangController extends Controller
         $isDepoFortune = $isInputFortune || $isHistoryFortune;
         $isDepoZonaOrDpe = $isDepoZona || $isDepoDpe;
 
-        if ($isInputZona || $isInputDpe || $isInputFortune) {
+        if ($isInputZona || $isInputSpm || $isInputDpe || $isInputFortune) {
             $effectiveGudangId = $validated['gudang_id'];
         } elseif (($isHistoryZona || $isHistoryDpe || $isHistoryFortune) && ($validated['is_zona_mobil_panjang'] || $validated['is_sekalian_antar'] || $validated['is_langsung_antar'])) {
             $effectiveGudangId = $historyGudangId;
@@ -329,12 +330,27 @@ class ObAntarGudangController extends Controller
 
         $pricelist = null;
         if (! empty($validated['pricelist_id'])) {
-            if ($isDepoZona) {
+            if ($isDepoZona && ! $isInputSpm) {
                 $destinationPricelists = (clone $pricelistDimensions)
                     ->where(function ($q) use ($gudangAsalInput) {
                         $q->where('gudang_tujuan_id', $gudangAsalInput->id)
                             ->orWhereHas('gudangTujuan', function ($gq) {
                                 $gq->where('nama_gudang', 'like', '%zona%');
+                            });
+                    })
+                    ->pluck('id');
+
+                if ($destinationPricelists->isEmpty()) {
+                    $destinationPricelists = (clone $pricelistDimensions)
+                        ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
+                        ->pluck('id');
+                }
+            } elseif ($isInputSpm) {
+                $destinationPricelists = (clone $pricelistDimensions)
+                    ->where(function ($q) use ($gudangAsalInput) {
+                        $q->where('gudang_tujuan_id', $gudangAsalInput->id)
+                            ->orWhereHas('gudangTujuan', function ($gq) {
+                                $gq->where('nama_gudang', 'like', '%spm%');
                             });
                     })
                     ->pluck('id');
