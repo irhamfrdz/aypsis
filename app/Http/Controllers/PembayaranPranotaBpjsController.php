@@ -245,6 +245,16 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function show(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
+        return view('pembayaran-pranota-bpjs.show', $this->paymentDetails($pembayaran_pranota_bpj));
+    }
+
+    public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        return view('pembayaran-pranota-bpjs.print', $this->paymentDetails($pembayaran_pranota_bpj));
+    }
+
+    private function paymentDetails(PembayaranPranotaBpjs $pembayaran_pranota_bpj): array
+    {
         $payment = $pembayaran_pranota_bpj->load(['pranotas', 'bank', 'akunCoa', 'createdBy']);
 
         $parts = DB::table('pembayaran_pranota_bpjs_parts')->where('pembayaran_pranota_bpjs_id', $payment->id)
@@ -282,17 +292,6 @@ class PembayaranPranotaBpjsController extends Controller
                 : ($allocations->isEmpty() && $payment->bank ? $payment->bank->nomor_akun.' - '.$payment->bank->nama_akun : '-');
         }
 
-        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts', 'journalAmounts', 'accountLabels'));
-    }
-
-    public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
-    {
-        $payment = $pembayaran_pranota_bpj->load(['pranotas', 'bank', 'akunCoa', 'createdBy']);
-        $parts = DB::table('pembayaran_pranota_bpjs_parts')
-            ->where('pembayaran_pranota_bpjs_id', $payment->id)
-            ->selectRaw('komponen, tipe, SUM(subtotal) as subtotal, SUM(tunjangan) as tunjangan, SUM(biaya) as biaya, SUM(hutang) as hutang')
-            ->groupBy('komponen', 'tipe')->get();
-
-        return view('pembayaran-pranota-bpjs.print', compact('payment', 'parts'));
+        return compact('payment', 'parts', 'journalAmounts', 'accountLabels');
     }
 }
