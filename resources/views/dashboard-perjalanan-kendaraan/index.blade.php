@@ -109,7 +109,7 @@
                                 @php $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id; @endphp
                                 <tr class="hover:bg-slate-50">
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-500">{{ $index + 1 }}</td>
-                                    <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
+                                <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</td>
                                     @foreach($rankings as $ranking)
                                         @php $rankEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
@@ -117,6 +117,29 @@
                                             @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
                                         </td>
                                     @endforeach
+                                </tr>
+                                <tr class="bg-indigo-50/40">
+                                    <td colspan="9" class="px-4 pb-3 pt-0">
+                                        <details class="group">
+                                            <summary class="cursor-pointer list-none text-xs font-semibold text-indigo-700">Lihat alasan ranking {{ $vehicleLabel }}</summary>
+                                            <div class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                                                @foreach($rankings as $ranking)
+                                                    @php $reasonEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
+                                                    @if($reasonEntry)
+                                                        <p class="rounded-lg border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-600">
+                                                            <strong class="text-slate-800">{{ $ranking['label'] }}:</strong>
+                                                            kendaraan ini berada di peringkat <strong>#{{ $reasonEntry['rank'] }}</strong> dari {{ $ranking['rows']->count() }} kendaraan, dengan nilai {{ number_format($reasonEntry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }} {{ $ranking['unit'] }}.
+                                                            @if($reasonEntry['rank'] === 1)
+                                                                Nilainya paling tinggi pada variabel ini dalam periode terpilih.
+                                                            @else
+                                                                Peringkat dihitung dengan mengurutkan nilai variabel dari tertinggi ke terendah.
+                                                            @endif
+                                                        </p>
+                                                    @endif
+                                                @endforeach
+                                            </div>
+                                        </details>
+                                    </td>
                                 </tr>
                             @endforeach
                         </tbody>
