@@ -99,6 +99,7 @@
                         <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                             <tr>
                                 <th class="whitespace-nowrap px-4 py-3">Kendaraan</th>
+                                <th class="whitespace-nowrap px-4 py-3">Nama supir</th>
                                 @foreach($rankings as $ranking)<th class="whitespace-nowrap px-4 py-3">{{ $ranking['label'] }}</th>@endforeach
                             </tr>
                         </thead>
@@ -107,6 +108,7 @@
                                 @php $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id; @endphp
                                 <tr class="hover:bg-slate-50">
                                     <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
+                                    <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</td>
                                     @foreach($rankings as $ranking)
                                         @php $rankEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
                                         <td class="whitespace-nowrap px-4 py-3 text-slate-700">
