@@ -106,7 +106,14 @@
                         </thead>
                         <tbody class="divide-y divide-slate-100">
                             @foreach($vehicleStats as $index => $row)
-                                @php $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id; @endphp
+                                @php
+                                    $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id;
+                                    $driverLabel = $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat');
+                                    $aiMetrics = $rankings->map(function ($ranking) use ($vehicleLabel) {
+                                        $entry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel);
+                                        return $entry ? ['name' => $ranking['label'], 'rank' => $entry['rank'], 'total' => $ranking['rows']->count(), 'value' => number_format($entry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.'), 'unit' => $ranking['unit']] : null;
+                                    })->filter()->values();
+                                @endphp
                                 <tr class="hover:bg-slate-50">
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-500">{{ $index + 1 }}</td>
                                 <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
@@ -120,25 +127,8 @@
                                 </tr>
                                 <tr class="bg-indigo-50/40">
                                     <td colspan="9" class="px-4 pb-3 pt-0">
-                                        <details class="group">
-                                            <summary class="cursor-pointer list-none text-xs font-semibold text-indigo-700">Lihat alasan ranking {{ $vehicleLabel }}</summary>
-                                            <div class="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-                                                @foreach($rankings as $ranking)
-                                                    @php $reasonEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
-                                                    @if($reasonEntry)
-                                                        <p class="rounded-lg border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-600">
-                                                            <strong class="text-slate-800">{{ $ranking['label'] }}:</strong>
-                                                            kendaraan ini berada di peringkat <strong>#{{ $reasonEntry['rank'] }}</strong> dari {{ $ranking['rows']->count() }} kendaraan, dengan nilai {{ number_format($reasonEntry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }} {{ $ranking['unit'] }}.
-                                                            @if($reasonEntry['rank'] === 1)
-                                                                Nilainya paling tinggi pada variabel ini dalam periode terpilih.
-                                                            @else
-                                                                Peringkat dihitung dengan mengurutkan nilai variabel dari tertinggi ke terendah.
-                                                            @endif
-                                                        </p>
-                                                    @endif
-                                                @endforeach
-                                            </div>
-                                        </details>
+                                        <button type="button" class="ai-ranking-explain cursor-pointer text-xs font-semibold text-indigo-700 hover:text-indigo-900" data-payload="{{ json_encode(['vehicle' => $vehicleLabel, 'driver' => $driverLabel, 'period' => \Carbon\Carbon::parse($tanggalDari)->format('d/m/Y').' - '.\Carbon\Carbon::parse($tanggalSampai)->format('d/m/Y'), 'metrics' => $aiMetrics], JSON_HEX_APOS | JSON_HEX_QUOT) }}">Buat penjelasan AI untuk {{ $vehicleLabel }}</button>
+                                        <p class="ai-ranking-result mt-2 hidden whitespace-pre-line rounded-lg border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-700" role="status"></p>
                                     </td>
                                 </tr>
                             @endforeach
@@ -258,4 +248,33 @@
         @endif
     @endif
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.ai-ranking-explain').forEach(button => {
+        button.addEventListener('click', async () => {
+            const result = button.nextElementSibling;
+            button.disabled = true;
+            button.textContent = 'AI sedang menyusun penjelasan…';
+            result.classList.remove('hidden');
+            result.textContent = '';
+            try {
+                const response = await fetch(@json(route('dashboard-perjalanan-kendaraan.explain-ranking')), {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                    body: button.dataset.payload
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Penjelasan AI gagal dibuat.');
+                result.textContent = data.explanation;
+                button.textContent = 'Perbarui penjelasan AI';
+            } catch (error) {
+                result.textContent = error.message;
+                button.textContent = 'Coba lagi';
+            } finally {
+                button.disabled = false;
+            }
+        });
+    });
+});
+</script>
 @endsection

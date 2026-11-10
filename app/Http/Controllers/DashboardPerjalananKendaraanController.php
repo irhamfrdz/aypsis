@@ -8,9 +8,66 @@ use App\Services\VehicleAmprahanUsageService;
 use App\Services\VehicleTireReplacementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Http;
 
 class DashboardPerjalananKendaraanController extends Controller
 {
+    public function explainRanking(Request $request)
+    {
+        $validated = $request->validate([
+            'vehicle' => ['required', 'string', 'max:50'],
+            'driver' => ['nullable', 'string', 'max:100'],
+            'period' => ['required', 'string', 'max:50'],
+            'metrics' => ['required', 'array', 'min:1', 'max:6'],
+            'metrics.*.name' => ['required', 'string', 'max:60'],
+            'metrics.*.rank' => ['required', 'integer', 'min:1'],
+            'metrics.*.total' => ['required', 'integer', 'min:1'],
+            'metrics.*.value' => ['required', 'string', 'max:40'],
+            'metrics.*.unit' => ['required', 'string', 'max:20'],
+        ]);
+
+        $apiKey = config('services.openai.key');
+        if (! $apiKey) {
+            return response()->json(['message' => 'OpenAI belum dikonfigurasi. Atur OPENAI_API_KEY di environment server.'], 503);
+        }
+
+        $metrics = collect($validated['metrics'])->map(fn ($metric) => sprintf(
+            '- %s: peringkat %d dari %d, nilai %s %s. Peringkat 1 adalah nilai tertinggi.',
+            $metric['name'], $metric['rank'], $metric['total'], $metric['value'], $metric['unit']
+        ))->implode("\n");
+
+        try {
+            $response = Http::withToken($apiKey)
+                ->timeout(30)
+                ->post('https://api.openai.com/v1/responses', [
+                    'model' => config('services.openai.model', 'gpt-4.1-mini'),
+                    'instructions' => 'Tulis penjelasan ranking kendaraan dalam Bahasa Indonesia yang ringkas dan mudah dipahami. Jelaskan berdasarkan data yang diberikan saja, jangan menyimpulkan sebab mekanis atau perilaku yang tidak ada di data. Tegaskan ranking diurutkan dari nilai tertinggi, sehingga idle tinggi hanya berarti durasi idle tinggi. Sebutkan bahwa ranking adalah perbandingan pada periode yang dipilih.',
+                    'input' => "Periode: {$validated['period']}\nKendaraan: {$validated['vehicle']}\nSupir: ".($validated['driver'] ?: 'tidak tercatat')."\nData ranking:\n{$metrics}",
+                    'max_output_tokens' => 300,
+                ]);
+
+            if (! $response->successful()) {
+                report(new \RuntimeException('OpenAI ranking explanation request failed with HTTP '.$response->status()));
+
+                return response()->json(['message' => 'AI belum dapat membuat penjelasan. Coba lagi beberapa saat.'], 502);
+            }
+
+            $text = collect($response->json('output', []))
+                ->flatMap(fn ($item) => $item['content'] ?? [])
+                ->firstWhere('type', 'output_text')['text'] ?? null;
+
+            if (! is_string($text) || trim($text) === '') {
+                return response()->json(['message' => 'AI mengirim jawaban kosong. Silakan coba lagi.'], 502);
+            }
+
+            return response()->json(['explanation' => trim($text)]);
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return response()->json(['message' => 'AI tidak bisa dihubungi saat ini. Coba lagi nanti.'], 502);
+        }
+    }
+
     public function index(Request $request, RitSuratJalanService $ritService)
     {
         $hasReport = $request->hasAny(['tanggal_dari', 'tanggal_sampai']);

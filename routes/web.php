@@ -6227,6 +6227,8 @@ Route::middleware(['auth'])->group(function () {
     // Dashboard perjalanan kendaraan dari rekap GPS harian
     Route::get('dashboard-perjalanan-kendaraan', [\App\Http\Controllers\DashboardPerjalananKendaraanController::class, 'index'])
         ->name('dashboard-perjalanan-kendaraan.index');
+    Route::post('dashboard-perjalanan-kendaraan/ranking-explanation', [\App\Http\Controllers\DashboardPerjalananKendaraanController::class, 'explainRanking'])
+        ->name('dashboard-perjalanan-kendaraan.explain-ranking');
 
     // GPS Tracking Routes
     Route::prefix('gps-tracking')->name('gps-tracking.')->group(function () {
