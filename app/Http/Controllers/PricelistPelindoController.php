@@ -42,7 +42,7 @@ class PricelistPelindoController extends Controller
      */
     public function store(Request $request)
     {
-        if (in_array($request->input('status_kontainer'), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat'], true)) {
+        if (in_array($request->input('status_kontainer'), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat', 'palka'], true)) {
             $request->merge(['ukuran' => null]);
         }
 
@@ -58,7 +58,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
-            'status_kontainer' => 'nullable|in:empty,full,cargo,barang_berbahaya,lpg,besi_beton,mobil,alat_berat',
+            'status_kontainer' => 'nullable|in:empty,full,cargo,barang_berbahaya,lpg,besi_beton,mobil,alat_berat,palka',
         ]);
 
         PricelistPelindo::create($validated);
@@ -88,7 +88,7 @@ class PricelistPelindoController extends Controller
      */
     public function update(Request $request, PricelistPelindo $pricelistPelindo)
     {
-        if (in_array($request->input('status_kontainer'), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat'], true)) {
+        if (in_array($request->input('status_kontainer'), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat', 'palka'], true)) {
             $request->merge(['ukuran' => null]);
         }
 
@@ -104,7 +104,7 @@ class PricelistPelindoController extends Controller
             'tarif' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|in:aktif,nonaktif',
-            'status_kontainer' => 'nullable|in:empty,full,cargo,barang_berbahaya,lpg,besi_beton,mobil,alat_berat',
+            'status_kontainer' => 'nullable|in:empty,full,cargo,barang_berbahaya,lpg,besi_beton,mobil,alat_berat,palka',
         ]);
 
         $pricelistPelindo->update($validated);

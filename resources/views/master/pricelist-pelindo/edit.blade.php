@@ -57,7 +57,7 @@
                 <section class="pelindo-form-section" aria-labelledby="section-tarif">
                     <div class="mb-5 border-b border-slate-100 pb-4"><h2 id="section-tarif" class="font-semibold text-slate-900">Detail layanan & tarif</h2><p class="mt-1 text-sm text-slate-500">Ukuran hanya diperlukan untuk kontainer Empty atau Full.</p></div>
                     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
-                        <div id="ukuran-container" @if(in_array(old('status_kontainer', $pricelistPelindo->status_kontainer), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat'], true)) hidden @endif>
+                        <div id="ukuran-container" @if(in_array(old('status_kontainer', $pricelistPelindo->status_kontainer), ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat', 'palka'], true)) hidden @endif>
                             <label for="ukuran" class="block text-sm font-medium text-slate-700">Ukuran kontainer</label>
                             <select name="ukuran" id="ukuran" class="pelindo-form-control mt-2 block w-full rounded-lg px-4 py-3 text-sm shadow-sm focus:ring-purple-500 @error('ukuran') is-invalid @enderror">
                                 <option value="">Pilih ukuran kontainer</option>
@@ -81,6 +81,7 @@
                                 <option value="besi_beton" {{ old('status_kontainer', $pricelistPelindo->status_kontainer) == 'besi_beton' ? 'selected' : '' }}>Besi Beton</option>
                                 <option value="mobil" {{ old('status_kontainer', $pricelistPelindo->status_kontainer) == 'mobil' ? 'selected' : '' }}>Mobil</option>
                                 <option value="alat_berat" {{ old('status_kontainer', $pricelistPelindo->status_kontainer) == 'alat_berat' ? 'selected' : '' }}>Alat Berat</option>
+                                <option value="palka" {{ old('status_kontainer', $pricelistPelindo->status_kontainer) == 'palka' ? 'selected' : '' }}>Palka</option>
                             </select>
                             @error('status_kontainer') <p class="mt-1 text-xs text-red-600">{{ $message }}</p> @enderror
                         </div>
@@ -129,7 +130,7 @@
         const ukuranInput = document.getElementById('ukuran');
 
         function toggleUkuran() {
-            const tanpaUkuran = ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat'].includes(statusKontainer.value);
+            const tanpaUkuran = ['cargo', 'barang_berbahaya', 'lpg', 'besi_beton', 'mobil', 'alat_berat', 'palka'].includes(statusKontainer.value);
             ukuranContainer.hidden = tanpaUkuran;
             ukuranInput.disabled = tanpaUkuran;
             if (tanpaUkuran) ukuranInput.value = '';
