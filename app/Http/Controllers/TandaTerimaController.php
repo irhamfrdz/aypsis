@@ -504,7 +504,14 @@ class TandaTerimaController extends Controller
         // Get all master pengirim/penerima for dropdown
         $masterPenerimaList = \App\Models\Penerima::where('status', 'active')->orderBy('nama_penerima')->get();
         $gudangs = \App\Models\Gudang::orderBy('nama_gudang')->get();
-        $defaultGudangTujuanId = \App\Models\Gudang::whereRaw('LOWER(nama_gudang) LIKE ?', ['%customer%jakarta%'])->value('id');
+        $defaultGudangTujuanId = \App\Models\Gudang::query()
+            ->whereRaw('LOWER(nama_gudang) LIKE ?', ['%customer%'])
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(nama_gudang) LIKE ?', ['%jakarta%'])
+                    ->orWhereRaw('LOWER(nama_gudang) LIKE ?', ['%jkt%']);
+            })
+            ->orderByRaw("CASE WHEN LOWER(nama_gudang) LIKE '%customer%jakarta%' THEN 0 ELSE 1 END")
+            ->value('id');
 
         return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims', 'masterPenerimaList', 'gudangs', 'defaultGudangTujuanId'));
     }

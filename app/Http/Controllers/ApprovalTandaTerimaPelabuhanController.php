@@ -53,10 +53,19 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             ->pluck('gudangs_id', 'nomor_seri_gabungan');
         $lokasiStock = $nomorKontainers->isEmpty() ? collect() : StockKontainer::whereIn('nomor_seri_gabungan', $nomorKontainers)
             ->pluck('gudangs_id', 'nomor_seri_gabungan');
+        $defaultGudangTujuanId = Gudang::query()
+            ->whereRaw('LOWER(nama_gudang) LIKE ?', ['%customer%'])
+            ->where(function ($query) {
+                $query->whereRaw('LOWER(nama_gudang) LIKE ?', ['%jakarta%'])
+                    ->orWhereRaw('LOWER(nama_gudang) LIKE ?', ['%jkt%']);
+            })
+            ->orderByRaw("CASE WHEN LOWER(nama_gudang) LIKE '%customer%jakarta%' THEN 0 ELSE 1 END")
+            ->value('id');
 
         foreach ($tandaTerimas as $tandaTerima) {
             $nomorKontainer = $this->nomorKontainers($tandaTerima)[0] ?? null;
             $tandaTerima->gudang_tujuan_id = $tandaTerima->gudang_tujuan_id
+                ?: $defaultGudangTujuanId
                 ?: ($nomorKontainer
                     ? ($lokasiKontainers->get($nomorKontainer) ?? $lokasiStock->get($nomorKontainer))
                     : null);
