@@ -30,28 +30,37 @@
             </div>
         </div>
         <div class="p-4 sm:p-5">
-            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
-                @forelse($cards as $card)
-                    <article class="rounded-lg p-4 border border-gray-200 bg-gray-50 hover:border-indigo-300 hover:shadow-sm transition-all text-center">
-                        <h3 class="text-sm font-bold text-gray-800 uppercase tracking-wide break-words min-h-10">{{ $card['nama'] }}</h3>
-                        <div class="mt-4">
-                            <p class="text-xs text-gray-500">Saldo Awal</p>
-                            <p class="text-base font-semibold text-gray-700 mt-1 break-words">Rp {{ number_format($card['saldo_awal'], 2, ',', '.') }}</p>
-                        </div>
-                        <div class="mt-3 pt-3 border-t border-gray-200">
-                            <p class="text-xs text-indigo-600">Saldo Berjalan</p>
-                            <p class="text-lg font-bold text-indigo-900 mt-1 break-words">Rp {{ number_format($card['saldo_berjalan'], 2, ',', '.') }}</p>
-                        </div>
-                        @if($kategori === 'kendaraan')
-                            <div class="mt-3 pt-3 border-t border-gray-200">
-                                <p class="text-xs text-gray-500">Penggantian Ban Perut</p>
-                                <p class="text-base font-semibold text-indigo-700 mt-1">{{ number_format($card['ban_perut_total'] ?? 0) }} kali</p>
-                            </div>
-                        @endif
-                    </article>
-                @empty
-                    <p class="col-span-full py-10 text-center text-gray-500">Belum ada pemakai untuk kategori ini.</p>
-                @endforelse
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">No.</th>
+                            <th scope="col" class="px-4 py-3 text-left text-xs font-bold uppercase tracking-wider text-gray-500">{{ $categories[$kategori] }}</th>
+                            <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Saldo Awal</th>
+                            <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-indigo-700">Saldo Berjalan</th>
+                            @if($kategori === 'kendaraan')
+                                <th scope="col" class="px-4 py-3 text-right text-xs font-bold uppercase tracking-wider text-gray-500">Penggantian Ban Perut</th>
+                            @endif
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 bg-white">
+                        @forelse($cards as $index => $card)
+                            <tr class="transition hover:bg-indigo-50/50">
+                                <td class="whitespace-nowrap px-4 py-3 text-sm text-gray-500">{{ $index + 1 }}</td>
+                                <td class="px-4 py-3 text-sm font-semibold uppercase text-gray-800">{{ $card['nama'] }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right text-sm text-gray-700">Rp {{ number_format($card['saldo_awal'], 2, ',', '.') }}</td>
+                                <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-bold text-indigo-900">Rp {{ number_format($card['saldo_berjalan'], 2, ',', '.') }}</td>
+                                @if($kategori === 'kendaraan')
+                                    <td class="whitespace-nowrap px-4 py-3 text-right text-sm font-semibold text-indigo-700">{{ number_format($card['ban_perut_total'] ?? 0) }} kali</td>
+                                @endif
+                            </tr>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $kategori === 'kendaraan' ? 5 : 4 }}" class="px-4 py-10 text-center text-sm text-gray-500">Belum ada pemakai untuk kategori ini.</td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
