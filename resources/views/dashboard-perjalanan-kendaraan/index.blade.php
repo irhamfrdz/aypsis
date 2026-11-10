@@ -260,7 +260,11 @@ document.addEventListener('DOMContentLoaded', () => {
             try {
                 const response = await fetch(@json(route('dashboard-perjalanan-kendaraan.explain-ranking')), {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json', 'Accept': 'application/json'},
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
+                    },
                     body: button.dataset.payload
                 });
                 const data = await response.json();
