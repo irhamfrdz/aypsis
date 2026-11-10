@@ -47,6 +47,15 @@
         @endforeach
         </tbody></table>
     </div>
+    <div class="rounded-xl border border-blue-200 bg-blue-50 p-5 text-sm text-blue-900">
+        <h3 class="mb-2 font-semibold">Catatan</h3>
+        <p class="leading-relaxed">Jika menggunakan Akun Bank Jakarta, maka pada Biaya gunakan akun Biaya BPJS Jakarta. Sebaliknya, jika menggunakan Akun Bank Batam, maka pada Biaya gunakan akun Biaya BPJS Batam. Sedangkan Hutang menggunakan akun yang sama untuk Jakarta dan Batam, yaitu Utang Biaya BPJS.</p>
+        <dl class="mt-4 space-y-2">
+            <div><dt class="inline font-semibold">Akun Biaya BPJS Jakarta:</dt> <dd class="inline">6101.006 - Biaya BPJS Jakarta</dd></div>
+            <div><dt class="inline font-semibold">Akun Biaya BPJS Batam:</dt> <dd class="inline">6201.006 - Biaya BPJS Batam</dd></div>
+            <div><dt class="inline font-semibold">Akun Hutang BPJS:</dt> <dd class="inline">2103.002 - Utang Biaya BPJS</dd></div>
+        </dl>
+    </div>
     @endif
 </div>
 @endsection
