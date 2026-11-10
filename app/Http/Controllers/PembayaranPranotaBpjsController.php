@@ -266,7 +266,22 @@ class PembayaranPranotaBpjsController extends Controller
             $journalAmounts[$key]['hutang'] += $hutang;
         }
 
-        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts', 'journalAmounts'));
+        $accountLabels = [];
+        $resolver = new \App\Services\BpjsJournalAccount;
+        foreach ($parts as $part) {
+            $label = $resolver->label($part->tipe);
+            $number = $label ? explode(' - ', $label, 2)[0] : null;
+            $allocations = collect($payment->bank_allocations ?? []);
+            $allocation = $number ? $allocations->firstWhere('nomor_akun', $number) : null;
+            if (! $allocation && $allocations->count() === 1) {
+                $allocation = $allocations->first();
+            }
+            $accountLabels[$part->komponen.'|'.$part->tipe] = $allocation
+                ? $allocation['nomor_akun'].' - '.$allocation['nama_akun']
+                : ($allocations->isEmpty() && $payment->bank ? $payment->bank->nomor_akun.' - '.$payment->bank->nama_akun : '-');
+        }
+
+        return view('pembayaran-pranota-bpjs.show', compact('payment', 'parts', 'journalAmounts', 'accountLabels'));
     }
 
     public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)

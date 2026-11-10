@@ -40,10 +40,10 @@
     @if($parts->isNotEmpty())
     <div class="bg-white border rounded-xl overflow-x-auto">
         <h2 class="p-4 font-semibold border-b">Rincian Tipe yang Dibayar</h2>
-        <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Komponen</th><th class="p-4">Tipe</th><th class="p-4 text-right">Nominal</th><th class="p-4 text-right">TUNJANGAN</th><th class="p-4 text-right">BIAYA</th><th class="p-4 text-right">HUTANG</th></tr></thead><tbody class="divide-y">
+        <table class="w-full text-sm text-left"><thead class="bg-gray-50"><tr><th class="p-4">Tipe</th><th class="p-4">Akun Bank yang Digunakan</th><th class="p-4 text-right">Nominal</th><th class="p-4 text-right">TUNJANGAN</th><th class="p-4 text-right">BIAYA</th><th class="p-4 text-right">HUTANG</th></tr></thead><tbody class="divide-y">
         @foreach($parts as $part)
             @php($amounts = $journalAmounts[$part->komponen.'|'.$part->tipe] ?? ['tunjangan' => 0, 'biaya' => 0, 'hutang' => 0])
-            <tr><td class="p-4">{{ strtoupper($part->komponen) }}</td><td class="p-4">{{ $part->tipe }}</td><td class="p-4 text-right">Rp {{ number_format($part->subtotal, 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['tunjangan'], 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['biaya'], 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['hutang'], 2, ',', '.') }}</td></tr>
+            <tr><td class="p-4">{{ $part->tipe }}</td><td class="p-4">{{ $accountLabels[$part->komponen.'|'.$part->tipe] ?? '-' }}</td><td class="p-4 text-right">Rp {{ number_format($part->subtotal, 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['tunjangan'], 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['biaya'], 2, ',', '.') }}</td><td class="p-4 text-right">Rp {{ number_format($amounts['hutang'], 2, ',', '.') }}</td></tr>
         @endforeach
         </tbody></table>
     </div>
