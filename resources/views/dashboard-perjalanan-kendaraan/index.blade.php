@@ -111,7 +111,7 @@
                                     $driverLabel = $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat');
                                     $aiMetrics = $rankings->map(function ($ranking) use ($vehicleLabel) {
                                         $entry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel);
-                                        return $entry ? ['name' => $ranking['label'], 'rank' => $entry['rank'], 'total' => $ranking['rows']->count(), 'value' => number_format($entry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.'), 'unit' => $ranking['unit']] : null;
+                                        return $entry ? ['name' => $ranking['label'], 'rank' => $entry['rank'], 'total' => $ranking['rows']->count(), 'value' => number_format($entry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.'), 'unit' => $ranking['unit']] : null;
                                     })->filter()->values();
                                 @endphp
                                 <tr class="hover:bg-slate-50">
@@ -121,7 +121,7 @@
                                     @foreach($rankings as $ranking)
                                         @php $rankEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
                                         <td class="whitespace-nowrap px-4 py-3 text-slate-700">
-                                            @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], $ranking['unit'] === 'km' ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
+                                            @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
                                         </td>
                                     @endforeach
                                 </tr>
