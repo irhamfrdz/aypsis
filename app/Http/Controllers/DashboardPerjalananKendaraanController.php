@@ -37,12 +37,12 @@ class DashboardPerjalananKendaraanController extends Controller
         try {
             $response = Http::timeout(60)
                 ->post(rtrim(config('services.ollama.url'), '/').'/api/chat', [
-                    'model' => config('services.ollama.model', 'llama3.2:3b'),
+                    'model' => config('services.ollama.model', 'llama3.2:1b'),
                     'stream' => false,
-                    'keep_alive' => '10m',
-                    'options' => ['num_predict' => 180, 'temperature' => 0.35],
+                    'keep_alive' => '30m',
+                    'options' => ['num_predict' => 110, 'temperature' => 0.35],
                     'messages' => [
-                        ['role' => 'system', 'content' => 'Tulis satu paragraf penjelasan Bahasa Indonesia yang alami dan mengalir. Jelaskan posisi kendaraan memakai angka dan pembanding yang tersedia. Perhatikan arah baik/buruk yang diberikan pada setiap variabel: peringkat 1 berarti posisi terbaik, bukan selalu angka terbesar. Idle lebih lama, lebih banyak pergantian ban/velg, dan lebih banyak pemakaian servis/barang dianggap lebih buruk. Jarak, hari bergerak, dan jumlah rit yang lebih tinggi dianggap lebih baik. Jangan mengarang sebab atau fakta di luar data. Maksimal 70 kata.'],
+                        ['role' => 'system', 'content' => 'Jelaskan ranking kendaraan dalam satu paragraf Bahasa Indonesia yang alami, maksimal 55 kata. Gunakan hanya data yang diberikan dan sebutkan nilai serta posisi. Peringkat 1 adalah terbaik: jarak, hari bergerak, dan rit lebih tinggi lebih baik; idle, pergantian ban, dan pemakaian barang/servis lebih rendah lebih baik. Jangan mengarang sebab.'],
                         ['role' => 'user', 'content' => "Jelaskan hasil ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data berikut sudah diurutkan sesuai kondisi terbaik ke terburuk:\n{$metrics}"],
                     ],
                 ]);
