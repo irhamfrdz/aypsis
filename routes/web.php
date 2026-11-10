@@ -365,7 +365,7 @@ Route::middleware([
     Route::get('pranota-bpjs/{pranota_bpj}/export-excel', [PranotaBpjsController::class, 'exportExcel'])->name('pranota-bpjs.export-excel');
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
     Route::get('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/print', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'print'])->name('pembayaran-pranota-bpjs.print')->middleware('can:pembayaran-pranota-bpjs-view');
-    Route::resource('pembayaran-pranota-bpjs', \App\Http\Controllers\PembayaranPranotaBpjsController::class)->only(['index', 'create', 'store', 'show', 'update']);
+    Route::resource('pembayaran-pranota-bpjs', \App\Http\Controllers\PembayaranPranotaBpjsController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
 
     Route::get('master-customer-buruh/download-template', [\App\Http\Controllers\MasterCustomerBuruhController::class, 'downloadTemplate'])->name('master-customer-buruh.download-template');
     Route::post('master-customer-buruh/import', [\App\Http\Controllers\MasterCustomerBuruhController::class, 'import'])->name('master-customer-buruh.import');

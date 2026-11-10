@@ -36,7 +36,15 @@
                         @if($pranota->pembayaran->isNotEmpty())
                         <details class="mt-3"><summary class="cursor-pointer select-none text-xs font-semibold text-indigo-700 hover:text-indigo-900">Riwayat Pembayaran <span class="ml-1 rounded-full bg-indigo-50 px-1.5 py-0.5">{{ $pranota->pembayaran->count() }}</span></summary>
                             @foreach($pranota->pembayaran as $payment)
-                            <div class="mt-2 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs"><a class="min-w-0" href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}"><span class="block font-semibold text-indigo-700 whitespace-nowrap">{{ $payment->nomor_pembayaran }}</span><span class="mt-1 block whitespace-nowrap text-gray-600">Rp {{ number_format($payment->pivot->subtotal, 2, ',', '.') }}</span></a><a target="_blank" rel="noopener" aria-label="Cetak {{ $payment->nomor_pembayaran }}" class="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-semibold text-gray-700 transition hover:border-indigo-300 hover:text-indigo-700" href="{{ route('pembayaran-pranota-bpjs.print', $payment) }}">Cetak</a></div>
+                            <div class="mt-2 flex items-center justify-between gap-3 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2.5 text-xs"><a class="min-w-0" href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}"><span class="block font-semibold text-indigo-700 whitespace-nowrap">{{ $payment->nomor_pembayaran }}</span><span class="mt-1 block whitespace-nowrap text-gray-600">Rp {{ number_format($payment->pivot->subtotal, 2, ',', '.') }}</span></a><a target="_blank" rel="noopener" aria-label="Cetak {{ $payment->nomor_pembayaran }}" class="shrink-0 rounded-lg border border-gray-300 bg-white px-3 py-1.5 font-semibold text-gray-700 transition hover:border-indigo-300 hover:text-indigo-700" href="{{ route('pembayaran-pranota-bpjs.print', $payment) }}">Cetak</a>
+                            @can('pembayaran-pranota-bpjs-create')
+                            <form method="POST" action="{{ route('pembayaran-pranota-bpjs.destroy', $payment) }}" onsubmit="return confirm('Tarik seluruh pembayaran {{ $payment->nomor_pembayaran }}? Saldo seluruh Akun Bank dan Bank yang Digunakan dikembalikan sesuai transaksi ini, dan tagihan dapat dibayar kembali.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="rounded-lg bg-red-600 px-3 py-1.5 font-semibold text-white hover:bg-red-700">Tarik Pembayaran</button>
+                            </form>
+                            @endcan
+                            </div>
                             @endforeach
                         </details>
                         @endif

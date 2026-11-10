@@ -18,7 +18,7 @@ class PembayaranPranotaBpjsController extends Controller
     public function __construct(private CoaTransactionService $journal)
     {
         $this->middleware('can:pembayaran-pranota-bpjs-view')->only(['index', 'show']);
-        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update']);
+        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update', 'destroy']);
     }
 
     public function index(Request $request)
@@ -185,6 +185,57 @@ class PembayaranPranotaBpjsController extends Controller
         }
 
         return redirect()->route('pembayaran-pranota-bpjs.index')->with('success', 'Pembayaran '.$payment->nomor_pembayaran.' berhasil disimpan.');
+    }
+
+    public function destroy(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        try {
+            DB::transaction(function () use ($pembayaran_pranota_bpj) {
+                $ids = $pembayaran_pranota_bpj->pranotas()->pluck('pranota_bpjs_headers.id');
+                $pranotas = PranotaBpjsHeader::whereIn('id', $ids)->orderBy('id')->lockForUpdate()->get();
+                $payment = PembayaranPranotaBpjs::whereKey($pembayaran_pranota_bpj->id)->lockForUpdate()->firstOrFail();
+                $journals = \App\Models\CoaTransaction::where('nomor_referensi', $payment->nomor_pembayaran)
+                    ->where('jenis_transaksi', 'Pembayaran Pranota BPJS')->lockForUpdate()->get();
+                $expectedDebits = collect($payment->bank_allocations ?: [['coa_id' => $payment->bank_coa_id, 'subtotal' => $payment->total_pembayaran]])
+                    ->groupBy('coa_id')->map(fn ($rows) => round($rows->sum('subtotal'), 2));
+                $byAccount = $journals->groupBy('coa_id');
+                $accounts = Coa::whereIn('id', $byAccount->keys())->orderBy('id')->lockForUpdate()->get()->keyBy('id');
+                // Require both sides of the original payment before changing any balance.
+                if ($accounts->count() !== $byAccount->count()
+                    || round($journals->sum('debit'), 2) !== round((float) $payment->total_pembayaran, 2)
+                    || round($journals->sum('kredit'), 2) !== round((float) $payment->total_pembayaran, 2)
+                    || round($byAccount->get($payment->akun_coa_id, collect())->sum('kredit'), 2) !== round((float) $payment->total_pembayaran, 2)) {
+                    throw new \RuntimeException('Jurnal kedua sisi pembayaran tidak lengkap.');
+                }
+                foreach ($expectedDebits as $coaId => $amount) {
+                    if (round($byAccount->get($coaId, collect())->sum('debit'), 2) !== $amount) {
+                        throw new \RuntimeException('Jurnal Akun Bank tidak sesuai pembayaran.');
+                    }
+                }
+                foreach ($byAccount as $coaId => $entries) {
+                    $account = $accounts->get($coaId);
+                    $account->saldo = round((float) $account->saldo - $entries->sum('debit') + $entries->sum('kredit'), 2);
+                    $account->save();
+                }
+                foreach ($journals as $entry) {
+                    $entry->delete();
+                }
+                DB::table('pembayaran_pranota_bpjs_parts')->where('pembayaran_pranota_bpjs_id', $payment->id)->delete();
+                $payment->pranotas()->detach();
+                $payment->delete();
+                foreach ($pranotas as $pranota) {
+                    $paid = round((float) $pranota->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal'), 2);
+                    $pranota->update(['status' => $paid <= 0 ? 'unpaid' : ($paid >= round((float) $pranota->grand_total, 2) ? 'paid' : 'partial'), 'updated_by' => auth()->id()]);
+                }
+                Log::info('Pembayaran pranota BPJS ditarik', ['nomor_pembayaran' => $payment->nomor_pembayaran, 'user_id' => auth()->id()]);
+            });
+        } catch (\Exception $e) {
+            Log::error('Gagal menarik pembayaran pranota BPJS', ['exception' => $e]);
+
+            return back()->with('error', 'Pembayaran gagal ditarik. Silakan muat ulang dan coba kembali.');
+        }
+
+        return redirect()->route('pembayaran-pranota-bpjs.index')->with('success', 'Pembayaran berhasil ditarik. Sisa tagihan telah diperbarui dan dapat dibayar kembali.');
     }
 
     public function update(Request $request, PembayaranPranotaBpjs $pembayaran_pranota_bpj)
