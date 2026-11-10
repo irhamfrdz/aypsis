@@ -91,6 +91,16 @@ class RekapPemakaianBanDateTest extends TestCase
         $this->assertEquals(0, $units[5]->total);
         $this->assertNull($units[5]->velg_8_total);
 
+        $searched = (new RekapPemakaianBanController)->index(Request::create('/', 'GET', [
+            'start_date' => '2026-10-01', 'end_date' => '2026-10-31', 'search' => ' c ',
+        ]))->getData();
+        $this->assertCount(1, $searched['units']);
+        $this->assertEquals(3, $searched['units']->first()->mobil_id);
+        $missing = (new RekapPemakaianBanController)->index(Request::create('/', 'GET', [
+            'start_date' => '2026-10-01', 'end_date' => '2026-10-31', 'search' => 'TIDAKADA',
+        ]))->getData();
+        $this->assertTrue($missing['units']->isEmpty());
+
         $detail = (new RekapPemakaianBanController)->index(Request::create('/', 'GET', [
             'start_date' => '2026-10-01', 'end_date' => '2026-10-31', 'unit' => 2,
         ]))->getData();

@@ -23,6 +23,10 @@
             <label for="end_date" class="mb-2 block text-sm font-semibold text-gray-700">Sampai Tanggal</label>
             <input id="end_date" name="end_date" type="date" value="{{ $endDate }}" required class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus:border-indigo-500 focus:ring-indigo-200">
         </div>
+        <div>
+            <label for="search" class="mb-2 block text-sm font-semibold text-gray-700">Cari unit kendaraan</label>
+            <input id="search" name="search" type="search" value="{{ $search }}" maxlength="100" placeholder="Nomor polisi / nomor KIR" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm focus:border-indigo-500 focus:ring-indigo-200">
+        </div>
         <div class="flex items-end gap-2">
             <button type="submit" class="inline-flex h-11 items-center gap-2 whitespace-nowrap rounded-xl bg-indigo-600 px-4 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"><i class="fas fa-search" aria-hidden="true"></i> Tampilkan Unit</button>
             <a href="{{ route('rekap-pemakaian-ban.index') }}" class="inline-flex h-11 items-center rounded-xl border border-gray-300 px-4 text-sm font-semibold text-gray-600 transition hover:bg-gray-50">Reset</a>
@@ -30,6 +34,7 @@
         </div>
         @error('start_date') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
         @error('end_date') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
+        @error('search') <p class="text-sm text-red-600">{{ $message }}</p> @enderror
     </form>
 
     @if($startDate && $endDate)
@@ -38,7 +43,7 @@
         <div class="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             @forelse($units as $vehicle)
             <article class="rounded-xl border p-4 shadow-sm transition {{ (int) $unit === (int) $vehicle->mobil_id ? 'border-indigo-500 bg-indigo-50 ring-2 ring-indigo-100' : 'border-gray-200 bg-white hover:border-indigo-300 hover:shadow-md' }}">
-                <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="group block rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $vehicle->mobil_id, 'search' => $search]) }}" @if((int) $unit === (int) $vehicle->mobil_id) aria-current="true" @endif class="group block rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 <span class="flex items-center justify-between gap-3">
                     <span class="flex min-w-0 items-center gap-3"><span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-indigo-600"><i class="fas fa-truck" aria-hidden="true"></i></span><span class="min-w-0"><span class="block text-xs font-medium text-gray-500">Unit kendaraan</span><span class="block break-words font-bold text-gray-900">{{ $vehicle->unit_name ?: ($vehicle->mobil?->nomor_polisi && $vehicle->mobil->nomor_polisi !== '-' ? $vehicle->mobil->nomor_polisi : ($vehicle->mobil?->no_kir ?: 'Unit #'.$vehicle->mobil_id)) }}</span></span></span>
                     <i class="fas fa-chevron-right text-xs text-gray-400 group-hover:text-indigo-600" aria-hidden="true"></i>
@@ -57,7 +62,7 @@
                 </details>
             </article>
             @empty
-            <p class="col-span-full py-5 text-center text-sm text-gray-500">Tidak ada pemakaian ban atau komponen untuk unit kendaraan pada periode ini.</p>
+            <p class="col-span-full py-5 text-center text-sm text-gray-500">{{ $search !== '' ? 'Tidak ada unit yang cocok dengan pencarian pada periode ini.' : 'Tidak ada pemakaian ban atau komponen untuk unit kendaraan pada periode ini.' }}</p>
             @endforelse
         </div>
     </section>
@@ -69,7 +74,7 @@
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-200 px-5 py-5 sm:px-6">
             <div><h2 class="font-bold text-gray-900">Detail pemakaian ban</h2><p class="mt-1 text-sm text-gray-500">Total pemakaian unit terpilih: <span class="font-semibold text-indigo-700">{{ number_format($items->total()) }} ban</span></p></div>
-            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $unit, 'print' => 1]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"><i class="fas fa-print" aria-hidden="true"></i> Print</a>
+            <a href="{{ route('rekap-pemakaian-ban.index', ['start_date' => $startDate, 'end_date' => $endDate, 'unit' => $unit, 'print' => 1, 'search' => $search]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"><i class="fas fa-print" aria-hidden="true"></i> Print</a>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 text-sm">

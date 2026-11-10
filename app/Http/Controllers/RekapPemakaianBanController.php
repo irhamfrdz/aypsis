@@ -16,10 +16,12 @@ class RekapPemakaianBanController extends Controller
             'end_date' => ['nullable', 'required_with:start_date,unit', 'date_format:Y-m-d', 'after_or_equal:start_date'],
             'unit' => ['nullable', 'integer', 'min:1'],
             'print' => ['nullable', 'in:1'],
+            'search' => ['nullable', 'string', 'max:100'],
         ]);
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
         $unit = $filters['unit'] ?? null;
+        $search = trim($filters['search'] ?? '');
         $units = collect();
         $items = null;
         $ringItems = null;
@@ -125,6 +127,14 @@ class RekapPemakaianBanController extends Controller
             }
         }
 
-        return view('rekap.pemakaian-ban', compact('items', 'ringItems', 'banDalamItems', 'units', 'startDate', 'endDate', 'unit'));
+        if ($search !== '') {
+            $normalize = fn ($value) => preg_replace('/\s+/u', '', mb_strtolower((string) $value));
+            $needle = $normalize($search);
+            $units = $units->filter(fn ($vehicle) => collect([
+                $vehicle->unit_name, $vehicle->mobil?->nomor_polisi, $vehicle->mobil?->no_kir,
+            ])->contains(fn ($value) => str_contains($normalize($value), $needle)))->values();
+        }
+
+        return view('rekap.pemakaian-ban', compact('items', 'ringItems', 'banDalamItems', 'units', 'startDate', 'endDate', 'unit', 'search'));
     }
 }
