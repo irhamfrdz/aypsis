@@ -19,6 +19,9 @@
                     </div>
                 </div>
                 <a href="{{ route('stock-amprahan.dashboard-pemakaian') }}" class="mt-4 inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700"><i class="fas fa-chart-bar mr-2"></i>Dashboard Pemakaian Barang</a>
+                <button type="button" onclick="openRekapPemakaianModal()" class="mt-4 ml-2 inline-flex items-center rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700">
+                    <i class="fas fa-clipboard-list mr-2"></i>Rekap Pemakaian
+                </button>
             </div>
             <div class="flex flex-wrap gap-2 xl:max-w-[800px] xl:justify-end">
             <a href="{{ route('stock-amprahan.all-history', ['lokasi' => request('lokasi'), 'mobil_id' => request('mobil_id')]) }}" class="inline-flex items-center px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-semibold rounded-lg shadow-sm transition-all duration-200">
@@ -2483,6 +2486,43 @@
     </div>
 </div>
 
+<!-- Modal Rekap Pemakaian -->
+<div id="rekapPemakaianModal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-gray-900/50 p-4" role="dialog" aria-modal="true" aria-labelledby="rekapPemakaianTitle" onclick="if(event.target === this) closeRekapPemakaianModal()">
+    <div class="relative mx-auto mt-16 w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl">
+        <div class="flex items-center justify-between border-b border-gray-100 pb-4">
+            <h3 id="rekapPemakaianTitle" class="text-lg font-bold text-gray-800">Rekap Pemakaian Aktiva</h3>
+            <button type="button" onclick="closeRekapPemakaianModal()" class="text-gray-400 transition hover:text-gray-700" aria-label="Tutup">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <form action="{{ route('stock-amprahan.dashboard-pemakaian.hasil') }}" method="GET" class="mt-5 space-y-4">
+            <div>
+                <label for="rekap_kategori_pemakai" class="mb-1 block text-sm font-semibold text-gray-700">Kategori Aktiva <span class="text-red-500">*</span></label>
+                <select id="rekap_kategori_pemakai" name="kategori_pemakai" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-700 focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200">
+                    <option value="">-- Pilih Kategori Aktiva --</option>
+                    <option value="kapal">Kapal</option>
+                    <option value="kendaraan">Kendaraan</option>
+                    <option value="alat_berat">Alat Berat</option>
+                </select>
+            </div>
+            <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <div>
+                    <label for="rekap_from_date" class="mb-1 block text-sm font-semibold text-gray-700">Tanggal Dari <span class="text-red-500">*</span></label>
+                    <input id="rekap_from_date" type="date" name="from_date" required value="{{ now()->startOfMonth()->format('Y-m-d') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200">
+                </div>
+                <div>
+                    <label for="rekap_to_date" class="mb-1 block text-sm font-semibold text-gray-700">Tanggal Sampai <span class="text-red-500">*</span></label>
+                    <input id="rekap_to_date" type="date" name="to_date" required value="{{ now()->format('Y-m-d') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-cyan-500 focus:outline-none focus:ring-2 focus:ring-cyan-200">
+                </div>
+            </div>
+            <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+                <button type="button" onclick="closeRekapPemakaianModal()" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-50">Batal</button>
+                <button type="submit" class="rounded-lg bg-cyan-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-cyan-700"><i class="fas fa-eye mr-2"></i>Tampilkan Rekap</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Valuasi Pemakaian -->
 <div id="valuasiPemakaianModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 transition-opacity duration-300">
     <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-2xl rounded-2xl bg-white">
@@ -2696,6 +2736,14 @@
             document.getElementById('tab-content-usage').classList.add('block');
             btnUsage.className = "border-blue-500 text-blue-600 whitespace-nowrap py-4 px-1 border-b-2 font-bold text-sm transition-colors focus:outline-none";
         }
+    }
+
+    function openRekapPemakaianModal() {
+        document.getElementById('rekapPemakaianModal').classList.remove('hidden');
+    }
+
+    function closeRekapPemakaianModal() {
+        document.getElementById('rekapPemakaianModal').classList.add('hidden');
     }
 
     function openValuasiModal() {
