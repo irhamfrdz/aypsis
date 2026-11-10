@@ -129,14 +129,14 @@
                                     <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Hari bergerak</dt><dd class="mt-1 font-bold text-slate-900">{{ $row->moving_days }} hari</dd></div>
                                     <div class="rounded-xl bg-amber-50 px-3 py-3"><dt class="text-xs text-amber-800">Durasi idle</dt><dd class="mt-1 font-bold text-amber-900">{{ $row->days_with_idle_data > 0 ? intdiv($idleSeconds, 3600).' jam '.intdiv($idleSeconds % 3600, 60).' menit' : 'Belum tersedia' }}</dd>@if($row->days_with_idle_data > 0 && $row->days_with_idle_data < $row->days_with_data)<p class="mt-1 text-xs text-amber-700">{{ $row->days_with_idle_data }}/{{ $row->days_with_data }} hari</p>@endif</div>
                                     <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Rit</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->rit_count, 0, ',', '.') }}</dd></div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Pergantian ban</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</dd><p class="text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} ban</p></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Pergantian Ban &amp; Velg</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</dd><p class="text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} unit</p></div>
                                     <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Barang / servis</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</dd></div>
                                 </dl>
                             </div>
 
                             <details class="group border-t border-slate-100 bg-slate-50/50">
                                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 sm:px-6 [&::-webkit-details-marker]:hidden">
-                                    <span>Detail rit, ban, dan barang / servis</span>
+                                    <span>Detail rit, ban &amp; velg, dan barang / servis</span>
                                     <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180" aria-hidden="true"></i>
                                 </summary>
                                 <div class="space-y-7 border-t border-slate-100 px-5 py-5 sm:px-6">
@@ -183,7 +183,7 @@
                     @endforeach
                 </div>
                 <p class="text-xs leading-relaxed text-slate-500">Idle berarti mesin menyala saat kendaraan berhenti. Hanya jeda antartitik GPS maksimal 30 menit yang dihitung. Data idle lama mungkin belum tersedia jika riwayat GPS telah dihapus.</p>
-                <p class="text-xs leading-relaxed text-slate-500">Pergantian ban mengikuti supir penerima pada Ban Luar dan Ban Luar Batam berstatus Terpakai. Setiap ban dihitung satu kali. Periode mengikuti tanggal pemakaian, atau tanggal pasang jika tanggal pemakaian belum diisi. Jika supir belum tercatat, pencocokan menggunakan kendaraan.</p>
+                <p class="text-xs leading-relaxed text-slate-500">Pergantian Ban &amp; Velg mencakup Ban, Ban Dalam, Ban Perut, Ring Velg, dan Velg berdasarkan riwayat pemakaian. Jumlah kali menunjukkan banyaknya transaksi; jumlah unit mengikuti kuantitas barang. Pemakaian dihitung berdasarkan kendaraan dan periode tanggal, termasuk jika penerimanya berbeda dari supir saat ini.</p>
             </section>
 
             <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="harian-title">

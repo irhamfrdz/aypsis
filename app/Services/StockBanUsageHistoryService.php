@@ -99,7 +99,7 @@ class StockBanUsageHistoryService
         $namaBan = ! empty($values['nama_stock_ban_id'])
             ? DB::table('nama_stock_bans')->where('id', $values['nama_stock_ban_id'])->value('nama') : null;
 
-        DB::table('stock_ban_usage_histories')->insert([
+        $historyId = DB::table('stock_ban_usage_histories')->insertGetId([
             'source_type' => $sourceType,
             'source_id' => $sourceId,
             'audit_log_id' => $auditLogId,
@@ -118,5 +118,8 @@ class StockBanUsageHistoryService
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+        if (Schema::hasTable('pemakaian_ban')) {
+            app(PemakaianBanSyncService::class)->run(false, 'stock_ban_usage_histories', $historyId);
+        }
     }
 }

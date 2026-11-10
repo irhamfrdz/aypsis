@@ -1315,6 +1315,7 @@ class StockBanController extends Controller
                     'tanggal_keluar' => $newDate,
                     'tanggal_digunakan' => $newDate,
                 ]);
+                app(\App\Services\PemakaianBanSyncService::class)->run(false, $table, (int) $id);
                 break;
             case 'stock_bans':
                 $updateField = $field ?? 'tanggal_masuk';
