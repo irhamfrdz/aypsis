@@ -577,6 +577,7 @@ class TandaTerimaController extends Controller
             'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'gudang_tujuan_id' => 'nullable|exists:gudangs,id',
+            'tanggal_gudang_tujuan' => 'nullable|date',
             'penerima' => 'nullable|string|max:255',
             'pic_penerima' => 'nullable|string|max:255',
             'alamat_penerima' => 'nullable|string',
@@ -629,6 +630,7 @@ class TandaTerimaController extends Controller
             $tandaTerima->bukti_timbangan_muat = $suratJalan->bukti_timbangan_muat;
             $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
             $tandaTerima->gudang_tujuan_id = $request->input('gudang_tujuan_id');
+            $tandaTerima->tanggal_gudang_tujuan = $request->input('tanggal_gudang_tujuan');
             $pengirimName = $request->pengirim;
             if ($pengirimName) {
                 $dbPengirim = \App\Models\Pengirim::where('nama_pengirim', $pengirimName)->orWhere('nickname1', $pengirimName)->first();

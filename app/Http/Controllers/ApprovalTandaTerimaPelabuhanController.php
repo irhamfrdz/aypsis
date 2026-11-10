@@ -175,7 +175,8 @@ class ApprovalTandaTerimaPelabuhanController extends Controller
             }
 
             if (! empty($validated['gudang_id'])) {
-                $this->updateGudangTujuan($tandaTerima, (int) $validated['gudang_id'], $validated['tanggal'], $request->user()->id);
+                $tanggalGudang = $tandaTerima->tanggal_gudang_tujuan?->toDateString() ?: $validated['tanggal'];
+                $this->updateGudangTujuan($tandaTerima, (int) $validated['gudang_id'], $tanggalGudang, $request->user()->id);
             }
         });
 

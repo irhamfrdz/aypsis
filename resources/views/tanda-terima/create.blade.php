@@ -1416,6 +1416,11 @@
                                     </select>
                                     @error('gudang_tujuan_id')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
+                                <div>
+                                    <label for="tanggal_gudang_tujuan" class="block text-xs font-medium text-gray-500 mb-2">Tanggal Masuk Gudang</label>
+                                    <input type="date" name="tanggal_gudang_tujuan" id="tanggal_gudang_tujuan" value="{{ old('tanggal_gudang_tujuan', now()->toDateString()) }}" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_gudang_tujuan') border-red-500 @enderror">
+                                    @error('tanggal_gudang_tujuan')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label for="estimasi_nama_kapal" class="block text-xs font-medium text-gray-500 mb-2">
