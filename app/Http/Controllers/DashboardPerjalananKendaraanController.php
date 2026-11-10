@@ -9,6 +9,7 @@ use App\Services\VehicleTireReplacementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class DashboardPerjalananKendaraanController extends Controller
 {
@@ -47,9 +48,13 @@ class DashboardPerjalananKendaraanController extends Controller
                 ]);
 
             if (! $response->successful()) {
-                report(new \RuntimeException('OpenAI ranking explanation request failed with HTTP '.$response->status()));
+                $apiError = (string) data_get($response->json(), 'error.message', 'No error message returned');
+                Log::warning('OpenAI ranking explanation request failed.', [
+                    'http_status' => $response->status(),
+                    'api_error' => mb_substr($apiError, 0, 500),
+                ]);
 
-                return response()->json(['message' => 'AI belum dapat membuat penjelasan. Coba lagi beberapa saat.'], 502);
+                return response()->json(['message' => 'OpenAI menolak permintaan (HTTP '.$response->status().'). Periksa log aplikasi untuk penyebabnya.'], 502);
             }
 
             $text = collect($response->json('output', []))
