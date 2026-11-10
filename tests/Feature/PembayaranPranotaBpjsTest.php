@@ -122,7 +122,7 @@ class PembayaranPranotaBpjsTest extends TestCase
             $this->payload([$deleted->id]),
             array_replace($this->payload([$draft->id]), ['akun_coa_id' => 1]),
             array_replace($this->payload([$draft->id]), ['bank_coa_id' => 999, 'akun_coa_id' => 1]),
-            array_replace($this->payload([$draft->id]), ['tanggal_pembayaran' => '2026-10-01']),
+            array_replace($this->payload([$draft->id]), ['tanggal_pembayaran' => 'bukan-tanggal']),
         ] as $payload) {
             try {
                 $this->pay($payload);
@@ -133,6 +133,19 @@ class PembayaranPranotaBpjsTest extends TestCase
         }
         $this->assertSame(0, PembayaranPranotaBpjs::count());
         $this->assertSame(0, DB::table('coa_transactions')->count());
+    }
+
+    public function test_backdated_payment_uses_selected_date_for_payment_and_journal(): void
+    {
+        $pranota = $this->pranota();
+        $this->pay(array_replace($this->payload([$pranota->id]), ['tanggal_pembayaran' => '2026-10-01']));
+        $payment = PembayaranPranotaBpjs::firstOrFail();
+        $this->assertSame('2026-10-01', $payment->tanggal_pembayaran->format('Y-m-d'));
+        $entries = DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor_pembayaran)->get();
+        $this->assertCount(2, $entries);
+        foreach ($entries as $entry) {
+            $this->assertSame('2026-10-01', substr($entry->tanggal_transaksi, 0, 10));
+        }
     }
 
     public function test_both_account_fields_accept_accounts_from_coa(): void

@@ -71,9 +71,6 @@ class PembayaranPranotaBpjsController extends Controller
                     if (! in_array($pranota->status, ['draft', 'approved', 'unpaid', 'partial']) || ($pranota->pembayaran()->exists() && ! isset($data['group_keys'])) || $pranota->grand_total <= 0) {
                         throw ValidationException::withMessages(['pranota_ids' => 'Pranota '.$pranota->nomor_pranota.' sudah dibayar, dibatalkan, atau tidak memiliki tagihan.']);
                     }
-                    if ($data['tanggal_pembayaran'] < $pranota->tanggal_pranota->format('Y-m-d')) {
-                        throw ValidationException::withMessages(['tanggal_pembayaran' => 'Tanggal pembayaran tidak boleh sebelum tanggal pranota.']);
-                    }
                 }
                 $allocations = [];
                 $creditAmounts = [];
