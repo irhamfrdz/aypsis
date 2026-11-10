@@ -35,32 +35,26 @@ class DashboardPerjalananKendaraanController extends Controller
         ))->implode("\n");
 
         try {
-            $response = Http::timeout(60)
-                ->post(rtrim(config('services.ollama.url'), '/').'/api/chat', [
-                    'model' => config('services.ollama.model', 'llama3.2:1b'),
-                    'stream' => false,
-                    'keep_alive' => '30m',
-                    'options' => ['num_predict' => 110, 'temperature' => 0.35],
-                    'messages' => [
-                        ['role' => 'system', 'content' => 'Jelaskan ranking kendaraan dalam satu paragraf Bahasa Indonesia yang alami, maksimal 55 kata. Gunakan hanya data yang diberikan dan sebutkan nilai serta posisi. Peringkat 1 adalah terbaik: jarak, hari bergerak, dan rit lebih tinggi lebih baik; idle, pergantian ban, dan pemakaian barang/servis lebih rendah lebih baik. Jangan mengarang sebab.'],
-                        ['role' => 'user', 'content' => "Jelaskan hasil ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data berikut sudah diurutkan sesuai kondisi terbaik ke terburuk:\n{$metrics}"],
-                    ],
-                ]);
+            $response = Http::timeout(60)->post(rtrim(config('services.ollama.url'), '/').'/api/chat', [
+                'model' => config('services.ollama.model', 'llama3.2:3b'),
+                'stream' => false,
+                'keep_alive' => '10m',
+                'options' => ['num_predict' => 180, 'temperature' => 0.35],
+                'messages' => [
+                    ['role' => 'system', 'content' => 'Tulis satu paragraf penjelasan Bahasa Indonesia yang alami dan mengalir. Jelaskan posisi kendaraan memakai angka dan pembanding yang tersedia. Perhatikan arah baik/buruk pada setiap variabel: peringkat 1 berarti posisi terbaik, bukan selalu angka terbesar. Idle lebih lama, lebih banyak pergantian ban/velg, dan lebih banyak pemakaian servis/barang dianggap lebih buruk. Jarak, hari bergerak, dan jumlah rit yang lebih tinggi dianggap lebih baik. Jangan mengarang sebab atau fakta di luar data. Maksimal 70 kata.'],
+                    ['role' => 'user', 'content' => "Jelaskan ranking kendaraan {$validated['vehicle']} dengan supir ".($validated['driver'] ?: 'tidak tercatat')." pada periode {$validated['period']}. Data peringkat terbaik ke terburuk:\n{$metrics}"],
+                ],
+            ]);
 
             if (! $response->successful()) {
-                $apiError = (string) data_get($response->json(), 'error', 'No error message returned');
-                Log::warning('Ollama ranking explanation request failed.', [
-                    'http_status' => $response->status(),
-                    'api_error' => mb_substr($apiError, 0, 500),
-                ]);
+                Log::warning('Ollama ranking explanation request failed.', ['http_status' => $response->status(), 'api_error' => mb_substr((string) data_get($response->json(), 'error', ''), 0, 500)]);
 
-                return response()->json(['message' => 'Ollama menolak permintaan (HTTP '.$response->status().'). Pastikan Ollama aktif dan model tersedia.'], 502);
+                return response()->json(['message' => 'Ollama gagal membuat penjelasan. Pastikan service dan model aktif.'], 502);
             }
 
             $text = $response->json('message.content');
-
             if (! is_string($text) || trim($text) === '') {
-            return response()->json(['message' => 'Ollama mengirim jawaban kosong. Silakan coba lagi.'], 502);
+                return response()->json(['message' => 'Ollama mengirim jawaban kosong.'], 502);
             }
 
             return response()->json(['explanation' => trim($text)]);
