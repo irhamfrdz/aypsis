@@ -1555,6 +1555,9 @@ Route::middleware([
         Route::get('kontainer/stock-pergudang/{id}', [\App\Http\Controllers\StockKontainerPergudangController::class, 'show'])
             ->name('kontainer.stock-pergudang.show')
             ->middleware('can:master-kontainer-view');
+        Route::get('kontainer/stock-pergudang/{id}/report-in-out', [\App\Http\Controllers\StockKontainerPergudangController::class, 'reportInOut'])
+            ->name('kontainer.stock-pergudang.report-in-out')
+            ->middleware('can:master-kontainer-view');
         Route::get('kontainer/stock-pergudang/{id}/export', [\App\Http\Controllers\StockKontainerPergudangController::class, 'exportDetail'])
             ->name('kontainer.stock-pergudang.export')
             ->middleware('can:master-kontainer-view');

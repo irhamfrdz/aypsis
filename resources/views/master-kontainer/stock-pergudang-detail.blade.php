@@ -14,6 +14,9 @@
                 <p class="text-sm text-gray-500 mt-1">Menampilkan data gabungan dari Kontainer Sewa dan Stock Kontainer</p>
             </div>
             <div class="flex flex-wrap gap-2">
+                <button type="button" onclick="document.getElementById('reportInOutModal').classList.remove('hidden')" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm">
+                    <i class="fas fa-right-left mr-2" aria-hidden="true"></i>Report In/Out
+                </button>
                 <a href="{{ route('master.kontainer.stock-pergudang.export', ['id' => $id, 'type' => $type]) }}" class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition-all shadow-sm">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -189,6 +192,33 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- Report In/Out Modal -->
+<div id="reportInOutModal" class="fixed inset-0 z-[60] hidden overflow-y-auto" role="dialog" aria-modal="true" aria-labelledby="report-in-out-title">
+    <div class="fixed inset-0 bg-gray-900/60" onclick="document.getElementById('reportInOutModal').classList.add('hidden')" aria-hidden="true"></div>
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+            <div class="mb-5 flex items-center justify-between border-b border-gray-100 pb-4">
+                <div>
+                    <h3 id="report-in-out-title" class="text-lg font-bold text-gray-900">Report Kontainer In/Out</h3>
+                    <p class="mt-1 text-sm text-gray-500">{{ $namaGudang }}</p>
+                </div>
+                <button type="button" onclick="document.getElementById('reportInOutModal').classList.add('hidden')" class="text-gray-400 hover:text-gray-700" aria-label="Tutup"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="GET" action="{{ route('master.kontainer.stock-pergudang.report-in-out', $id) }}" class="space-y-4">
+                <input type="hidden" name="type" value="{{ $type }}">
+                <div>
+                    <label for="report_in_out_tanggal" class="mb-1 block text-sm font-semibold text-gray-700">Tanggal Pergerakan</label>
+                    <input type="date" id="report_in_out_tanggal" name="tanggal" required value="{{ now()->format('Y-m-d') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2.5 text-sm focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-200">
+                </div>
+                <div class="flex justify-end gap-3 border-t border-gray-100 pt-4">
+                    <button type="button" onclick="document.getElementById('reportInOutModal').classList.add('hidden')" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="rounded-lg bg-purple-600 px-4 py-2 text-sm font-semibold text-white hover:bg-purple-700"><i class="fas fa-file-lines mr-2"></i>Tampilkan Report</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 

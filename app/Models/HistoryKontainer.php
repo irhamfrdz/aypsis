@@ -62,6 +62,11 @@ class HistoryKontainer extends Model
         return $this->belongsTo(Gudang::class);
     }
 
+    public function asalGudang()
+    {
+        return $this->belongsTo(Gudang::class, 'asal_gudang_id');
+    }
+
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');

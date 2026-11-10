@@ -146,6 +146,49 @@ class StockKontainerPergudangController extends Controller
         return view('master-kontainer.stock-pergudang-detail', compact('allContainers', 'namaGudang', 'id', 'type'));
     }
 
+    public function reportInOut(Request $request, $id)
+    {
+        $filters = $request->validate([
+            'tanggal' => 'required|date_format:Y-m-d',
+        ]);
+
+        $gudang = $id === 'none' ? null : Gudang::findOrFail($id);
+        $gudangId = $gudang?->id;
+        $namaGudang = $gudang?->nama_gudang ?? 'Tanpa Gudang / Belum Ditentukan';
+        $type = $request->query('type', 'all');
+
+        $incoming = \App\Models\HistoryKontainer::query()
+            ->with(['gudang', 'asalGudang'])
+            ->whereDate('tanggal_kegiatan', $filters['tanggal'])
+            ->whereRaw('LOWER(TRIM(jenis_kegiatan)) = ?', ['masuk'])
+            ->when($gudangId, fn ($query) => $query->where('gudang_id', $gudangId), fn ($query) => $query->whereNull('gudang_id'))
+            ->orderBy('tanggal_kegiatan')
+            ->orderBy('id')
+            ->get();
+
+        $outgoing = \App\Models\HistoryKontainer::query()
+            ->with(['gudang', 'asalGudang'])
+            ->whereDate('tanggal_kegiatan', $filters['tanggal'])
+            ->where(function ($query) use ($gudangId) {
+                $query->where(function ($movement) use ($gudangId) {
+                    $movement->whereRaw('LOWER(TRIM(jenis_kegiatan)) = ?', ['keluar'])
+                        ->where(function ($warehouse) use ($gudangId) {
+                            $warehouse->where('gudang_id', $gudangId)
+                                ->orWhere('asal_gudang_id', $gudangId);
+                        });
+                })->orWhere('asal_gudang_id', $gudangId);
+            })
+            ->orderBy('tanggal_kegiatan')
+            ->orderBy('id')
+            ->get();
+
+        $tanggal = \Illuminate\Support\Carbon::parse($filters['tanggal']);
+
+        return view('master-kontainer.stock-pergudang-report-in-out', compact(
+            'incoming', 'outgoing', 'namaGudang', 'id', 'type', 'tanggal'
+        ));
+    }
+
     /**
      * Keep the denormalized gudangs_id columns aligned with the latest movement.
      * The history table stores the resulting warehouse in gudang_id; null means
