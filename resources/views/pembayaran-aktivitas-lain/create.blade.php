@@ -135,7 +135,7 @@
                 <!-- Jenis Aktivitas -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jenis Aktivitas <span class="text-red-500">*</span></label>
-                    <select name="jenis_aktivitas" id="jenis_aktivitas" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_aktivitas') border-red-500 @enderror">
+                    <select name="jenis_aktivitas" id="jenis_aktivitas" required onchange="const importPanel=document.getElementById('akun_excel_import_wrap'); if(importPanel) importPanel.style.display=this.value==='Pembayaran Kendaraan'?'':'none';" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('jenis_aktivitas') border-red-500 @enderror">
                         <option value="">Pilih Jenis Aktivitas</option>
                         <option value="Pembayaran Kendaraan" {{ old('jenis_aktivitas') == 'Pembayaran Kendaraan' ? 'selected' : '' }}>Pembayaran Kendaraan</option>
                         <option value="Pembayaran Kapal" {{ old('jenis_aktivitas') == 'Pembayaran Kapal' ? 'selected' : '' }}>Pembayaran Kapal</option>
