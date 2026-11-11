@@ -1,6 +1,6 @@
 <section aria-label="Detail pergantian ban dan velg" class="border-t border-slate-200 pt-6">
     <div class="mb-3 flex flex-wrap items-center gap-2">
-        <h5 class="font-bold text-slate-900">Pergantian Ban &amp; Velg</h5>
+        <h5 class="font-bold text-slate-900"><i class="fas fa-circle mr-1.5 text-blue-500" aria-hidden="true"></i>Pergantian Ban &amp; Velg</h5>
         <span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">{{ number_format($tireDetails->count(), 0, ',', '.') }} transaksi</span>
     </div>
 

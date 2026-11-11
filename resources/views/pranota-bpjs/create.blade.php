@@ -8,10 +8,11 @@
 @endpush
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-6 w-full max-w-[96rem] mx-auto space-y-6">
+@include('pranota-bpjs.partials.ui-styles')
+<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-6 w-full max-w-[96rem] mx-auto space-y-6">
 
     {{-- ── Page Header ──────────────────────────────────────────────────────── --}}
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-gray-200">
+    <div class="bpjs-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center shadow-sm">
                 <i class="fas fa-file-invoice-dollar text-lg"></i>

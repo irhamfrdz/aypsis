@@ -1,12 +1,16 @@
 @extends('layouts.app')
 
+@section('title', $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS')
+@section('page_title', $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS')
+
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+@include('pranota-bpjs.partials.ui-styles')
+<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
     {{-- Page Header --}}
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+    <div class="bpjs-page-header sm:flex sm:items-center sm:justify-between mb-8">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">{{ $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS' }}</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold"><span class="bpjs-heading-icon"><i class="fas fa-file-invoice-dollar" aria-hidden="true"></i></span>{{ $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS' }}</h1>
             <p class="text-sm text-gray-500 mt-1">{{ $isHistory ? 'Telusuri pranota yang telah dibuat, lihat rincian, dan cetak kembali.' : 'Kelola daftar pranota pembayaran BPJS karyawan' }}</p>
         </div>
         <div class="flex items-center gap-2">
@@ -36,7 +40,7 @@
     @endif
 
     {{-- Summary Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+    <div class="bpjs-summary grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {{-- Total Pranota --}}
         <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
@@ -74,92 +78,67 @@
     </div>
 
     {{-- Filter Bar --}}
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm mb-4 overflow-hidden">
+    <section class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm" aria-labelledby="bpjs-filter-title">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+            <h2 id="bpjs-filter-title" class="text-sm font-semibold text-gray-800"><i class="fas fa-sliders mr-2 text-teal-600" aria-hidden="true"></i>Filter Pranota</h2>
+            @if(request('bulan') || request('tahun') || request('search') || request('status'))
+                <span class="rounded-full bg-teal-50 px-2.5 py-1 text-xs font-medium text-teal-700"><i class="fas fa-check mr-1" aria-hidden="true"></i>Filter aktif</span>
+            @endif
+        </div>
         <form method="GET" action="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}">
-            <div class="flex flex-wrap items-center divide-x divide-gray-100">
-
-                {{-- Label Filter --}}
-                <div class="px-4 py-3 flex items-center gap-2 text-gray-500 flex-shrink-0">
-                    <i class="fas fa-filter text-xs text-indigo-400"></i>
-                    <span class="text-xs font-semibold uppercase tracking-wider text-gray-400">Filter</span>
+            <div class="bpjs-filter-grid">
+                <div>
+                    <label for="history-search"><i class="fas fa-search" aria-hidden="true"></i>Cari pranota</label>
+                    <input id="history-search" type="search" name="search" value="{{ request('search') }}" placeholder="Nomor, pembuat, atau keterangan...">
                 </div>
-
-                <div class="px-4 py-3 flex-1 min-w-[220px]">
-                    <label for="history-search" class="block text-xs font-semibold text-gray-500 mb-1">Cari pranota</label>
-                    <input id="history-search" type="search" name="search" value="{{ request('search') }}" placeholder="Nomor, pembuat, atau keterangan..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                <div>
+                    <label for="history-status"><i class="fas fa-circle-check" aria-hidden="true"></i>Status</label>
+                    <select id="history-status" name="status"><option value="">Semua status</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select>
                 </div>
-                <div class="px-4 py-3 min-w-[160px]">
-                    <label for="history-status" class="block text-xs font-semibold text-gray-500 mb-1">Status</label>
-                    <select id="history-status" name="status" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">Semua status</option>@foreach($statuses as $status)<option value="{{ $status }}" @selected(request('status') === $status)>{{ ucfirst($status) }}</option>@endforeach</select>
-                </div>
-                {{-- Bulan --}}
-                <div class="px-4 py-3 flex-1 min-w-[160px]">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1 tracking-wider">
-                        <i class="fas fa-calendar-alt mr-1 text-indigo-300"></i> Bulan
-                    </label>
-                    <select name="bulan" class="form-select text-sm border-0 p-0 focus:ring-0 bg-transparent font-medium text-gray-700 w-full">
-                        <option value="">Semua Bulan</option>
+                <div>
+                    <label for="bpjs-filter-month"><i class="fas fa-calendar-alt" aria-hidden="true"></i>Bulan</label>
+                    <select id="bpjs-filter-month" name="bulan">
+                        <option value="">Semua bulan</option>
                         @for($i = 1; $i <= 12; $i++)
-                            <option value="{{ $i }}" {{ request('bulan') == $i ? 'selected' : '' }}>
-                                {{ str_pad($i, 2, '0', STR_PAD_LEFT) }} — {{ date('F', mktime(0,0,0,$i,1)) }}
-                            </option>
+                            <option value="{{ $i }}" @selected(request('bulan') == $i)>{{ str_pad($i, 2, '0', STR_PAD_LEFT) }} - {{ date('F', mktime(0,0,0,$i,1)) }}</option>
                         @endfor
                     </select>
                 </div>
-
-                {{-- Tahun --}}
-                <div class="px-4 py-3 flex-shrink-0">
-                    <label class="block text-xs font-semibold text-gray-400 uppercase mb-1 tracking-wider">
-                        <i class="fas fa-calendar mr-1 text-indigo-300"></i> Tahun
-                    </label>
-                    <input type="number" name="tahun"
-                        value="{{ request('tahun') }}"
-                        placeholder="{{ date('Y') }}"
-                        class="form-input text-sm border-0 p-0 focus:ring-0 bg-transparent font-medium text-gray-700 w-24">
+                <div>
+                    <label for="bpjs-filter-year"><i class="fas fa-calendar" aria-hidden="true"></i>Tahun</label>
+                    <input id="bpjs-filter-year" type="number" name="tahun" value="{{ request('tahun') }}" placeholder="{{ date('Y') }}">
                 </div>
-
-                {{-- Tombol Aksi --}}
-                <div class="px-4 py-3 ml-auto flex items-center gap-2 flex-shrink-0">
-                    @if(request('bulan') || request('tahun') || request('search') || request('status'))
-                        <span class="inline-flex items-center gap-1 bg-indigo-50 text-indigo-600 text-xs font-semibold px-2 py-0.5 rounded-full">
-                            <i class="fas fa-circle text-indigo-400" style="font-size:6px"></i>
-                            Filter aktif
-                        </span>
-                        <a href="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}"
-                           class="inline-flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-red-500 border border-gray-200 hover:border-red-300 bg-white hover:bg-red-50 rounded-lg px-3 py-2 transition-all">
-                            <i class="fas fa-times text-xs"></i>
-                            Reset
-                        </a>
-                    @endif
-                    <button type="submit"
-                        class="inline-flex items-center gap-2 text-sm font-semibold text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg px-4 py-2 shadow-sm shadow-indigo-200 transition-all">
-                        <i class="fas fa-search text-xs"></i>
-                        Tampilkan
-                    </button>
-                </div>
-
+            </div>
+            <div class="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
+                @if(request('bulan') || request('tahun') || request('search') || request('status'))
+                    <a href="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"><i class="fas fa-rotate-left" aria-hidden="true"></i>Reset</a>
+                @endif
+                <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-teal-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-700"><i class="fas fa-search" aria-hidden="true"></i>Tampilkan</button>
             </div>
         </form>
-    </div>
-
+    </section>
 
     {{-- Table --}}
     <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+            <h2 class="text-sm font-semibold text-gray-800"><i class="fas fa-list-ul mr-2 text-teal-600" aria-hidden="true"></i>{{ $isHistory ? 'Riwayat Pranota BPJS' : 'Daftar Pranota BPJS' }}</h2>
+            <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{{ number_format($pranotas->total(), 0, ',', '.') }} pranota</span>
+        </div>
         <div class="overflow-x-auto">
-            <table class="table-auto w-full">
+            <table class="bpjs-list-table table-auto w-full">
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold uppercase text-gray-500 tracking-wider">
                         <th class="px-4 py-3 text-left w-10">#</th>
-                        <th class="px-4 py-3 text-left">Nomor Pranota</th>
-                        <th class="px-4 py-3 text-left">Tanggal</th>
-                        <th class="px-4 py-3 text-center">Periode</th>
-                        <th class="px-4 py-3 text-center">Karyawan</th>
+                        <th class="px-4 py-3 text-left"><i class="fas fa-file-invoice mr-1 text-gray-400" aria-hidden="true"></i>Nomor Pranota</th>
+                        <th class="px-4 py-3 text-left"><i class="fas fa-calendar-alt mr-1 text-gray-400" aria-hidden="true"></i>Tanggal</th>
+                        <th class="px-4 py-3 text-center"><i class="fas fa-calendar mr-1 text-gray-400" aria-hidden="true"></i>Periode</th>
+                        <th class="px-4 py-3 text-center"><i class="fas fa-users mr-1 text-gray-400" aria-hidden="true"></i>Karyawan</th>
                         <th class="px-4 py-3 text-right">JKN</th>
                         <th class="px-4 py-3 text-right">BP Jamsostek</th>
                         <th class="px-4 py-3 text-right">Grand Total</th>
-                        <th class="px-4 py-3 text-left">Dibuat Oleh</th>
-                        <th class="px-4 py-3 text-center">Status</th>
-                        <th class="px-4 py-3 text-center">Aksi</th>
+                        <th class="px-4 py-3 text-left"><i class="fas fa-user mr-1 text-gray-400" aria-hidden="true"></i>Dibuat Oleh</th>
+                        <th class="px-4 py-3 text-center"><i class="fas fa-circle-check mr-1 text-gray-400" aria-hidden="true"></i>Status</th>
+                        <th class="px-4 py-3 text-center"><i class="fas fa-ellipsis mr-1 text-gray-400" aria-hidden="true"></i>Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="text-sm divide-y divide-gray-100">
@@ -229,7 +208,7 @@
                                         Draft
                                     </span>
                                 @elseif($pranota->status == 'paid')
-                                    <span class="inline-flex bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">Lunas</span>
+                                    <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full"><i class="fas fa-check-circle" aria-hidden="true"></i>Lunas</span>
                                 @elseif($pranota->status == 'approved')
                                     <span class="inline-flex items-center gap-1 bg-green-100 text-green-700 text-xs font-semibold px-2.5 py-1 rounded-full">
                                         <i class="fas fa-circle text-green-400" style="font-size:6px"></i>

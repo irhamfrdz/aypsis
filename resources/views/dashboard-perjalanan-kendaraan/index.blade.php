@@ -4,6 +4,53 @@
 @section('page_title', 'Dashboard Perjalanan Kendaraan')
 
 @section('content')
+<style>
+    .vehicle-report-tabs { display: inline-flex; gap: 4px; max-width: 100%; padding: 5px; border: 1px solid #e2e8f0; border-radius: 14px; background: #f1f5f9; }
+    .vehicle-report-tab { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 11px 18px; border-radius: 10px; color: #64748b; font-size: 14px; font-weight: 600; transition: background .15s, color .15s, box-shadow .15s; }
+    .vehicle-report-tab:hover { background: #e2e8f0; color: #334155; }
+    .vehicle-report-tab[aria-selected="true"] { background: #4f46e5; color: #fff; box-shadow: 0 2px 5px rgb(79 70 229 / .2); }
+    .vehicle-report-tab:focus-visible { outline: 2px solid #6366f1; outline-offset: 3px; }
+    .vehicle-report-panel[hidden] { display: none !important; }
+    @media (max-width: 480px) { .vehicle-report-tabs { display: flex; } .vehicle-report-tab { flex: 1; padding: 10px; font-size: 12px; } }
+    .ranking-chart-summary::-webkit-details-marker { display: none; }
+    #ranking-chart-disclosure .ranking-chart-hide { display: none; }
+    #ranking-chart-disclosure[open] .ranking-chart-hide { display: inline; }
+    #ranking-chart-disclosure[open] .ranking-chart-show { display: none; }
+    #ranking-chart-disclosure[open] .ranking-chart-chevron { transform: rotate(180deg); }
+    .ranking-chart-scroll { max-height: 500px; overflow-y: auto; scrollbar-gutter: stable; border: 1px solid #e2e8f0; border-radius: 14px; background: #fff; }
+    .ranking-chart-row { display: grid; grid-template-columns: 32px minmax(100px, 150px) minmax(80px, 1fr) 110px; gap: 12px; align-items: center; padding: 15px 16px; border-bottom: 1px solid #f1f5f9; transition: background .15s; }
+    .ranking-chart-track { height: 26px; border-left: 1px solid #cbd5e1; background: #fafbff; background-image: linear-gradient(to right, transparent calc(100% - 1px), #e2e8f0 1px); background-size: 25% 100%; }
+    .ranking-chart-bar { height: 100%; border-radius: 0 5px 5px 0; background: linear-gradient(90deg, #a5b4fc, #6366f1); box-shadow: inset 0 1px 0 rgb(255 255 255 / .25); transform-origin: left; }
+    .ranking-chart-row[data-rank="1"] .ranking-chart-bar { background: linear-gradient(90deg, #34d399, #059669); }
+    .ranking-chart-row:hover { background: #f8faff; }
+    .ranking-chart-row[data-rank="1"] { background: #f0fdf9; }
+    .ranking-chart-rank { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: #f1f5f9; color: #64748b; font-size: 12px; font-weight: 700; }
+    .ranking-chart-row[data-rank="1"] .ranking-chart-rank { background: #d1fae5; color: #047857; }
+    .ranking-chart-row[data-rank="2"] .ranking-chart-rank,
+    .ranking-chart-row[data-rank="3"] .ranking-chart-rank { background: #e0e7ff; color: #4338ca; }
+    .ranking-chart-axis { position: sticky; top: 0; z-index: 1; margin: 0; background: #f8fafc; color: #94a3b8; font-size: 10px; font-weight: 600; }
+    .ranking-chart-ticks { display: flex; justify-content: space-between; font-variant-numeric: tabular-nums; gap: 4px; }
+    .ranking-chart-axis-label { font-size: 10px; text-transform: uppercase; letter-spacing: .06em; color: #64748b; }
+    .ranking-chart-overview { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+    .ranking-chart-stat { min-width: 0; padding: 14px 16px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; }
+    .ranking-chart-stat:first-child { background: #ecfdf5; border-color: #a7f3d0; }
+    .ranking-chart-stat-label { color: #64748b; font-size: 11px; margin-bottom: 6px; }
+    .ranking-chart-stat-value { color: #0f172a; font-size: 16px; font-weight: 700; overflow-wrap: anywhere; }
+    .ranking-chart-metric:not([hidden]) .ranking-chart-bar { animation: ranking-bar-grow .75s cubic-bezier(.2,.7,.2,1) both; animation-delay: var(--bar-delay, 0ms); }
+    .ranking-chart-metric[hidden] { display: none !important; }
+    @keyframes ranking-bar-grow { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+    @media (prefers-reduced-motion: reduce) { .ranking-chart-metric:not([hidden]) .ranking-chart-bar { animation: none; } }
+    @media (max-width: 640px) {
+        .ranking-chart-row { grid-template-columns: 26px minmax(0, 1fr) auto; gap: 8px; padding: 12px; }
+        .ranking-chart-axis .ranking-chart-ticks { grid-column: 2 / 4; }
+        .ranking-chart-axis .ranking-chart-axis-label { display: none; }
+        .ranking-chart-overview { gap: 8px; }
+        .ranking-chart-stat { padding: 12px 10px; }
+        .ranking-chart-stat-value { font-size: 13px; }
+        .ranking-chart-track { grid-column: 2 / 4; grid-row: 2; height: 18px; }
+        .ranking-chart-value { grid-column: 3; grid-row: 1; }
+    }
+</style>
 <div class="mx-auto max-w-7xl space-y-6 px-4 py-6 sm:px-6 lg:px-8">
     <header class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-900 via-indigo-900 to-indigo-700 px-6 py-8 text-white shadow-lg sm:px-8 sm:py-10">
         <div class="absolute -right-12 -top-20 h-56 w-56 rounded-full border border-white/10 bg-white/5" aria-hidden="true"></div>
@@ -35,15 +82,15 @@
 
         <form method="GET" action="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
             <div class="min-w-0">
-                <label for="tanggal_dari" class="mb-2 block text-sm font-semibold text-slate-700">Dari tanggal</label>
+                <label for="tanggal_dari" class="mb-2 block text-sm font-semibold text-slate-700"><i class="fas fa-calendar-alt mr-1.5 text-slate-400" aria-hidden="true"></i>Dari tanggal</label>
                 <input id="tanggal_dari" name="tanggal_dari" type="date" required value="{{ old('tanggal_dari', $tanggalDari) }}" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
             </div>
             <div class="min-w-0">
-                <label for="tanggal_sampai" class="mb-2 block text-sm font-semibold text-slate-700">Sampai tanggal</label>
+                <label for="tanggal_sampai" class="mb-2 block text-sm font-semibold text-slate-700"><i class="fas fa-calendar-check mr-1.5 text-slate-400" aria-hidden="true"></i>Sampai tanggal</label>
                 <input id="tanggal_sampai" name="tanggal_sampai" type="date" required min="{{ old('tanggal_dari', $tanggalDari) }}" value="{{ old('tanggal_sampai', $tanggalSampai) }}" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
             </div>
             <div class="min-w-0">
-                <label for="search" class="mb-2 block text-sm font-semibold text-slate-700">Cari kendaraan / supir</label>
+                <label for="search" class="mb-2 block text-sm font-semibold text-slate-700"><i class="fas fa-search mr-1.5 text-slate-400" aria-hidden="true"></i>Cari kendaraan / supir</label>
                 <input id="search" name="search" type="search" maxlength="100" value="{{ $search }}" placeholder="Nomor polisi, KIR, kode, atau supir" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
             </div>
             <button type="submit" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
@@ -93,19 +140,118 @@
                 <p class="mt-1 text-sm text-slate-500">{{ $search !== '' ? 'Tidak ada kendaraan yang cocok dengan pencarian pada periode ini.' : 'Coba pilih periode lain yang memiliki data GPS.' }}</p>
             </div>
         @else
+            <div class="vehicle-report-tabs" role="tablist" aria-label="Tampilan laporan kendaraan">
+                <button type="button" id="vehicle-ranking-tab" class="vehicle-report-tab" role="tab" aria-selected="true" aria-controls="vehicle-ranking-panel" tabindex="0">
+                    <i class="fas fa-trophy" aria-hidden="true"></i> Ranking Kendaraan
+                </button>
+                <button type="button" id="vehicle-detail-tab" class="vehicle-report-tab" role="tab" aria-selected="false" aria-controls="vehicle-detail-panel" tabindex="-1">
+                    <i class="fas fa-list-alt" aria-hidden="true"></i> Detail Rincian
+                </button>
+            </div>
+
+            <div id="vehicle-ranking-panel" class="vehicle-report-panel" role="tabpanel" aria-labelledby="vehicle-ranking-tab" tabindex="0">
             <section class="space-y-4" aria-labelledby="ranking-title">
                 <div>
-                    <h3 id="ranking-title" class="text-lg font-bold text-slate-900">Ranking kendaraan per variabel</h3>
+                    <h3 id="ranking-title" class="text-lg font-bold text-slate-900"><i class="fas fa-trophy mr-1.5 text-slate-400" aria-hidden="true"></i>Ranking kendaraan per variabel</h3>
                     <p class="mt-1 max-w-4xl text-sm leading-relaxed text-slate-600">Peringkat 1 adalah posisi terbaik untuk setiap variabel. Jarak tempuh, hari bergerak, dan jumlah rit diurutkan dari nilai tertinggi; durasi idle, pergantian ban/velg, dan pemakaian barang/servis diurutkan dari nilai terendah. Kendaraan tanpa data untuk suatu variabel dapat muncul dengan nilai nol.</p>
                 </div>
+                <details id="ranking-chart-disclosure" class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6">
+                    <summary class="ranking-chart-summary flex cursor-pointer list-none flex-wrap items-center justify-between gap-3 rounded-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-indigo-500 [&::-webkit-details-marker]:hidden">
+                        <span class="font-bold text-slate-900"><i class="fas fa-chart-bar mr-2 text-indigo-500" aria-hidden="true"></i>Perbandingan ranking kendaraan</span>
+                        <span class="inline-flex items-center gap-2 rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700">
+                            <span class="ranking-chart-hide">Sembunyikan</span><span class="ranking-chart-show">Tampilkan</span>
+                            <i class="fas fa-chevron-down ranking-chart-chevron" aria-hidden="true"></i>
+                        </span>
+                    </summary>
+                    <div class="mt-5 mb-5 flex flex-wrap items-start justify-between gap-4">
+                        <div>
+                            <p class="mt-1 text-sm text-slate-500">Pilih variabel untuk membandingkan nilai setiap kendaraan.</p>
+                        </div>
+                        <div class="w-full sm:w-auto">
+                            <label for="ranking-chart-variable" class="mb-1.5 block text-xs font-semibold text-slate-600">Variabel ranking</label>
+                            <select id="ranking-chart-variable" class="w-full rounded-xl border-slate-300 bg-slate-50 py-2 pl-3 pr-9 text-sm text-slate-800 focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach($rankings as $key => $ranking)
+                                    <option value="{{ $key }}">{{ $ranking['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    @foreach($rankings as $key => $ranking)
+                        @php
+                            $chartMax = max(0, (float) $ranking['rows']->max('value'));
+                            $rawStep = $chartMax > 0 ? $chartMax / 4 : 1;
+                            $magnitude = pow(10, floor(log10($rawStep)));
+                            $normalizedStep = $rawStep / $magnitude;
+                            $chartStep = ($normalizedStep <= 1 ? 1 : ($normalizedStep <= 2 ? 2 : ($normalizedStep <= 5 ? 5 : 10))) * $magnitude;
+                            if (!in_array($ranking['unit'], ['km', 'jam'], true)) $chartStep = max(1, ceil($chartStep));
+                            $chartCeiling = $chartStep * 4;
+                            $chartDecimals = $chartStep < 1 ? min(4, (int) ceil(-log10($chartStep))) : 0;
+                            $chartLeader = $ranking['rows']->first();
+                        @endphp
+                        <div class="ranking-chart-metric" data-ranking-metric="{{ $key }}" @if(!$loop->first) hidden @endif>
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+                                <span><i class="fas fa-sort-amount-down mr-1.5 text-indigo-500" aria-hidden="true"></i>{{ $ranking['better'] === 'higher' ? 'Nilai lebih tinggi mendapat ranking lebih baik' : 'Nilai lebih rendah mendapat ranking lebih baik' }}</span>
+                                <span>Satuan: <strong>{{ $ranking['unit'] }}</strong> &middot; {{ $ranking['rows']->count() }} kendaraan</span>
+                            </div>
+                            <div class="ranking-chart-overview">
+                                <div class="ranking-chart-stat">
+                                    <p class="ranking-chart-stat-label"><i class="fas fa-trophy mr-1 text-emerald-600" aria-hidden="true"></i>Peringkat pertama</p>
+                                    <p class="ranking-chart-stat-value">{{ $chartLeader['vehicle'] ?? '-' }}</p>
+                                </div>
+                                <div class="ranking-chart-stat">
+                                    <p class="ranking-chart-stat-label">Nilai peringkat pertama</p>
+                                    <p class="ranking-chart-stat-value">{{ number_format($chartLeader['value'] ?? 0, in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.') }} <span class="text-xs font-normal text-slate-500">{{ $ranking['unit'] }}</span></p>
+                                </div>
+                                <div class="ranking-chart-stat">
+                                    <p class="ranking-chart-stat-label">Rata-rata kendaraan</p>
+                                    <p class="ranking-chart-stat-value">{{ number_format($ranking['rows']->avg('value') ?? 0, 2, ',', '.') }} <span class="text-xs font-normal text-slate-500">{{ $ranking['unit'] }}</span></p>
+                                </div>
+                            </div>
+                            <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+                                <h5 class="text-sm font-semibold text-slate-800">{{ $ranking['label'] }} <span class="font-normal text-slate-400">({{ $ranking['unit'] }})</span></h5>
+                                <span class="text-xs text-slate-500">Urutan peringkat terbaik ke terendah</span>
+                            </div>
+                            <div class="ranking-chart-scroll" role="list" aria-label="Diagram batang {{ $ranking['label'] }}">
+                                <div class="ranking-chart-row ranking-chart-axis" aria-hidden="true">
+                                    <span class="ranking-chart-axis-label">No.</span><span class="ranking-chart-axis-label">Kendaraan</span>
+                                    <div class="ranking-chart-ticks">@for($tick = 0; $tick <= 4; $tick++)<span>{{ number_format($chartStep * $tick, $chartDecimals, ',', '.') }}</span>@endfor</div>
+                                    <span class="ranking-chart-axis-label text-right">Nilai ({{ $ranking['unit'] }})</span>
+                                </div>
+                                @foreach($ranking['rows'] as $entry)
+                                    <div class="ranking-chart-row" role="listitem" data-rank="{{ $entry['rank'] }}">
+                                        <span class="ranking-chart-rank" aria-label="Peringkat {{ $entry['rank'] }}">{{ $entry['rank'] }}</span>
+                                        <span class="break-words text-xs font-semibold text-slate-700">{{ $entry['vehicle'] }}</span>
+                                        <div class="ranking-chart-track" aria-hidden="true"><div class="ranking-chart-bar" style="width: {{ max(0, min(100, (float) $entry['value'] / $chartCeiling * 100)) }}%; --bar-delay: {{ min($loop->index, 12) * 35 }}ms"></div></div>
+                                        <span class="ranking-chart-value text-right text-xs font-semibold tabular-nums text-slate-800">{{ number_format($entry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.') }} <span class="font-normal text-slate-500">{{ $ranking['unit'] }}</span></span>
+                                    </div>
+                                @endforeach
+                            </div>
+                            <div class="mt-4 flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-slate-500">
+                                <span><span class="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-emerald-500" aria-hidden="true"></span>Ranking 1</span>
+                                <span><span class="mr-1.5 inline-block h-2.5 w-2.5 rounded-sm bg-indigo-500" aria-hidden="true"></span>Kendaraan lainnya</span>
+                                <span>Panjang batang menunjukkan nilai aktual, dimulai dari nol.</span>
+                            </div>
+                        </div>
+                    @endforeach
+                    <p class="mt-3 text-xs leading-relaxed text-slate-500">Nilai nol dapat mencakup kendaraan tanpa data pada variabel ini. Urutan mengikuti tabel ranking.</p>
+                </details>
                 <div class="overflow-x-auto rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <table class="min-w-full divide-y divide-slate-200 text-sm">
                         <thead class="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
                             <tr>
                                 <th class="whitespace-nowrap px-4 py-3">No.</th>
-                                <th class="whitespace-nowrap px-4 py-3">Kendaraan</th>
-                                <th class="whitespace-nowrap px-4 py-3">Nama supir</th>
-                                @foreach($rankings as $ranking)<th class="whitespace-nowrap px-4 py-3">{{ $ranking['label'] }}</th>@endforeach
+                                <th class="whitespace-nowrap px-4 py-3"><i class="fas fa-truck mr-1.5 text-slate-400" aria-hidden="true"></i>Kendaraan</th>
+                                <th class="whitespace-nowrap px-4 py-3"><i class="fas fa-user mr-1.5 text-slate-400" aria-hidden="true"></i>Nama supir</th>
+                                @foreach($rankings as $ranking)
+                                    <th class="whitespace-nowrap px-4 py-3"><i class="fas {{ match ($ranking['label']) {
+                                        'Jarak tempuh', 'Hari bergerak' => 'fa-route',
+                                        'Durasi idle' => 'fa-clock',
+                                        'Jumlah rit' => 'fa-exchange-alt',
+                                        'Pergantian ban & velg' => 'fa-circle',
+                                        'Pemakaian barang / servis' => 'fa-tools',
+                                        default => 'fa-chart-bar',
+                                    } }} mr-1.5 text-slate-400" aria-hidden="true"></i>{{ $ranking['label'] }}</th>
+                                @endforeach
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -141,10 +287,13 @@
                 </div>
             </section>
 
+            </div>
+
+            <div id="vehicle-detail-panel" class="vehicle-report-panel" role="tabpanel" aria-labelledby="vehicle-detail-tab" tabindex="0" hidden>
             <section aria-labelledby="kendaraan-title" class="space-y-4">
                 <div class="flex flex-wrap items-end justify-between gap-2">
                     <div>
-                        <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900">Jarak tempuh per kendaraan</h3>
+                        <h3 id="kendaraan-title" class="text-lg font-bold text-slate-900"><i class="fas fa-list-alt mr-1.5 text-slate-400" aria-hidden="true"></i>Detail rincian kendaraan</h3>
                         <p class="mt-1 text-sm text-slate-500">Diurutkan dari jarak terjauh. Buka kartu untuk melihat rincian.</p>
                     </div>
                     <span class="text-xs text-slate-500">{{ $vehicleStats->count() }} kendaraan</span>
@@ -177,23 +326,23 @@
                                 </div>
 
                                 <dl class="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-6">
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Hari GPS</dt><dd class="mt-1 font-bold text-slate-900">{{ $row->days_with_data }} hari</dd></div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Hari bergerak</dt><dd class="mt-1 font-bold text-slate-900">{{ $row->moving_days }} hari</dd></div>
-                                    <div class="rounded-xl bg-amber-50 px-3 py-3"><dt class="text-xs text-amber-800">Durasi idle</dt><dd class="mt-1 font-bold text-amber-900">{{ $row->days_with_idle_data > 0 ? intdiv($idleSeconds, 3600).' jam '.intdiv($idleSeconds % 3600, 60).' menit' : 'Belum tersedia' }}</dd>@if($row->days_with_idle_data > 0 && $row->days_with_idle_data < $row->days_with_data)<p class="mt-1 text-xs text-amber-700">{{ $row->days_with_idle_data }}/{{ $row->days_with_data }} hari</p>@endif</div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Rit</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->rit_count, 0, ',', '.') }}</dd></div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Pergantian Ban &amp; Velg</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</dd><p class="text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} unit</p></div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500">Barang / servis</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</dd></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-satellite-dish mr-1.5 text-slate-400" aria-hidden="true"></i>Hari GPS</dt><dd class="mt-1 font-bold text-slate-900">{{ $row->days_with_data }} hari</dd></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-route mr-1.5 text-slate-400" aria-hidden="true"></i>Hari bergerak</dt><dd class="mt-1 font-bold text-slate-900">{{ $row->moving_days }} hari</dd></div>
+                                    <div class="rounded-xl bg-amber-50 px-3 py-3"><dt class="text-xs text-amber-800"><i class="fas fa-clock mr-1.5 text-slate-400" aria-hidden="true"></i>Durasi idle</dt><dd class="mt-1 font-bold text-amber-900">{{ $row->days_with_idle_data > 0 ? intdiv($idleSeconds, 3600).' jam '.intdiv($idleSeconds % 3600, 60).' menit' : 'Belum tersedia' }}</dd>@if($row->days_with_idle_data > 0 && $row->days_with_idle_data < $row->days_with_data)<p class="mt-1 text-xs text-amber-700">{{ $row->days_with_idle_data }}/{{ $row->days_with_data }} hari</p>@endif</div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-exchange-alt mr-1.5 text-slate-400" aria-hidden="true"></i>Rit</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->rit_count, 0, ',', '.') }}</dd></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-circle mr-1.5 text-slate-400" aria-hidden="true"></i>Pergantian Ban &amp; Velg</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</dd><p class="text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} unit</p></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-tools mr-1.5 text-slate-400" aria-hidden="true"></i>Barang / servis</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</dd></div>
                                 </dl>
                             </div>
 
                             <details class="group border-t border-slate-100 bg-slate-50/50">
                                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 sm:px-6 [&::-webkit-details-marker]:hidden">
-                                    <span>Detail rit, ban &amp; velg, dan barang / servis</span>
+                                    <span><i class="fas fa-clipboard-list mr-1.5 text-slate-400" aria-hidden="true"></i>Detail rit, ban &amp; velg, dan barang / servis</span>
                                     <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180" aria-hidden="true"></i>
                                 </summary>
                                 <div class="space-y-7 border-t border-slate-100 px-5 py-5 sm:px-6">
                                     <section aria-label="Detail rit">
-                                        <div class="mb-3 flex flex-wrap items-center gap-2"><h5 class="font-bold text-slate-900">Detail rit</h5><span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">{{ number_format($row->rit_count, 0, ',', '.') }} rit</span></div>
+                                        <div class="mb-3 flex flex-wrap items-center gap-2"><h5 class="font-bold text-slate-900"><i class="fas fa-route mr-1.5 text-slate-400" aria-hidden="true"></i>Detail rit</h5><span class="rounded-full bg-indigo-100 px-2 py-0.5 text-xs font-semibold text-indigo-700">{{ number_format($row->rit_count, 0, ',', '.') }} rit</span></div>
                                         @if($row->rit_details->isEmpty())
                                             <p class="rounded-xl bg-white px-4 py-4 text-sm text-slate-500">Tidak ada surat jalan rit pada periode ini.</p>
                                         @else
@@ -212,7 +361,7 @@
                                     @include('dashboard-perjalanan-kendaraan.partials.tire-details', ['tireDetails' => $row->tire_details])
 
                                     <section aria-label="Barang dan servis" class="border-t border-slate-200 pt-6">
-                                        <div class="mb-3 flex flex-wrap items-center gap-2"><h5 class="font-bold text-slate-900">Barang / servis dipakai</h5><span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</span></div>
+                                        <div class="mb-3 flex flex-wrap items-center gap-2"><h5 class="font-bold text-slate-900"><i class="fas fa-tools mr-1.5 text-slate-400" aria-hidden="true"></i>Barang / servis dipakai</h5><span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-800">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</span></div>
                                         @if($row->amprahan_usages->isEmpty())
                                             <p class="rounded-xl bg-white px-4 py-4 text-sm text-slate-500">Tidak ada pemakaian barang atau servis pada periode ini.</p>
                                         @else
@@ -238,6 +387,8 @@
                 <p class="text-xs leading-relaxed text-slate-500">Pergantian Ban &amp; Velg mencakup Ban, Ban Dalam, Ban Perut, Ring Velg, dan Velg berdasarkan riwayat pemakaian. Jumlah kali menunjukkan banyaknya transaksi; jumlah unit mengikuti kuantitas barang. Pemakaian dihitung berdasarkan kendaraan dan periode tanggal, termasuk jika penerimanya berbeda dari supir saat ini.</p>
             </section>
 
+            </div>
+
             <section class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-6" aria-labelledby="harian-title">
                 <div class="mb-5 flex items-center gap-3"><span class="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-50 text-blue-600"><i class="fas fa-calendar-day" aria-hidden="true"></i></span><div><h3 id="harian-title" class="font-bold text-slate-900">Jarak tempuh harian</h3><p class="text-sm text-slate-500">Total seluruh kendaraan pada setiap tanggal.</p></div></div>
                 <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -254,6 +405,36 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const chartVariable = document.getElementById('ranking-chart-variable');
+    chartVariable?.addEventListener('change', () => {
+        document.querySelectorAll('[data-ranking-metric]').forEach(panel => {
+            panel.hidden = panel.dataset.rankingMetric !== chartVariable.value;
+        });
+    });
+    const reportTabs = Array.from(document.querySelectorAll('.vehicle-report-tab'));
+    function activateReportTab(selectedTab) {
+        reportTabs.forEach(tab => {
+            const active = tab === selectedTab;
+            tab.setAttribute('aria-selected', String(active));
+            tab.tabIndex = active ? 0 : -1;
+            document.getElementById(tab.getAttribute('aria-controls')).hidden = !active;
+        });
+    }
+    reportTabs.forEach((tab, index) => {
+        tab.addEventListener('click', () => activateReportTab(tab));
+        tab.addEventListener('keydown', event => {
+            let nextIndex;
+            if (event.key === 'ArrowRight') nextIndex = (index + 1) % reportTabs.length;
+            else if (event.key === 'ArrowLeft') nextIndex = (index - 1 + reportTabs.length) % reportTabs.length;
+            else if (event.key === 'Home') nextIndex = 0;
+            else if (event.key === 'End') nextIndex = reportTabs.length - 1;
+            else return;
+            event.preventDefault();
+            activateReportTab(reportTabs[nextIndex]);
+            reportTabs[nextIndex].focus();
+        });
+    });
+
     document.querySelectorAll('.ai-ranking-explain').forEach(button => {
         button.addEventListener('click', async () => {
             const result = button.nextElementSibling;

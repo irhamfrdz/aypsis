@@ -1,14 +1,18 @@
 @extends('layouts.app')
 
+@section('title', 'Detail Pranota BPJS')
+@section('page_title', 'Detail Pranota BPJS')
+
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
 @endpush
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+@include('pranota-bpjs.partials.ui-styles')
+<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+    <div class="bpjs-page-header sm:flex sm:items-center sm:justify-between mb-8">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Detail Pranota BPJS</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold"><span class="bpjs-heading-icon"><i class="fas fa-file-lines" aria-hidden="true"></i></span>Detail Pranota BPJS</h1>
         </div>
         <div class="flex items-center space-x-2">
             @can('pranota-bpjs-view')
@@ -19,7 +23,7 @@
             </a>
             @can('pranota-bpjs-update')
                 @if($pranota_bpj->status === 'draft')
-                    <a href="{{ route('pranota-bpjs.edit', $pranota_bpj->id) }}" class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700">Ubah Nominal</a>
+                    <a href="{{ route('pranota-bpjs.edit', $pranota_bpj->id) }}" class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700"><i class="fas fa-pen mr-2" aria-hidden="true"></i>Ubah Nominal</a>
                 @endif
             @endcan
             <button onclick="window.print()" class="inline-flex items-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">

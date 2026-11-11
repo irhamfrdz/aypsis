@@ -1,16 +1,20 @@
 @extends('layouts.app')
 
+@section('title', 'Edit Pranota BPJS')
+@section('page_title', 'Edit Pranota BPJS')
+
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
 @endpush
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+@include('pranota-bpjs.partials.ui-styles')
+<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
     {{-- Page Header --}}
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
+    <div class="bpjs-page-header sm:flex sm:items-center sm:justify-between mb-8">
         <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Edit Pranota BPJS</h1>
+            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold"><span class="bpjs-heading-icon"><i class="fas fa-pen-to-square" aria-hidden="true"></i></span>Edit Pranota BPJS</h1>
             <p class="text-sm text-gray-500 mt-1">
                 <span class="inline-flex items-center gap-1 bg-amber-100 text-amber-700 text-xs font-semibold px-2 py-0.5 rounded-full">
                     <i class="fas fa-pencil-alt text-amber-500" style="font-size:9px"></i>

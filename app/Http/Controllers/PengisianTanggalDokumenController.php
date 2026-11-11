@@ -127,8 +127,10 @@ class PengisianTanggalDokumenController extends Controller
             'cabang_id' => ['required', 'integer', 'exists:cabangs,id'],
             'kapal_id' => ['required', 'exists:master_kapals,id'],
             'no_voyage' => ['required', 'string', 'max:255'],
-            'jenis_dokumen' => ['required', Rule::in(['BL', 'TANDA_TERIMA'])],
-            'nomor_dokumen' => ['required', 'string', 'max:255'],
+            'jenis_dokumen' => ['required', 'array', 'min:1'],
+            'jenis_dokumen.*' => ['required', 'distinct', Rule::in(['BL', 'TANDA_TERIMA'])],
+            'nomor_dokumen' => ['required', 'array', 'min:1'],
+            'nomor_dokumen.*' => ['required', 'string', 'distinct', 'max:267'],
             ...array_fill_keys(self::DATE_FIELDS, ['nullable', 'date']),
         ]);
 
@@ -149,23 +151,37 @@ class PengisianTanggalDokumenController extends Controller
         }
 
         $kapal = MasterKapal::findOrFail($validated['kapal_id']);
-        $exists = DB::table('manifests')->where('nama_kapal', $kapal->nama_kapal)
-            ->where('no_voyage', $validated['no_voyage'])
-            ->where($validated['jenis_dokumen'] === 'BL' ? 'nomor_bl' : 'nomor_tanda_terima', $validated['nomor_dokumen'])
-            ->exists();
-
-        if (! $exists) {
-            return back()->withInput()->withErrors(['nomor_dokumen' => 'Nomor dokumen tidak ditemukan pada kapal dan voyage yang dipilih.']);
+        $documents = [];
+        foreach ($validated['nomor_dokumen'] as $selection) {
+            [$type, $number] = array_pad(explode(':', $selection, 2), 2, '');
+            if (! in_array($type, $validated['jenis_dokumen'], true) || $number === '' || mb_strlen($number) > 255) {
+                return back()->withInput()->withErrors(['nomor_dokumen' => 'Pilih nomor dokumen sesuai Jenis Nomor yang dipilih.']);
+            }
+            $exists = DB::table('manifests')->where('nama_kapal', $kapal->nama_kapal)
+                ->where('no_voyage', $validated['no_voyage'])
+                ->where($type === 'BL' ? 'nomor_bl' : 'nomor_tanda_terima', $number)->exists();
+            if (! $exists) {
+                return back()->withInput()->withErrors(['nomor_dokumen' => 'Nomor dokumen tidak ditemukan pada kapal dan voyage yang dipilih.']);
+            }
+            $documents[] = [
+                'jenis_dokumen' => $type,
+                'nomor_dokumen' => $number,
+                'identifier_hash' => hash('sha256', implode('|', [
+                    $kapal->id, mb_strtoupper(trim($validated['no_voyage'])), $type, mb_strtoupper(trim($number)),
+                ])),
+            ];
         }
 
+        unset($validated['jenis_dokumen'], $validated['nomor_dokumen']);
         $validated['nama_kapal'] = $kapal->nama_kapal;
-        $validated['identifier_hash'] = hash('sha256', implode('|', [
-            $kapal->id,
-            mb_strtoupper(trim($validated['no_voyage'])),
-            $validated['jenis_dokumen'],
-            mb_strtoupper(trim($validated['nomor_dokumen'])),
-        ]));
-        $record->fill($validated)->save();
+        DB::transaction(function () use ($documents, $validated, $record) {
+            foreach ($documents as $index => $document) {
+                $target = PengisianTanggalDokumen::where('identifier_hash', $document['identifier_hash'])->first();
+                // The first selection replaces the edited identity; additional selections are saved individually.
+                $target ??= $index === 0 && $record->exists ? $record : new PengisianTanggalDokumen();
+                $target->fill(array_merge($validated, $document))->save();
+            }
+        });
 
         return redirect()->route('pengisian-tanggal-dokumen.index')
             ->with('success', 'Tanggal dokumen berhasil disimpan.');
