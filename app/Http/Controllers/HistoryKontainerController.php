@@ -14,15 +14,19 @@ class HistoryKontainerController extends Controller
     {
         $query = HistoryKontainer::select('history_kontainers.*')
             ->selectSub(function ($q) {
-                // Prefer asal_gudang_id if available, otherwise fallback to previous record's gudang
+                // Derive the origin from the previous chronological movement first.
                 $q->selectRaw('
                     COALESCE(
-                        (SELECT g1.nama_gudang FROM gudangs g1 WHERE g1.id = history_kontainers.asal_gudang_id LIMIT 1),
-                        (SELECT g2.nama_gudang FROM history_kontainers hk 
+                        (SELECT g2.nama_gudang FROM history_kontainers hk
                          JOIN gudangs g2 ON hk.gudang_id = g2.id
                          WHERE hk.nomor_kontainer = history_kontainers.nomor_kontainer
-                         AND hk.id < history_kontainers.id
-                         ORDER BY hk.id DESC LIMIT 1)
+                         AND (
+                            hk.tanggal_kegiatan < history_kontainers.tanggal_kegiatan
+                            OR (hk.tanggal_kegiatan = history_kontainers.tanggal_kegiatan AND hk.created_at < history_kontainers.created_at)
+                            OR (hk.tanggal_kegiatan = history_kontainers.tanggal_kegiatan AND hk.created_at = history_kontainers.created_at AND hk.id < history_kontainers.id)
+                         )
+                         ORDER BY hk.tanggal_kegiatan DESC, hk.created_at DESC, hk.id DESC LIMIT 1),
+                        (SELECT g1.nama_gudang FROM gudangs g1 WHERE g1.id = history_kontainers.asal_gudang_id LIMIT 1)
                     )
                 ');
             }, 'asal_gudang_nama')
