@@ -3,7 +3,14 @@
 @section('page_title', 'Detail Pembayaran Pranota BPJS')
 @section('content')
 <div class="max-w-7xl mx-auto space-y-6">
-    <div class="flex flex-wrap justify-between items-center gap-4"><h1 class="text-2xl font-bold text-gray-800">{{ $payment->nomor_pembayaran }}</h1><a href="{{ route('pembayaran-pranota-bpjs.index') }}" class="px-4 py-2 border rounded-lg">Kembali</a></div>
+    <div class="flex flex-wrap justify-between items-center gap-4"><h1 class="text-2xl font-bold text-gray-800">{{ $payment->nomor_pembayaran }}</h1><div class="flex flex-wrap items-center gap-2">
+        @can('pembayaran-pranota-bpjs-create')
+            <form method="POST" action="{{ route('pembayaran-pranota-bpjs.sync-coa', $payment) }}" onsubmit="this.querySelector('button').disabled = true;">
+                @csrf
+                <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"><i class="fas fa-rotate" aria-hidden="true"></i>SYNC COA</button>
+            </form>
+        @endcan
+        <a href="{{ route('pembayaran-pranota-bpjs.index') }}" class="px-4 py-2 border rounded-lg">Kembali</a></div></div>
     @include('pembayaran-pranota-bpjs.partials.messages')
     <div class="bg-white border rounded-xl p-6 grid md:grid-cols-2 gap-5 text-sm">
         <div><p class="text-gray-500">Tanggal Pembayaran</p><p class="font-semibold">{{ $payment->tanggal_pembayaran->format('d/m/Y') }}</p></div>

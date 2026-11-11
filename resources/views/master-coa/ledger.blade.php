@@ -329,11 +329,22 @@
                                     {{ $transaction->tanggal_transaksi->format('d/m/Y') }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    @if($transaction->jenis_transaksi === 'Pembayaran Pranota BPJS')
+                                        @php($bpjsPaymentId = $bpjsPaymentIds->get($transaction->nomor_referensi))
+                                        @if($bpjsPaymentId && auth()->user()->can('pembayaran-pranota-bpjs-view'))
+                                            <a href="{{ route('pembayaran-pranota-bpjs.show', $bpjsPaymentId) }}" class="text-indigo-600 hover:text-indigo-900 hover:underline" title="Lihat detail pembayaran BPJS">
+                                                {{ $transaction->nomor_referensi }} <i class="fas fa-arrow-up-right-from-square ml-1 text-xs" aria-hidden="true"></i>
+                                            </a>
+                                        @else
+                                            <span title="{{ $bpjsPaymentId ? 'Anda tidak memiliki akses detail pembayaran BPJS.' : 'Data pembayaran BPJS tidak ditemukan.' }}">{{ $transaction->nomor_referensi }}</span>
+                                        @endif
+                                    @else
                                     <button type="button"
                                             onclick="showTransactionDetail('{{ $transaction->nomor_referensi }}')"
                                             class="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer">
                                         {{ $transaction->nomor_referensi }}
                                     </button>
+                                    @endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">

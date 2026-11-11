@@ -205,7 +205,11 @@ class MasterCoaController extends Controller
         $totalDebit = $transactions->sum('debit');
         $totalKredit = $transactions->sum('kredit');
 
-        return view('master-coa.ledger', compact('coa', 'transactions', 'saldoAwal', 'totalDebit', 'totalKredit'));
+        $bpjsPaymentIds = \App\Models\PembayaranPranotaBpjs::whereIn('nomor_pembayaran',
+            $transactions->getCollection()->where('jenis_transaksi', 'Pembayaran Pranota BPJS')->pluck('nomor_referensi')
+        )->pluck('id', 'nomor_pembayaran');
+
+        return view('master-coa.ledger', compact('coa', 'transactions', 'saldoAwal', 'totalDebit', 'totalKredit', 'bpjsPaymentIds'));
     }
 
     /**

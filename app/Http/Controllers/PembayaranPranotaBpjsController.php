@@ -18,7 +18,7 @@ class PembayaranPranotaBpjsController extends Controller
     public function __construct(private CoaTransactionService $journal)
     {
         $this->middleware('can:pembayaran-pranota-bpjs-view')->only(['index', 'show']);
-        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update', 'destroy']);
+        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update', 'destroy', 'syncCoa']);
     }
 
     public function index(Request $request)
@@ -254,6 +254,20 @@ class PembayaranPranotaBpjsController extends Controller
         }
 
         return redirect()->route('pembayaran-pranota-bpjs.index')->with('success', 'Pembayaran berhasil ditarik. Sisa tagihan telah diperbarui dan dapat dibayar kembali.');
+    }
+
+    public function syncCoa(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        try {
+            $changed = (new \App\Services\BpjsPaymentCoaSync)->sync($pembayaran_pranota_bpj);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Gagal sinkronisasi COA pembayaran BPJS', ['payment_id' => $pembayaran_pranota_bpj->id, 'exception' => $e]);
+            return back()->with('error', 'Sinkronisasi COA gagal. Tidak ada perubahan yang disimpan.');
+        }
+        Log::info('Sinkronisasi COA pembayaran BPJS', ['payment_id' => $pembayaran_pranota_bpj->id, 'user_id' => auth()->id(), 'changed' => $changed]);
+        return back()->with('success', $changed ? 'COA pembayaran berhasil disinkronkan.' : 'COA pembayaran sudah sesuai. Tidak ada nominal yang digandakan.');
     }
 
     public function update(Request $request, PembayaranPranotaBpjs $pembayaran_pranota_bpj)

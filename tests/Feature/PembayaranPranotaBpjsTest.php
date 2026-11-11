@@ -51,6 +51,82 @@ class PembayaranPranotaBpjsTest extends TestCase
         ]);
     }
 
+    public function test_sync_coa_repairs_missing_and_wrong_journals_without_duplicate_balances(): void
+    {
+        $payment = PembayaranPranotaBpjs::create([
+            'nomor_pembayaran' => 'SYNC-OLD', 'tanggal_pembayaran' => '2026-11-01',
+            'bank_coa_id' => 2, 'akun_coa_id' => 1, 'total_pembayaran' => 100,
+            'journal_allocations' => [['coa_id' => 2, 'subtotal' => 100]],
+        ]);
+        Coa::withoutEvents(function () use ($payment) {
+            $service = new \App\Services\BpjsPaymentCoaSync;
+            // A legacy journal contains only part of the debit and an incorrect credit.
+            $journal = new CoaTransactionService;
+            $journal->recordTransaction('Hutang BPJS', 30, 0, '2026-11-01', 'SYNC-OLD', 'Pembayaran Pranota BPJS', null, 2);
+            $journal->recordTransaction('Bank Uji', 0, 50, '2026-11-01', 'SYNC-OLD', 'Pembayaran Pranota BPJS', null, 1);
+            $this->assertTrue($service->sync($payment));
+            $this->assertEquals(999900, Coa::find(1)->saldo);
+            $this->assertEquals(-999900, Coa::find(2)->saldo);
+            $this->assertSame(2, DB::table('coa_transactions')->count());
+            $this->assertFalse($service->sync($payment));
+            $this->assertSame(2, DB::table('coa_transactions')->count());
+            $this->assertEquals(999900, Coa::find(1)->saldo);
+        });
+    }
+
+    public function test_sync_coa_creates_absent_journal_and_preserves_other_references(): void
+    {
+        $payment = PembayaranPranotaBpjs::create([
+            'nomor_pembayaran' => 'SYNC-MISSING', 'tanggal_pembayaran' => '2026-11-01',
+            'bank_coa_id' => 2, 'akun_coa_id' => 1, 'total_pembayaran' => 100,
+            'journal_allocations' => [['coa_id' => 2, 'subtotal' => 100]],
+        ]);
+        Coa::withoutEvents(function () use ($payment) {
+            (new CoaTransactionService)->recordTransaction('Bank Uji', 10, 0, '2026-11-02', 'OTHER', 'Other', null, 1);
+            $this->assertTrue((new \App\Services\BpjsPaymentCoaSync)->sync($payment));
+            $this->assertEquals(999910, Coa::find(1)->saldo);
+            $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => 'OTHER', 'debit' => 10]);
+            $this->assertDatabaseHas('coa_transactions', ['nomor_referensi' => 'SYNC-MISSING', 'tanggal_transaksi' => '2026-11-01 00:00:00', 'kredit' => 100]);
+        });
+    }
+
+    public function test_sync_coa_rebuilds_legacy_split_and_moves_expense_and_debt_to_correct_accounts(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '6201.001', 'nama_akun' => 'Gaji Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6201.006', 'nama_akun' => 'Biaya BPJS Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 5, 'nomor_akun' => '2103.002', 'nama_akun' => 'Utang Biaya BPJS', 'tipe_akun' => 'Hutang', 'saldo' => 0],
+        ]);
+        $pranota = $this->pranota('paid', 100);
+        Schema::table('pranota_bpjs_details', fn (Blueprint $table) => $table->json('rincian_bpjs')->nullable());
+        $detailId = DB::table('pranota_bpjs_details')->insertGetId([
+            'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => 9,
+            'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_bp_jamsostek' => 'KANTOR']]),
+            'rincian_bpjs' => json_encode(['jkk_tunjangan' => 10, 'jht_biaya' => 60, 'jht_hutang' => 30]),
+        ]);
+        $payment = PembayaranPranotaBpjs::create([
+            'nomor_pembayaran' => 'LEGACY', 'tanggal_pembayaran' => '2026-11-01',
+            'bank_coa_id' => 3, 'akun_coa_id' => 1, 'total_pembayaran' => 100,
+            'bank_allocations' => [['coa_id' => 3, 'subtotal' => 100]],
+        ]);
+        DB::table('pembayaran_pranota_bpjs_parts')->insert([
+            'pembayaran_pranota_bpjs_id' => $payment->id, 'pranota_bpjs_header_id' => $pranota->id,
+            'pranota_bpjs_detail_id' => $detailId, 'komponen' => 'jamsostek', 'tipe' => 'KANTOR', 'subtotal' => 100,
+        ]);
+        Coa::withoutEvents(function () use ($payment) {
+            (new CoaTransactionService)->recordDoubleEntry(
+                ['coa_id' => 3, 'nama_akun' => 'Gaji Batam', 'jumlah' => 100],
+                ['coa_id' => 1, 'nama_akun' => 'Bank Uji', 'jumlah' => 100],
+                '2026-11-01', 'LEGACY', 'Pembayaran Pranota BPJS');
+            $this->assertTrue((new \App\Services\BpjsPaymentCoaSync)->sync($payment));
+            $this->assertEquals(10, Coa::find(3)->saldo);
+            $this->assertEquals(60, Coa::find(4)->saldo);
+            $this->assertEquals(30, Coa::find(5)->saldo);
+            $this->assertEquals(999900, Coa::find(1)->saldo);
+            $this->assertFalse((new \App\Services\BpjsPaymentCoaSync)->sync($payment));
+        });
+    }
+
     public function test_split_journal_posts_and_withdraws_all_bpjs_accounts(): void
     {
         DB::table('akun_coa')->insert([
