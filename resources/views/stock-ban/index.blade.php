@@ -1538,6 +1538,7 @@
 
                 $banDalamQty = $stockBanDalams->sum('qty');
                 $banPerutQty = $stockBanPeruts->sum('qty');
+                $lockKontainerQty = $stockLockKontainers->sum('qty');
                 
                 $ringVelgStats = $stockRingVelgs->groupBy('ukuran')->map(function($items) {
                     return $items->sum('qty');
@@ -1548,7 +1549,7 @@
                 });
             @endphp
  
-            @if($stockLainLains->isNotEmpty() || $paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
+            @if($stockLainLains->isNotEmpty() || $paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $lockKontainerQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1613,6 +1614,24 @@
                             <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">BAN PERUT</p>
                             <div class="flex items-baseline gap-1">
                                 <span class="text-xl font-black text-gray-800">{{ $banPerutQty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                @endif
+
+                @if($lockKontainerQty > 0)
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-green-500 hover:bg-green-50/30"
+                     onclick="filterBarangLainnya('LOCK KONTAINER', this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-green-50 text-green-600">
+                            <i class="fas fa-lock text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">LOCK KONTAINER</p>
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-xl font-black text-gray-800">{{ $lockKontainerQty }}</span>
                                 <span class="text-[10px] font-medium text-gray-400 uppercase">PCS</span>
                             </div>
                         </div>
