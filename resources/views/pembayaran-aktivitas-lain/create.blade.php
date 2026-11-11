@@ -2035,7 +2035,7 @@ window.addEventListener('unhandledrejection', function(event) {
 </script>
 
 <script>
-document.addEventListener('DOMContentLoaded', () => {
+(() => {
     const wrap = document.getElementById('akun_excel_import_wrap');
     const activity = document.getElementById('jenis_aktivitas');
     const fileInput = document.getElementById('akun_excel_import_file');
@@ -2106,7 +2106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             status.className = 'mt-2 text-xs text-red-700';
         }
     });
-});
+})();
 </script>
 @endpush
 @endsection
