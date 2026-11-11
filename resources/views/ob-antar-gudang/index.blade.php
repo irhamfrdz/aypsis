@@ -703,7 +703,6 @@
         const isDepoSpm = originOption?.dataset.isSpm === '1';
         const isDepoDpe = originOption?.dataset.isDpe === '1';
         const isDepoFortune = originOption?.dataset.isFortune === '1';
-        const isDepoSpm = originOption?.dataset.isSpm === '1';
         const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
 
         const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
