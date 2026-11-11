@@ -2116,11 +2116,19 @@ window.addEventListener('unhandledrejection', function(event) {
                 if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error(`Nilai bayar tidak valid di baris ${index + 2}.`);
                 target.querySelector('.akun-detail-nominal').value = amount;
             }
-            if (columns.vehicle >= 0) {
-                const vehicleRows = imported.filter(row => String(row[columns.vehicle] ?? '').trim());
+            if (columns.vehicle >= 0 || columns.memo >= 0) {
+                const vehicleFromMemo = value => {
+                    const match = String(value ?? '').toUpperCase().match(/\b([A-Z]{1,2})[.\s-]*([0-9]{1,4})[.\s-]*([A-Z]{1,3})\b/);
+                    return match ? `${match[1]}.${match[2]} ${match[3]}` : '';
+                };
+                const vehicleRows = imported.map(row => ({
+                    row,
+                    plate: (columns.vehicle >= 0 ? String(row[columns.vehicle] ?? '').trim() : '')
+                        || vehicleFromMemo(row[columns.memo])
+                })).filter(item => item.plate);
                 const vehicleSelect = document.getElementById('nomor_polisi_list_select');
                 const normalizeVehicle = value => String(value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
-                const vehicleValues = [...new Set(vehicleRows.map(row => String(row[columns.vehicle]).trim()))];
+                const vehicleValues = [...new Set(vehicleRows.map(item => item.plate))];
                 if (vehicleValues.length) {
                     const missingVehicles = vehicleValues.filter(value => ![...vehicleSelect.options].some(option => normalizeVehicle(option.value) === normalizeVehicle(value)));
                     if (missingVehicles.length) throw new Error(`Nomor polisi tidak ditemukan: ${missingVehicles.join(', ')}.`);
@@ -2129,8 +2137,8 @@ window.addEventListener('unhandledrejection', function(event) {
                     subJenisSelect.value = 'KIR';
                     subJenisSelect.dispatchEvent(new Event('change', { bubbles: true }));
                     $(vehicleSelect).val(vehicleValues.map(value => [...vehicleSelect.options].find(option => normalizeVehicle(option.value) === normalizeVehicle(value)).value)).trigger('change');
-                    vehicleRows.forEach(row => {
-                        const value = normalizeVehicle(row[columns.vehicle]);
+                    vehicleRows.forEach(({ row, plate }) => {
+                        const value = normalizeVehicle(plate);
                         const detail = [...document.querySelectorAll('#kendaraan_kir_details_container .vehicle-detail-row')]
                             .find(item => normalizeVehicle(item.querySelector('input[type="hidden"]')?.value) === value);
                         if (!detail) return;
@@ -2144,10 +2152,8 @@ window.addEventListener('unhandledrejection', function(event) {
             }
             rows.dispatchEvent(new Event('input', { bubbles: true }));
             rows.dispatchEvent(new Event('change', { bubbles: true }));
-            const importedVehicleCount = columns.vehicle >= 0
-                ? new Set(imported.map(row => normalizeVehicle(row[columns.vehicle])).filter(Boolean)).size
-                : 0;
-            status.textContent = `${imported.length} rincian akun berhasil dimasukkan.${columns.vehicle < 0 ? ' Kolom plat tidak terdeteksi; kendaraan tidak diubah.' : ` ${importedVehicleCount} kendaraan diproses.`}`;
+            const importedVehicleCount = document.querySelectorAll('#kendaraan_kir_details_container .vehicle-detail-row').length;
+            status.textContent = `${imported.length} rincian akun berhasil dimasukkan. ${importedVehicleCount} kendaraan terisi dari nomor polisi pada file/catatan.`;
             status.className = 'mt-2 text-xs text-emerald-800';
         } catch (error) {
             status.textContent = error.message;
