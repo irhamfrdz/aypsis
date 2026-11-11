@@ -809,6 +809,7 @@
         const isDepoZona = originOption?.dataset.isZona === '1';
         const isDepoDpe = originOption?.dataset.isDpe === '1';
         const isDepoFortune = originOption?.dataset.isFortune === '1';
+        const isDepoSpm = originOption?.dataset.isSpm === '1';
         const isZonaOrDpeEligible = isDepoZona || isDepoDpe;
 
         const isServiceComboEligible = isTwentyFt
