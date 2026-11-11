@@ -251,6 +251,26 @@ class PranotaSuratJalanController extends Controller
         return view('pranota-uang-jalan.print', compact('pranotaUangJalan'));
     }
 
+    public function updateDate(Request $request, PranotaUangJalan $pranotaUangJalan)
+    {
+        if (! $this->hasPranotaUangJalanPermission(Auth::user(), 'pranota-uang-jalan-update')) {
+            abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
+        }
+
+        if ($pranotaUangJalan->status_pembayaran !== 'unpaid') {
+            return back()->with('error', 'Tanggal hanya dapat diubah jika pranota belum dibayar.');
+        }
+
+        $validated = $request->validate(['tanggal_pranota' => 'required|date']);
+        $pranotaUangJalan->update([
+            'tanggal_pranota' => $validated['tanggal_pranota'],
+            'updated_by' => Auth::id(),
+        ]);
+
+        return redirect()->route('pranota-uang-jalan.show', $pranotaUangJalan)
+            ->with('success', 'Tanggal pranota berhasil diperbarui.');
+    }
+
     /**
      * Show the form for editing the specified pranota uang jalan.
      */

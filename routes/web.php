@@ -4568,6 +4568,10 @@ Route::middleware([
             ->name('pranota-uang-jalan.update-total')
             ->middleware('can:pranota-uang-jalan-update');
 
+        Route::patch('pranota-uang-jalan/{pranotaUangJalan}/update-date', [\App\Http\Controllers\PranotaSuratJalanController::class, 'updateDate'])
+            ->name('pranota-uang-jalan.update-date')
+            ->middleware('can:pranota-uang-jalan-update');
+
         Route::post('pranota-uang-jalan/{pranotaUangJalan}/remove-uang-jalan/{uangJalan}', [\App\Http\Controllers\PranotaSuratJalanController::class, 'removeUangJalan'])
             ->name('pranota-uang-jalan.remove-uang-jalan')
             ->middleware('can:pranota-uang-jalan-update');

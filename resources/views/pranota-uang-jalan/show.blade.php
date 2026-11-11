@@ -64,7 +64,16 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500">Tanggal Pranota</label>
-                    <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->tanggal_pranota->format('d/m/Y') }}</div>
+                    @if($pranotaUangJalan->status_pembayaran === 'unpaid' && auth()->user()->can('pranota-uang-jalan-update'))
+                        <form action="{{ route('pranota-uang-jalan.update-date', $pranotaUangJalan) }}" method="POST" class="mt-1 flex flex-wrap items-center gap-2">
+                            @csrf
+                            @method('PATCH')
+                            <input type="date" name="tanggal_pranota" value="{{ $pranotaUangJalan->tanggal_pranota->format('Y-m-d') }}" required class="rounded border border-gray-300 px-2 py-1 text-sm text-gray-900">
+                            <button type="submit" class="rounded bg-indigo-600 px-3 py-1 text-xs font-medium text-white hover:bg-indigo-700">Simpan Tanggal</button>
+                        </form>
+                    @else
+                        <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->tanggal_pranota->format('d/m/Y') }}</div>
+                    @endif
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500">Periode Tagihan</label>
