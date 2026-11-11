@@ -296,7 +296,7 @@ class MobilController extends Controller
 
         $isTractorHead = strtoupper(trim((string) $request->input('jenis'))) === 'TRACTOR HEAD';
 
-        $validated = $request->validate([
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'kode_no' => 'required|string|max:50|unique:mobils,kode_no,'.$id,
             'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,'.$id,
             'nickname' => 'nullable|string|max:50',
@@ -330,6 +330,18 @@ class MobilController extends Controller
             'kategori_asset' => 'nullable|in:Elektronik,Kendaraan,Alat Berat',
             'imei_gps' => 'nullable|string|max:50|unique:mobils,imei_gps,'.$id,
         ]);
+
+        if ($validator->fails()) {
+            $errorSummary = implode(' ', $validator->errors()->all());
+            \Illuminate\Support\Facades\Log::warning('Master mobil update validation failed', [
+                'mobil_id' => $mobil->id,
+                'errors' => $validator->errors()->toArray(),
+            ]);
+
+            return back()->withErrors($validator)->withInput()->with('error', 'Validasi gagal: '.$errorSummary);
+        }
+
+        $validated = $validator->validated();
 
         $validated['is_asset_karyawan'] = $request->boolean('is_asset_karyawan');
         $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
