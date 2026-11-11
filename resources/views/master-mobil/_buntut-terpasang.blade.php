@@ -2,7 +2,7 @@
     <label for="buntut_id" class="block text-sm font-medium text-gray-700">
         Buntut Terpasang @unless($buntutOptional ?? false)<span class="text-red-500">*</span>@endunless
     </label>
-    <select name="buntut_id" id="buntut_id" class="{{ $inputClasses }}">
+    <select name="buntut_id" id="buntut_id" data-optional="{{ ($buntutOptional ?? false) ? 'true' : 'false' }}" class="{{ $inputClasses }}">
         <option value="">-- Pilih buntut --</option>
         @foreach($buntuts as $buntut)
             <option value="{{ $buntut->id }}" data-search="{{ implode(' ', [$buntut->nomor_polisi, $buntut->no_kir, $buntut->kode_no, $buntut->nickname]) }}" @selected((string) old('buntut_id', $mobil->buntut_id ?? '') === (string) $buntut->id)>

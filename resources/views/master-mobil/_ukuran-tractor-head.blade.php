@@ -31,7 +31,7 @@
             if (buntutWrapper && buntut) {
                 buntutWrapper.hidden = !isTractorHead;
                 buntut.disabled = !isTractorHead;
-                buntut.required = isTractorHead;
+                buntut.required = isTractorHead && buntut.dataset.optional !== 'true';
             }
         };
 
