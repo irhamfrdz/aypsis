@@ -38,6 +38,15 @@
         @endforeach
     </div>
     <button type="button" id="add_akun_detail" class="mt-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm">Tambah Akun</button>
+    <div id="akun_excel_import_wrap" class="mt-3 hidden rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+        <p class="text-sm font-medium text-emerald-900">Import rincian akun dari Excel</p>
+        <p class="mt-1 text-xs text-emerald-800">Kolom: no.akun, nama akun, catatan, nilai bayar. Baris pertama harus berisi judul kolom.</p>
+        <div class="mt-2 flex flex-wrap items-center gap-2">
+            <input type="file" id="akun_excel_import_file" accept=".xlsx,.xls,.csv" class="block max-w-full text-sm text-gray-700">
+            <button type="button" id="akun_excel_import_button" class="rounded-md bg-emerald-600 px-3 py-2 text-sm font-medium text-white hover:bg-emerald-700">Import Excel</button>
+        </div>
+        <p id="akun_excel_import_status" class="mt-2 text-xs" role="status"></p>
+    </div>
     <p class="mt-2 text-sm font-semibold text-gray-700"><span id="akun_details_total_label">Bank/Kas</span>: <span id="akun_details_total">Rp 0</span></p>
     <p id="akun_details_help" class="text-xs text-gray-500">{{ $bankDirectionMode ? 'Arah akun biaya mengikuti sisi berlawanan dari Bank/Kas.' : 'Bank/Kas menjadi lawan dari selisih debit dan kredit seluruh akun.' }}</p>
     @error('akun_details')<p class="text-red-500 text-xs mt-1">{{ $message }}</p>@enderror

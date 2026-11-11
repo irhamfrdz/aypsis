@@ -2035,7 +2035,78 @@ window.addEventListener('unhandledrejection', function(event) {
 </script>
 
 <script>
-// This script block is now empty - can be removed
+document.addEventListener('DOMContentLoaded', () => {
+    const wrap = document.getElementById('akun_excel_import_wrap');
+    const activity = document.getElementById('jenis_aktivitas');
+    const fileInput = document.getElementById('akun_excel_import_file');
+    const status = document.getElementById('akun_excel_import_status');
+    const syncImportVisibility = () => wrap?.classList.toggle('hidden', activity.value !== 'Pembayaran Kendaraan');
+    activity.addEventListener('change', syncImportVisibility);
+    syncImportVisibility();
+
+    document.getElementById('akun_excel_import_button')?.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) { status.textContent = 'Pilih file Excel terlebih dahulu.'; return; }
+        status.textContent = 'Membaca file...';
+        try {
+            if (!window.XLSX) {
+                await new Promise((resolve, reject) => {
+                    const script = document.createElement('script');
+                    script.src = 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js';
+                    script.onload = resolve;
+                    script.onerror = () => reject(new Error('Library pembaca Excel gagal dimuat.'));
+                    document.head.appendChild(script);
+                });
+            }
+            const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+            const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
+            const normalize = value => String(value ?? '').trim().toLowerCase().replace(/[._\s-]+/g, '');
+            const headers = (data.shift() || []).map(normalize);
+            const findColumn = names => headers.findIndex(header => names.includes(header));
+            const columns = {
+                account: findColumn(['noakun', 'nomorakun']), name: findColumn(['namaakun']),
+                memo: findColumn(['catatan']), amount: findColumn(['nilaibayar'])
+            };
+            if (columns.account < 0 || columns.memo < 0 || columns.amount < 0) {
+                throw new Error('Header wajib: no.akun, catatan, nilai bayar. Nama akun bersifat opsional.');
+            }
+            const optionRows = [...document.querySelectorAll('#akun_details_rows .akun-detail-row')];
+            const rows = document.getElementById('akun_details_rows');
+            optionRows.forEach((row, index) => { if (index > 0) row.querySelector('.remove-akun-detail')?.click(); });
+            const addButton = document.getElementById('add_akun_detail');
+            const imported = data.filter(row => row.some(value => String(value).trim()));
+            if (!imported.length) throw new Error('Tidak ada data transaksi di file.');
+            for (let index = 0; index < imported.length; index++) {
+                const row = imported[index];
+                if (index > 0) addButton.click();
+                const target = rows.lastElementChild;
+                const accountNo = String(row[columns.account] ?? '').trim();
+                const accountName = columns.name >= 0 ? String(row[columns.name] ?? '').trim().toLowerCase() : '';
+                const select = target.querySelector('.akun-detail-select');
+                const match = [...select.options].find(option => {
+                    const text = option.textContent.trim();
+                    const number = text.split(/[ (]/)[0];
+                    return number === accountNo || (accountName && text.toLowerCase().includes(accountName));
+                });
+                if (!match) throw new Error(`Akun ${accountNo}${accountName ? ' - ' + accountName : ''} tidak ditemukan di baris ${index + 2}.`);
+                select.value = match.value;
+                select.dispatchEvent(new Event('change', { bubbles: true }));
+                target.querySelector('.akun-detail-memo').value = String(row[columns.memo] ?? '').trim();
+                const rawAmount = row[columns.amount];
+                const amount = typeof rawAmount === 'number' ? Math.round(rawAmount) : Number(String(rawAmount).replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.'));
+                if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error(`Nilai bayar tidak valid di baris ${index + 2}.`);
+                target.querySelector('.akun-detail-nominal').value = amount;
+            }
+            rows.dispatchEvent(new Event('input', { bubbles: true }));
+            rows.dispatchEvent(new Event('change', { bubbles: true }));
+            status.textContent = `${imported.length} rincian akun berhasil dimasukkan.`;
+            status.className = 'mt-2 text-xs text-emerald-800';
+        } catch (error) {
+            status.textContent = error.message;
+            status.className = 'mt-2 text-xs text-red-700';
+        }
+    });
+});
 </script>
 @endpush
 @endsection
