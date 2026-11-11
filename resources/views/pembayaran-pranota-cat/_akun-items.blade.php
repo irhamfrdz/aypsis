@@ -96,6 +96,19 @@ document.addEventListener('DOMContentLoaded', () => {
         total.textContent = 'Rp ' + sum().toLocaleString('id-ID');
         total.classList.toggle('text-red-600', Math.round(sum() * 100) !== Math.round(finalAmount() * 100));
     };
+    const initializeAccountSearch = (scope = rows) => {
+        if (!window.jQuery || !jQuery.fn.select2) return;
+        jQuery(scope).find('.cat-akun-select').addBack('.cat-akun-select').each(function () {
+            const select = jQuery(this);
+            if (select.hasClass('select2-hidden-accessible')) return;
+            select.select2({
+                width: '100%',
+                placeholder: '-- Pilih Akun COA --',
+                allowClear: true,
+            });
+        });
+    };
+    initializeAccountSearch();
     window.validateCatAkunItems = () => {
         const items = [...rows.querySelectorAll('.cat-akun-row')];
         const ids = items.map(row => row.querySelector('.cat-akun-select').value);
@@ -105,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     };
     document.getElementById('add-cat-akun').addEventListener('click', () => {
         rows.insertAdjacentHTML('beforeend', document.getElementById('cat-akun-template').innerHTML.replaceAll('__INDEX__', nextIndex++));
+        initializeAccountSearch(rows.lastElementChild);
         update();
     });
     rows.addEventListener('click', event => {
