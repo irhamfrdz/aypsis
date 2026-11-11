@@ -3575,6 +3575,12 @@ Route::middleware([
         Route::get('master-kartu-bensin-batam/{id}/history', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'history'])
             ->name('master-kartu-bensin-batam.history')
             ->middleware('can:master-kartu-bensin-batam-view');
+        Route::get('master-kartu-bensin-batam/{id}/history/{historyId}/edit', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'editHistory'])
+            ->name('master-kartu-bensin-batam.history.edit')
+            ->middleware('can:master-kartu-bensin-batam-edit');
+        Route::put('master-kartu-bensin-batam/{id}/history/{historyId}', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'updateHistory'])
+            ->name('master-kartu-bensin-batam.history.update')
+            ->middleware('can:master-kartu-bensin-batam-edit');
         Route::post('master-kartu-bensin-batam/{id}/topup', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'topup'])
             ->name('master-kartu-bensin-batam.topup')
             ->middleware('can:master-kartu-bensin-batam-edit');
@@ -6894,6 +6900,7 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Kas Truck
     Route::get('/kas-truck', [App\Http\Controllers\Report\KasTruckController::class, 'index'])->name('kas-truck.index');
     Route::get('/kas-truck/view', [App\Http\Controllers\Report\KasTruckController::class, 'view'])->name('kas-truck.view');
+    Route::get('/kas-truck/export', [App\Http\Controllers\Report\KasTruckController::class, 'export'])->name('kas-truck.export');
     Route::post('/kas-truck/topup', [App\Http\Controllers\Report\KasTruckController::class, 'topup'])->name('kas-truck.topup');
     Route::post('/kas-truck/swap/{id}', [App\Http\Controllers\Report\KasTruckController::class, 'swap'])->name('kas-truck.swap');
     Route::post('/kas-truck/update-starting-balance', [App\Http\Controllers\Report\KasTruckController::class, 'updateStartingBalance'])->name('kas-truck.update-starting-balance')->middleware('only.kiky');

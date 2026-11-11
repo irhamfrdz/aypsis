@@ -2,12 +2,14 @@
 
 namespace App\Http\Controllers\Report;
 
+use App\Exports\KasTruckExport;
 use App\Http\Controllers\Controller;
 use App\Models\Coa;
 use App\Models\CoaTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
+use Maatwebsite\Excel\Facades\Excel;
 
 class KasTruckController extends Controller
 {
@@ -17,6 +19,20 @@ class KasTruckController extends Controller
     public function index(Request $request)
     {
         return view('report.kas-truck.select-date');
+    }
+
+    public function export(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'nullable|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d',
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        $data = $this->view($request)->getData();
+        $filename = 'laporan-kas-truck-'.($request->input('start_date') ?: 'semua').'-'.($request->input('end_date') ?: 'semua').'.xlsx';
+
+        return Excel::download(new KasTruckExport($data), $filename);
     }
 
     public function view(Request $request)

@@ -25,6 +25,9 @@
                 @endif
             </div>
             <div class="flex gap-4 text-sm">
+                <a href="{{ route('report.kas-truck.export', request()->only(['start_date', 'end_date', 'search'])) }}" class="self-center whitespace-nowrap rounded-md bg-green-600 px-4 py-2 font-medium text-white hover:bg-green-700">
+                    <i class="fas fa-file-excel mr-1"></i> Download Excel
+                </a>
                 <div class="text-center">
                     <div class="text-lg font-semibold text-gray-600">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</div>
                     <div class="text-gray-500 text-xs">Saldo Awal</div>

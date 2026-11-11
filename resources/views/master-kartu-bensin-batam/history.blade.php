@@ -122,6 +122,9 @@
                         <th class="px-6 py-4">Saldo Sesudah</th>
                         <th class="px-6 py-4">Keterangan</th>
                         <th class="px-6 py-4">Diinput Oleh</th>
+                        @can('master-kartu-bensin-batam-edit')
+                        <th class="px-6 py-4">Aksi</th>
+                        @endcan
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 text-sm">
@@ -166,10 +169,17 @@
                                 <span>{{ $log->createdBy ? $log->createdBy->name : 'System' }}</span>
                             </div>
                         </td>
+                        @can('master-kartu-bensin-batam-edit')
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800" aria-label="Edit riwayat {{ $log->nomor_transaksi ?? $log->id }}">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                        </td>
+                        @endcan
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="8" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="{{ auth()->user()->can('master-kartu-bensin-batam-edit') ? 9 : 8 }}" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-history text-3xl mb-3 block text-gray-300"></i>
                             Belum ada riwayat perubahan saldo untuk kartu bensin ini.
                         </td>

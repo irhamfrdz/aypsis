@@ -199,6 +199,28 @@ class MasterKartuBensinBatamController extends Controller
         return view('master-kartu-bensin-batam.history', compact('card', 'histories'));
     }
 
+    public function editHistory($id, $historyId)
+    {
+        $card = MasterKartuBensinBatam::findOrFail($id);
+        $log = $card->histories()->findOrFail($historyId);
+
+        return view('master-kartu-bensin-batam.edit-history', compact('card', 'log'));
+    }
+
+    public function updateHistory(Request $request, $id, $historyId)
+    {
+        $validated = $request->validate([
+            'tanggal' => 'required|date',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        $card = MasterKartuBensinBatam::findOrFail($id);
+        $card->histories()->findOrFail($historyId)->update($validated);
+
+        return redirect()->route('master-kartu-bensin-batam.history', $card->id)
+            ->with('success', 'Riwayat kartu bensin berhasil diperbarui.');
+    }
+
     public function topup(Request $request, $id)
     {
         $validated = $request->validate([
