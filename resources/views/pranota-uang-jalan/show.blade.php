@@ -64,7 +64,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500">Tanggal Pranota</label>
-                    @if($pranotaUangJalan->status_pembayaran === 'unpaid' && auth()->user()->can('pranota-uang-jalan-update'))
+                    @if(auth()->user()->can('pranota-uang-jalan-update'))
                         <form action="{{ route('pranota-uang-jalan.update-date', $pranotaUangJalan) }}" method="POST" class="mt-1 flex flex-wrap items-center gap-2">
                             @csrf
                             @method('PATCH')

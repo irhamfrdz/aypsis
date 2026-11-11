@@ -257,10 +257,6 @@ class PranotaSuratJalanController extends Controller
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota uang jalan.');
         }
 
-        if ($pranotaUangJalan->status_pembayaran !== 'unpaid') {
-            return back()->with('error', 'Tanggal hanya dapat diubah jika pranota belum dibayar.');
-        }
-
         $validated = $request->validate(['tanggal_pranota' => 'required|date']);
         $pranotaUangJalan->update([
             'tanggal_pranota' => $validated['tanggal_pranota'],
