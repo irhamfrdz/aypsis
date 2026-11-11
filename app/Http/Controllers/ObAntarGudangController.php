@@ -268,10 +268,12 @@ class ObAntarGudangController extends Controller
         $isHistoryZona = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'zona');
         $isHistoryDpe = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'dpe');
         $isHistoryFortune = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'fortune');
+        $isHistorySpm = $historyGudang && str_contains(mb_strtolower($historyGudang->nama_gudang), 'spm');
 
         $isDepoZona = $isInputZona || $isHistoryZona;
         $isDepoDpe = $isInputDpe || $isHistoryDpe;
         $isDepoFortune = $isInputFortune || $isHistoryFortune;
+        $isDepoSpm = $isInputSpm || $isHistorySpm;
         $isDepoZonaOrDpe = $isDepoZona || $isDepoDpe;
 
         if ($isInputZona || $isInputSpm || $isInputDpe || $isInputFortune) {
@@ -303,8 +305,8 @@ class ObAntarGudangController extends Controller
         if ($validated['is_sekalian_antar'] && ! $isDepoZonaOrDpe) {
             return back()->withInput()->with('error', 'Tarif sekalian antar hanya tersedia jika gudang asal adalah Depo ZONA atau Depo DPE.');
         }
-        if ($validated['is_langsung_antar'] && ! $isDepoFortune) {
-            return back()->withInput()->with('error', 'Tarif langsung antar hanya tersedia jika gudang asal adalah Depo Fortune.');
+        if ($validated['is_langsung_antar'] && ! ($isDepoFortune || $isDepoSpm)) {
+            return back()->withInput()->with('error', 'Tarif langsung antar hanya tersedia jika gudang asal adalah Depo Fortune atau Depo SPM.');
         }
         $activeTariffOptions = collect([
             $validated['is_combo'],

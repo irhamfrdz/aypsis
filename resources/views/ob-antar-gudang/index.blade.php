@@ -703,6 +703,7 @@
         const isDepoSpm = originOption?.dataset.isSpm === '1';
         const isDepoDpe = originOption?.dataset.isDpe === '1';
         const isDepoFortune = originOption?.dataset.isFortune === '1';
+        const isDepoSpm = originOption?.dataset.isSpm === '1';
         const abaikanStatusKontainer = gudangTujuanOption?.dataset.isTemas === '1';
 
         const eligibleOptions = Array.from(pricelistSelect.options).filter(option => {
@@ -843,9 +844,9 @@
         sekalianAntarCheckbox.disabled = !isZonaEligible;
         if (!isZonaEligible) sekalianAntarCheckbox.checked = false;
 
-        langsungAntarWrapper.classList.toggle('hidden', !isDepoFortune);
-        langsungAntarCheckbox.disabled = !isDepoFortune;
-        if (!isDepoFortune) langsungAntarCheckbox.checked = false;
+        langsungAntarWrapper.classList.toggle('hidden', !(isDepoFortune || isDepoSpm));
+        langsungAntarCheckbox.disabled = !(isDepoFortune || isDepoSpm);
+        if (!(isDepoFortune || isDepoSpm)) langsungAntarCheckbox.checked = false;
 
         const sekDesc = document.getElementById('modal_sekalian_antar_desc');
         if (sekDesc) {
