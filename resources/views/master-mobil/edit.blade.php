@@ -24,6 +24,7 @@
 @endif
 
 <div class="bg-white shadow-md rounded-lg p-6">
+    <div id="form-validation-error" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert"></div>
     <form action="{{ route('master.mobil.update', $mobil->id) }}" method="POST">
         @csrf
         @method('PUT')
@@ -48,7 +49,6 @@
                            value="{{ old('kode_no', $mobil->kode_no) }}" 
                            class="{{ $inputClasses }} bg-gray-200 cursor-not-allowed" 
                            readonly 
-                           required 
                            maxlength="50">
                     <p class="mt-1 text-xs text-gray-500">
                         Format: AT1 + Bulan(2digit) + Tahun(2digit) + Running Number(5digit)
@@ -332,4 +332,12 @@
         </div>
     </form>
 </div>
+<script>
+    document.querySelector('form[action="{{ route('master.mobil.update', $mobil->id) }}"]')
+        .addEventListener('invalid', function (event) {
+            const message = document.getElementById('form-validation-error');
+            message.textContent = event.target.validationMessage;
+            message.classList.remove('hidden');
+        }, true);
+</script>
 @endsection
