@@ -38,7 +38,7 @@
         @endforeach
     </div>
     <button type="button" id="add_akun_detail" class="mt-2 px-3 py-2 bg-blue-50 text-blue-700 border border-blue-200 rounded-md text-sm">Tambah Akun</button>
-    <div id="akun_excel_import_wrap" class="mt-3 hidden rounded-lg border border-emerald-200 bg-emerald-50 p-3">
+    <div id="akun_excel_import_wrap" class="mt-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3" style="display: none">
         <p class="text-sm font-medium text-emerald-900">Import rincian akun dari Excel</p>
         <p class="mt-1 text-xs text-emerald-800">Kolom: no.akun, nama akun, catatan, nilai bayar. Baris pertama harus berisi judul kolom.</p>
         <div class="mt-2 flex flex-wrap items-center gap-2">

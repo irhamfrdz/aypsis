@@ -2040,7 +2040,9 @@ window.addEventListener('unhandledrejection', function(event) {
     const activity = document.getElementById('jenis_aktivitas');
     const fileInput = document.getElementById('akun_excel_import_file');
     const status = document.getElementById('akun_excel_import_status');
-    const syncImportVisibility = () => wrap?.classList.toggle('hidden', activity.value !== 'Pembayaran Kendaraan');
+    const syncImportVisibility = () => {
+        if (wrap && activity) wrap.style.display = activity.value === 'Pembayaran Kendaraan' ? '' : 'none';
+    };
     activity.addEventListener('change', syncImportVisibility);
     syncImportVisibility();
 
