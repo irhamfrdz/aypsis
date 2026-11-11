@@ -16,6 +16,13 @@
     </div>
 @endif
 
+@if (session('error'))
+    <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
+        <p class="font-semibold">Gagal menyimpan perubahan mobil</p>
+        <p class="mt-1">{{ session('error') }}</p>
+    </div>
+@endif
+
 <div class="bg-white shadow-md rounded-lg p-6">
     <form action="{{ route('master.mobil.update', $mobil->id) }}" method="POST">
         @csrf

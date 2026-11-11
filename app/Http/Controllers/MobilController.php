@@ -335,23 +335,29 @@ class MobilController extends Controller
         $validated['ukuran_tractor_head'] = $isTractorHead ? $validated['ukuran_tractor_head'] : null;
         $validated['buntut_id'] = $isTractorHead ? $validated['buntut_id'] : null;
 
-        DB::transaction(function () use ($mobil, $validated, $request) {
-            $mobil = Mobil::whereKey($mobil->id)->lockForUpdate()->firstOrFail();
-            // Jika karyawan lama ada, hapus nomor plat dari karyawan lama
-            if ($mobil->karyawan_id && $mobil->karyawan_id != ($validated['karyawan_id'] ?? null)) {
-                \App\Models\Karyawan::where('id', $mobil->karyawan_id)
-                    ->update(['plat' => null]);
-            }
+        try {
+            DB::transaction(function () use ($mobil, $validated, $request) {
+                $mobil = Mobil::whereKey($mobil->id)->lockForUpdate()->firstOrFail();
+                // Jika karyawan lama ada, hapus nomor plat dari karyawan lama
+                if ($mobil->karyawan_id && $mobil->karyawan_id != ($validated['karyawan_id'] ?? null)) {
+                    \App\Models\Karyawan::where('id', $mobil->karyawan_id)
+                        ->update(['plat' => null]);
+                }
 
-            $mobil->update($validated);
-            app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
+                $mobil->update($validated);
+                app(MobilAssetSyncService::class)->sync($mobil, $request->user()?->id);
 
-            // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
-            if (! empty($validated['karyawan_id']) && ! empty($validated['nomor_polisi'])) {
-                \App\Models\Karyawan::where('id', $validated['karyawan_id'])
-                    ->update(['plat' => $validated['nomor_polisi']]);
-            }
-        });
+                // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
+                if (! empty($validated['karyawan_id']) && ! empty($validated['nomor_polisi'])) {
+                    \App\Models\Karyawan::where('id', $validated['karyawan_id'])
+                        ->update(['plat' => $validated['nomor_polisi']]);
+                }
+            });
+        } catch (\Throwable $exception) {
+            report($exception);
+
+            return back()->withInput()->with('error', $exception->getMessage());
+        }
 
         return redirect()->route('master.mobil.index')->with('success', 'Data mobil berhasil diperbarui.');
     }
