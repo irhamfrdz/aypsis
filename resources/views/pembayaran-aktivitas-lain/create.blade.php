@@ -2067,7 +2067,8 @@ window.addEventListener('unhandledrejection', function(event) {
             const findColumn = names => headers.findIndex(header => names.includes(header));
             const columns = {
                 account: findColumn(['noakun', 'nomorakun']), name: findColumn(['namaakun']),
-                memo: findColumn(['catatan']), amount: findColumn(['nilaibayar'])
+                memo: findColumn(['catatan']), amount: findColumn(['nilaibayar']),
+                vehicle: findColumn(['nopolisi', 'nomorpolisi', 'kendaraan'])
             };
             if (columns.account < 0 || columns.memo < 0 || columns.amount < 0) {
                 throw new Error('Header wajib: no.akun, catatan, nilai bayar. Nama akun bersifat opsional.');
@@ -2098,6 +2099,33 @@ window.addEventListener('unhandledrejection', function(event) {
                 const amount = typeof rawAmount === 'number' ? Math.round(rawAmount) : Number(String(rawAmount).replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.'));
                 if (!Number.isSafeInteger(amount) || amount <= 0) throw new Error(`Nilai bayar tidak valid di baris ${index + 2}.`);
                 target.querySelector('.akun-detail-nominal').value = amount;
+            }
+            if (columns.vehicle >= 0) {
+                const vehicleRows = imported.filter(row => String(row[columns.vehicle] ?? '').trim());
+                const vehicleSelect = document.getElementById('nomor_polisi_list_select');
+                const normalizeVehicle = value => String(value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+                const vehicleValues = [...new Set(vehicleRows.map(row => String(row[columns.vehicle]).trim()))];
+                const selectedVehicleKeys = vehicleValues.map(normalizeVehicle);
+                if (vehicleValues.length) {
+                    const missingVehicles = vehicleValues.filter(value => ![...vehicleSelect.options].some(option => normalizeVehicle(option.value) === normalizeVehicle(value)));
+                    if (missingVehicles.length) throw new Error(`Nomor polisi tidak ditemukan: ${missingVehicles.join(', ')}.`);
+
+                    const subJenisSelect = document.getElementById('sub_jenis_kendaraan_select');
+                    subJenisSelect.value = 'KIR';
+                    subJenisSelect.dispatchEvent(new Event('change', { bubbles: true }));
+                    $(vehicleSelect).val(vehicleValues.map(value => [...vehicleSelect.options].find(option => normalizeVehicle(option.value) === normalizeVehicle(value)).value)).trigger('change');
+                    vehicleRows.forEach(row => {
+                        const value = normalizeVehicle(row[columns.vehicle]);
+                        const detail = [...document.querySelectorAll('#kendaraan_kir_details_container .vehicle-detail-row')]
+                            .find(item => normalizeVehicle(item.querySelector('input[type="hidden"]')?.value) === value);
+                        if (!detail) return;
+                        const amount = row[columns.amount];
+                        const nominal = typeof amount === 'number' ? Math.round(amount) : Number(String(amount).replace(/[^\d,-]/g, '').replace(/\./g, '').replace(',', '.'));
+                        detail.querySelector('.kir-nominal').value = nominal;
+                        detail.querySelector('.kir-memo').value = String(row[columns.memo] ?? '').trim();
+                    });
+                    document.getElementById('kendaraan_kir_details_container').dispatchEvent(new Event('input', { bubbles: true }));
+                }
             }
             rows.dispatchEvent(new Event('input', { bubbles: true }));
             rows.dispatchEvent(new Event('change', { bubbles: true }));
