@@ -627,6 +627,7 @@
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form id="usageForm" method="POST" action="">
                     @csrf
+                    <input type="hidden" name="usage_mode" id="usage_mode" value="specific">
                     <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                         <div class="sm:flex sm:items-start">
                             <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
@@ -893,7 +894,7 @@
                                                 <span class="text-sm font-medium text-gray-700">Estimasi Nilai Barang Keluar:</span>
                                                 <span class="text-lg font-bold text-green-600" id="estimasi_rupiah_keluar">Rp 0</span>
                                             </div>
-                                            <p class="text-xs text-gray-500 mt-1 italic">Nilai dihitung berdasarkan metode FIFO (First-In First-Out) dari riwayat pembelian barang.</p>
+                                            <p class="text-xs text-gray-500 mt-1 italic" id="usage-price-note">Nilai dihitung dari harga barang pada baris yang dipilih.</p>
                                         </div>
                                         
                                         <div>
@@ -1181,6 +1182,7 @@
 
 <script>
     var stockDetailsData = @json($stockDetails ?? []);
+    let selectedStockPrice = 0;
 
     function calculateRupiahUsage() {
         const estimasiEl = document.getElementById('estimasi_rupiah_keluar');
@@ -1201,7 +1203,21 @@
 
         const inputVal = parseFloat(document.getElementById('jumlah_ambil').value) || 0;
         
-        if (inputVal <= 0 || !stockDetailsData[namaBarang]) {
+        if (inputVal <= 0) {
+            estimasiEl.textContent = 'Rp 0';
+            return;
+        }
+
+        const formatter = new Intl.NumberFormat('id-ID', {
+            style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0
+        });
+
+        if (document.getElementById('usage_mode').value === 'specific') {
+            estimasiEl.textContent = formatter.format(inputVal * selectedStockPrice);
+            return;
+        }
+
+        if (!stockDetailsData[namaBarang]) {
             estimasiEl.textContent = 'Rp 0';
             return;
         }
@@ -1226,13 +1242,6 @@
         }
 
         // Format to Rupiah
-        const formatter = new Intl.NumberFormat('id-ID', {
-            style: 'currency',
-            currency: 'IDR',
-            minimumFractionDigits: 0,
-            maximumFractionDigits: 0
-        });
-
         estimasiEl.textContent = formatter.format(totalRupiah);
     }
 
@@ -1265,6 +1274,8 @@
     }
 
     function openGeneralUsageModal() {
+        document.getElementById('usage_mode').value = 'fifo';
+        document.getElementById('usage-price-note').textContent = 'Nilai dihitung berdasarkan metode FIFO dari riwayat pembelian barang.';
         document.getElementById('usageModal').classList.remove('hidden');
         document.getElementById('modalFixedItemContainer').classList.add('hidden');
         document.getElementById('modalDynamicItemContainer').classList.remove('hidden');
@@ -1301,6 +1312,9 @@
     }
 
     function openUsageModal(id, name, stock, unit) {
+        document.getElementById('usage_mode').value = 'specific';
+        document.getElementById('usage-price-note').textContent = 'Nilai dihitung dari harga barang pada baris yang dipilih.';
+        selectedStockPrice = parseFloat(document.querySelector('.item-checkbox[value="' + id + '"]')?.dataset.harga) || 0;
         document.getElementById('usageModal').classList.remove('hidden');
         document.getElementById('modalFixedItemContainer').classList.remove('hidden');
         document.getElementById('modalDynamicItemContainer').classList.add('hidden');

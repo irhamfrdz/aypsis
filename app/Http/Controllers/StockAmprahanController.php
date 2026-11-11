@@ -1226,8 +1226,9 @@ class StockAmprahanController extends Controller
     public function storeUsage(Request $request, $id)
     {
         $item = StockAmprahan::findOrFail($id);
+        $specificUsage = $request->input('usage_mode', 'specific') !== 'fifo';
 
-        $totalStock = StockAmprahan::where('nama_barang', $item->nama_barang)
+        $totalStock = $specificUsage ? $item->jumlah : StockAmprahan::where('nama_barang', $item->nama_barang)
             ->where('jumlah', '>', 0)
             ->sum('jumlah');
 
@@ -1289,10 +1290,7 @@ class StockAmprahanController extends Controller
         $remainingRequest = $request->jumlah;
         $fifoStocks = StockAmprahan::where('nama_barang', $item->nama_barang)
             ->where('jumlah', '>', 0)
-            // Tombol "Ambil Barang" berasal dari satu baris stock tertentu.
-            // Kurangi baris yang dipilih terlebih dahulu agar stock yang terlihat
-            // pada baris tersebut langsung berubah, baru lanjutkan FIFO bila perlu.
-            ->orderByRaw('CASE WHEN id = ? THEN 0 ELSE 1 END', [$item->id])
+            ->when($specificUsage, fn ($query) => $query->whereKey($item->id))
             ->orderBy('tanggal_beli', 'asc')
             ->orderBy('created_at', 'asc')
             ->get();
