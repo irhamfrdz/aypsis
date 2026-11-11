@@ -2062,13 +2062,29 @@ window.addEventListener('unhandledrejection', function(event) {
             }
             const workbook = XLSX.read(await file.arrayBuffer(), { type: 'array' });
             const data = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], { header: 1, defval: '' });
-            const normalize = value => String(value ?? '').trim().toLowerCase().replace(/[._\s-]+/g, '');
-            const headers = (data.shift() || []).map(normalize);
+            const normalize = value => String(value ?? '').trim().toLowerCase().replace(/[^a-z0-9]/g, '');
+            const headerAliases = {
+                account: ['noakun', 'nomorakun'], name: ['namaakun'], memo: ['catatan'], amount: ['nilaibayar'],
+                vehicle: ['nopolisi', 'nomorpolisi', 'platnomor', 'nomorplat', 'nopol', 'plat', 'kendaraan', 'nomorkendaraan', 'mobil']
+            };
+            let headerRowIndex = -1;
+            let headers = [];
+            for (let index = 0; index < Math.min(data.length, 15); index++) {
+                const candidate = (data[index] || []).map(normalize);
+                if (candidate.some(value => headerAliases.account.includes(value))
+                    && candidate.some(value => headerAliases.amount.includes(value))) {
+                    headerRowIndex = index;
+                    headers = candidate;
+                    break;
+                }
+            }
+            if (headerRowIndex < 0) throw new Error('Header no.akun dan nilai bayar tidak ditemukan pada 15 baris pertama.');
+            data.splice(0, headerRowIndex + 1);
             const findColumn = names => headers.findIndex(header => names.includes(header));
             const columns = {
-                account: findColumn(['noakun', 'nomorakun']), name: findColumn(['namaakun']),
-                memo: findColumn(['catatan']), amount: findColumn(['nilaibayar']),
-                vehicle: findColumn(['nopolisi', 'nomorpolisi', 'kendaraan'])
+                account: findColumn(headerAliases.account), name: findColumn(headerAliases.name),
+                memo: findColumn(headerAliases.memo), amount: findColumn(headerAliases.amount),
+                vehicle: findColumn(headerAliases.vehicle)
             };
             if (columns.account < 0 || columns.memo < 0 || columns.amount < 0) {
                 throw new Error('Header wajib: no.akun, catatan, nilai bayar. Nama akun bersifat opsional.');
@@ -2105,7 +2121,6 @@ window.addEventListener('unhandledrejection', function(event) {
                 const vehicleSelect = document.getElementById('nomor_polisi_list_select');
                 const normalizeVehicle = value => String(value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
                 const vehicleValues = [...new Set(vehicleRows.map(row => String(row[columns.vehicle]).trim()))];
-                const selectedVehicleKeys = vehicleValues.map(normalizeVehicle);
                 if (vehicleValues.length) {
                     const missingVehicles = vehicleValues.filter(value => ![...vehicleSelect.options].some(option => normalizeVehicle(option.value) === normalizeVehicle(value)));
                     if (missingVehicles.length) throw new Error(`Nomor polisi tidak ditemukan: ${missingVehicles.join(', ')}.`);
@@ -2129,7 +2144,10 @@ window.addEventListener('unhandledrejection', function(event) {
             }
             rows.dispatchEvent(new Event('input', { bubbles: true }));
             rows.dispatchEvent(new Event('change', { bubbles: true }));
-            status.textContent = `${imported.length} rincian akun berhasil dimasukkan.`;
+            const importedVehicleCount = columns.vehicle >= 0
+                ? new Set(imported.map(row => normalizeVehicle(row[columns.vehicle])).filter(Boolean)).size
+                : 0;
+            status.textContent = `${imported.length} rincian akun berhasil dimasukkan.${columns.vehicle < 0 ? ' Kolom plat tidak terdeteksi; kendaraan tidak diubah.' : ` ${importedVehicleCount} kendaraan diproses.`}`;
             status.className = 'mt-2 text-xs text-emerald-800';
         } catch (error) {
             status.textContent = error.message;
