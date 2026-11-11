@@ -111,13 +111,16 @@ class PranotaGajiSupirBatamController extends Controller
     public function show(PranotaGajiSupirBatam $pranotaGajiSupirBatam)
     {
         $pranotaGajiSupirBatam->load('items.gaji.karyawan', 'creator');
-
         return view('pranota-gaji-supir-batam.show', ['pranota' => $pranotaGajiSupirBatam]);
     }
 
     public function print(PranotaGajiSupirBatam $pranotaGajiSupirBatam)
     {
         $pranotaGajiSupirBatam->load('items.gaji.karyawan', 'creator');
+        $tanggalMulai = $pranotaGajiSupirBatam->items
+            ->pluck('gaji.tanggal_mulai')->filter()->sort()->first();
+        $tanggalSelesai = $pranotaGajiSupirBatam->items
+            ->pluck('gaji.tanggal_selesai')->filter()->sort()->last();
         $drivers = $pranotaGajiSupirBatam->items
             ->groupBy(fn ($item) => $item->gaji?->karyawan_id ?? 'missing-'.$item->gaji_supir_batam_id)
             ->map(function ($items) {
@@ -144,6 +147,8 @@ class PranotaGajiSupirBatamController extends Controller
             'pranota' => $pranotaGajiSupirBatam,
             'drivers' => $drivers,
             'showPotongan' => $showPotongan,
+            'tanggalMulai' => $tanggalMulai,
+            'tanggalSelesai' => $tanggalSelesai,
         ]);
     }
 

@@ -49,6 +49,7 @@
         <div class="header"><h1>PRANOTA GAJI SUPIR BATAM</h1></div>
         <div class="info-section">
             <div>TANGGAL PRANOTA: {{ $pranota->tanggal_pranota->format('d M Y') }}</div>
+            <div>PERIODE GAJI: {{ $tanggalMulai && $tanggalSelesai ? $tanggalMulai->format('d M Y').' - '.$tanggalSelesai->format('d M Y') : '-' }}</div>
             <div class="info-number">{{ $pranota->nomor_pranota }}</div>
             <div>Jumlah supir: {{ $drivers->count() }}</div>
         </div>
