@@ -15,6 +15,7 @@ class PranotaGajiSupirBatamController extends Controller
     public function index()
     {
         $pranotas = PranotaGajiSupirBatam::withCount('items')
+            ->with('items.gaji:id,tanggal_mulai,tanggal_selesai')
             ->latest('tanggal_pranota')->latest('id')->paginate(20);
 
         return view('pranota-gaji-supir-batam.index', compact('pranotas'));

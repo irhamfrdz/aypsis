@@ -23,13 +23,18 @@
         <div class="pg-table-scroll" tabindex="0" role="region" aria-label="Daftar pranota gaji supir Batam">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase text-gray-600"><tr>
-                <th class="px-4 py-3">Nomor Pranota</th><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3 text-center">Jumlah Gaji</th><th class="px-4 py-3 text-right">Total Bersih</th><th class="px-4 py-3">Keterangan</th><th class="px-4 py-3 text-right">Aksi</th>
+                <th class="px-4 py-3">Nomor Pranota</th><th class="px-4 py-3">Tanggal</th><th class="px-4 py-3">Periode Gaji</th><th class="px-4 py-3 text-center">Jumlah Gaji</th><th class="px-4 py-3 text-right">Total Bersih</th><th class="px-4 py-3">Keterangan</th><th class="px-4 py-3 text-right">Aksi</th>
             </tr></thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($pranotas as $pranota)
                     <tr>
                         <td class="whitespace-nowrap px-4 py-3"><a href="{{ route('pranota-gaji-supir-batam.show', $pranota) }}" class="pg-link">{{ $pranota->nomor_pranota }}</a></td>
                         <td class="whitespace-nowrap px-4 py-3">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
+                        @php
+                            $tanggalMulai = $pranota->items->pluck('gaji.tanggal_mulai')->filter()->sort()->first();
+                            $tanggalSelesai = $pranota->items->pluck('gaji.tanggal_selesai')->filter()->sort()->last();
+                        @endphp
+                        <td class="whitespace-nowrap px-4 py-3">{{ $tanggalMulai && $tanggalSelesai ? $tanggalMulai->format('d/m/Y').' - '.$tanggalSelesai->format('d/m/Y') : '-' }}</td>
                         <td class="px-4 py-3 text-center">{{ $pranota->items_count }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold">Rp {{ number_format((float) $pranota->total_gaji, 0, ',', '.') }}</td>
                         <td class="max-w-xs px-4 py-3">{{ $pranota->keterangan ?: '-' }}</td>
@@ -47,7 +52,7 @@
                         </td>
                     </tr>
                 @empty
-                    <tr><td colspan="6" class="pg-empty">Belum ada pranota gaji supir Batam.</td></tr>
+                    <tr><td colspan="7" class="pg-empty">Belum ada pranota gaji supir Batam.</td></tr>
                 @endforelse
             </tbody>
         </table>
