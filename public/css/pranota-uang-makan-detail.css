@@ -1,0 +1,112 @@
+#page-content:has(.meal-pranota-detail) { background: #f8fafc; }
+.meal-pranota-detail { color: #0f172a; font-size: 13px; }
+.meal-pranota-detail > * + * { margin-top: 22px; }
+.meal-pranota-detail .pmd-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 18px; }
+.meal-pranota-detail .pmd-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.meal-pranota-detail .pmd-back { display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; flex-shrink: 0; border: 1px solid #e2e8f0; border-radius: 9px; color: #64748b; background: white; }
+.meal-pranota-detail .pmd-back:hover { color: #2563eb; border-color: #bfdbfe; }
+.meal-pranota-detail .pmd-document-icon { display: flex; align-items: center; justify-content: center; width: 42px; height: 42px; flex-shrink: 0; border-radius: 11px; color: #2563eb; background: #eff6ff; font-size: 18px; }
+.meal-pranota-detail .pmd-heading h1 { color: #0f172a; font-size: clamp(20px, 1.7vw, 28px); line-height: 1.3; font-weight: 700; letter-spacing: -.025em; }
+.meal-pranota-detail .pmd-heading p { font-size: 12px; line-height: 1.5; color: #64748b; margin-top: 4px; }
+.meal-pranota-detail .pmd-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.meal-pranota-detail .pmd-actions form { margin: 0; }
+.meal-pranota-detail .pmd-button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; border: 1px solid #e2e8f0; border-radius: 8px; padding: 9px 13px; color: #475569; background: #fff; font-size: 12px; font-weight: 600; transition: background-color 160ms, border-color 160ms; white-space: nowrap; }
+.meal-pranota-detail .pmd-button:hover { background: #f1f5f9; }
+.meal-pranota-detail .pmd-button-primary { color: #fff; background: #2563eb; border-color: #2563eb; }
+.meal-pranota-detail .pmd-button-primary:hover { background: #1d4ed8; border-color: #1d4ed8; }
+.meal-pranota-detail .pmd-button-danger { color: #dc2626; border-color: #fecaca; background: #fff; }
+.meal-pranota-detail .pmd-button-danger:hover { background: #fef2f2; border-color: #fca5a5; }
+.meal-pranota-detail .pmd-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 1px 4px rgb(15 23 42 / .025); }
+.meal-pranota-detail .pmd-information { display: grid; grid-template-columns: 1.2fr 1fr .9fr 1fr 1.15fr; padding: 22px 12px; }
+.meal-pranota-detail .pmd-info { display: flex; align-items: flex-start; gap: 10px; min-width: 0; padding: 0 16px; border-right: 1px solid #e2e8f0; }
+.meal-pranota-detail .pmd-info:last-child { border: 0; }
+.meal-pranota-detail .pmd-info > i { flex-shrink: 0; margin-top: 3px; color: #94a3b8; font-size: 14px; }
+.meal-pranota-detail .pmd-info > div { min-width: 0; }
+.meal-pranota-detail .pmd-info span { display: block; margin-bottom: 6px; color: #64748b; font-size: 11px; font-weight: 500; }
+.meal-pranota-detail .pmd-info strong { display: block; font-size: 16px; font-weight: 700; line-height: 1.35; color: #0f172a; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.meal-pranota-detail .pmd-info-total strong, .meal-pranota-detail .pmd-info-total > i { color: #15803d; }
+.meal-pranota-detail .pmd-employees { overflow: hidden; }
+.meal-pranota-detail .pmd-section-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+.meal-pranota-detail .pmd-section-header h2 { display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 650; }
+.meal-pranota-detail .pmd-section-header h2 i { color: #2563eb; font-size: 15px; }
+.meal-pranota-detail .pmd-count { padding: 4px 9px; border-radius: 20px; color: #64748b; background: #f1f5f9; font-size: 11px; font-weight: 500; }
+.meal-pranota-detail .pmd-table-scroll { overflow-x: auto; }
+.meal-pranota-detail .pmd-table { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 12px; }
+.meal-pranota-detail .pmd-col-number { width: 5%; }
+.meal-pranota-detail .pmd-col-employee { width: 25%; }
+.meal-pranota-detail .pmd-col-attendance { width: 12%; }
+.meal-pranota-detail .pmd-col-money { width: 14%; }
+.meal-pranota-detail .pmd-col-adjustment { width: 12%; }
+.meal-pranota-detail .pmd-col-notes { width: 17%; }
+.meal-pranota-detail .pmd-col-total { width: 15%; }
+.meal-pranota-detail .pmd-table th { height: 42px; padding: 11px 14px; background: #f1f5f9; border-bottom: 1px solid #e2e8f0; color: #334155; font-size: 12px; font-weight: 600; text-align: left; }
+.meal-pranota-detail .pmd-table td { padding: 10px 14px; border-bottom: 1px solid #edf1f5; vertical-align: middle; }
+.meal-pranota-detail .pmd-table tbody tr { height: 56px; }
+.meal-pranota-detail .pmd-table tbody tr:nth-child(even) { background: #fcfdff; }
+.meal-pranota-detail .pmd-table tbody tr:hover { background: #f8fafc; }
+.meal-pranota-detail .pmd-table .pmd-center { text-align: center; }
+.meal-pranota-detail .pmd-table .pmd-money { text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.meal-pranota-detail .pmd-row-number { color: #94a3b8; font-size: 11px; }
+.meal-pranota-detail .pmd-employee { display: flex; align-items: center; gap: 10px; }
+.meal-pranota-detail .pmd-avatar { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; border-radius: 50%; color: #2563eb; background: #eff6ff; font-size: 11px; font-weight: 600; }
+.meal-pranota-detail .pmd-employee-name { color: #0f172a; font-size: 12px; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }
+.meal-pranota-detail .pmd-nik { color: #64748b; font-size: 10px; margin-top: 2px; }
+.meal-pranota-detail .pmd-attendance-badge { display: inline-flex; align-items: center; justify-content: center; gap: 5px; padding: 4px 8px; border-radius: 20px; color: #15803d; background: #ecfdf3; font-size: 11px; font-weight: 500; white-space: nowrap; }
+.meal-pranota-detail .pmd-positive { color: #15803d; font-weight: 600; }
+.meal-pranota-detail .pmd-negative { color: #dc2626; font-weight: 600; }
+.meal-pranota-detail .pmd-zero { color: #94a3b8; }
+.meal-pranota-detail .pmd-notes { color: #64748b; font-size: 12px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.6; }
+.meal-pranota-detail .pmd-total-value { color: #15803d; font-weight: 700; }
+.meal-pranota-detail .pmd-table tfoot td { border-top: 1px solid #e2e8f0; border-bottom: 0; padding: 16px 14px; background: #f8fafc; font-weight: 600; }
+.meal-pranota-detail .pmd-table tfoot td:first-child { text-align: right; color: #475569; font-size: 12px; }
+.meal-pranota-detail .pmd-table tfoot .pmd-total-value { font-size: 15px; }
+.meal-pranota-detail .pmd-table .pmd-empty { padding: 32px 16px; text-align: center; color: #64748b; }
+.meal-pranota-detail .pmd-empty > i { color: #94a3b8; font-size: 24px; margin-bottom: 10px; }
+.meal-pranota-detail a:focus-visible, .meal-pranota-detail button:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+@media (max-width: 1199px) {
+    .meal-pranota-detail .pmd-information { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px 0; }
+    .meal-pranota-detail .pmd-info:nth-child(3) { border-right: 0; }
+    .meal-pranota-detail .pmd-info:nth-child(4) { border-right: 1px solid #e2e8f0; }
+}
+@media (max-width: 1023px) { .meal-pranota-detail .pmd-table { min-width: 900px; } }
+@media (max-width: 639px) {
+    .meal-pranota-detail .pmd-heading { gap: 9px; align-items: flex-start; }
+    .meal-pranota-detail .pmd-back { width: 32px; height: 36px; }
+    .meal-pranota-detail .pmd-document-icon { width: 32px; height: 36px; font-size: 16px; }
+    .meal-pranota-detail .pmd-heading h1 { font-size: 20px; }
+    .meal-pranota-detail .pmd-actions { width: 100%; }
+    .meal-pranota-detail .pmd-actions > a, .meal-pranota-detail .pmd-actions > button, .meal-pranota-detail .pmd-actions > form { flex: 1 1 auto; }
+    .meal-pranota-detail .pmd-actions > form > button { width: 100%; }
+    .meal-pranota-detail .pmd-information { grid-template-columns: repeat(2, minmax(0, 1fr)); padding: 18px 4px; gap: 18px 0; }
+    .meal-pranota-detail .pmd-info { padding: 0 12px; gap: 8px; }
+    .meal-pranota-detail .pmd-info:nth-child(odd) { border-right: 1px solid #e2e8f0; }
+    .meal-pranota-detail .pmd-info:nth-child(even) { border-right: 0; }
+    .meal-pranota-detail .pmd-info:last-child { grid-column: 1 / -1; border-right: 0; padding-top: 14px; border-top: 1px solid #e2e8f0; }
+    .meal-pranota-detail .pmd-info strong { font-size: 15px; }
+    .meal-pranota-detail .pmd-section-header { padding: 14px 16px; }
+}
+@media (max-width: 359px) {
+    .meal-pranota-detail .pmd-information { grid-template-columns: 1fr; }
+    .meal-pranota-detail .pmd-info:nth-child(n) { border-right: 0; }
+}
+@media print {
+    html, body, #page-content { height: auto !important; overflow: visible !important; background: white !important; }
+    body * { visibility: hidden; }
+    .meal-pranota-detail, .meal-pranota-detail * { visibility: visible; }
+    .meal-pranota-detail { position: absolute; left: 0; top: 0; width: 100%; padding: 0; color: #000; }
+    .meal-pranota-detail .pmd-actions, .meal-pranota-detail .pmd-back { display: none !important; }
+    .meal-pranota-detail .pmd-panel { box-shadow: none; }
+    .meal-pranota-detail .pmd-information { grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; }
+    .meal-pranota-detail .pmd-info { padding: 0 8px; border-right: 1px solid #e2e8f0; }
+    .meal-pranota-detail .pmd-info:last-child { grid-column: auto; border-top: 0; border-right: 0; }
+    .meal-pranota-detail .pmd-info strong { font-size: 12px; }
+    .meal-pranota-detail .pmd-info > i, .meal-pranota-detail .pmd-avatar, .meal-pranota-detail .pmd-attendance-badge i { display: none; }
+    .meal-pranota-detail .pmd-table-scroll, .meal-pranota-detail .pmd-employees { overflow: visible; }
+    .meal-pranota-detail .pmd-table { min-width: 0; font-size: 9px; }
+    .meal-pranota-detail .pmd-table th, .meal-pranota-detail .pmd-table td { padding: 7px 5px; font-size: 9px; }
+    .meal-pranota-detail .pmd-table .pmd-money { white-space: normal; overflow-wrap: anywhere; }
+    .meal-pranota-detail .pmd-table thead { display: table-header-group; }
+    .meal-pranota-detail .pmd-table tfoot { display: table-row-group; }
+    .meal-pranota-detail .pmd-table tr { break-inside: avoid; }
+    .meal-pranota-detail .pmd-attendance-badge { padding: 0; background: none; font-size: 9px; }
+}

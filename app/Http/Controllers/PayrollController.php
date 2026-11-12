@@ -23,6 +23,8 @@ class PayrollController extends Controller
         $tipeKaryawan = $request->tipe_karyawan ?? 'all';
 
         $payrolls = [];
+        $summaryEmployeeCount = 0;
+        $summaryActiveCount = 0;
         $isGenerated = $request->has('generate');
 
         if ($isGenerated) {
@@ -75,6 +77,10 @@ class PayrollController extends Controller
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($nonKaryawans);
             }
+
+            // Ringkasan memakai kandidat sesuai filter, termasuk yang belum memiliki absensi.
+            $summaryEmployeeCount = $allKaryawans->count();
+            $summaryActiveCount = $allKaryawans->filter(fn ($employee) => $employee->status === 'active')->count();
 
             foreach ($allKaryawans as $k) {
                 $isNominalTetap = UangMakanHelper::isNominalTetap($k);
@@ -193,6 +199,8 @@ class PayrollController extends Controller
             'allSubGroups',
             'allCabang',
             'payrolls',
+            'summaryEmployeeCount',
+            'summaryActiveCount',
             'isGenerated',
             'riwayatPranota',
             'suggestedNomorPranota'

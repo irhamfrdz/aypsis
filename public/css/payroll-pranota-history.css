@@ -1,0 +1,86 @@
+/* Payroll history only: keep other dialogs and the page layout unchanged. */
+#riwayat-pranota-modal { overflow: hidden; color: #0f172a; }
+#riwayat-pranota-modal .pmh-position { display: flex; align-items: center; justify-content: center; height: 100vh; height: 100dvh; padding: 20px; }
+#riwayat-pranota-modal .pmh-overlay { position: absolute; inset: 0; background: rgb(15 23 42 / .46); }
+#riwayat-pranota-modal .pmh-dialog { position: relative; display: flex; flex-direction: column; width: 90vw; max-width: 1250px; max-height: 90vh; max-height: 90dvh; min-width: 0; overflow: hidden; text-align: left; background: #fff; border: 1px solid #e2e8f0; border-radius: 16px; box-shadow: 0 18px 60px rgb(15 23 42 / .18); }
+#riwayat-pranota-modal .pmh-header { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 16px; padding: 20px 24px; background: #fff; border-bottom: 1px solid #e2e8f0; }
+#riwayat-pranota-modal .pmh-heading { display: flex; align-items: center; gap: 12px; min-width: 0; }
+#riwayat-pranota-modal .pmh-heading-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; color: #2563eb; background: #eff6ff; border-radius: 11px; font-size: 18px; }
+#riwayat-pranota-modal #modal-riwayat-title { color: #0f172a; font-size: 18px; line-height: 1.4; font-weight: 700; letter-spacing: -.015em; }
+#riwayat-pranota-modal .pmh-heading p { color: #64748b; font-size: 12px; line-height: 1.5; margin-top: 3px; }
+#riwayat-pranota-modal .pmh-header-actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
+#riwayat-pranota-modal .pmh-header-actions a { border: 1px solid #dbeafe; border-radius: 8px; padding: 8px 10px; color: #2563eb; background: #f8fbff; font-size: 12px; white-space: nowrap; }
+#riwayat-pranota-modal .pmh-close { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; color: #64748b; }
+#riwayat-pranota-modal .pmh-close svg { width: 20px; height: 20px; }
+#riwayat-pranota-modal .pmh-body { min-height: 0; overflow-y: auto; padding: 20px 24px; background: #fff; overscroll-behavior: contain; scrollbar-gutter: stable; }
+#riwayat-pranota-modal .pmh-body > * + * { margin-top: 18px; }
+#riwayat-pranota-modal .pmh-summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+#riwayat-pranota-modal .pmh-stat { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid #e2e8f0; border-radius: 12px; background: #f8fafc; min-width: 0; }
+#riwayat-pranota-modal .pmh-stat > div:first-child { display: flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: 9px; color: #2563eb; background: #eaf2ff; font-size: 15px; }
+#riwayat-pranota-modal .pmh-stat > div:last-child { min-width: 0; }
+#riwayat-pranota-modal .pmh-stat .text-xs { font-size: 11px; line-height: 1.5; font-weight: 400; color: #64748b; }
+#riwayat-pranota-modal .pmh-stat .text-lg { font-size: 17px; line-height: 1.4; font-weight: 700; color: #0f172a; margin-top: 2px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+#riwayat-pranota-modal .pmh-stat-money > div:first-child { color: #15803d; background: #eaf7ef; }
+#riwayat-pranota-modal .pmh-stat-money .text-lg { color: #15803d; }
+#riwayat-pranota-modal .pmh-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+#riwayat-pranota-modal .pmh-search { width: 360px; max-width: 100%; }
+#riwayat-pranota-modal #riwayat-search-input { display: block; width: 100%; height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #0f172a; font-size: 12px; }
+#riwayat-pranota-modal #riwayat-search-input::placeholder { color: #94a3b8; }
+#riwayat-pranota-modal #riwayat-search-input:focus { outline: none; border-color: #2563eb; box-shadow: 0 0 0 3px rgb(37 99 235 / .09); }
+#riwayat-pranota-modal #riwayat-count-info { color: #64748b; font-size: 12px; }
+#riwayat-pranota-modal .pmh-table-frame { border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; }
+#riwayat-pranota-modal .pmh-table-scroll { overflow-x: auto; }
+#riwayat-pranota-modal #table-riwayat-pranota { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+#riwayat-pranota-modal #table-riwayat-pranota thead { background: #f1f5f9; }
+#riwayat-pranota-modal #table-riwayat-pranota th { height: 42px; padding: 10px 12px; border-bottom: 1px solid #e2e8f0; color: #334155; font-size: 12px; font-weight: 600; letter-spacing: .02em; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row { height: 54px; background: white; transition: background-color 160ms; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row:hover { background: #f8fafc; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; color: #334155; font-size: 12px; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row:last-of-type > td { border-bottom: 0; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(2) > a { color: #2563eb; font-size: 12px; font-weight: 600; font-family: inherit; white-space: normal; overflow-wrap: anywhere; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(2) > div { font-size: 10px; color: #94a3b8; margin-top: 3px; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(4) button { padding: 5px 9px; font-size: 11px; font-weight: 500; background: #eff6ff; color: #2563eb; border-radius: 20px; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(4) button:hover { background: #dbeafe; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(5) { color: #15803d; font-weight: 600; font-variant-numeric: tabular-nums; }
+#riwayat-pranota-modal #table-riwayat-pranota .riwayat-row > td:nth-child(6) span { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 500; }
+#riwayat-pranota-modal #table-riwayat-pranota .bg-purple-100 { background: #f3e8ff; color: #7e22ce; }
+#riwayat-pranota-modal #table-riwayat-pranota .bg-yellow-100 { background: #fffbeb; color: #a16207; }
+#riwayat-pranota-modal .pmh-row-actions { display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
+#riwayat-pranota-modal .pmh-row-actions > a, #riwayat-pranota-modal .pmh-row-actions button { display: inline-flex; width: 24px; height: 30px; align-items: center; justify-content: center; padding: 0; border-radius: 6px; font-size: 16px; transition: background-color 160ms, color 160ms; }
+#riwayat-pranota-modal .pmh-row-actions > a { color: #2563eb; }
+#riwayat-pranota-modal .pmh-row-actions > a[title="Export Excel Auto Transfer"] { color: #15803d; }
+#riwayat-pranota-modal .pmh-row-actions button { color: #dc2626; }
+#riwayat-pranota-modal .pmh-row-actions > a:hover { background: #eff6ff; }
+#riwayat-pranota-modal .pmh-row-actions button:hover { background: #fef2f2; }
+#riwayat-pranota-modal tr[id^="karyawan-row-"] > td { padding: 14px 16px; background: #f8fafc; }
+#riwayat-pranota-modal tr[id^="karyawan-row-"] .flex.justify-between { flex-wrap: wrap; gap: 8px; }
+#riwayat-pranota-modal .pmh-footer { display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; gap: 14px; padding: 14px 24px; border-top: 1px solid #e2e8f0; background: white; }
+#riwayat-pranota-modal .pmh-footer > a { color: #2563eb; font-size: 12px; }
+#riwayat-pranota-modal .pmh-footer > button { width: auto; margin: 0; border: 1px solid #cbd5e1; border-radius: 8px; background: white; color: #334155; padding: 8px 18px; font-size: 12px; font-weight: 500; box-shadow: none; }
+#riwayat-pranota-modal .pmh-footer > button:hover { background: #f8fafc; }
+#riwayat-pranota-modal button:focus-visible, #riwayat-pranota-modal a:focus-visible { outline: 2px solid #60a5fa; outline-offset: 2px; }
+@media (max-width: 1023px) {
+    #riwayat-pranota-modal .pmh-summary { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    #riwayat-pranota-modal #table-riwayat-pranota { min-width: 950px; }
+    #riwayat-pranota-modal .pmh-header-actions { gap: 6px; }
+}
+@media (max-width: 639px) {
+    #riwayat-pranota-modal .pmh-position { padding: 10px; }
+    #riwayat-pranota-modal .pmh-dialog { width: 100%; max-height: calc(100dvh - 20px); border-radius: 14px; }
+    #riwayat-pranota-modal .pmh-header { padding: 16px; gap: 10px; align-items: flex-start; }
+    #riwayat-pranota-modal .pmh-heading { gap: 9px; }
+    #riwayat-pranota-modal .pmh-heading-icon { width: 32px; height: 36px; font-size: 16px; }
+    #riwayat-pranota-modal #modal-riwayat-title { font-size: 16px; }
+    #riwayat-pranota-modal .pmh-heading p { font-size: 11px; }
+    #riwayat-pranota-modal .pmh-header-actions { flex-direction: column-reverse; align-items: flex-end; }
+    #riwayat-pranota-modal .pmh-header-actions a { font-size: 10px; padding: 6px; }
+    #riwayat-pranota-modal .pmh-body { padding: 16px; }
+    #riwayat-pranota-modal .pmh-summary { grid-template-columns: 1fr; gap: 10px; }
+    #riwayat-pranota-modal .pmh-stat { padding: 12px 14px; }
+    #riwayat-pranota-modal .pmh-stat .text-lg { font-size: 16px; }
+    #riwayat-pranota-modal .pmh-toolbar { align-items: stretch; gap: 8px; }
+    #riwayat-pranota-modal .pmh-search { width: 100%; }
+    #riwayat-pranota-modal .pmh-footer { padding: 12px 16px; gap: 12px; }
+    #riwayat-pranota-modal .pmh-footer > a { font-size: 11px; }
+    #riwayat-pranota-modal .pmh-footer > button { flex-shrink: 0; padding: 8px 14px; }
+}

@@ -4,16 +4,28 @@
 @section('title', 'Payroll Uang Makan')
 @section('page_title', 'Payroll Uang Makan Mingguan')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/payroll-uang-makan.css') }}?v={{ filemtime(public_path('css/payroll-uang-makan.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/payroll-pranota-history.css') }}?v={{ filemtime(public_path('css/payroll-pranota-history.css')) }}">
+@endpush
+
 @section('content')
-<div class="space-y-6">
+@php
+    $payrollSummaryRows = collect($payrolls);
+    $payrollWorkingDates = $payrollSummaryRows->flatMap(fn ($row) => $row['dates_kehadiran'] ?? [])->unique()->count();
+@endphp
+<div class="payroll-meals space-y-6">
     <!-- Header Section -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-            <div class="mb-4 sm:mb-0">
+    <div class="pm-header">
+        <div class="pm-header-inner">
+            <div class="pm-heading">
+                <span class="pm-heading-icon"><i class="fa-solid fa-utensils" aria-hidden="true"></i></span>
+                <div>
                 <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Payroll Uang Makan Mingguan</h1>
-                <p class="mt-1 text-sm text-gray-600">Perhitungan akumulasi kehadiran dan pencairan uang makan per karyawan</p>
+                <p class="mt-1 text-sm text-gray-600">Perhitungan akumulasi kehadiran dan pencairan uang makan per karyawan.</p>
+                </div>
             </div>
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="pm-header-actions flex flex-wrap items-center gap-3">
                 <button type="button" onclick="openRiwayatPranotaModal()" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm cursor-pointer">
                     <i class="fas fa-history text-blue-600 mr-2"></i>
                     Riwayat Pranota Uang Makan
@@ -30,6 +42,20 @@
             </div>
         </div>
     </div>
+
+    <section id="payroll-summary" class="pm-summary" aria-label="Ringkasan hasil kalkulasi">
+        @foreach([
+            ['label' => 'Total Karyawan', 'value' => number_format($summaryEmployeeCount, 0, ',', '.'), 'hint' => 'Seluruh karyawan sesuai filter', 'icon' => 'fa-users', 'tone' => 'blue'],
+            ['label' => 'Karyawan Aktif', 'value' => number_format($summaryActiveCount, 0, ',', '.'), 'hint' => 'Karyawan berstatus aktif sesuai filter', 'icon' => 'fa-calendar-check', 'tone' => 'green'],
+            ['label' => 'Total Hari Kerja', 'value' => number_format($payrollWorkingDates, 0, ',', '.'), 'hint' => 'Hari kehadiran unik dalam periode', 'icon' => 'fa-calendar-days', 'tone' => 'orange'],
+            ['label' => 'Total Uang Makan', 'value' => 'Rp '.number_format($payrollSummaryRows->sum('total_payout'), 0, ',', '.'), 'hint' => 'Total payout hasil kalkulasi', 'icon' => 'fa-wallet', 'tone' => 'purple'],
+        ] as $summary)
+        <div class="pm-stat pm-stat-{{ $summary['tone'] }}">
+            <span class="pm-stat-icon"><i class="fa-solid {{ $summary['icon'] }}" aria-hidden="true"></i></span>
+            <div class="pm-stat-content"><p class="pm-stat-label">{{ $summary['label'] }}</p><p class="pm-stat-value" @if($loop->last) id="payroll-summary-payout" @endif>{{ $isGenerated ? $summary['value'] : '—' }}</p><p class="pm-stat-hint">{{ $isGenerated ? $summary['hint'] : 'Menunggu kalkulasi absensi' }}</p></div>
+        </div>
+        @endforeach
+    </section>
 
     @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-4 rounded-md shadow-sm">
@@ -85,11 +111,11 @@
             </div>
         </div>
     @endif
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">Pengaturan & Filter Pencairan</h3>
+    <section class="pm-panel pm-filters" aria-labelledby="payroll-filter-heading">
+        <h2 id="payroll-filter-heading" class="pm-section-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i>Pengaturan & Filter Pencairan</h2>
         
-        <form action="{{ route('payroll.uang-makan') }}" method="GET" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <form action="{{ route('payroll.uang-makan') }}" method="GET" class="pm-filter-form">
+            <div class="pm-filter-grid">
                 <div>
                     <label class="block text-xs font-semibold text-gray-700 mb-1">Periode Awal (Start Date)</label>
                     <input type="date" name="start_date" value="{{ $startDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
@@ -99,9 +125,9 @@
                     <input type="date" name="end_date" value="{{ $endDate->format('Y-m-d') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Sub Group (Opsional)</label>
+                    <label class="block text-xs font-semibold text-gray-700 mb-1">Filter Group (Opsional)</label>
                     <select name="group" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                        <option value="">Semua Sub Group</option>
+                        <option value="">Semua Group</option>
                         @foreach($allGroups as $g)
                             <option value="{{ $g }}" {{ request('group') == $g ? 'selected' : '' }}>{{ $g }}</option>
                         @endforeach
@@ -128,7 +154,7 @@
                     </select>
                 </div>
                 
-                <div class="md:col-span-5">
+                <div class="pm-employee-type">
                     <label class="block text-xs font-semibold text-gray-700 mb-2">Tipe Karyawan</label>
                     <div class="flex items-center space-x-4">
                         <label class="inline-flex items-center">
@@ -147,33 +173,36 @@
                 </div>
                 
                 <!-- Action Buttons -->
-                <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
-                    @if(request()->has('generate'))
-                        <a href="{{ route('payroll.uang-makan') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                <div class="pm-filter-actions flex items-end gap-2 justify-end">
+                        <a href="{{ route('payroll.uang-makan') }}" class="pm-reset inline-flex items-center justify-center px-4 py-2 text-xs font-medium rounded-lg">
+                            <i class="fa-solid fa-arrow-rotate-left mr-2" aria-hidden="true"></i>
                             Reset Filter
                         </a>
-                    @endif
-                    <button type="submit" name="generate" value="1" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
+                    <button type="submit" name="generate" value="1" class="pm-calculate inline-flex items-center justify-center px-4 py-2 text-xs font-semibold rounded-lg">
+                        <i class="fa-solid fa-calculator mr-2" aria-hidden="true"></i>
                         Kalkulasi Data Absensi
                     </button>
                 </div>
             </div>
         </form>
-    </div>
+    </section>
 
     <!-- Results Card -->
     @if($isGenerated)
-    <div id="results-card" class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div>
+    <div id="results-card" class="pm-panel overflow-hidden">
+        <div class="pm-results-header">
+            <div class="pm-results-heading">
+                <span class="pm-results-icon"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i></span>
+                <div>
                 <h3 class="text-sm font-bold text-gray-900">
                     Hasil Kalkulasi: {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
                 </h3>
                 <p class="text-xs text-gray-500 mt-1">Ditemukan {{ count($payrolls) }} karyawan dengan data absensi masuk.</p>
+                </div>
             </div>
             
             @if(count($payrolls) > 0)
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+            <div class="pm-results-toolbar flex flex-wrap items-center gap-3">
                 @php
                     $tableSubGroupsByEmployee = collect($payrolls)->mapWithKeys(function ($row) {
                         $employee = $row['karyawan'];
@@ -228,6 +257,9 @@
                     @if(request('sub_group'))
                     <input type="hidden" name="sub_group" value="{{ request('sub_group') }}">
                     @endif
+                    @if(request('cabang'))
+                    <input type="hidden" name="cabang" value="{{ request('cabang') }}">
+                    @endif
                     @if(request('tipe_karyawan'))
                     <input type="hidden" name="tipe_karyawan" value="{{ request('tipe_karyawan') }}">
                     @endif
@@ -250,11 +282,11 @@
         </div>
         
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="pm-payroll-table min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[10px]">
                     <tr>
                         <th class="px-4 py-3 text-center w-10">
-                            <input type="checkbox" id="check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <input type="checkbox" id="check-all" aria-label="Pilih semua karyawan yang ditampilkan" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </th>
                         <th class="px-6 py-3 text-center w-12">No.</th>
                         <th class="px-6 py-3 text-left">Karyawan</th>
@@ -269,7 +301,7 @@
                     @forelse($payrolls as $row)
                     <tr data-sub-groups="{{ json_encode($tableSubGroupsByEmployee[class_basename($row['karyawan']) . '_' . $row['karyawan']->id]) }}" class="hover:bg-gray-50 transition-colors duration-200">
                         <td class="px-4 py-4 whitespace-nowrap text-center">
-                            <input type="checkbox" name="selected_pranota[]" value="{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                            <input type="checkbox" name="selected_pranota[]" aria-label="Pilih {{ $row['karyawan']->nama_lengkap }}" value="{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}" class="row-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center text-gray-500 font-medium">
                             {{ $loop->iteration }}
@@ -306,7 +338,7 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right">
                             <div class="flex items-center justify-end gap-2">
                                 <span class="text-gray-500">Rp</span>
-                                <input type="number" name="payrolls[{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}" 
+                                <input type="number" form="form-payout" aria-label="Nominal uang makan {{ $row['karyawan']->nama_lengkap }}" name="payrolls[{{ class_basename($row['karyawan']) . '_' . $row['karyawan']->id }}][nominal_per_hari]" value="{{ $row['nominal_per_hari'] }}"
                                        data-kehadiran="{{ $row['total_kehadiran'] }}" 
                                        data-multiplier="{{ $row['multiplier'] }}"
                                        data-is-satpam-pelabuhan="{{ isset($row['is_satpam_pelabuhan']) && $row['is_satpam_pelabuhan'] ? '1' : '0' }}"
@@ -317,7 +349,7 @@
                                 <div class="mt-1 text-xs text-indigo-600">Nominal sekaligus, sesuai data uang makan</div>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-right font-bold text-green-600 total-payout-text">
+                        <td data-payout="{{ $row['total_payout'] }}" class="px-6 py-4 whitespace-nowrap text-right font-bold text-green-600 total-payout-text">
                             Rp {{ number_format($row['total_payout'], 0, ',', '.') }}
                         </td>
                     </tr>
@@ -341,11 +373,10 @@
                     @endif
                 </tbody>
             </table>
-            @if(count($payrolls) > 0)
-            </form>
-            @endif
         </div>
     </div>
+    @else
+    <div class="pm-panel pm-initial-state"><span class="pm-results-icon"><i class="fa-solid fa-calculator" aria-hidden="true"></i></span><div><h2>Siap menghitung uang makan</h2><p>Tentukan periode dan filter, lalu klik Kalkulasi Data Absensi untuk menampilkan hasil.</p></div></div>
     @endif
 </div>
 
@@ -465,45 +496,44 @@
 
 {{-- Modal Riwayat Pranota Uang Makan --}}
 <div id="riwayat-pranota-modal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+    <div class="pmh-position">
         <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
-        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+        <div class="pmh-overlay" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
 
         <!-- Modal panel -->
-        <div class="inline-flex flex-col align-bottom bg-white rounded-xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-6xl xl:max-w-7xl sm:w-full border border-gray-100 max-h-[90vh]">
+        <div class="pmh-dialog">
             <!-- Header -->
-            <div class="bg-white px-6 py-4 border-b border-gray-100 flex justify-between items-center shrink-0">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-50 p-2.5 rounded-xl text-blue-600">
-                        <i class="fas fa-history text-xl"></i>
+            <div class="pmh-header">
+                <div class="pmh-heading">
+                    <div class="pmh-heading-icon">
+                        <i class="fas fa-file-invoice" aria-hidden="true"></i>
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Uang Makan</h3>
                         <p class="text-xs text-gray-500">Daftar pranota uang makan yang telah dibuat dari sistem payroll</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="pmh-header-actions">
                     <a href="{{ route('pranota-uang-makan.index') }}" class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
                         <i class="fas fa-external-link-alt mr-1.5"></i>
                         Halaman Lengkap
                     </a>
-                    <button type="button" onclick="closeRiwayatPranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <button type="button" onclick="closeRiwayatPranotaModal()" aria-label="Tutup riwayat pranota uang makan" title="Tutup" class="pmh-close text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
 
             <!-- Body -->
-            <div class="bg-white px-6 py-5 flex-1 overflow-y-auto space-y-4">
+            <div class="pmh-body">
                 <!-- Summary Stats Bar -->
                 @php
                     $totalPranotaCount = isset($riwayatPranota) ? $riwayatPranota->count() : 0;
                     $totalNominalAccum = isset($riwayatPranota) ? $riwayatPranota->sum('total_nominal') : 0;
                     $totalKaryawanCount = isset($riwayatPranota) ? $riwayatPranota->sum('details_count') : 0;
                 @endphp
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                <div class="pmh-summary">
+                    <div class="pmh-stat bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                             <i class="fas fa-file-invoice"></i>
                         </div>
@@ -512,7 +542,7 @@
                             <div class="text-lg font-bold text-gray-900">{{ $totalPranotaCount }} Pranota</div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                    <div class="pmh-stat pmh-stat-money bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
@@ -521,7 +551,7 @@
                             <div class="text-lg font-bold text-emerald-600">Rp {{ number_format($totalNominalAccum, 0, ',', '.') }}</div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                    <div class="pmh-stat bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
                             <i class="fas fa-users"></i>
                         </div>
@@ -533,22 +563,24 @@
                 </div>
 
                 <!-- Search Filter & Actions inside modal -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                    <div class="relative flex-1 max-w-sm">
-                        <input type="text" id="riwayat-search-input" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota / tanggal..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="pmh-toolbar">
+                    <div class="pmh-search relative">
+                        <label for="riwayat-search-input" class="sr-only">Cari nomor pranota atau tanggal</label>
+                        <input type="search" id="riwayat-search-input" oninput="filterRiwayatPranota()" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota atau tanggal..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-search text-xs"></i>
                         </div>
                     </div>
-                    <span class="text-xs text-gray-500" id="riwayat-count-info">
+                    <span class="text-xs text-gray-500" id="riwayat-count-info" role="status" aria-live="polite">
                         Menampilkan {{ $totalPranotaCount }} data
                     </span>
                 </div>
 
                 <!-- Table -->
-                <div class="border border-gray-200 rounded-xl overflow-hidden">
-                    <div class="overflow-x-auto max-h-[50vh]">
+                <div class="pmh-table-frame">
+                    <div class="pmh-table-scroll">
                         <table class="min-w-full divide-y divide-gray-200" id="table-riwayat-pranota">
+                            <colgroup><col style="width:4%"><col style="width:20%"><col style="width:12%"><col style="width:14%"><col style="width:16%"><col style="width:13%"><col style="width:21%"></colgroup>
                             <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">No</th>
@@ -600,7 +632,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
-                                            <div class="inline-flex items-center gap-1.5">
+                                            <div class="pmh-row-actions inline-flex items-center gap-1.5">
                                                 <a href="{{ route('pranota-uang-makan.show', $item->id) }}" target="_blank" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors" title="Lihat Rincian">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -685,7 +717,7 @@
             </div>
 
             <!-- Footer -->
-            <div class="bg-gray-50 px-6 py-3.5 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0">
+            <div class="pmh-footer">
                 <a href="{{ route('pranota-uang-makan.index') }}" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium">
                     <i class="fas fa-list-ul"></i>
                     <span>Buka Semua Data Pranota Uang Makan</span>
@@ -760,6 +792,9 @@
                 const subGroupValue = currentResultsCard.querySelector('#table-sub-group-filter')?.value || '';
 
                 currentResultsCard.innerHTML = newResultsCard.innerHTML;
+                const newSummary = doc.getElementById('payroll-summary');
+                const currentSummary = document.getElementById('payroll-summary');
+                if (newSummary && currentSummary) currentSummary.innerHTML = newSummary.innerHTML;
                 
                 // Re-initialize all table events on the new HTML
                 initTableEvents();
@@ -819,6 +854,13 @@
                 if (targetTd) {
                     // Format ke Rupiah
                     targetTd.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(total);
+                    targetTd.dataset.payout = total;
+                    const summaryPayout = document.getElementById('payroll-summary-payout');
+                    if (summaryPayout) {
+                        const allPayout = Array.from(resultsCard.querySelectorAll('.total-payout-text'))
+                            .reduce((sum, cell) => sum + Number(cell.dataset.payout || 0), 0);
+                        summaryPayout.innerText = 'Rp ' + new Intl.NumberFormat('id-ID').format(allPayout);
+                    }
                 }
             });
         });

@@ -211,4 +211,81 @@ class PayrollUangMakanNominalTetapTest extends TestCase
         $this->assertEquals(75000, $row['nominal_awal']);
         $this->assertEquals(25000, $row['nominal_per_hari']);
     }
+
+    public function test_redesigned_payroll_renders_summary_and_keeps_filter_and_payout_bindings(): void
+    {
+        DB::table('karyawans')->insert([
+            'id' => 5, 'nama_lengkap' => 'Belum Absen', 'nik' => 'NO-ATTENDANCE',
+            'status' => 'active', 'penempatan' => 'Kantor',
+        ]);
+        $request = Request::create('/master/payroll/uang-makan', 'GET', $this->parameters() + ['generate' => 1]);
+        $this->app->instance('request', $request);
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag);
+        $view = (new PayrollController)->uangMakan($request);
+        $html = $view->render();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+        $this->assertSame(4, $xpath->query('//*[@id="payroll-summary"]/div')->length);
+        $this->assertSame(4, $view->getData()['summaryEmployeeCount']);
+        $this->assertSame(4, $view->getData()['summaryActiveCount']);
+        $this->assertSame('Rp '.number_format(collect($view->getData()['payrolls'])->sum('total_payout'), 0, ',', '.'), trim($xpath->query('//*[@id="payroll-summary-payout"]')->item(0)->textContent));
+        foreach (['start_date', 'end_date', 'group', 'sub_group', 'cabang', 'tipe_karyawan'] as $name) {
+            $this->assertGreaterThan(0, $xpath->query('//*[@name="'.$name.'"]')->length);
+        }
+        foreach (['check-all', 'btn-refresh-data', 'btn-masukkan-pranota', 'table-search-input', 'table-sub-group-filter', 'form-payout'] as $id) {
+            $this->assertSame(1, $xpath->query('//*[@id="'.$id.'"]')->length);
+        }
+        $this->assertSame(3, $xpath->query('//input[@form="form-payout" and @data-kehadiran and @data-multiplier]')->length);
+        $this->assertStringContainsString('css/payroll-uang-makan.css?v=', $html);
+        $this->assertStringContainsString('openRiwayatPranotaModal()', $html);
+    }
+
+    public function test_redesigned_initial_screen_renders_without_calculated_data(): void
+    {
+        $request = Request::create('/master/payroll/uang-makan', 'GET', $this->parameters());
+        $this->app->instance('request', $request);
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag);
+        $html = (new PayrollController)->uangMakan($request)->render();
+        $this->assertStringContainsString('Menunggu kalkulasi absensi', $html);
+        $this->assertStringContainsString('Siap menghitung uang makan', $html);
+        $this->assertStringNotContainsString('id="results-card"', $html);
+    }
+
+    public function test_history_modal_preserves_employee_dropdown_actions_and_status_based_delete(): void
+    {
+        $detail = (new \App\Models\PranotaUangMakanDetail)->forceFill([
+            'kehadiran' => '3 Hari', 'total_akhir' => 125000, 'adjustment' => 0,
+        ])->setRelation('karyawan', Karyawan::findOrFail(1));
+        $draft = (new \App\Models\PranotaUangMakan)->forceFill([
+            'id' => 101, 'nomor_pranota' => 'PUM-DRAFT', 'tanggal_pranota' => '2026-11-12',
+            'created_at' => now(), 'total_nominal' => 125000, 'details_count' => 1, 'status' => 'draft',
+        ])->setRelation('details', collect([$detail]));
+        $linked = (new \App\Models\PranotaUangMakan)->forceFill([
+            'id' => 102, 'nomor_pranota' => 'PUM-LINKED', 'tanggal_pranota' => '2026-11-11',
+            'total_nominal' => 75000, 'details_count' => 0, 'status' => 'draft', 'pranota_puml_id' => 99,
+        ])->setRelation('details', collect());
+        $request = Request::create('/master/payroll/uang-makan', 'GET', $this->parameters());
+        $this->app->instance('request', $request);
+        view()->share('errors', new \Illuminate\Support\ViewErrorBag);
+        $html = (new PayrollController)->uangMakan($request)->with('riwayatPranota', collect([$draft, $linked]))->render();
+        $dom = new \DOMDocument;
+        @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
+        $xpath = new \DOMXPath($dom);
+        $modal = '//*[@id="riwayat-pranota-modal"]';
+        $this->assertSame(3, $xpath->query($modal.'//*[contains(concat(" ",normalize-space(@class)," ")," pmh-stat ")]')->length);
+        $this->assertSame(2, $xpath->query($modal.'//tr[contains(@class,"riwayat-row")]')->length);
+        $this->assertSame(1, $xpath->query($modal.'//form')->length);
+        $this->assertStringContainsString('/101', $xpath->query($modal.'//form')->item(0)->getAttribute('action'));
+        $this->assertStringContainsString('confirm(', $xpath->query($modal.'//form')->item(0)->getAttribute('onsubmit'));
+        foreach (['Lihat Rincian', 'Edit Pranota', 'Cetak Pranota'] as $title) {
+            $this->assertSame(2, $xpath->query($modal.'//a[@title="'.$title.'"]')->length);
+        }
+        $this->assertSame(2, $xpath->query($modal.'//button[starts-with(@onclick,"toggleKaryawanRow(")]')->length);
+        $this->assertSame(1, $xpath->query($modal.'//*[@id="karyawan-row-101"]')->length);
+        $this->assertStringContainsString('Rp 200.000', $xpath->query($modal)->item(0)->textContent);
+        $this->assertStringContainsString('Masuk PUML', $xpath->query($modal)->item(0)->textContent);
+        $this->assertSame('filterRiwayatPranota()', $xpath->query('//*[@id="riwayat-search-input"]')->item(0)->getAttribute('oninput'));
+        $this->assertStringContainsString('css/payroll-pranota-history.css?v=', $html);
+    }
 }

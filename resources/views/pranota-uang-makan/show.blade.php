@@ -1,224 +1,86 @@
 @extends('layouts.app')
+@section('title', 'Detail Pranota Uang Makan')
+@section('page_title', 'Detail Pranota Uang Makan')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/pranota-uang-makan-detail.css') }}?v={{ filemtime(public_path('css/pranota-uang-makan-detail.css')) }}">
+@endpush
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    
-    <!-- Page Header -->
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-        <!-- Left: Title & Back Button -->
-        <div class="mb-4 sm:mb-0 flex items-center gap-4">
-            <a href="{{ route('pranota-uang-makan.index') }}" 
-               class="flex items-center justify-center w-10 h-10 bg-white border border-slate-200 rounded-full hover:bg-slate-50 hover:border-slate-300 transition-all text-slate-500 hover:text-slate-700 shadow-sm"
-               title="Kembali ke Daftar">
-                <i class="fa-solid fa-arrow-left"></i>
-            </a>
-            <div>
-                <h1 class="text-2xl md:text-3xl text-slate-800 font-bold tracking-tight">Detail Pranota Uang Makan</h1>
-                <p class="text-sm text-slate-500 mt-1">Rincian uang makan karyawan berdasarkan kehadiran</p>
-            </div>
+@php
+    // Gunakan relasi yang sudah dimuat controller; tidak menambah query per baris.
+    $details = $pranota->details;
+    $attendanceDays = function ($value) {
+        preg_match('/\d+/', (string) $value, $matches);
+        return (int) ($matches[0] ?? 0);
+    };
+    $totalAttendance = $details->sum(fn ($detail) => $attendanceDays($detail->kehadiran));
+    $totalNominal = $details->sum('total_akhir');
+@endphp
+<div class="meal-pranota-detail">
+    <header class="pmd-header">
+        <div class="pmd-heading">
+            <a href="{{ route('pranota-uang-makan.index') }}" class="pmd-back" title="Kembali ke Daftar" aria-label="Kembali ke daftar pranota uang makan"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i></a>
+            <span class="pmd-document-icon"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i></span>
+            <div><h1>Detail Pranota Uang Makan</h1><p>Rincian uang makan karyawan berdasarkan kehadiran.</p></div>
         </div>
-
-        <!-- Right: Actions -->
-        <div class="flex items-center space-x-3">
-            <!-- Edit Button -->
-            <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" 
-               class="btn bg-amber-500 hover:bg-amber-600 text-white shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
-                <i class="fa-solid fa-pencil mr-2 text-white/80"></i>
-                <span class="font-medium">Edit Pranota</span>
-            </a>
-
-            <!-- Print Button -->
-            <button onclick="window.print()" 
-                    class="btn bg-white border-slate-200 hover:border-slate-300 text-slate-600 shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
-                <i class="fa-solid fa-print text-slate-400 mr-2"></i>
-                <span class="font-medium">Cetak Pranota</span>
-            </button>
-            
-            <!-- Delete Button -->
-            <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini? Tindakan ini tidak dapat dibatalkan.');">
+        <div class="pmd-actions">
+            <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" class="pmd-button pmd-button-primary"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>Edit Pranota</a>
+            <button type="button" onclick="window.print()" class="pmd-button"><i class="fa-solid fa-print" aria-hidden="true"></i>Cetak Pranota</button>
+            <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini? Tindakan ini tidak dapat dibatalkan.');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" 
-                        class="btn bg-rose-500 hover:bg-rose-600 text-white shadow-sm transition-all flex items-center px-4 py-2 rounded-lg">
-                    <i class="fa-solid fa-trash-can mr-2 text-white/70"></i>
-                    <span class="font-medium">Hapus</span>
-                </button>
+                <button type="submit" class="pmd-button pmd-button-danger"><i class="fa-solid fa-trash-can" aria-hidden="true"></i>Hapus</button>
             </form>
         </div>
-    </div>
+    </header>
 
-    <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <!-- Card: Nomor Pranota -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center transition-all hover:shadow-md">
-            <div class="w-14 h-14 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center mr-5 shrink-0">
-                <i class="fa-solid fa-file-invoice text-2xl"></i>
-            </div>
-            <div>
-                <div class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wider">Nomor Pranota</div>
-                <div class="text-2xl font-bold text-slate-800">{{ $pranota->nomor_pranota }}</div>
-            </div>
-        </div>
-        
-        <!-- Card: Tanggal Pranota -->
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex items-center transition-all hover:shadow-md">
-            <div class="w-14 h-14 rounded-full bg-emerald-50 text-emerald-500 flex items-center justify-center mr-5 shrink-0">
-                <i class="fa-solid fa-calendar-day text-2xl"></i>
-            </div>
-            <div>
-                <div class="text-sm font-semibold text-slate-500 mb-1 uppercase tracking-wider">Tanggal Pranota</div>
-                <div class="text-2xl font-bold text-slate-800">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
-            </div>
-        </div>
-    </div>
+    <section class="pmd-panel pmd-information" aria-label="Informasi dan ringkasan pranota">
+        <div class="pmd-info"><i class="fa-regular fa-file-lines" aria-hidden="true"></i><div><span>Nomor Pranota</span><strong>{{ $pranota->nomor_pranota }}</strong></div></div>
+        <div class="pmd-info"><i class="fa-regular fa-calendar" aria-hidden="true"></i><div><span>Tanggal Pranota</span><strong>{{ $pranota->tanggal_pranota?->format('d/m/Y') ?? '-' }}</strong></div></div>
+        <div class="pmd-info"><i class="fa-solid fa-users" aria-hidden="true"></i><div><span>Total Karyawan</span><strong id="pmd-employee-count">{{ number_format($details->count(), 0, ',', '.') }} Orang</strong></div></div>
+        <div class="pmd-info"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i><div><span>Total Kehadiran</span><strong id="pmd-attendance">{{ number_format($totalAttendance, 0, ',', '.') }} Hari</strong></div></div>
+        <div class="pmd-info pmd-info-total"><i class="fa-solid fa-wallet" aria-hidden="true"></i><div><span>Total Nominal</span><strong id="pmd-total">Rp {{ number_format($totalNominal, 0, ',', '.') }}</strong></div></div>
+    </section>
 
-    <!-- Details Table -->
-    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden mb-8">
-        <div class="px-6 py-5 border-b border-slate-200 bg-slate-50/80 flex justify-between items-center">
-            <h2 class="text-lg font-bold text-slate-800 flex items-center">
-                <i class="fa-solid fa-users text-slate-400 mr-2"></i>
-                Rincian Karyawan
-            </h2>
-            <span class="bg-slate-200 text-slate-600 text-xs font-bold px-3 py-1 rounded-full">
-                {{ $pranota->details->count() }} Data
-            </span>
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead class="text-xs font-semibold uppercase text-slate-500 bg-white border-b border-slate-200">
+    <section class="pmd-panel pmd-employees" aria-labelledby="pmd-employees-heading">
+        <div class="pmd-section-header"><h2 id="pmd-employees-heading"><i class="fa-solid fa-users" aria-hidden="true"></i>Rincian Karyawan</h2><span class="pmd-count">{{ $details->count() }} Data</span></div>
+        <div class="pmd-table-scroll">
+            <table class="pmd-table">
+                <colgroup><col class="pmd-col-number"><col class="pmd-col-employee"><col class="pmd-col-attendance"><col class="pmd-col-money"><col class="pmd-col-adjustment"><col class="pmd-col-notes"><col class="pmd-col-total"></colgroup>
+                <thead><tr><th scope="col">No.</th><th scope="col">Karyawan</th><th scope="col" class="pmd-center">Kehadiran</th><th scope="col" class="pmd-money">Nominal Awal</th><th scope="col" class="pmd-money">Adjustment</th><th scope="col">Catatan</th><th scope="col" class="pmd-money">Total Akhir</th></tr></thead>
+                <tbody>
+                    @forelse($details as $detail)
+                    @php
+                        $employeeName = $detail->karyawan->nama_lengkap ?? '-';
+                        $nameParts = preg_split('/\s+/u', trim($employeeName), -1, PREG_SPLIT_NO_EMPTY);
+                        $initials = $employeeName === '-' ? 'U' : mb_strtoupper(mb_substr($nameParts[0] ?? 'U', 0, 1).(count($nameParts) > 1 ? mb_substr(end($nameParts), 0, 1) : ''));
+                    @endphp
                     <tr>
-                        <th class="px-6 py-4 whitespace-nowrap">Karyawan</th>
-                        <th class="px-6 py-4 whitespace-nowrap text-center">Kehadiran</th>
-                        <th class="px-6 py-4 whitespace-nowrap text-right">Nominal Awal</th>
-                        <th class="px-6 py-4 whitespace-nowrap text-right">Adjustment</th>
-                        <th class="px-6 py-4 whitespace-nowrap">Catatan</th>
-                        <th class="px-6 py-4 whitespace-nowrap text-right font-bold text-slate-700">Total Akhir</th>
+                        <td class="pmd-row-number">{{ $loop->iteration }}</td>
+                        <td><div class="pmd-employee"><span class="pmd-avatar" aria-hidden="true">{{ $initials }}</span><div><p class="pmd-employee-name">{{ $employeeName }}</p><p class="pmd-nik">{{ $detail->karyawan->nik ?? '-' }}</p></div></div></td>
+                        <td class="pmd-center"><span class="pmd-attendance-badge"><i class="fa-regular fa-calendar-check" aria-hidden="true"></i>{{ trim((string) $detail->kehadiran) !== '' ? $attendanceDays($detail->kehadiran).' Hari' : '-' }}</span></td>
+                        <td class="pmd-money">Rp {{ number_format($detail->nominal_awal, 0, ',', '.') }}</td>
+                        <td class="pmd-money {{ $detail->adjustment > 0 ? 'pmd-positive' : ($detail->adjustment < 0 ? 'pmd-negative' : 'pmd-zero') }}">{{ $detail->adjustment > 0 ? '+ ' : ($detail->adjustment < 0 ? '− ' : '') }}Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}</td>
+                        <td class="pmd-notes">{{ $detail->catatan ?: '-' }}</td>
+                        <td class="pmd-money pmd-total-value">Rp {{ number_format($detail->total_akhir, 0, ',', '.') }}</td>
                     </tr>
-                </thead>
-                <tbody class="text-sm divide-y divide-slate-100">
-                    @forelse($pranota->details as $detail)
-                        <tr class="hover:bg-slate-50 transition-colors group">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-600 flex items-center justify-center mr-3 text-sm font-bold border border-slate-200 group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
-                                        {{ substr($detail->karyawan->nama_lengkap ?? 'U', 0, 1) }}
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold text-slate-800">{{ $detail->karyawan->nama_lengkap ?? '-' }}</div>
-                                        <div class="text-xs text-slate-500 font-mono mt-0.5">{{ $detail->karyawan->nik ?? '-' }}</div>
-                                    </div>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                                    {{ $detail->kehadiran }} Hari
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-slate-600 font-medium">
-                                Rp {{ number_format($detail->nominal_awal, 0, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                @if($detail->adjustment > 0)
-                                    <span class="inline-flex items-center text-emerald-600 font-semibold bg-emerald-50 px-2 py-1 rounded text-xs border border-emerald-100">
-                                        <i class="fa-solid fa-plus text-[10px] mr-1"></i> Rp {{ number_format($detail->adjustment, 0, ',', '.') }}
-                                    </span>
-                                @elseif($detail->adjustment < 0)
-                                    <span class="inline-flex items-center text-rose-600 font-semibold bg-rose-50 px-2 py-1 rounded text-xs border border-rose-100">
-                                        <i class="fa-solid fa-minus text-[10px] mr-1"></i> Rp {{ number_format(abs($detail->adjustment), 0, ',', '.') }}
-                                    </span>
-                                @else
-                                    <span class="text-slate-400 font-medium">Rp 0</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 text-slate-600 text-sm max-w-xs truncate" title="{{ $detail->catatan }}">
-                                {{ $detail->catatan ?: '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right">
-                                <span class="font-bold text-slate-800 text-[15px]">
-                                    Rp {{ number_format($detail->total_akhir, 0, ',', '.') }}
-                                </span>
-                            </td>
-                        </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-6 py-12 text-center text-slate-500">
-                                <div class="flex flex-col items-center justify-center">
-                                    <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mb-3">
-                                        <i class="fa-solid fa-inbox text-2xl text-slate-400"></i>
-                                    </div>
-                                    <p class="font-medium text-slate-600">Tidak ada rincian data karyawan.</p>
-                                </div>
-                            </td>
-                        </tr>
+                    <tr><td colspan="7" class="pmd-empty"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><p>Tidak ada rincian data karyawan.</p></td></tr>
                     @endforelse
                 </tbody>
-                <tfoot>
-                    <tr class="border-t-2 border-slate-200 bg-slate-50/80">
-                        <td colspan="5" class="px-6 py-5 text-right text-sm font-extrabold text-slate-700 tracking-wide uppercase">
-                            Total Keseluruhan
-                        </td>
-                        <td class="px-6 py-5 text-right">
-                            <div class="text-xl font-black text-blue-600">
-                                Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}
-                            </div>
-                        </td>
-                    </tr>
-                </tfoot>
+                <tfoot><tr><td colspan="6">Total Keseluruhan</td><td class="pmd-money pmd-total-value">Rp {{ number_format($totalNominal, 0, ',', '.') }}</td></tr></tfoot>
             </table>
         </div>
-    </div>
+    </section>
 </div>
-
-<style>
-    @media print {
-        body {
-            background-color: white !important;
-        }
-        body * {
-            visibility: hidden;
-        }
-        .max-w-9xl, .max-w-9xl * {
-            visibility: visible;
-        }
-        .max-w-9xl {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            padding: 0 !important;
-        }
-        .btn, form, a, .fa-arrow-left {
-            display: none !important;
-        }
-        .shadow-sm, .shadow-md {
-            box-shadow: none !important;
-        }
-        .border, .border-slate-200, .border-slate-100 {
-            border-color: #e5e7eb !important;
-        }
-        .bg-white, .bg-slate-50, .bg-slate-50\/80, .bg-slate-100 {
-            background-color: transparent !important;
-        }
-        /* Make sure table lines show up in print */
-        table {
-            border: 1px solid #e5e7eb !important;
-        }
-        th, td {
-            border-bottom: 1px solid #e5e7eb !important;
-        }
-    }
-</style>
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const urlParams = new URLSearchParams(window.location.search);
         if (urlParams.has('print') && urlParams.get('print') === 'true') {
-            // Beri sedikit delay agar halaman render sepenuhnya sebelum print dialog muncul
-            setTimeout(() => {
-                window.print();
-            }, 500);
+            setTimeout(() => { window.print(); }, 500);
         }
     });
 </script>
