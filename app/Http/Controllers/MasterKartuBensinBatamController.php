@@ -256,7 +256,7 @@ class MasterKartuBensinBatamController extends Controller
             ]);
         });
 
-        return redirect()->route('master-kartu-bensin-batam.history', $card->id)
+        return redirect()->route('master-kartu-bensin-batam.history', $id)
             ->with('success', 'Riwayat kartu bensin berhasil diperbarui.');
     }
 
