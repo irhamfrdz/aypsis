@@ -275,7 +275,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             ->select($sourceTable.'.*')
             ->orderByRaw("COALESCE(approval_order.position, {$sourceTable}.id) DESC")
             ->orderBy($sourceTable.'.id', 'desc')
-            ->paginate(20)->withQueryString();
+            ->simplePaginate(20)->withQueryString();
         $goodsOverrides = ApprovalTandaTerimaDuaGoods::query()
             ->where('source_type', $type)
             ->whereIn('source_id', $items->pluck('id'))
