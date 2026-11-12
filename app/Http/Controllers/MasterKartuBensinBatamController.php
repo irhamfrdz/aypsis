@@ -211,11 +211,50 @@ class MasterKartuBensinBatamController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date',
+            'nominal' => 'required|numeric|gt:0',
             'keterangan' => 'nullable|string|max:1000',
         ]);
 
-        $card = MasterKartuBensinBatam::findOrFail($id);
-        $card->histories()->findOrFail($historyId)->update($validated);
+        DB::transaction(function () use ($id, $historyId, $validated) {
+            $card = MasterKartuBensinBatam::lockForUpdate()->findOrFail($id);
+            $log = $card->histories()->lockForUpdate()->findOrFail($historyId);
+            $oldNominal = (int) round((float) $log->nominal * 100);
+            $newNominal = (int) round((float) $validated['nominal'] * 100);
+            $delta = ($newNominal - $oldNominal) * ($log->tipe === 'berkurang' ? -1 : 1);
+            $newCardSaldo = (int) round((float) $card->saldo * 100) + $delta;
+            if ($newCardSaldo < 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'nominal' => 'Perubahan nominal membuat saldo kartu menjadi negatif.',
+                ]);
+            }
+
+            $following = $card->histories()->where('id', '>=', $log->id)->orderBy('id')->lockForUpdate()->get();
+            foreach ($following as $entry) {
+                $saldoSesudah = (int) round((float) $entry->saldo_sesudah * 100) + $delta;
+                if ($saldoSesudah < 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'nominal' => 'Perubahan nominal membuat saldo riwayat menjadi negatif.',
+                    ]);
+                }
+                $entry->saldo_sesudah = $saldoSesudah / 100;
+                if ($entry->id !== $log->id) {
+                    $saldoSebelum = (int) round((float) $entry->saldo_sebelum * 100) + $delta;
+                    if ($saldoSebelum < 0) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'nominal' => 'Perubahan nominal membuat saldo riwayat menjadi negatif.',
+                        ]);
+                    }
+                    $entry->saldo_sebelum = $saldoSebelum / 100;
+                }
+                $entry->save();
+            }
+
+            $log->update($validated);
+            $card->update([
+                'saldo' => $newCardSaldo / 100,
+                'updated_by' => auth()->id(),
+            ]);
+        });
 
         return redirect()->route('master-kartu-bensin-batam.history', $card->id)
             ->with('success', 'Riwayat kartu bensin berhasil diperbarui.');
