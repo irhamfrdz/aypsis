@@ -4864,6 +4864,18 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Manifest Sugeng --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule"><span>Manifest Sugeng <span class="text-xs text-gray-500">(Setuju = kirim dan hapus)</span></span></td>
+                                <td><input type="checkbox" name="permissions[manifest-sugeng][view]" value="1" class="permission-checkbox" @checked(session()->hasOldInput() ? old('permissions.manifest-sugeng.view', false) : ($userMatrixPermissions['manifest-sugeng']['view'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[manifest-sugeng][approve]" value="1" class="permission-checkbox" @checked(session()->hasOldInput() ? old('permissions.manifest-sugeng.approve', false) : ($userMatrixPermissions['manifest-sugeng']['approve'] ?? false))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Approval Absensi --}}
                             <tr class="submodule-row" data-parent="approval">
                                 <td class="submodule">

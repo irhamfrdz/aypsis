@@ -289,6 +289,14 @@
                             <i class="fas fa-file-excel" aria-hidden="true"></i><span>Export Pilihan (0)</span>
                         </button>
                     </form>
+                    @can('manifest-sugeng-manage')
+                    <form id="approval-manifest-sugeng-form" method="POST" action="{{ route('approval-tanda-terima-2.manifest-sugeng', ['sourceType' => $type]) }}" class="hidden">
+                        @csrf
+                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                            <i class="fas fa-ship" aria-hidden="true"></i><span>Kirim ke Manifest Sugeng (0)</span>
+                        </button>
+                    </form>
+                    @endcan
                     <form id="approval-bulk-clear-form" method="POST" action="{{ route('approval-tanda-terima-2.clear-export-bulk', ['sourceType' => $type]) }}">
                         @csrf
                         @method('DELETE')

@@ -633,6 +633,13 @@ class UserController extends Controller
                 continue;
             }
 
+            if (str_starts_with($permissionName, 'manifest-sugeng-')) {
+                $action = substr($permissionName, strlen('manifest-sugeng-'));
+                $matrixPermissions['manifest-sugeng'][$action === 'manage' ? 'approve' : $action] = true;
+
+                continue;
+            }
+
             // Special handling for approval-tanda-terima permissions (dash notation)
             if (strpos($permissionName, 'approval-tanda-terima-') === 0) {
                 $module = 'approval-tanda-terima';
@@ -5052,6 +5059,15 @@ class UserController extends Controller
                     // Handle Approval Tanda Terima 2 independently.
                     if ($module === 'approval-tanda-terima-2' && in_array($action, ['view', 'approve'])) {
                         $directPermission = Permission::where('name', "approval-tanda-terima-2-{$action}")->first();
+                        if ($directPermission) {
+                            $permissionIds[] = $directPermission->id;
+                            $found = true;
+                        }
+                    }
+
+                    if ($module === 'manifest-sugeng' && in_array($action, ['view', 'approve'], true)) {
+                        $permissionName = $action === 'approve' ? 'manifest-sugeng-manage' : 'manifest-sugeng-view';
+                        $directPermission = Permission::where('name', $permissionName)->first();
                         if ($directPermission) {
                             $permissionIds[] = $directPermission->id;
                             $found = true;

@@ -227,6 +227,7 @@
 
     const bulkForm = document.getElementById('approval-bulk-export-form');
     const bulkClearForm = document.getElementById('approval-bulk-clear-form');
+    const manifestSugengForm = document.getElementById('approval-manifest-sugeng-form');
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
     const clearSelection = document.getElementById('approval-clear-selection');
@@ -256,6 +257,11 @@
         const exportedCount = values.filter(Boolean).length;
         bulkForm.querySelector('button').disabled = count === 0;
         bulkForm.querySelector('button span').textContent = `Export Pilihan (${count})`;
+        if (manifestSugengForm) {
+            manifestSugengForm.classList.toggle('hidden', count === 0);
+            manifestSugengForm.querySelector('button').disabled = count === 0;
+            manifestSugengForm.querySelector('button span').textContent = `Kirim ke Manifest Sugeng (${count})`;
+        }
         bulkClearForm.querySelector('button').disabled = exportedCount === 0;
         bulkClearForm.querySelector('button span').textContent = `Lepas Tanda Export (${exportedCount})`;
         clearSelection.disabled = count === 0;
@@ -314,6 +320,21 @@
         });
         exportedIds.forEach(id => { selected[id] = false; });
         saveSelection();
+    });
+    manifestSugengForm?.addEventListener('submit', event => {
+        manifestSugengForm.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
+        const ids = Object.keys(selected);
+        if (ids.length === 0) {
+            event.preventDefault();
+            return;
+        }
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = id;
+            manifestSugengForm.append(input);
+        });
     });
     updateBulkSelection();
 

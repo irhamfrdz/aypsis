@@ -569,6 +569,53 @@ class ApprovalTandaTerimaDuaController extends Controller
         ])->deleteFileAfterSend(true);
     }
 
+    public function sendToManifestSugeng(Request $request, string $sourceType): RedirectResponse
+    {
+        abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
+        $validated = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:300'],
+            'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+        ]);
+        $ids = array_map('intval', $validated['ids']);
+        $receipts = self::SOURCES[$sourceType]::query()
+            ->when($sourceType === 'lcl', fn ($query) => $query->with('tujuanPengiriman'))
+            ->whereKey($ids)->get()->keyBy('id');
+        abort_if($receipts->count() !== count($ids), 404);
+        $goods = ApprovalTandaTerimaDuaGoods::query()
+            ->where('source_type', $sourceType)->whereIn('source_id', $ids)
+            ->get()->keyBy('source_id');
+        $now = now();
+
+        DB::transaction(function () use ($sourceType, $ids, $receipts, $goods, $now): void {
+            foreach ($ids as $id) {
+                $receipt = $receipts->get($id);
+                DB::table('manifest_sugengs')->updateOrInsert(
+                    ['source_type' => $sourceType, 'source_id' => $id],
+                    function (bool $exists) use ($sourceType, $receipt, $goods, $id, $now) {
+                        return [
+                            'nomor_tanda_terima' => $sourceType === 'fcl'
+                                ? ($receipt->nomor_tanda_terima ?: $receipt->no_surat_jalan)
+                                : ($sourceType === 'lcl' ? $receipt->nomor_tanda_terima : ($receipt->no_tanda_terima ?: $receipt->nomor_tanda_terima)),
+                            'tanggal_tanda_terima' => $sourceType === 'fcl' ? $receipt->tanggal_surat_jalan : $receipt->tanggal_tanda_terima,
+                            'nomor_kontainer' => $sourceType === 'lcl' ? $receipt->nomor_kontainer : $receipt->no_kontainer,
+                            'pengirim' => $sourceType === 'lcl' ? $receipt->nama_pengirim : $receipt->pengirim,
+                            'tujuan_pengiriman' => $sourceType === 'lcl' ? $receipt->tujuanPengiriman?->nama_tujuan : $receipt->tujuan_pengiriman,
+                            'shipper_jb_id' => $receipt->shipper_jb_id,
+                            'manifest_goods' => json_encode($goods->get($id)?->manifest_goods ?? [], JSON_UNESCAPED_UNICODE),
+                            'dikirim_oleh' => auth()->id(),
+                            'dikirim_pada' => $now,
+                            ...($exists ? [] : ['created_at' => $now]),
+                            'updated_at' => $now,
+                        ];
+                    }
+                );
+            }
+        });
+
+        return redirect()->route('manifest-sugeng.index')
+            ->with('success', count($ids).' tanda terima berhasil dikirim ke Manifest Sugeng.');
+    }
+
     public function clearExport(string $sourceType, int $id): RedirectResponse
     {
         abort_unless(array_key_exists($sourceType, self::SOURCES), 404);
