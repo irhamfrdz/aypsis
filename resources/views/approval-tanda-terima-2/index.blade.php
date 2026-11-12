@@ -295,21 +295,28 @@
                         <button id="approval-manifest-sugeng-open" type="button" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
                             <i class="fas fa-ship" aria-hidden="true"></i><span>Kirim ke Manifest Sugeng (0)</span>
                         </button>
-                        <dialog id="approval-manifest-sugeng-dialog" aria-labelledby="approval-manifest-sugeng-title" data-open-on-error="{{ $errors->has('nama_kapal') || $errors->has('no_voyage') ? 'true' : 'false' }}" class="w-full max-w-md rounded-2xl border border-gray-200 p-0 shadow-2xl backdrop:bg-slate-900/50">
+                        <dialog id="approval-manifest-sugeng-dialog" aria-labelledby="approval-manifest-sugeng-title" data-voyages-url="{{ url('/api/manifests/voyages') }}" data-selected-voyage="{{ old('no_voyage') }}" data-open-on-error="{{ $errors->has('nama_kapal') || $errors->has('no_voyage') ? 'true' : 'false' }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/50">
                             <div class="border-b border-gray-100 px-6 py-4">
                                 <h3 id="approval-manifest-sugeng-title" class="text-lg font-bold text-gray-900">Kirim ke Manifest Sugeng</h3>
                                 <p class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage untuk tanda terima yang dicentang.</p>
                             </div>
-                            <div class="space-y-4 px-6 py-5">
-                                <label for="approval-manifest-sugeng-kapal" class="block text-sm font-semibold text-gray-700">Nama kapal
-                                    <input id="approval-manifest-sugeng-kapal" name="nama_kapal" list="approval-manifest-sugeng-kapals" required maxlength="255" value="{{ old('nama_kapal') }}" placeholder="Pilih atau ketik nama kapal" class="mt-1 block w-full rounded-lg border-gray-300 text-sm">
-                                </label>
-                                <datalist id="approval-manifest-sugeng-kapals">@foreach($kapals as $kapal)<option value="{{ $kapal }}">@endforeach</datalist>
-                                @error('nama_kapal')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
-                                <label for="approval-manifest-sugeng-voyage" class="block text-sm font-semibold text-gray-700">No. voyage
-                                    <input id="approval-manifest-sugeng-voyage" name="no_voyage" required maxlength="255" value="{{ old('no_voyage') }}" placeholder="Contoh: SA19JB26" class="mt-1 block w-full rounded-lg border-gray-300 text-sm">
-                                </label>
-                                @error('no_voyage')<p class="text-xs text-red-600">{{ $message }}</p>@enderror
+                            <div class="space-y-5 px-6 py-5">
+                                <div>
+                                    <label for="approval-manifest-sugeng-kapal" class="mb-2 block text-sm font-semibold text-gray-700">Nama kapal <span class="text-red-600">*</span></label>
+                                    <select id="approval-manifest-sugeng-kapal" name="nama_kapal" required class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                                        <option value="">-- Pilih Kapal --</option>
+                                        @foreach($kapals as $kapal)<option value="{{ $kapal }}" @selected(old('nama_kapal') === $kapal)>{{ $kapal }}</option>@endforeach
+                                    </select>
+                                    @error('nama_kapal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
+                                <div>
+                                    <label for="approval-manifest-sugeng-voyage" class="mb-2 block text-sm font-semibold text-gray-700">No. voyage <span class="text-red-600">*</span></label>
+                                    <select id="approval-manifest-sugeng-voyage" name="no_voyage" required disabled class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-gray-100 disabled:text-gray-500">
+                                        <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
+                                    </select>
+                                    <p id="approval-manifest-sugeng-voyage-help" class="mt-1 text-xs text-gray-500">Voyage akan muncul sesuai kapal yang dipilih.</p>
+                                    @error('no_voyage')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                                </div>
                             </div>
                             <div class="flex justify-end gap-2 border-t border-gray-100 px-6 py-4">
                                 <button id="approval-manifest-sugeng-cancel" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>

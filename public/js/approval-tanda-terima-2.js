@@ -230,11 +230,44 @@
     const manifestSugengForm = document.getElementById('approval-manifest-sugeng-form');
     const manifestSugengDialog = document.getElementById('approval-manifest-sugeng-dialog');
     const manifestSugengOpen = document.getElementById('approval-manifest-sugeng-open');
+    const manifestSugengShip = document.getElementById('approval-manifest-sugeng-kapal');
+    const manifestSugengVoyage = document.getElementById('approval-manifest-sugeng-voyage');
+    const manifestSugengVoyageHelp = document.getElementById('approval-manifest-sugeng-voyage-help');
+    let voyageRequest = 0;
+    async function loadManifestSugengVoyages(selectedVoyage = '') {
+        if (!manifestSugengShip || !manifestSugengVoyage || !manifestSugengDialog) return;
+        const ship = manifestSugengShip.value;
+        const request = ++voyageRequest;
+        manifestSugengVoyage.replaceChildren(new Option(ship ? 'Memuat voyage...' : '-- Pilih Kapal Terlebih Dahulu --', ''));
+        manifestSugengVoyage.disabled = true;
+        manifestSugengVoyageHelp.textContent = ship ? 'Memuat data voyage...' : 'Voyage akan muncul sesuai kapal yang dipilih.';
+        if (!ship) return;
+        try {
+            const response = await fetch(`${manifestSugengDialog.dataset.voyagesUrl}/${encodeURIComponent(ship)}`, {
+                headers: { Accept: 'application/json' }, credentials: 'same-origin',
+            });
+            if (!response.ok) throw new Error('Gagal memuat voyage.');
+            const data = await response.json();
+            if (request !== voyageRequest) return;
+            const voyages = Array.isArray(data.voyages) ? data.voyages : [];
+            manifestSugengVoyage.replaceChildren(new Option('-- Pilih Voyage --', ''));
+            voyages.forEach(voyage => manifestSugengVoyage.add(new Option(voyage, voyage)));
+            if (voyages.includes(selectedVoyage)) manifestSugengVoyage.value = selectedVoyage;
+            manifestSugengVoyage.disabled = voyages.length === 0;
+            manifestSugengVoyageHelp.textContent = voyages.length ? `${voyages.length} voyage tersedia` : 'Tidak ada voyage untuk kapal ini.';
+        } catch {
+            if (request !== voyageRequest) return;
+            manifestSugengVoyage.replaceChildren(new Option('Gagal memuat voyage', ''));
+            manifestSugengVoyageHelp.textContent = 'Gagal memuat voyage. Coba pilih kapal lagi.';
+        }
+    }
+    manifestSugengShip?.addEventListener('change', () => loadManifestSugengVoyages());
     document.getElementById('approval-manifest-sugeng-cancel')?.addEventListener('click', () => manifestSugengDialog?.close());
     manifestSugengOpen?.addEventListener('click', () => {
         if (manifestSugengOpen.disabled || !manifestSugengDialog) return;
         manifestSugengDialog.showModal();
-        document.getElementById('approval-manifest-sugeng-kapal')?.focus();
+        if (manifestSugengShip?.value && manifestSugengVoyage?.disabled) loadManifestSugengVoyages(manifestSugengDialog.dataset.selectedVoyage || '');
+        manifestSugengShip?.focus();
     });
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
@@ -347,6 +380,7 @@
     updateBulkSelection();
     if (manifestSugengDialog?.dataset.openOnError === 'true' && Object.keys(selected).length > 0) {
         manifestSugengDialog.showModal();
+        loadManifestSugengVoyages(manifestSugengDialog.dataset.selectedVoyage || '');
     }
 
     document.querySelectorAll('.approval-export-form').forEach(form => {

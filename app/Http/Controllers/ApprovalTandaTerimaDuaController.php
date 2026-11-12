@@ -310,7 +310,9 @@ class ApprovalTandaTerimaDuaController extends Controller
             ->flip();
 
         return view('approval-tanda-terima-2.index', [
-            'kapals' => \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->pluck('nama_kapal'),
+            'kapals' => \App\Models\Manifest::query()->whereNotNull('nama_kapal')->distinct()->pluck('nama_kapal')
+                ->merge(\App\Models\NaikKapal::query()->whereNotNull('nama_kapal')->distinct()->pluck('nama_kapal'))
+                ->filter()->unique()->sort()->values(),
             'type' => $type,
             'destination' => $destination,
             'manifestStatus' => $manifestStatus,
