@@ -7659,11 +7659,17 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('manifest-sugeng', [\App\Http\Controllers\ManifestSugengController::class, 'index'])
         ->name('manifest-sugeng.index')
         ->middleware('can:manifest-sugeng-view');
+    Route::get('manifest-sugeng/export', [\App\Http\Controllers\ManifestSugengController::class, 'export'])
+        ->name('manifest-sugeng.export')
+        ->middleware('can:manifest-sugeng-view');
     Route::get('manifest-sugeng/{manifestSugeng}', [\App\Http\Controllers\ManifestSugengController::class, 'show'])
         ->name('manifest-sugeng.show')
         ->middleware('can:manifest-sugeng-view');
     Route::delete('manifest-sugeng/{manifestSugeng}', [\App\Http\Controllers\ManifestSugengController::class, 'destroy'])
         ->name('manifest-sugeng.destroy')
+        ->middleware('can:manifest-sugeng-manage');
+    Route::put('manifest-sugeng/{manifestSugeng}', [\App\Http\Controllers\ManifestSugengController::class, 'update'])
+        ->name('manifest-sugeng.update')
         ->middleware('can:manifest-sugeng-manage');
     Route::delete('approval-tanda-terima-2/{sourceType}/export-bulk', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'clearExportBulk'])
         ->name('approval-tanda-terima-2.clear-export-bulk')
