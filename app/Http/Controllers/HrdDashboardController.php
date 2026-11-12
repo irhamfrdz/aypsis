@@ -152,7 +152,10 @@ class HrdDashboardController extends Controller
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
-        if (! $isSingleDay && $activeKaryawanIds) {
+        if ($isSingleDay && $startDate->isSunday()) {
+            // Hari Minggu tidak mewajibkan scan masuk maupun pulang.
+            $karyawanBelumAbsen = collect();
+        } elseif (! $isSingleDay && $activeKaryawanIds) {
             $logsByEmployee = Absensi::select('karyawan_id', 'tipe', 'waktu')
                 ->whereIn('karyawan_id', $activeKaryawanIds)
                 ->whereBetween('waktu', [
@@ -171,7 +174,7 @@ class HrdDashboardController extends Controller
                         });
 
                     $missingDates = $days->filter(function ($logs, $date) use ($startDateStr, $endDateStr) {
-                        if ($date < $startDateStr || $date > $endDateStr) {
+                        if ($date < $startDateStr || $date > $endDateStr || Carbon::parse($date)->isSunday()) {
                             return false;
                         }
 
@@ -391,7 +394,9 @@ class HrdDashboardController extends Controller
         // Cocokkan per tanggal kalender, sesuai filter tanggal dashboard.
         $dates = fn ($logs) => $logs->map(fn ($log) => Carbon::parse($log->waktu)->toDateString())->unique();
 
-        return $dates($masuk)->diff($dates($pulang))->sort()->values()->all();
+        return $dates($masuk)
+            ->reject(fn ($date) => Carbon::parse($date)->isSunday())
+            ->diff($dates($pulang))->sort()->values()->all();
     }
 
     /**
