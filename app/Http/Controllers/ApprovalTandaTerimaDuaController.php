@@ -76,14 +76,7 @@ class ApprovalTandaTerimaDuaController extends Controller
         $type = $filters['type'] ?? 'fcl';
         $destination = $filters['destination'] ?? 'batam';
         $manifestStatus = $filters['manifest_status'] ?? 'belum';
-        $query = self::SOURCES[$type]::query()->with('shipperJb');
-        if ($type === 'lcl') {
-            $query->with(['kontainerPivot', 'items']);
-        } elseif ($type === 'fcl') {
-            $query->with('fclShipperDetails.shipperJb');
-        } elseif ($type === 'ttsj') {
-            $query->with('dimensiItems');
-        }
+        $query = self::SOURCES[$type]::query();
 
         // Old receipts that should not enter the Approval Tanda Terima 2 queue.
         if ($type === 'fcl' && $manifestStatus === 'belum') {
@@ -267,15 +260,22 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
         }
 
-        $items = $query
+        $pageIds = $query
             ->leftJoin('approval_tanda_terima_2_orders as approval_order', function ($join) use ($type, $sourceTable) {
                 $join->on('approval_order.source_id', '=', $sourceTable.'.id')
                     ->where('approval_order.source_type', '=', $type);
             })
-            ->select($sourceTable.'.*')
+            ->select($sourceTable.'.id')
             ->orderByRaw("COALESCE(approval_order.position, {$sourceTable}.id) DESC")
             ->orderBy($sourceTable.'.id', 'desc')
             ->simplePaginate(20)->withQueryString();
+        $ids = $pageIds->getCollection()->pluck('id');
+        $details = self::SOURCES[$type]::query()->with(match ($type) {
+            'fcl' => ['shipperJb', 'fclShipperDetails.shipperJb'],
+            'lcl' => ['shipperJb', 'kontainerPivot', 'items'],
+            'ttsj' => ['shipperJb', 'dimensiItems'],
+        })->whereKey($ids)->get()->keyBy('id');
+        $items = $pageIds->setCollection($ids->map(fn ($id) => $details->get($id)));
         $goodsOverrides = ApprovalTandaTerimaDuaGoods::query()
             ->where('source_type', $type)
             ->whereIn('source_id', $items->pluck('id'))
