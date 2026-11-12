@@ -272,15 +272,37 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function update(Request $request, PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
-        $data = $request->validate(['nomor_accurate' => ['nullable', 'string', 'max:255']]);
-        $pembayaran_pranota_bpj->update(['nomor_accurate' => $data['nomor_accurate'] ?? null]);
+        $data = $request->validate([
+            'nomor_accurate' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'akun_coa_id' => ['sometimes', 'required', 'integer', Rule::exists('akun_coa', 'id')],
+            'expected_akun_coa_id' => ['required_with:akun_coa_id', 'integer'],
+        ]);
+        try {
+            DB::transaction(function () use ($data, $pembayaran_pranota_bpj) {
+                $payment = PembayaranPranotaBpjs::whereKey($pembayaran_pranota_bpj->id)->lockForUpdate()->firstOrFail();
+                if (array_key_exists('akun_coa_id', $data)) {
+                    (new \App\Services\BpjsPaymentBankUpdater)->change($payment, (int) $data['akun_coa_id'], (int) $data['expected_akun_coa_id']);
+                }
+                if (array_key_exists('nomor_accurate', $data)) {
+                    $payment->update(['nomor_accurate' => $data['nomor_accurate']]);
+                }
+            });
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Gagal mengubah pembayaran BPJS', ['payment_id' => $pembayaran_pranota_bpj->id, 'exception' => $e]);
+            return back()->withInput()->with('error', 'Perubahan gagal disimpan. Tidak ada perubahan saldo atau jurnal.');
+        }
 
-        return redirect()->route('pembayaran-pranota-bpjs.show', $pembayaran_pranota_bpj)->with('success', 'Nomor Accurate berhasil disimpan.');
+        return redirect()->route('pembayaran-pranota-bpjs.show', $pembayaran_pranota_bpj)
+            ->with('success', array_key_exists('akun_coa_id', $data) ? 'Bank yang Digunakan berhasil disimpan.' : 'Nomor Accurate berhasil disimpan.');
     }
 
     public function show(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
-        return view('pembayaran-pranota-bpjs.show', $this->paymentDetails($pembayaran_pranota_bpj));
+        return view('pembayaran-pranota-bpjs.show', $this->paymentDetails($pembayaran_pranota_bpj) + [
+            'accounts' => Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']),
+        ]);
     }
 
     public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)

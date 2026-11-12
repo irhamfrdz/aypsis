@@ -155,7 +155,6 @@
                 <input id="bpjs-history-search" type="search" placeholder="Cari nomor pembayaran / nomor pranota…" aria-controls="bpjs-history-rows" class="w-full rounded-lg border border-gray-300 py-2 pl-8 pr-3 text-xs focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <button id="bpjs-history-clear" type="button" hidden class="bpjs-btn">Reset pencarian</button>
-            <span class="text-xs text-gray-500">10 data per halaman</span>
         </div>
         <table id="bpjs-history-table" class="bpjs-table bpjs-history">
             <thead><tr><th>Nomor Pembayaran</th><th>Nomor Pranota</th><th class="bpjs-money">Nominal Pembayaran</th><th style="width: 26%">Aksi</th></tr></thead>
@@ -170,6 +169,7 @@
                         <a target="_blank" rel="noopener" aria-label="Cetak {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', $payment) }}"><i class="fa-solid fa-print" aria-hidden="true"></i>Cetak</a>
                         <a target="_blank" rel="noopener" aria-label="Print Permohonan Transfer {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', [$payment, 'dokumen' => 'permohonan-transfer']) }}"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i>Print Permohonan Transfer</a>
                         @can('pembayaran-pranota-bpjs-create')
+                        <a href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}#edit-bank" class="bpjs-btn" aria-label="Edit bank {{ $payment->nomor_pembayaran }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>Edit Bank</a>
                         <form method="POST" action="{{ route('pembayaran-pranota-bpjs.destroy', $payment) }}" onsubmit="return confirm('Tarik seluruh pembayaran {{ $payment->nomor_pembayaran }}? Saldo seluruh Akun Bank dan Bank yang Digunakan dikembalikan sesuai transaksi ini, dan tagihan dapat dibayar kembali.');">
                             @csrf
                             @method('DELETE')

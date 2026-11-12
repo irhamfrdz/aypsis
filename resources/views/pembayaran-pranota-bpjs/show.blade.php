@@ -22,7 +22,23 @@
                 <p>{{ $payment->bank?->nama_akun ?? '-' }}</p>
             @endforelse
         </div>
-        <div><p class="text-gray-500">Bank yang Digunakan</p><p>{{ $payment->akunCoa?->nama_akun ?? '-' }}</p></div>
+        <div id="edit-bank" class="scroll-mt-6"><p class="text-gray-500">Bank yang Digunakan</p><p class="font-medium">{{ $payment->akunCoa ? $payment->akunCoa->nomor_akun.' - '.$payment->akunCoa->nama_akun : '-' }}</p>
+            @can('pembayaran-pranota-bpjs-create')
+            <form method="POST" action="{{ route('pembayaran-pranota-bpjs.update', $payment) }}" class="mt-3 space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3" onsubmit="return confirm('Simpan perubahan Bank yang Digunakan? Jurnal kredit pembayaran akan dipindahkan ke rekening terpilih dan saldo rekening lama serta baru akan disesuaikan.');">
+                @csrf
+                @method('PATCH')
+                <input type="hidden" name="expected_akun_coa_id" value="{{ $payment->akun_coa_id }}">
+                <label for="edit-akun-coa-id" class="block text-xs font-semibold text-gray-700">Pilih bank yang digunakan</label>
+                <select id="edit-akun-coa-id" name="akun_coa_id" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500" aria-describedby="edit-bank-description">
+                    @foreach($accounts as $account)
+                    <option value="{{ $account->id }}" @selected(old('akun_coa_id', $payment->akun_coa_id) == $account->id)>{{ $account->nomor_akun }} - {{ $account->nama_akun }}</option>
+                    @endforeach
+                </select>
+                <p id="edit-bank-description" class="text-xs leading-relaxed text-gray-500">Perubahan rekening menyesuaikan jurnal dan saldo bank pembayaran ini. Total pembayaran tetap sama.</p>
+                <button type="submit" class="rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white transition hover:bg-indigo-700">Simpan Bank</button>
+            </form>
+            @endcan
+        </div>
         <div><p class="text-gray-500">Nomor Accurate</p>
             @can('pembayaran-pranota-bpjs-create')
                 <form method="POST" action="{{ route('pembayaran-pranota-bpjs.update', $payment) }}" class="mt-2 flex flex-wrap items-center gap-2">
