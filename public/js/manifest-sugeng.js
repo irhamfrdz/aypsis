@@ -3,8 +3,21 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     const saved = new WeakMap();
     const busy = new WeakSet();
     const directions = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
+    let anchor = -1;
+    let selectedCell = null;
 
     const valueOf = cell => cell.innerText.replace(/\r\n/g, '\n').replace(/\n$/, '');
+    const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
+    const selectRows = (indices, keep = false) => {
+        if (!keep) rows.forEach(row => delete row.dataset.selected);
+        indices.forEach(index => { if (rows[index]) rows[index].dataset.selected = 'true'; });
+    };
+    const setCell = (cell, value) => {
+        if (!cell?.isContentEditable) return;
+        if (!saved.has(cell)) saved.set(cell, valueOf(cell));
+        cell.textContent = value;
+        save(cell);
+    };
 
     async function save(cell) {
         if (!cell.dataset.saveUrl || busy.has(cell)) return;
@@ -41,13 +54,22 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
 
     table.addEventListener('focusin', event => {
         const cell = event.target.closest('td[contenteditable="true"]');
-        if (cell && !saved.has(cell)) saved.set(cell, valueOf(cell));
+        if (cell) {
+            selectedCell = cell;
+            if (!saved.has(cell)) saved.set(cell, valueOf(cell));
+        }
     });
     table.addEventListener('focusout', event => {
         const cell = event.target.closest('td[contenteditable="true"]');
         if (cell) save(cell);
     });
     table.addEventListener('keydown', event => {
+        const rowHeader = event.target.closest('tbody .sheet-row-number');
+        if (rowHeader && (event.key === ' ' || event.key === 'Enter')) {
+            event.preventDefault();
+            rowHeader.click();
+            return;
+        }
         if (event.altKey || event.ctrlKey || event.metaKey) return;
         const cell = event.target.closest('td[contenteditable="true"]');
         if (!cell) return;
@@ -63,6 +85,53 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         const cell = event.target.closest('td[contenteditable="true"]');
         if (!cell) return;
         event.preventDefault();
-        document.execCommand('insertText', false, event.clipboardData.getData('text/plain'));
+        const text = event.clipboardData.getData('text/plain').replace(/\r\n/g, '\n').replace(/\n$/, '');
+        const values = text.split('\n').map(line => line.split('\t'));
+        if (values.length === 1 && values[0].length === 1) {
+            document.execCommand('insertText', false, text);
+            return;
+        }
+        const startRow = rows.indexOf(cell.parentElement);
+        const startColumn = cell.cellIndex;
+        values.forEach((line, rowOffset) => line.forEach((value, columnOffset) => {
+            setCell(rows[startRow + rowOffset]?.cells[startColumn + columnOffset], value);
+        }));
+    });
+    table.addEventListener('click', event => {
+        const header = event.target.closest('tbody .sheet-row-number');
+        if (header) {
+            const index = rows.indexOf(header.parentElement);
+            if (event.shiftKey && anchor >= 0) {
+                selectRows(Array.from({ length: Math.abs(index - anchor) + 1 }, (_, offset) => Math.min(index, anchor) + offset));
+            } else if (event.ctrlKey || event.metaKey) {
+                header.parentElement.dataset.selected === 'true'
+                    ? delete header.parentElement.dataset.selected
+                    : selectRows([index], true);
+                anchor = index;
+            } else {
+                selectRows([index]);
+                anchor = index;
+            }
+        } else if (event.target.closest('tbody td[contenteditable="true"]')) {
+            rows.forEach(row => delete row.dataset.selected);
+        }
+    });
+    table.addEventListener('copy', event => {
+        const selection = selectedRows();
+        if (!selection.length) return;
+        event.preventDefault();
+        event.clipboardData.setData('text/plain', selection.map(row =>
+            Array.from(row.cells).slice(1).map(cell => valueOf(cell).replace(/\t/g, ' ').replace(/\n/g, ' ')).join('\t')
+        ).join('\n'));
+    });
+    table.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            rows.forEach(row => delete row.dataset.selected);
+            return;
+        }
+        if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && table.contains(document.activeElement)) {
+            event.preventDefault();
+            selectRows(rows.map((_, index) => index));
+        }
     });
 });

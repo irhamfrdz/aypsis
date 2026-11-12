@@ -6,7 +6,7 @@
 @section('content')
 <div class="space-y-5 px-4 py-6">
     <div class="flex flex-wrap items-center justify-between gap-4">
-        <div><h1 class="text-2xl font-bold text-gray-900">Manifest Sugeng</h1><p class="text-sm text-gray-600">Geser lembar ke kanan untuk melihat seluruh kolom. Klik nomor BL untuk membuka detail.</p></div>
+        <div><h1 class="text-2xl font-bold text-gray-900">Manifest Sugeng</h1><p class="text-sm text-gray-600">Klik nomor baris untuk memilih; Shift untuk rentang, Ctrl untuk beberapa baris. Ctrl+C menyalin baris, dan data dari Excel dapat ditempel mulai dari sel yang dipilih.</p></div>
         @if(request('nama_kapal') && request('no_voyage'))<a href="{{ route('manifest-sugeng.export', ['nama_kapal' => request('nama_kapal'), 'no_voyage' => request('no_voyage')]) }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Export Excel Manifest & Perincian</a>@endif
     </div>
     @if(session('success'))<div class="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif

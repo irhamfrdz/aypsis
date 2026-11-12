@@ -17,21 +17,26 @@
     .sugeng-sheet td[data-state="saved"] { background: #dcfce7; }
     .sugeng-sheet td[data-state="error"] { background: #fee2e2; }
     .sugeng-sheet tbody td:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
+    .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
+    .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
+    .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
+    .sugeng-sheet tbody tr[data-selected="true"] td:focus { background: #eef2ff; }
 </style>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
         $widths = [140,95,135,95,55,65,180,65,65,360,65,65,360,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
-    <table class="sugeng-sheet" style="width: {{ array_sum($widths) }}px" data-csrf="{{ csrf_token() }}">
-        <colgroup>@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
+    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}">
+        <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
-            <tr class="sheet-title"><td colspan="32" class="sheet-company">PT. ALEXINDO YAKIN PRIMA</td></tr>
-            <tr class="sheet-title"><td colspan="32">Perusahaan Pelayaran Nasional</td></tr>
-            <tr class="sheet-title"><td colspan="32" class="sheet-heading">M A N I F E S T &nbsp; O F &nbsp; C A R G O</td></tr>
-            <tr class="sheet-title"><td colspan="32">{{ request('nama_kapal') }}{{ request('no_voyage') ? ' / '.request('no_voyage') : '' }}</td></tr>
-            <tr class="sheet-section"><th colspan="7"></th><th colspan="3" class="sheet-manifest">MANIFEST</th><th colspan="3" class="sheet-detail">PERINCIAN</th><th colspan="19"></th></tr>
+            <tr class="sheet-title"><td colspan="33" class="sheet-company">PT. ALEXINDO YAKIN PRIMA</td></tr>
+            <tr class="sheet-title"><td colspan="33">Perusahaan Pelayaran Nasional</td></tr>
+            <tr class="sheet-title"><td colspan="33" class="sheet-heading">M A N I F E S T &nbsp; O F &nbsp; C A R G O</td></tr>
+            <tr class="sheet-title"><td colspan="33">{{ request('nama_kapal') }}{{ request('no_voyage') ? ' / '.request('no_voyage') : '' }}</td></tr>
+            <tr class="sheet-section"><th></th><th colspan="7"></th><th colspan="3" class="sheet-manifest">MANIFEST</th><th colspan="3" class="sheet-detail">PERINCIAN</th><th colspan="19"></th></tr>
             <tr>
+                <th rowspan="2" class="sheet-row-number">#</th>
                 @foreach(['B/L NO.', 'HS CODE', 'MARK AND NUMBERS', 'SEAL NO.'] as $heading)<th rowspan="2">{{ $heading }}</th>@endforeach
                 <th colspan="6" rowspan="2">DESCRIPTION OF GOODS</th>
                 <th colspan="3" rowspan="2">DESCRIPTION OF GOODS</th>
@@ -42,6 +47,7 @@
             <tr><th>NUMBER</th><th>DATE</th></tr>
         </thead>
         <tbody>
+            @php $sheetRow = 1; @endphp
             @php $lastContainer = null; @endphp
             @forelse($items as $item)
                 @php
@@ -63,7 +69,7 @@
                     $shipper = $item->shipperJb;
                 @endphp
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
-                    <tr class="sheet-container">@foreach($containerCells as $value)
+                    <tr class="sheet-container"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</td>
                     @endforeach</tr>
@@ -94,13 +100,13 @@
                             !$isLcl && $line === 0 ? $containerDescription : '',
                         ];
                     @endphp
-                    <tr>@foreach($cells as $value)
+                    <tr><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</td>
                     @endforeach</tr>
                 @endfor
             @empty
-                <tr><td colspan="32" style="text-align:center;padding:32px">Belum ada data Manifest Sugeng untuk pilihan ini.</td></tr>
+                <tr><td colspan="33" style="text-align:center;padding:32px">Belum ada data Manifest Sugeng untuk pilihan ini.</td></tr>
             @endforelse
         </tbody>
     </table>
