@@ -40,12 +40,21 @@
                         </thead>
                         <tbody class="divide-y divide-gray-100">
                             @forelse($report['rows'] as $history)
+                                @php
+                                    $isOutgoing = $report['title'] === 'Kontainer Keluar';
+                                    $isIncomingMovement = strtolower(trim((string) $history->jenis_kegiatan)) === 'masuk';
+                                    $kegiatan = $isOutgoing && $isIncomingMovement ? 'Keluar' : $history->jenis_kegiatan;
+                                    $keterangan = $history->keterangan ?: '-';
+                                    if ($isOutgoing) {
+                                        $keterangan = preg_replace('/^Masuk via Tanda Terima/i', 'Keluar via Tanda Terima', $keterangan);
+                                    }
+                                @endphp
                                 <tr class="hover:bg-gray-50">
                                     <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-500">{{ $loop->iteration }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm font-bold text-gray-900">{{ $history->nomor_kontainer }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-600">{{ ucfirst($history->tipe_kontainer ?? '-') }}</td>
-                                    <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-600">{{ $history->jenis_kegiatan }}</td>
-                                    <td class="min-w-64 px-5 py-3 text-sm text-gray-600">{{ $report['title'] === 'Kontainer Keluar' ? preg_replace('/^Masuk via Tanda Terima Bongkaran \(Stock\):/i', 'Keluar via Tanda Terima Bongkaran (Stock):', $history->keterangan ?? '') ?: '-' : ($history->keterangan ?: '-') }}</td>
+                                    <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-600">{{ $kegiatan }}</td>
+                                    <td class="min-w-64 px-5 py-3 text-sm text-gray-600">{{ $keterangan }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm"><a href="{{ route('history-kontainer.index', ['search' => $history->nomor_kontainer]) }}" class="font-semibold text-indigo-600 hover:underline">Lihat</a></td>
                                 </tr>
                             @empty
