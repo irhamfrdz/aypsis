@@ -108,20 +108,30 @@ class ApprovalTandaTerimaDuaController extends Controller
                     }
                 });
         };
+        $manifestBySingleNumber = function ($manifestQuery, string $column) use ($sourceTable) {
+            $manifestQuery->selectRaw('1')->from('manifests')
+                ->whereNotNull("{$sourceTable}.{$column}")
+                ->where("{$sourceTable}.{$column}", '!=', '')
+                ->whereColumn('manifests.nomor_tanda_terima', "{$sourceTable}.{$column}");
+        };
         $voyageSearch = trim((string) ($filters['voyage'] ?? ''));
 
         if ($manifestStatus === 'belum') {
             if ($type === 'fcl') {
                 $query->whereDoesntHave('prospeks.manifests');
             }
-            $query->whereNotExists($manifestByNumber);
+            foreach ($numberColumns as $column) {
+                $query->whereNotExists(fn ($manifestQuery) => $manifestBySingleNumber($manifestQuery, $column));
+            }
         } elseif ($manifestStatus === 'sudah') {
             if ($voyageSearch !== '') {
-                $query->where(function ($query) use ($type, $manifestByNumber, $voyageSearch) {
-                    $query->whereExists(function ($manifestQuery) use ($manifestByNumber, $voyageSearch) {
-                        $manifestByNumber($manifestQuery);
-                        $manifestQuery->where('manifests.no_voyage', $voyageSearch);
-                    });
+                $query->where(function ($query) use ($type, $numberColumns, $manifestBySingleNumber, $voyageSearch) {
+                    foreach ($numberColumns as $column) {
+                        $query->orWhereExists(function ($manifestQuery) use ($manifestBySingleNumber, $column, $voyageSearch) {
+                            $manifestBySingleNumber($manifestQuery, $column);
+                            $manifestQuery->where('manifests.no_voyage', $voyageSearch);
+                        });
+                    }
 
                     if ($type === 'fcl') {
                         $query->orWhereHas('prospeks.manifests', fn ($manifestQuery) =>
@@ -129,8 +139,10 @@ class ApprovalTandaTerimaDuaController extends Controller
                     }
                 });
             } else {
-                $query->where(function ($query) use ($type, $manifestByNumber) {
-                    $query->whereExists($manifestByNumber);
+                $query->where(function ($query) use ($type, $numberColumns, $manifestBySingleNumber) {
+                    foreach ($numberColumns as $column) {
+                        $query->orWhereExists(fn ($manifestQuery) => $manifestBySingleNumber($manifestQuery, $column));
+                    }
                     if ($type === 'fcl') {
                         $query->orWhereHas('prospeks.manifests');
                     }
