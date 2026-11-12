@@ -3,14 +3,18 @@
 @section('title', 'Data Absensi')
 @section('page_title', 'Data Absensi')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/absensi-data.css') }}?v={{ filemtime(public_path('css/absensi-data.css')) }}">
+@endpush
+
 @section('content')
-<div class="min-h-screen bg-slate-50 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="attendance-log">
+    <div class="al-content">
 
         <!-- Header Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
-            <div class="flex flex-col xl:flex-row xl:items-start xl:justify-between gap-5">
-                <div class="flex items-start gap-4">
+        <div class="al-panel al-header">
+            <div class="al-header-inner">
+                <div class="al-heading flex items-start gap-4">
                     <span class="hidden sm:flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-50 text-blue-700">
                         <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M8 7V3m8 4V3M4 11h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z" /></svg>
                     </span>
@@ -19,9 +23,9 @@
                     <p class="mt-1 text-sm text-slate-500">Daftar log kehadiran karyawan hasil sinkronisasi mesin fingerprint.</p>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-4 gap-2 w-full xl:max-w-4xl">
+                <div class="al-header-actions">
                     @can('absensi-create')
-                    <button type="button" onclick="document.getElementById('createModal').classList.remove('hidden')" class="inline-flex min-h-11 items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition shadow-sm">
+                    <button type="button" onclick="document.getElementById('createModal').classList.remove('hidden')" class="al-action-primary inline-flex min-h-11 items-center justify-center px-3 py-2 bg-indigo-600 text-white text-sm font-semibold rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                         </svg>
@@ -107,9 +111,10 @@
         @endif
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 mb-6">
+        <div class="al-panel al-filters">
+            <h2><i class="fa-solid fa-sliders" aria-hidden="true"></i>Filter Data</h2>
             <form action="{{ route('absensi.index') }}" method="GET" class="space-y-4">
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+                <div class="al-filter-fields">
                     <!-- Search Karyawan -->
                     <div>
                         <label for="search" class="flex items-center gap-2 text-sm font-medium text-slate-700 mb-1.5"><svg class="h-4 w-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke-width="1.8"/><path stroke-linecap="round" stroke-width="1.8" d="m20 20-4-4"/></svg>Cari Karyawan / NIK</label>
@@ -169,7 +174,7 @@
                     </div>
                 </div>
 
-                <div class="flex justify-end gap-2 pt-3 border-t border-slate-100">
+                <div class="al-filter-actions flex justify-end gap-2">
                     <button type="submit" class="inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-blue-700 hover:bg-blue-800 text-white text-sm font-semibold rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition shadow-sm">
                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M10.5 18a7.5 7.5 0 110-15 7.5 7.5 0 010 15z" /></svg>
                         Filter Data
@@ -184,32 +189,35 @@
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 px-5 py-4 border-b border-slate-200">
-                <div>
+        <div class="al-panel al-results">
+            <div class="al-results-header">
+                <div class="al-results-heading">
+                    <span class="al-results-icon"><i class="fa-regular fa-clipboard" aria-hidden="true"></i></span>
+                    <div>
                     <h2 class="text-base font-semibold text-slate-900">Log Kehadiran</h2>
                     <p class="mt-0.5 text-xs text-slate-500">Rincian waktu masuk, istirahat, pulang, dan lembur.</p>
+                    </div>
                 </div>
                 <span class="inline-flex w-fit items-center gap-2 rounded-full bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-600 border border-slate-200">
                     <span class="h-2 w-2 rounded-full bg-emerald-500"></span> Data absensi
                 </span>
             </div>
-            <div class="overflow-x-auto">
-                <table class="table-fixed min-w-[1100px] w-full divide-y divide-slate-200 xl:min-w-0">
+            <div class="al-table-scroll">
+                <table class="al-table table-fixed min-w-[1100px] w-full divide-y divide-slate-200 xl:min-w-0">
                     <colgroup>
                         <col style="width: 3%">
                         <col style="width: 5%">
-                        <col style="width: 10%">
+                        <col style="width: 14%">
+                        <col style="width: 7%">
+                        <col style="width: 9%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
+                        <col style="width: 7%">
                         <col style="width: 7%">
                         <col style="width: 8%">
-                        <col style="width: 7%">
-                        <col style="width: 7%">
-                        <col style="width: 7%">
-                        <col style="width: 7%">
-                        <col style="width: 7%">
-                        <col style="width: 7%">
-                        <col style="width: 10%">
-                        <col style="width: 10%">
+                        <col style="width: 12%">
                     </colgroup>
                     <thead class="bg-slate-50 font-semibold text-slate-500 uppercase tracking-wider text-[11px]">
                         <tr>
@@ -248,7 +256,7 @@
                                     {{ Carbon\Carbon::parse($absensi->tanggal)->format('d-m-Y') }}
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-emerald-700 bg-emerald-50/30 group relative">
-                                    {{ $absensi->waktu_masuk ? Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_masuk)<span class="al-time al-time-in">{{ Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                     @if($absensi->waktu_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam masuk ini?')">
                                         @csrf
@@ -263,13 +271,13 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-amber-700 bg-amber-50/30">
-                                    {{ $absensi->waktu_istirahat_keluar ? Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_istirahat_keluar)<span class="al-time al-time-break">{{ Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-amber-700 bg-amber-50/30">
-                                    {{ $absensi->waktu_istirahat_masuk ? Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_istirahat_masuk)<span class="al-time al-time-break">{{ Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-rose-700 bg-rose-50/30 group relative">
-                                    {{ $absensi->waktu_pulang ? Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_pulang)<span class="al-time al-time-out">{{ Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                     @if($absensi->waktu_pulang)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam pulang ini?')">
                                         @csrf
@@ -284,7 +292,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-violet-700 bg-violet-50/30 group relative">
-                                    {{ $absensi->waktu_lembur_masuk ? Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_lembur_masuk)<span class="al-time al-time-overtime">{{ Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                     @if($absensi->waktu_lembur_masuk)
                                     <form action="{{ route('absensi.delete_log') }}" method="POST" class="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity" onsubmit="return confirm('Hapus jam lembur masuk ini?')">
                                         @csrf
@@ -299,7 +307,7 @@
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center font-mono font-bold text-violet-700 bg-violet-50/30 group relative">
-                                    {{ $absensi->waktu_lembur_pulang ? Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i') : '-' }}
+                                    @if($absensi->waktu_lembur_pulang)<span class="al-time al-time-overtime">{{ Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i') }}</span>@else<span class="al-time-empty">-</span>@endif
                                     @if($absensi->waktu_lembur_pulang && Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->toDateString() !== $absensi->tanggal)
                                         <span class="block text-xs font-normal" title="Tanggal aktual pulang lembur">{{ Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('d/m/Y') }}</span>
                                     @endif
@@ -330,21 +338,21 @@
                                         }
                                     @endphp
                                     @if($durasiLemburMenit !== null)
-                                        {{ intdiv($durasiLemburMenit, 60) }} jam {{ $durasiLemburMenit % 60 }} menit
+                                        <span class="al-time al-time-duration">{{ intdiv($durasiLemburMenit, 60) }} jam {{ $durasiLemburMenit % 60 }} menit</span>
                                     @else
                                         -
                                     @endif
                                 </td>
                                 <td class="px-3 py-3 whitespace-nowrap text-center text-sm font-medium">
-                                    <div class="flex justify-center space-x-1">
+                                    <div class="al-row-actions flex justify-center">
                                         <a href="{{ route('absensi.show', ['nik' => $absensi->nik, 'tanggal' => $absensi->tanggal]) }}" 
-                                           class="inline-flex h-9 w-9 items-center justify-center text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Lihat">
+                                           class="inline-flex h-9 w-9 items-center justify-center text-blue-700 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 rounded-lg transition" title="Lihat Detail">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
                                         </a>
                                         @can('absensi-edit')
                                         <button type="button" 
                                             onclick="openEditModal('{{ $absensi->nik }}', '{{ $absensi->tanggal }}', '{{ $absensi->waktu_masuk ? \Carbon\Carbon::parse($absensi->waktu_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_istirahat_keluar ? \Carbon\Carbon::parse($absensi->waktu_istirahat_keluar)->format('H:i') : '' }}', '{{ $absensi->waktu_istirahat_masuk ? \Carbon\Carbon::parse($absensi->waktu_istirahat_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_pulang ? \Carbon\Carbon::parse($absensi->waktu_pulang)->format('H:i') : '' }}', '{{ $absensi->waktu_lembur_masuk ? \Carbon\Carbon::parse($absensi->waktu_lembur_masuk)->format('H:i') : '' }}', '{{ $absensi->waktu_lembur_pulang ? \Carbon\Carbon::parse($absensi->waktu_lembur_pulang)->format('H:i') : '' }}')"
-                                            class="inline-flex h-9 w-9 items-center justify-center text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition" title="Edit">
+                                            class="inline-flex h-9 w-9 items-center justify-center text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition" title="Edit Absensi">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
                                         </button>
                                         @endcan
@@ -354,7 +362,7 @@
                                             @method('DELETE')
                                             <input type="hidden" name="nik" value="{{ $absensi->nik }}">
                                             <input type="hidden" name="tanggal" value="{{ $absensi->tanggal }}">
-                                            <button type="submit" class="inline-flex h-9 w-9 items-center justify-center text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 rounded-lg transition" title="Hapus">
+                                            <button type="submit" class="inline-flex h-9 w-9 items-center justify-center text-rose-700 hover:text-rose-900 bg-rose-50 hover:bg-rose-100 rounded-lg transition" title="Hapus Absensi">
                                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                             </button>
                                         </form>

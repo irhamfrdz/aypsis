@@ -3,18 +3,25 @@
 @section('title', 'Rekap Absensi Bulanan')
 @section('page_title', 'Rekap Absensi Bulanan')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/absensi-rekap.css') }}?v={{ filemtime(public_path('css/absensi-rekap.css')) }}">
+@endpush
+
 @section('content')
-<div class="min-h-screen bg-gray-50 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="attendance-recap">
+    <div class="ar-content">
 
         <!-- Header Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                <div class="mb-4 sm:mb-0">
+        <div class="ar-header">
+            <div class="ar-header-inner">
+                <div class="ar-heading">
+                    <span class="ar-heading-icon"><i class="fa-regular fa-calendar-days" aria-hidden="true"></i></span>
+                    <div>
                     <h1 class="text-3xl font-bold text-gray-900">Rekap Absensi Bulanan</h1>
                     <p class="mt-1 text-sm text-gray-600">Ringkasan kehadiran karyawan berdasarkan scan fingerprint per bulan</p>
+                    </div>
                 </div>
-                <div class="flex items-center space-x-3">
+                <div class="ar-header-actions flex items-center space-x-3">
                     <button type="button" onclick="openIzinModal()" class="inline-flex items-center justify-center px-4 py-2 border border-transparent bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -39,7 +46,7 @@
 
         <!-- Ticker Hari Libur -->
         @if(isset($allHariLiburs) && $allHariLiburs->count() > 0)
-        <div class="bg-rose-50 border border-rose-100 rounded-xl shadow-sm overflow-hidden mb-6 flex items-center px-4 py-3 relative group">
+        <div class="ar-holidays bg-rose-50 border border-rose-100 rounded-xl shadow-sm overflow-hidden mb-6 flex items-center px-4 py-3 relative group">
             <div class="flex-shrink-0 mr-3 z-10 bg-rose-50 pr-2">
                 <div class="flex items-center text-rose-600 font-bold text-sm">
                     <svg class="h-5 w-5 mr-1.5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,9 +85,10 @@
         @endif
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="ar-panel ar-filters">
+            <h2 class="ar-section-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i>Filter Pencarian</h2>
             <form action="{{ route('absensi.rekap') }}" method="GET" class="space-y-4" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="ar-filter-grid">
                     <!-- Search Karyawan -->
                     <div class="md:col-span-2">
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
@@ -168,14 +176,14 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
+                    <div class="ar-filter-actions flex items-end gap-2 justify-end">
                         @if(request()->anyFilled(['search', 'cabang', 'grup', 'sub_grup', 'kehadiran', 'start_date', 'end_date']))
                             <a href="{{ route('absensi.rekap') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
                         @endif
                         <button type="submit" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
-                            Filter Rekap
+                            Terapkan Filter
                         </button>
                     </div>
                 </div>
@@ -183,15 +191,15 @@
         </div>
 
         <!-- Table Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex items-center justify-between">
+        <div class="ar-panel ar-results">
+            <div class="ar-results-header">
                 <div>
                     <h3 class="text-sm font-bold text-gray-900">
                         Periode: {{ Carbon\Carbon::parse($startDateStr)->translatedFormat('d M Y') }} - {{ Carbon\Carbon::parse($endDateStr)->translatedFormat('d M Y') }}
                         <span class="ml-2 text-xs font-normal text-gray-500">({{ $normalWorkdays }} Hari Kerja)</span>
                     </h3>
                 </div>
-                <div class="flex items-center flex-wrap gap-2">
+                <div class="ar-export-actions flex items-center flex-wrap gap-2">
                     <button type="submit" form="filterForm" name="export" value="pdf" class="inline-flex items-center justify-center px-3 py-1.5 bg-red-600 text-white text-xs font-semibold rounded-lg hover:bg-red-700 focus:outline-none transition-colors duration-200 shadow-sm cursor-pointer" title="Ekspor Rekap Absensi (PDF)">
                         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
@@ -220,55 +228,60 @@
             </div>
 
             <!-- Quick Filter Bar Status Absensi -->
-            <div class="px-6 py-2.5 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
+            <div class="ar-quick-filters px-6 py-2.5 bg-slate-50 border-b border-gray-200 flex flex-wrap items-center justify-between gap-2 text-xs">
                 <div class="flex flex-wrap items-center gap-1.5">
                     <span class="font-bold text-gray-600 mr-1 flex items-center gap-1 text-[11px]">
                         <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                         Filter Cepat:
                     </span>
-                    <button type="button" onclick="setKehadiranFilter('')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ !request('kehadiran') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('')" aria-pressed="{{ !request('kehadiran') ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ !request('kehadiran') ? 'bg-indigo-600 text-white shadow-xs' : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200' }}">
                         Semua Karyawan
                     </button>
-                    <button type="button" onclick="setKehadiranFilter('terlambat')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'terlambat' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('terlambat')" aria-pressed="{{ request('kehadiran') == 'terlambat' ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'terlambat' ? 'bg-rose-600 text-white shadow-xs' : 'bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-200' }}">
                         ⏰ Karyawan Terlambat
                     </button>
-                    <button type="button" onclick="setKehadiranFilter('tidak_lengkap')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_lengkap' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('tidak_lengkap')" aria-pressed="{{ request('kehadiran') == 'tidak_lengkap' ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_lengkap' ? 'bg-purple-600 text-white shadow-xs' : 'bg-purple-50 text-purple-700 hover:bg-purple-100 border border-purple-200' }}">
                         ⚠️ Tidak Lengkap (Masuk/Pulang)
                     </button>
-                    <button type="button" onclick="setKehadiranFilter('tidak_absen_masuk')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_masuk' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_masuk')" aria-pressed="{{ request('kehadiran') == 'tidak_absen_masuk' ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_masuk' ? 'bg-red-600 text-white shadow-xs' : 'bg-red-50 text-red-700 hover:bg-red-100 border border-red-200' }}">
                         🔴 Tidak Absen Masuk
                     </button>
-                    <button type="button" onclick="setKehadiranFilter('tidak_absen_pulang')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_pulang' ? 'bg-orange-600 text-white shadow-xs' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_pulang')" aria-pressed="{{ request('kehadiran') == 'tidak_absen_pulang' ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_pulang' ? 'bg-orange-600 text-white shadow-xs' : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200' }}">
                         🟠 Tidak Absen Pulang
                     </button>
-                    <button type="button" onclick="setKehadiranFilter('tidak_absen_istirahat')" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_istirahat' ? 'bg-yellow-600 text-white shadow-xs' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200' }}">
+                    <button type="button" onclick="setKehadiranFilter('tidak_absen_istirahat')" aria-pressed="{{ request('kehadiran') == 'tidak_absen_istirahat' ? 'true' : 'false' }}" class="inline-flex items-center px-2.5 py-1 rounded-md text-[11px] font-semibold transition-all cursor-pointer {{ request('kehadiran') == 'tidak_absen_istirahat' ? 'bg-yellow-600 text-white shadow-xs' : 'bg-yellow-50 text-yellow-800 hover:bg-yellow-100 border border-yellow-200' }}">
                         🟡 Tidak Absen Istirahat
                     </button>
                 </div>
             </div>
 
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50 font-semibold text-gray-500 uppercase tracking-wider text-[9px]">
-                        <tr>
-                            <th class="px-6 py-3 text-center w-10">
-                                <input type="checkbox" id="selectAllKaryawan" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
-                            </th>
-                            <th class="px-6 py-3 text-left">No</th>
-                            <th class="px-6 py-3 text-left">NIK</th>
-                            <th class="px-6 py-3 text-left">Nama Lengkap</th>
-                            <th class="px-6 py-3 text-left">Departemen</th>
-                            <th class="px-6 py-3 text-center">Hadir</th>
-                            <th class="px-6 py-3 text-center">Terlambat</th>
-                            <th class="px-6 py-3 text-center">Pulang Cpt</th>
-                            <th class="px-6 py-3 text-center">Lembur</th>
-                            <th class="px-6 py-3 text-center">Tdk Masuk</th>
-                            <th class="px-6 py-3 text-center">Tdk Pulang</th>
-                            <th class="px-6 py-3 text-center">Tdk Istirahat</th>
-                            <th class="px-6 py-3 text-center">Sakit</th>
-                            <th class="px-6 py-3 text-center">Izin</th>
-                            <th class="px-6 py-3 text-center">Cuti</th>
-                            <th class="px-6 py-3 text-center">Alpha</th>
+            <div class="ar-table-wrap" tabindex="0" role="region" aria-label="Tabel rekap absensi, geser untuk melihat seluruh kolom">
+                <table class="ar-table min-w-full divide-y divide-gray-200">
+                    <colgroup><col class="ar-width-select"><col class="ar-width-number"><col class="ar-width-nik"><col class="ar-width-name"><col class="ar-width-department">@for($column = 0; $column < 11; $column++)<col>@endfor</colgroup>
+                    <thead>
+                        <tr class="ar-group-head">
+                            <th rowspan="2" scope="col" class="ar-col-select ar-group-identity"><input type="checkbox" id="selectAllKaryawan" aria-label="Pilih semua karyawan pada halaman ini" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></th>
+                            <th colspan="4" scope="colgroup" class="ar-group-identity">Identitas Karyawan</th>
+                            <th colspan="4" scope="colgroup" class="ar-group-attendance">Kehadiran</th>
+                            <th colspan="3" scope="colgroup" class="ar-group-scan">Kelengkapan Scan</th>
+                            <th colspan="4" scope="colgroup" class="ar-group-absence">Ketidakhadiran</th>
+                        </tr>
+                        <tr class="ar-column-head">
+                            <th scope="col" class="ar-col-number ar-group-identity">No.</th>
+                            <th scope="col" class="ar-col-nik ar-group-identity">NIK</th>
+                            <th scope="col" class="ar-col-name ar-group-identity">Nama Lengkap</th>
+                            <th scope="col" class="ar-group-identity">Departemen</th>
+                            <th scope="col" class="ar-group-attendance">Hadir</th>
+                            <th scope="col" class="ar-group-attendance">Terlambat</th>
+                            <th scope="col" class="ar-group-attendance">Pulang Cepat</th>
+                            <th scope="col" class="ar-group-attendance">Lembur</th>
+                            <th scope="col" class="ar-group-scan">TDK Masuk</th>
+                            <th scope="col" class="ar-group-scan">TDK Pulang</th>
+                            <th scope="col" class="ar-group-scan">TDK Istirahat</th>
+                            <th scope="col" class="ar-group-absence">Sakit</th>
+                            <th scope="col" class="ar-group-absence">Izin</th>
+                            <th scope="col" class="ar-group-absence">Cuti</th>
+                            <th scope="col" class="ar-group-absence">Alpha</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 text-[10px] text-gray-900">
@@ -283,16 +296,16 @@
                                 ];
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" name="selected_karyawan[]" value="{{ $karyawan->id }}" form="filterForm" class="karyawan-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" {{ is_array(request('selected_karyawan')) && in_array($karyawan->id, request('selected_karyawan')) ? 'checked' : '' }}>
+                                <td class="ar-col-select px-6 py-4 whitespace-nowrap text-center">
+                                    <input type="checkbox" aria-label="Pilih {{ $karyawan->nama_lengkap }}" name="selected_karyawan[]" value="{{ $karyawan->id }}" form="filterForm" class="karyawan-checkbox rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50" {{ is_array(request('selected_karyawan')) && in_array($karyawan->id, request('selected_karyawan')) ? 'checked' : '' }}>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium text-gray-500">
+                                <td class="ar-col-number px-6 py-4 whitespace-nowrap font-medium text-gray-500">
                                     {{ $karyawans->firstItem() + $index }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-semibold font-mono text-indigo-600">
+                                <td class="ar-col-nik px-6 py-4 whitespace-nowrap font-semibold font-mono text-indigo-600">
                                     {{ $karyawan->nik }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap font-medium">
+                                <td class="ar-col-name px-6 py-4 whitespace-nowrap font-medium">
                                     {{ $karyawan->nama_lengkap }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
@@ -402,7 +415,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="15" class="px-6 py-10 text-center">
+                                <td colspan="16" class="px-6 py-10 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>

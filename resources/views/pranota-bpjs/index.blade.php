@@ -3,9 +3,15 @@
 @section('title', $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS')
 @section('page_title', $isHistory ? 'Riwayat Pranota BPJS' : 'Pranota BPJS')
 
+@push('styles')
+@unless($isHistory)
+<link rel="stylesheet" href="{{ asset('css/pranota-bpjs-list.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-list.css')) }}">
+@endunless
+@endpush
+
 @section('content')
 @include('pranota-bpjs.partials.ui-styles')
-<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
+<div class="bpjs-workspace {{ ! $isHistory ? 'bpjs-pranota-list' : '' }} px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
 
     {{-- Page Header --}}
     <div class="bpjs-page-header sm:flex sm:items-center sm:justify-between mb-8">
@@ -17,7 +23,7 @@
             <a href="{{ route($isHistory ? 'pranota-bpjs.index' : 'pranota-bpjs.history') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50"><i class="fas fa-clock-rotate-left" aria-hidden="true"></i>{{ $isHistory ? 'Kembali ke Daftar' : 'Riwayat Pranota' }}</a>
             @can('pranota-bpjs-create')
             <a href="{{ route('pranota-bpjs.create') }}"
-               class="inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors duration-150">
+               class="bpjs-index-create inline-flex items-center gap-2 px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white text-sm font-semibold rounded-lg shadow-sm transition-colors duration-150">
                 <i class="fas fa-plus text-xs"></i>
                 Buat Pranota BPJS
             </a>
@@ -42,7 +48,7 @@
     {{-- Summary Cards --}}
     <div class="bpjs-summary grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
         {{-- Total Pranota --}}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div class="bpjs-index-stat bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-file-invoice text-teal-600 text-lg"></i>
             </div>
@@ -53,7 +59,7 @@
         </div>
 
         {{-- Total Nominal --}}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div class="bpjs-index-stat bpjs-index-stat-money bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-indigo-100 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-money-bill-wave text-indigo-600 text-lg"></i>
             </div>
@@ -66,7 +72,7 @@
         </div>
 
         {{-- Draft --}}
-        <div class="bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
+        <div class="bpjs-index-stat bpjs-index-stat-draft bg-white rounded-lg border border-gray-200 shadow-sm p-5 flex items-center gap-4">
             <div class="w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center flex-shrink-0">
                 <i class="fas fa-pencil-alt text-amber-600 text-lg"></i>
             </div>
@@ -78,7 +84,7 @@
     </div>
 
     {{-- Filter Bar --}}
-    <section class="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm" aria-labelledby="bpjs-filter-title">
+    <section class="bpjs-index-filters mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm" aria-labelledby="bpjs-filter-title">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
             <h2 id="bpjs-filter-title" class="text-sm font-semibold text-gray-800"><i class="fas fa-sliders mr-2 text-teal-600" aria-hidden="true"></i>Filter Pranota</h2>
             @if(request('bulan') || request('tahun') || request('search') || request('status'))
@@ -109,7 +115,7 @@
                     <input id="bpjs-filter-year" type="number" name="tahun" value="{{ request('tahun') }}" placeholder="{{ date('Y') }}">
                 </div>
             </div>
-            <div class="flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
+            <div class="bpjs-index-filter-actions flex flex-wrap items-center justify-end gap-2 border-t border-gray-100 bg-gray-50 px-5 py-3">
                 @if(request('bulan') || request('tahun') || request('search') || request('status'))
                     <a href="{{ route($isHistory ? 'pranota-bpjs.history' : 'pranota-bpjs.index') }}" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-100"><i class="fas fa-rotate-left" aria-hidden="true"></i>Reset</a>
                 @endif
@@ -119,13 +125,16 @@
     </section>
 
     {{-- Table --}}
-    <div class="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div class="bpjs-index-table-panel bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
         <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
             <h2 class="text-sm font-semibold text-gray-800"><i class="fas fa-list-ul mr-2 text-teal-600" aria-hidden="true"></i>{{ $isHistory ? 'Riwayat Pranota BPJS' : 'Daftar Pranota BPJS' }}</h2>
             <span class="rounded-full bg-gray-100 px-3 py-1 text-xs text-gray-600">{{ number_format($pranotas->total(), 0, ',', '.') }} pranota</span>
         </div>
         <div class="overflow-x-auto">
             <table class="bpjs-list-table table-auto w-full">
+                @unless($isHistory)
+                <colgroup><col style="width:3%"><col style="width:11%"><col style="width:9%"><col style="width:7%"><col style="width:7%"><col style="width:11%"><col style="width:11%"><col style="width:11%"><col style="width:13%"><col style="width:7%"><col style="width:10%"></colgroup>
+                @endunless
                 <thead>
                     <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold uppercase text-gray-500 tracking-wider">
                         <th class="px-4 py-3 text-left w-10">#</th>
@@ -224,7 +233,7 @@
 
                             {{-- Aksi --}}
                             <td class="px-4 py-3">
-                                <div class="flex items-center justify-center gap-1">
+                                <div class="bpjs-index-row-actions flex items-center justify-center gap-1">
                                     @can('pranota-bpjs-view')
                                         <a href="{{ route('pranota-bpjs.export-excel', $pranota->id) }}" title="Export Excel" class="inline-flex items-center justify-center w-7 h-7 rounded bg-emerald-50 hover:bg-emerald-100 text-emerald-700 transition-colors">
                                             <i class="fas fa-file-excel text-xs"></i>

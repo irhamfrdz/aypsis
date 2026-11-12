@@ -1,0 +1,98 @@
+#page-content:has(.overtime-page) { background: #f8fafc; }
+.overtime-page { color: #0f172a; font-size: 13px; }
+.overtime-page .ot-content { width: 100%; }
+.overtime-page .ot-content > * + * { margin-top: 22px; }
+.overtime-page .ot-header { padding: 4px 0; }
+.overtime-page .ot-header-inner { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+.overtime-page .ot-header-inner > div:first-child { margin-bottom: 0; }
+.overtime-page .ot-header h1 { font-size: 26px; font-weight: 700; letter-spacing: -.025em; line-height: 1.3; color: #0f172a; }
+.overtime-page .ot-header p { margin-top: 5px; font-size: 13px; color: #64748b; line-height: 1.5; }
+.overtime-page .ot-header-actions { gap: 8px; }
+.overtime-page .ot-header-actions > * { padding: 10px 13px; min-height: 40px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; box-shadow: none; font-size: 12px; color: #475569; }
+.overtime-page .ot-header-actions > *:hover { background: #f8fafc; border-color: #bfdbfe; }
+.overtime-page .ot-header-actions i { color: #2563eb; }
+.overtime-page .ot-panel { background: #fff; border: 1px solid #e2e8f0; border-radius: 13px; box-shadow: 0 1px 4px rgb(15 23 42 / .025); }
+.overtime-page .ot-filters { padding: 20px; }
+.overtime-page .ot-filter-title { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; font-size: 14px; font-weight: 650; }
+.overtime-page .ot-filter-title i { color: #2563eb; font-size: 13px; }
+.overtime-page .ot-filter-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 14px; align-items: end; }
+.overtime-page .ot-filter-grid label { font-size: 12px; color: #475569; font-weight: 500; margin-bottom: 6px; }
+.overtime-page .ot-filter-grid input, .overtime-page .ot-filter-grid select { height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; color: #334155; background-color: white; box-shadow: none; }
+.overtime-page .ot-filter-actions { grid-column: span 2; flex-wrap: wrap; gap: 8px; }
+.overtime-page .ot-filter-actions > * { min-height: 40px; font-size: 12px; border-radius: 8px; box-shadow: none; border: 1px solid #cbd5e1; }
+.overtime-page .ot-filter-actions > button[type=button], .overtime-page .ot-filter-actions > a { color: #475569; background: #fff; }
+.overtime-page .ot-filter-actions > button[type=button] i { color: #2563eb; }
+.overtime-page .ot-filter-actions > button[type=button]:hover, .overtime-page .ot-filter-actions > a:hover { background: #f8fafc; }
+.overtime-page .ot-filter-actions > button[type=submit] { color: white; background: #2563eb; border-color: #2563eb; }
+.overtime-page .ot-filter-actions > button[type=submit]:hover { background: #1d4ed8; }
+.overtime-page input:focus-visible, .overtime-page select:focus-visible { outline: 2px solid #bfdbfe; outline-offset: 1px; border-color: #2563eb; }
+.overtime-page input[type=checkbox] { accent-color: #2563eb; }
+.overtime-page .ot-results { overflow: hidden; }
+.overtime-page .ot-results-header { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 14px; padding: 16px 20px; border-bottom: 1px solid #e2e8f0; }
+.overtime-page .ot-results-heading { display: flex; align-items: center; gap: 10px; }
+.overtime-page .ot-results-heading h3 { color: #0f172a; font-size: 14px; font-weight: 650; }
+.overtime-page .ot-results-heading p { color: #64748b; font-size: 12px; margin-top: 3px; }
+.overtime-page .ot-results-icon { display: flex; align-items: center; justify-content: center; width: 34px; height: 34px; flex-shrink: 0; background: #eff6ff; color: #2563eb; border-radius: 9px; font-size: 14px; }
+.overtime-page .ot-results-toolbar { flex-wrap: wrap; gap: 8px; }
+.overtime-page .ot-results-toolbar > button { min-height: 36px; padding: 8px 10px; box-shadow: none; color: #475569; border-color: #cbd5e1; font-size: 12px; }
+.overtime-page .ot-results-toolbar > button i { color: #2563eb; }
+.overtime-page #quick-karyawan-search { height: 36px; border: 1px solid #cbd5e1; border-radius: 8px; box-shadow: none; font-size: 12px; }
+.overtime-page #btn-masukkan-pranota { background: #2563eb; color: white; border: 1px solid #2563eb; margin-right: 0; }
+.overtime-page #btn-masukkan-pranota i { color: white; }
+.overtime-page .ot-table { width: 100%; table-layout: fixed; border-collapse: collapse; font-size: 12px; }
+.overtime-page .ot-table thead { background: #f1f5f9; }
+.overtime-page .ot-table th { height: 44px; padding: 11px 12px; color: #334155; font-size: 12px; font-weight: 600; text-transform: none; letter-spacing: normal; white-space: normal; border-bottom: 1px solid #e2e8f0; }
+.overtime-page .ot-table td { padding: 12px; border-bottom: 1px solid #e2e8f0; font-size: 12px; vertical-align: middle; }
+.overtime-page .ot-table .data-row-karyawan { background: white; }
+.overtime-page .ot-table .data-row-karyawan:hover { background: #f8fafc; }
+.overtime-page .ot-table th:first-child, .overtime-page .ot-table td:first-child { padding-left: 8px; padding-right: 8px; }
+.overtime-page .ot-table td:nth-child(3) { color: #2563eb; font-size: 11px; font-family: inherit; font-weight: 500; white-space: normal; overflow-wrap: anywhere; }
+.overtime-page .ot-table td:nth-child(4) { white-space: normal; }
+.overtime-page .ot-employee { display: flex; align-items: flex-start; gap: 10px; }
+.overtime-page .ot-avatar { display: flex; align-items: center; justify-content: center; width: 32px; height: 32px; flex-shrink: 0; color: #2563eb; background: #eff6ff; border-radius: 50%; font-size: 12px; font-weight: 600; }
+.overtime-page .ot-employee-copy { min-width: 0; display: flex; flex-direction: column; align-items: flex-start; }
+.overtime-page .ot-employee-name { color: #0f172a; font-size: 13px; font-weight: 650; overflow-wrap: anywhere; }
+.overtime-page .ot-employee-copy > .text-xs { color: #64748b; font-size: 11px; margin-top: 3px; }
+.overtime-page .ot-status { order: 2; max-width: 100%; margin-top: 6px; }
+.overtime-page .ot-status > span { font-size: 11px; font-weight: 500; border: 0; padding: 4px 8px; line-height: 1.4; white-space: normal; text-align: left; }
+.overtime-page .ot-status-partial > span { background: #fef3c7; color: #b45309; }
+.overtime-page .ot-status-partial i { color: #b45309; }
+.overtime-page .ot-status-complete > span { background: #ecfdf3; color: #15803d; }
+.overtime-page .ot-status-complete i { color: #15803d; }
+.overtime-page .ot-date-summary { order: 3; gap: 3px 6px; margin-top: 5px; color: #64748b; }
+.overtime-page .ot-date-summary > span:first-child { background: none; border: 0; padding: 0; font-size: 10px; font-weight: 500; color: #64748b; }
+.overtime-page .ot-date-summary > span:first-child i { color: #94a3b8; }
+.overtime-page .ot-date-summary > span:last-child { max-width: 100%; font-size: 10px; color: #94a3b8; }
+.overtime-page .ot-table td:nth-child(5) > span, .overtime-page .ot-table td:nth-child(6) > span { font-size: 12px; font-weight: 600; padding: 4px 9px; }
+.overtime-page .ot-table td:nth-child(5) > .bg-blue-100 { background: #eff6ff; color: #2563eb; }
+.overtime-page .ot-table td:nth-child(6) > .bg-red-100 { background: #fef2f2; color: #b91c1c; }
+.overtime-page .ot-table td:nth-child(7) > span { border: 0; padding: 0; background: none; color: #334155; font-size: 12px; }
+.overtime-page .ot-table td:nth-child(7), .overtime-page .ot-table td:nth-child(8) { font-variant-numeric: tabular-nums; }
+.overtime-page .ot-table .total-payout-text { color: #15803d; font-size: 14px; font-weight: 700; }
+.overtime-page .ot-table .ot-remaining { margin-top: 4px; color: #64748b; font-size: 11px; font-weight: 400; }
+.overtime-page .ot-table .btn-detail { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; border: 1px solid #bfdbfe; border-radius: 8px; padding: 6px 9px; color: #2563eb; background: white; font-size: 11px; font-weight: 500; white-space: normal; }
+.overtime-page .ot-table .btn-detail:hover { background: #eff6ff; }
+.overtime-page button, .overtime-page a { transition: background-color 160ms, border-color 160ms; }
+.overtime-page button:focus-visible, .overtime-page a:focus-visible { outline: 2px solid #60a5fa; outline-offset: 3px; }
+@media (max-width: 1199px) {
+    .overtime-page .ot-table th, .overtime-page .ot-table td { padding-left: 9px; padding-right: 9px; }
+    .overtime-page .ot-table .total-payout-text { font-size: 12px; }
+    .overtime-page .ot-employee { gap: 7px; }
+    .overtime-page .ot-avatar { width: 30px; height: 30px; }
+}
+@media (max-width: 1023px) {
+    .overtime-page .ot-filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .overtime-page .ot-table { min-width: 1050px; }
+}
+@media (max-width: 639px) {
+    .overtime-page .ot-header h1 { font-size: 24px; }
+    .overtime-page .ot-header-actions { width: 100%; }
+    .overtime-page .ot-header-actions > * { flex: 1 1 auto; justify-content: center; }
+    .overtime-page .ot-filters { padding: 16px; }
+    .overtime-page .ot-filter-grid { grid-template-columns: 1fr; }
+    .overtime-page .ot-filter-actions { grid-column: 1; justify-content: stretch; }
+    .overtime-page .ot-filter-actions > * { flex: 1 1 auto; }
+    .overtime-page .ot-results-header { padding: 16px; }
+    .overtime-page .ot-results-toolbar { width: 100%; }
+    .overtime-page .ot-results-toolbar > .relative { flex: 1; min-width: 150px; }
+}

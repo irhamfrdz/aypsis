@@ -3,6 +3,11 @@
 @section('title', 'Perhitungan Lembur Karyawan')
 @section('page_title', 'Perhitungan Lembur Karyawan')
 
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/payroll-perhitungan-lembur.css') }}?v={{ filemtime(public_path('css/payroll-perhitungan-lembur.css')) }}">
+<link rel="stylesheet" href="{{ asset('css/payroll-overtime-history.css') }}?v={{ filemtime(public_path('css/payroll-overtime-history.css')) }}">
+@endpush
+
 @section('content')
 <style>
     /* Paksa modal payroll lembur berada di layer teratas di atas sidebar fixed z-50 */
@@ -94,17 +99,17 @@
         background-color: #f9fafb !important;
     }
 </style>
-<div class="min-h-screen bg-gray-50 py-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="overtime-page">
+    <div class="ot-content">
         
         <!-- Header Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <div class="ot-header">
+            <div class="ot-header-inner">
                 <div class="mb-4 sm:mb-0">
                     <h1 class="text-3xl font-bold text-gray-900">Perhitungan Lembur Karyawan</h1>
                     <p class="mt-1 text-sm text-gray-600">Perhitungan akumulasi jam dan uang lembur per karyawan</p>
                 </div>
-                <div class="flex flex-wrap items-center gap-3">
+                <div class="ot-header-actions flex flex-wrap items-center gap-3">
                     <button type="button" onclick="openRiwayatPranotaModal()" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm">
                         <i class="fas fa-history text-blue-600 mr-2"></i>
                         Riwayat Pranota
@@ -156,11 +161,12 @@
         @endif
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="ot-panel ot-filters">
+            <h2 class="ot-filter-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i>Filter Pencarian</h2>
             <form action="{{ route('payroll.perhitungan-lembur') }}" method="GET" class="space-y-4" id="filterForm">
-                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                <div class="ot-filter-grid">
                     <!-- Search Karyawan -->
-                    <div class="md:col-span-2">
+                    <div>
                         <label for="search" class="block text-xs font-semibold text-gray-700 mb-1">Cari Karyawan / NIK</label>
                         <input type="text" name="search" id="search" value="{{ request('search') }}"
                                placeholder="Nama atau NIK..."
@@ -168,7 +174,7 @@
                     </div>
 
                     <!-- Group -->
-                    <div class="md:col-span-1">
+                    <div>
                         <label for="grup" class="block text-xs font-semibold text-gray-700 mb-1">Group</label>
                         <select name="grup" id="grup"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs"
@@ -181,7 +187,7 @@
                     </div>
 
                     <!-- Sub Group -->
-                    <div class="md:col-span-1">
+                    <div>
                         <label for="sub_grup" class="block text-xs font-semibold text-gray-700 mb-1">Sub Group</label>
                         <select name="sub_grup" id="sub_grup"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
@@ -190,7 +196,7 @@
                     </div>
 
                     <!-- Status Pranota -->
-                    <div class="md:col-span-1">
+                    <div>
                         <label for="status_pranota" class="block text-xs font-semibold text-gray-700 mb-1">Status Pranota</label>
                         <select name="status_pranota" id="status_pranota"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
@@ -201,7 +207,7 @@
                     </div>
 
                     <!-- Dari Tanggal -->
-                    <div class="md:col-span-1">
+                    <div>
                         <label for="start_date" class="block text-xs font-semibold text-gray-700 mb-1">Dari Tanggal</label>
                         <input type="date" name="start_date" id="start_date" required
                                value="{{ $startDateStr }}"
@@ -209,7 +215,7 @@
                     </div>
 
                     <!-- Sampai Tanggal -->
-                    <div class="md:col-span-1">
+                    <div>
                         <label for="end_date" class="block text-xs font-semibold text-gray-700 mb-1">Sampai Tanggal</label>
                         <input type="date" name="end_date" id="end_date" required
                                value="{{ $endDateStr }}"
@@ -217,7 +223,7 @@
                     </div>
 
                     <!-- Action Buttons -->
-                    <div class="md:col-span-5 flex items-end gap-2 justify-end mt-2">
+                    <div class="ot-filter-actions flex items-end gap-2 justify-end">
                         @if(request()->anyFilled(['search', 'grup', 'sub_grup', 'status_pranota']))
                             <a href="{{ route('payroll.perhitungan-lembur') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
@@ -237,19 +243,23 @@
         </div>
 
         <!-- Data Table -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="ot-panel ot-results">
             @if(count($rekapData) > 0)
-            <div class="px-6 py-4 border-b border-gray-200 bg-gray-50 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <div>
+            <div class="ot-results-header">
+                <div class="ot-results-heading">
+                    <span class="ot-results-icon"><i class="fa-solid fa-list" aria-hidden="true"></i></span>
+                    <div>
                     <h3 class="text-sm font-bold text-gray-900">Hasil Kalkulasi</h3>
                     <p class="text-xs text-gray-500 mt-1" id="karyawan-count-text">Ditemukan {{ count($rekapData) }} karyawan.</p>
+                    </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="ot-results-toolbar flex items-center gap-2">
                     <button type="button" onclick="window.location.reload()" class="inline-flex items-center justify-center px-2.5 py-1.5 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 hover:text-emerald-600 text-xs font-semibold rounded-lg transition-colors duration-200 shadow-2xs cursor-pointer" title="Muat ulang kalkulasi data absensi">
                         <i class="fas fa-sync-alt text-xs mr-1 text-emerald-600"></i>
                         Refresh
                     </button>
                     <div class="relative w-48 sm:w-64">
+                        <label for="quick-karyawan-search" class="sr-only">Cari cepat nama karyawan atau NIK</label>
                         <input type="text" id="quick-karyawan-search" placeholder="Cari cepat nama/NIK di tabel..." class="w-full pl-8 pr-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 shadow-xs">
                         <div class="absolute inset-y-0 left-0 pl-2.5 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-search text-xs"></i>
@@ -263,11 +273,12 @@
             </div>
             @endif
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="ot-table min-w-full divide-y divide-gray-200">
+                    <colgroup><col style="width:3%"><col style="width:4%"><col style="width:7%"><col style="width:30%"><col style="width:10%"><col style="width:10%"><col style="width:12%"><col style="width:12%"><col style="width:12%"></colgroup>
                     <thead class="bg-gray-50">
                         <tr>
                             <th class="px-4 py-3 text-center w-10">
-                                <input type="checkbox" id="check-all" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <input type="checkbox" id="check-all" aria-label="Pilih semua data lembur" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-16">
                                 No
@@ -285,7 +296,7 @@
                                 Lembur (H. Libur)
                             </th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-orange-500 uppercase tracking-wider">
-                                U. Makan Libur
+                                Uang Makan Lembur
                             </th>
                             <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">
                                 Total Bayar
@@ -310,7 +321,7 @@
                                 data-nik="{{ strtolower($data['karyawan']->nik ?? '') }}"
                                 data-panggilan="{{ strtolower($data['karyawan']->nama_panggilan ?? '') }}">
                                 <td class="px-4 py-4 whitespace-nowrap text-center">
-                                    <input type="checkbox" value="{{ $data['karyawan']->id }}"
+                                    <input type="checkbox" aria-label="Pilih lembur {{ $data['karyawan']->nama_lengkap }}" value="{{ $data['karyawan']->id }}"
                                         data-jam-lembur="{{ $isAllInPranota ? $totalJamKaryawan : ($data['unpranota_jam'] ?? $totalJamKaryawan) }}"
                                         data-nominal-lembur="{{ $isAllInPranota ? $data['total_nominal'] : ($data['unpranota_nominal'] ?? $data['total_nominal']) }}"
                                         data-uang-makan-lembur="{{ $isAllInPranota ? $umlTotal : ($data['unpranota_uml'] ?? $umlTotal) }}"
@@ -325,7 +336,10 @@
                                     {{ $data['karyawan']->nik }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    <div class="font-bold">{{ $data['karyawan']->nama_lengkap }}</div>
+                                    <div class="ot-employee">
+                                    <span class="ot-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr(trim($data['karyawan']->nama_lengkap ?? 'K'), 0, 1)) }}</span>
+                                    <div class="ot-employee-copy">
+                                    <div class="ot-employee-name font-bold">{{ $data['karyawan']->nama_lengkap }}</div>
                                     <div class="text-xs text-gray-500 mt-0.5">{{ $data['karyawan']->penempatan ?? '-' }}</div>
                                     @php
                                         $daftarHari = $data['daftar_hari_lembur'] ?? [];
@@ -335,7 +349,7 @@
                                         $fullTooltip = implode(" \n", $allHariFull);
                                     @endphp
                                     @if($totalHariLembur > 0)
-                                        <div class="mt-1 flex items-center gap-1.5 flex-wrap" title="{{ $fullTooltip }}">
+                                        <div class="ot-date-summary mt-1 flex items-center gap-1.5 flex-wrap" title="{{ $fullTooltip }}">
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded text-[11px] font-semibold bg-indigo-50 text-indigo-700 border border-indigo-200">
                                                 <i class="far fa-calendar-alt mr-1 text-indigo-500"></i> {{ $totalHariLembur }} Hari Lembur
                                             </span>
@@ -345,18 +359,20 @@
                                         </div>
                                     @endif
                                     @if($isAllInPranota)
-                                        <div class="mt-1">
+                                        <div class="ot-status ot-status-complete mt-1">
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200" title="Pranota: {{ $pranotaNomorsStr }}">
                                                 <i class="fas fa-check-circle text-emerald-600"></i> Sudah Masuk Pranota ({{ $pranotaNomorsStr }})
                                             </span>
                                         </div>
                                     @elseif($isPartialInPranota)
-                                        <div class="mt-1">
+                                        <div class="ot-status ot-status-partial mt-1">
                                             <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200" title="Pranota: {{ $pranotaNomorsStr }}">
                                                 <i class="fas fa-exclamation-circle text-amber-600"></i> Sebagian di Pranota ({{ $data['pranota_dates_count'] }}/{{ $data['total_dates_count'] }} hari)
                                             </span>
                                         </div>
                                     @endif
+                                    </div>
+                                    </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     @if($data['total_jam_biasa'] > 0)
@@ -386,13 +402,14 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-bold total-payout-text text-emerald-600" data-jam-lembur="{{ $isAllInPranota ? $totalJamKaryawan : ($data['unpranota_jam'] ?? $totalJamKaryawan) }}" data-nominal-lembur="{{ $isAllInPranota ? $data['total_nominal'] : ($data['unpranota_nominal'] ?? $data['total_nominal']) }}" data-nominal-awal="{{ $isAllInPranota ? $grandTotal : ($data['unpranota_grand_total'] ?? $grandTotal) }}" data-uang-makan-lembur="{{ $isAllInPranota ? $umlTotal : ($data['unpranota_uml'] ?? $umlTotal) }}" data-adjustment="0">
-                                    Rp {{ number_format($grandTotal, 0, ',', '.') }}
+                                    <span class="ot-payout-amount">Rp {{ number_format($grandTotal, 0, ',', '.') }}</span>
                                     @if($isPartialInPranota)
-                                        <div class="text-[10px] text-emerald-600 font-semibold no-underline">Sisa: Rp {{ number_format($data['unpranota_grand_total'], 0, ',', '.') }}</div>
+                                        <div class="ot-remaining text-[10px] text-emerald-600 font-semibold no-underline">Sisa: Rp {{ number_format($data['unpranota_grand_total'], 0, ',', '.') }}</div>
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
                                     <button type="button" data-nama="{{ $data['karyawan']->nama_lengkap }}" data-detail="{{ json_encode($data['detail']) }}" class="btn-detail text-indigo-600 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 px-3 py-1 rounded-md transition-colors font-medium">
+                                        <i class="fa-regular fa-eye" aria-hidden="true"></i>
                                         Lihat Rincian
                                     </button>
                                 </td>
@@ -561,46 +578,46 @@
 </div>
 
 <!-- Modal Riwayat Pranota Lembur Saya -->
-<div id="riwayat-pranota-modal" class="fixed inset-0 hidden" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important;">
+<div id="riwayat-pranota-modal" class="overtime-history-modal fixed inset-0 hidden" aria-labelledby="modal-riwayat-title" role="dialog" aria-modal="true">
     <!-- Background overlay -->
-    <div class="fixed inset-0 bg-gray-900/70 backdrop-blur-sm transition-opacity" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999989 !important; background-color: rgba(15, 23, 42, 0.75) !important;" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
+    <div class="olh-overlay" aria-hidden="true" onclick="closeRiwayatPranotaModal()"></div>
 
     <!-- Center Container (Strictly Viewport-Bounded) -->
-    <div class="modal-viewport-wrapper fixed inset-0 flex items-center justify-center p-2 sm:p-4" style="position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important; width: 100vw !important; height: 100vh !important; z-index: 9999990 !important; pointer-events: none; display: flex !important; align-items: center !important; justify-content: center !important; padding: 16px !important; box-sizing: border-box !important;">
+    <div class="olh-position">
         <!-- Modal panel -->
-        <div class="modal-bounded-card relative flex flex-col bg-white rounded-2xl text-left overflow-hidden shadow-2xl border border-gray-200 w-full" style="position: relative !important; z-index: 9999990 !important; pointer-events: auto !important; width: 100% !important; max-width: 1250px !important; height: calc(100vh - 32px) !important; max-height: calc(100vh - 32px) !important; display: flex !important; flex-direction: column !important; margin: auto !important;">
+        <div class="olh-dialog">
             <!-- Header (Pinned at Top) -->
-            <div class="modal-pinned-header bg-white px-5 sm:px-6 py-3.5 border-b border-gray-100 flex justify-between items-center shrink-0" style="flex-shrink: 0 !important;">
-                <div class="flex items-center gap-3">
-                    <div class="bg-blue-50 p-2.5 rounded-xl text-blue-600">
-                        <i class="fas fa-clock-rotate-left text-xl"></i>
+            <div class="olh-header">
+                <div class="olh-heading">
+                    <div class="olh-heading-icon">
+                        <i class="fas fa-clock-rotate-left" aria-hidden="true"></i>
                     </div>
                     <div>
                         <h3 class="text-base sm:text-lg font-bold text-gray-900" id="modal-riwayat-title">Riwayat Pranota Lembur</h3>
                         <p class="text-xs text-gray-500">Daftar semua pranota lembur karyawan yang telah dibuat di sistem</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <div class="olh-header-actions">
                     <a href="{{ route('pranota-lembur-karyawan.index') }}" class="inline-flex items-center text-xs font-semibold text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg transition-colors">
                         <i class="fas fa-external-link-alt mr-1.5"></i>
                         Halaman Lengkap
                     </a>
-                    <button type="button" onclick="closeRiwayatPranotaModal()" class="text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
+                    <button type="button" onclick="closeRiwayatPranotaModal()" aria-label="Tutup riwayat pranota lembur" title="Tutup" class="olh-close text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
             </div>
 
             <!-- Body (Scrollable Middle Section) -->
-            <div class="modal-scrollable-body bg-white px-5 sm:px-6 py-4 flex-1 overflow-y-auto space-y-4" style="flex: 1 1 0% !important; min-height: 0 !important; overflow-y: auto !important;">
+            <div class="olh-body">
                 <!-- Summary Stats Bar -->
                 @php
                     $totalPranota = isset($riwayatPranotaUser) ? $riwayatPranotaUser->count() : 0;
                     $totalNominal = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('total_setelah_adjustment') : 0;
                     $totalKaryawan = isset($riwayatPranotaUser) ? $riwayatPranotaUser->sum('karyawans_count') : 0;
                 @endphp
-                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                <div class="olh-summary">
+                    <div class="olh-stat bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center font-bold">
                             <i class="fas fa-file-invoice"></i>
                         </div>
@@ -609,7 +626,7 @@
                             <div class="text-lg font-bold text-gray-900">{{ $totalPranota }} Pranota</div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                    <div class="olh-stat olh-stat-money bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">
                             <i class="fas fa-money-bill-wave"></i>
                         </div>
@@ -618,7 +635,7 @@
                             <div class="text-lg font-bold text-emerald-600">Rp {{ number_format($totalNominal, 0, ',', '.') }}</div>
                         </div>
                     </div>
-                    <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
+                    <div class="olh-stat bg-slate-50 border border-slate-200/80 rounded-xl p-4 flex items-center gap-3.5">
                         <div class="w-10 h-10 rounded-lg bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold">
                             <i class="fas fa-users"></i>
                         </div>
@@ -630,22 +647,24 @@
                 </div>
 
                 <!-- Search Filter & Actions inside modal -->
-                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-2">
-                    <div class="relative flex-1 max-w-sm">
-                        <input type="text" id="riwayat-search-input" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota / tanggal / pembuat..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <div class="olh-toolbar">
+                    <div class="olh-search relative">
+                        <label for="riwayat-search-input" class="sr-only">Cari nomor pranota, tanggal, atau pembuat</label>
+                        <input type="search" id="riwayat-search-input" oninput="filterRiwayatPranota()" onkeyup="filterRiwayatPranota()" placeholder="Cari nomor pranota, tanggal, atau pembuat..." class="w-full pl-9 pr-3 py-2 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                             <i class="fas fa-search text-xs"></i>
                         </div>
                     </div>
-                    <span class="text-xs text-gray-500" id="riwayat-count-info">
+                    <span class="text-xs text-gray-500" id="riwayat-count-info" role="status" aria-live="polite">
                         Menampilkan {{ $totalPranota }} data
                     </span>
                 </div>
 
                 <!-- Table -->
-                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-xs">
-                    <div class="modal-table-scroll-container overflow-x-auto overflow-y-auto" style="overflow-x: auto !important; overflow-y: auto !important; max-height: 48vh !important; min-height: 160px !important;">
+                <div class="olh-table-frame">
+                    <div class="olh-table-scroll">
                         <table class="min-w-full divide-y divide-gray-200" id="table-riwayat-pranota">
+                            <colgroup><col style="width:3%"><col style="width:12%"><col style="width:8.5%"><col style="width:12%"><col style="width:10%"><col style="width:10%"><col style="width:8%"><col style="width:10%"><col style="width:9%"><col style="width:17.5%"></colgroup>
                             <thead class="bg-gray-50 sticky top-0 z-10">
                                 <tr>
                                     <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider w-12">No</th>
@@ -675,7 +694,7 @@
                                             {{ $item->tanggal_pranota ? $item->tanggal_pranota->format('d/m/Y') : '-' }}
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-gray-700">
-                                            <div class="flex items-center gap-1.5">
+                                            <div class="olh-creator flex items-center gap-1.5" title="{{ $item->creator->name ?? 'System' }}">
                                                 <i class="fas fa-user-circle text-gray-400"></i>
                                                 <span class="font-medium text-xs">{{ $item->creator->name ?? 'System' }}</span>
                                             </div>
@@ -702,7 +721,7 @@
                                                     Masuk PUML
                                                 </span>
                                             @elseif($item->status === 'draft')
-                                                <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
+                                                <span class="olh-status-draft inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-100 text-gray-700">
                                                     Draft
                                                 </span>
                                             @else
@@ -712,7 +731,7 @@
                                             @endif
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center">
-                                            <div class="inline-flex items-center gap-1.5">
+                                            <div class="olh-row-actions inline-flex items-center gap-1.5">
                                                 <a href="{{ route('pranota-lembur-karyawan.show', $item->id) }}" target="_blank" class="p-1.5 rounded-md text-blue-600 hover:bg-blue-100 transition-colors" title="Lihat Rincian">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
@@ -794,7 +813,7 @@
             </div>
 
             <!-- Footer (Pinned at Bottom) -->
-            <div class="modal-pinned-footer bg-gray-50 px-5 sm:px-6 py-3 border-t border-gray-100 flex flex-col sm:flex-row justify-between items-center gap-3 shrink-0" style="flex-shrink: 0 !important;">
+            <div class="olh-footer">
                 <a href="{{ route('pranota-lembur-karyawan.index') }}" class="text-xs text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1.5 font-medium">
                     <i class="fas fa-list-ul"></i>
                     <span>Buka Semua Data Pranota Lembur</span>
@@ -1204,7 +1223,12 @@
                     payoutTd.setAttribute('data-nominal-awal', totalNominalAwal !== undefined ? totalNominalAwal : totalNominal);
                     payoutTd.setAttribute('data-uang-makan-lembur', totalUml !== undefined ? totalUml : 0);
                     payoutTd.setAttribute('data-adjustment', totalAdjustment !== undefined ? totalAdjustment : 0);
-                    payoutTd.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
+                    const amountLabel = payoutTd.querySelector('.ot-payout-amount');
+                    if (amountLabel) {
+                        amountLabel.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
+                    } else {
+                        payoutTd.innerText = 'Rp ' + totalNominal.toLocaleString('id-ID');
+                    }
                 }
                 
                 const biasaTd = tr.querySelector('td:nth-child(5)');
@@ -1253,7 +1277,7 @@
         if (cb.checked) {
             const karyawanNik = tr.querySelector('td:nth-child(3)').innerText.trim();
             const nameTd = tr.querySelector('td:nth-child(4)');
-            const karyawanName = nameTd.childNodes[0].textContent.trim() || nameTd.innerText.split('\n')[0].trim();
+            const karyawanName = nameTd.querySelector('.ot-employee-name').textContent.trim();
             const penempatanNode = nameTd.querySelector('div.text-xs');
             const penempatan = penempatanNode ? penempatanNode.innerText.trim() : '-';
             const payoutTd = tr.querySelector('.total-payout-text');
