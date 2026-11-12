@@ -93,7 +93,8 @@ class ApprovalTandaTerimaDuaController extends Controller
         $dateColumn = $type === 'fcl' ? 'tanggal_surat_jalan' : 'tanggal_tanda_terima';
         $query->where(function ($query) use ($dateColumn) {
             $query->whereNull($dateColumn)
-                ->orWhereYear($dateColumn, '!=', 2025);
+                ->orWhere($dateColumn, '<', '2025-01-01')
+                ->orWhere($dateColumn, '>=', '2026-01-01');
         });
 
         $sourceTable = $query->getModel()->getTable();
