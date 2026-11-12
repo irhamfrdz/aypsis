@@ -45,7 +45,7 @@
                                     <td class="whitespace-nowrap px-5 py-3 text-sm font-bold text-gray-900">{{ $history->nomor_kontainer }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-600">{{ ucfirst($history->tipe_kontainer ?? '-') }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm text-gray-600">{{ $history->jenis_kegiatan }}</td>
-                                    <td class="min-w-64 px-5 py-3 text-sm text-gray-600">{{ $history->keterangan ?: '-' }}</td>
+                                    <td class="min-w-64 px-5 py-3 text-sm text-gray-600">{{ $report['title'] === 'Kontainer Keluar' ? preg_replace('/^Masuk via Tanda Terima Bongkaran \(Stock\):/i', 'Keluar via Tanda Terima Bongkaran (Stock):', $history->keterangan ?? '') ?: '-' : ($history->keterangan ?: '-') }}</td>
                                     <td class="whitespace-nowrap px-5 py-3 text-sm"><a href="{{ route('history-kontainer.index', ['search' => $history->nomor_kontainer]) }}" class="font-semibold text-indigo-600 hover:underline">Lihat</a></td>
                                 </tr>
                             @empty
