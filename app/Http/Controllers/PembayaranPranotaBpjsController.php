@@ -285,7 +285,32 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
-        return view('pembayaran-pranota-bpjs.print', $this->paymentDetails($pembayaran_pranota_bpj));
+        return view('pembayaran-pranota-bpjs.print', $this->paymentDetails($pembayaran_pranota_bpj) + [
+            'accountAllocations' => $this->printAccountAllocations($pembayaran_pranota_bpj),
+        ]);
+    }
+
+    protected function printAccountAllocations(PembayaranPranotaBpjs $payment): array
+    {
+        // Alokasi jurnal memuat tunjangan, biaya, dan hutang; bank_allocations
+        // hanya menyimpan akun asal per tipe beserta total gabungannya.
+        if ($payment->journal_allocations) {
+            return $payment->journal_allocations;
+        }
+
+        // Pembayaran lama yang belum memiliki snapshot menggunakan jurnal tersimpan.
+        $allocations = DB::table('coa_transactions as transactions')
+            ->join('akun_coa as accounts', 'accounts.id', '=', 'transactions.coa_id')
+            ->where('transactions.nomor_referensi', $payment->nomor_pembayaran)
+            ->where('transactions.jenis_transaksi', 'Pembayaran Pranota BPJS')
+            ->where('transactions.debit', '>', 0)
+            ->select('accounts.id as coa_id', 'accounts.nomor_akun', 'accounts.nama_akun')
+            ->selectRaw('SUM(transactions.debit) as subtotal')
+            ->groupBy('accounts.id', 'accounts.nomor_akun', 'accounts.nama_akun')
+            ->orderBy('accounts.nomor_akun')
+            ->get()->map(fn ($allocation) => (array) $allocation)->all();
+
+        return $allocations ?: ($payment->bank_allocations ?? []);
     }
 
     private function paymentDetails(PembayaranPranotaBpjs $pembayaran_pranota_bpj): array
