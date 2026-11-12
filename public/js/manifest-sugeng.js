@@ -100,6 +100,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     table.addEventListener('click', event => {
         const header = event.target.closest('tbody .sheet-row-number');
         if (header) {
+            header.focus();
             const index = rows.indexOf(header.parentElement);
             if (event.shiftKey && anchor >= 0) {
                 selectRows(Array.from({ length: Math.abs(index - anchor) + 1 }, (_, offset) => Math.min(index, anchor) + offset));
@@ -128,6 +129,32 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         if (event.key === 'Escape') {
             rows.forEach(row => delete row.dataset.selected);
             return;
+        }
+        if ((event.key === 'Delete' || event.key === 'Backspace') && !event.ctrlKey && !event.metaKey) {
+            const selection = selectedRows();
+            if (selection.length) {
+                event.preventDefault();
+                if (table.dataset.clearing === 'true') return;
+                const payload = selection.map(row => ({
+                    id: Number(row.dataset.itemId), kind: row.dataset.kind, line: Number(row.dataset.line),
+                }));
+                table.dataset.clearing = 'true';
+                fetch(table.dataset.clearUrl, {
+                    method: 'PATCH',
+                    credentials: 'same-origin',
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': table.dataset.csrf, Accept: 'application/json' },
+                    body: JSON.stringify({ rows: payload }),
+                }).then(async response => {
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.message || 'Baris gagal dikosongkan.');
+                    selection.forEach(row => Array.from(row.cells).slice(1).forEach(cell => {
+                        cell.textContent = '';
+                        saved.set(cell, '');
+                    }));
+                }).catch(error => alert(error.message || 'Baris gagal dikosongkan.'))
+                    .finally(() => { delete table.dataset.clearing; });
+                return;
+            }
         }
         if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'a' && table.contains(document.activeElement)) {
             event.preventDefault();

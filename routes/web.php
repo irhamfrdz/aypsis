@@ -7677,6 +7677,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('manifest-sugeng/{manifestSugeng}/cell', [\App\Http\Controllers\ManifestSugengController::class, 'updateCell'])
         ->name('manifest-sugeng.cell.update')
         ->middleware('can:manifest-sugeng-manage');
+    Route::patch('manifest-sugeng/rows/clear', [\App\Http\Controllers\ManifestSugengController::class, 'clearRows'])
+        ->name('manifest-sugeng.rows.clear')
+        ->middleware('can:manifest-sugeng-manage');
     Route::delete('approval-tanda-terima-2/{sourceType}/export-bulk', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'clearExportBulk'])
         ->name('approval-tanda-terima-2.clear-export-bulk')
         ->middleware('can:approval-tanda-terima-2-approve');

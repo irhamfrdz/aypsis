@@ -27,7 +27,7 @@
         $widths = [140,95,135,95,55,65,180,65,65,360,65,65,360,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
-    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}">
+    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}">
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
             <tr class="sheet-title"><td colspan="33" class="sheet-company">PT. ALEXINDO YAKIN PRIMA</td></tr>
@@ -69,7 +69,7 @@
                     $shipper = $item->shipperJb;
                 @endphp
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
-                    <tr class="sheet-container"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
+                    <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</td>
                     @endforeach</tr>
@@ -100,7 +100,7 @@
                             !$isLcl && $line === 0 ? $containerDescription : '',
                         ];
                     @endphp
-                    <tr><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($cells as $value)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</td>
                     @endforeach</tr>
