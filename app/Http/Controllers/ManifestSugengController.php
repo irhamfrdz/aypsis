@@ -5,7 +5,10 @@ namespace App\Http\Controllers;
 use App\Models\ManifestSugeng;
 use App\Services\ManifestSugengExcelService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -33,8 +36,11 @@ class ManifestSugengController extends Controller
                     ->orWhere('nomor_kontainer', 'like', '%'.$search.'%')
                     ->orWhere('pengirim', 'like', '%'.$search.'%'));
             })
-            ->latest('dikirim_pada')
-            ->latest('id')
+            ->orderBy('nama_kapal')
+            ->orderBy('no_voyage')
+            ->orderByRaw("CASE WHEN source_type = 'lcl' OR UPPER(COALESCE(tipe_kontainer, '')) LIKE '%LCL%' THEN 0 ELSE 1 END")
+            ->orderBy('nomor_kontainer')
+            ->orderBy('id')
             ->paginate(25)
             ->withQueryString();
 
@@ -77,6 +83,62 @@ class ManifestSugengController extends Controller
         return back()->with('success', 'Manifest Sugeng berhasil diperbarui.');
     }
 
+    public function updateNomorBl(Request $request, ManifestSugeng $manifestSugeng): RedirectResponse|JsonResponse
+    {
+        $data = $request->validate([
+            'nomor_bl' => 'nullable|string|max:255',
+        ]);
+
+        $manifestSugeng->update(['nomor_bl' => trim($data['nomor_bl'] ?? '') ?: null]);
+
+        if ($request->expectsJson()) {
+            return response()->json(['nomor_bl' => $manifestSugeng->nomor_bl]);
+        }
+
+        return back()->with('success', 'Nomor BL Manifest Sugeng berhasil disimpan.');
+    }
+
+    public function updateCell(Request $request, ManifestSugeng $manifestSugeng): JsonResponse
+    {
+        $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
+        $data = $request->validate([
+            'kind' => ['required', Rule::in(['container', 'detail'])],
+            'line' => ['required', 'integer', 'min:0', 'max:1000'],
+            'column' => ['required', Rule::in($columns)],
+            'value' => ['nullable', 'string', 'max:10000'],
+        ]);
+        $value = $data['value'] ?? '';
+
+        DB::transaction(function () use ($manifestSugeng, $data, $value): void {
+            $query = ManifestSugeng::query()->whereKey($manifestSugeng->id);
+            if ($data['kind'] === 'container') {
+                abort_if(blank($manifestSugeng->nomor_kontainer), 422);
+                $query = ManifestSugeng::query()
+                    ->where('nama_kapal', $manifestSugeng->nama_kapal)
+                    ->where('no_voyage', $manifestSugeng->no_voyage)
+                    ->where('nomor_kontainer', $manifestSugeng->nomor_kontainer)
+                    ->where(function ($query): void {
+                        $query->where('source_type', 'lcl')->orWhere('tipe_kontainer', 'like', '%LCL%');
+                    });
+            }
+            foreach ($query->lockForUpdate()->get() as $item) {
+                $sheetValues = $item->sheet_values ?? [];
+                if ($data['kind'] === 'container') {
+                    $sheetValues['container'][$data['column']] = $value;
+                } else {
+                    $sheetValues['details'][$data['line']][$data['column']] = $value;
+                    if ($data['line'] === 0 && $data['column'] === 'B') {
+                        $item->nomor_bl = trim($value) ?: null;
+                    }
+                }
+                $item->sheet_values = $sheetValues;
+                $item->save();
+            }
+        });
+
+        return response()->json(['value' => $value]);
+    }
+
     public function export(Request $request, ManifestSugengExcelService $excel): BinaryFileResponse
     {
         $filters = $request->validate([
@@ -86,6 +148,7 @@ class ManifestSugengController extends Controller
         $items = ManifestSugeng::query()->with('shipperJb')
             ->where('nama_kapal', $filters['nama_kapal'])
             ->where('no_voyage', $filters['no_voyage'])
+            ->orderByRaw("CASE WHEN source_type = 'lcl' OR UPPER(COALESCE(tipe_kontainer, '')) LIKE '%LCL%' THEN 0 ELSE 1 END")
             ->orderBy('nomor_kontainer')->orderBy('id')->get();
         abort_if($items->isEmpty(), 404);
         $path = $excel->create($items);

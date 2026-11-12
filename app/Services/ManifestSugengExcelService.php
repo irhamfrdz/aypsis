@@ -54,7 +54,8 @@ class ManifestSugengExcelService
         $lastContainer = null;
         foreach ($items as $item) {
             $container = trim((string) $item->nomor_kontainer);
-            if ($container !== '' && $container !== $lastContainer) {
+            $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
+            if ($isLcl && $container !== '' && strtoupper($container) !== $lastContainer) {
                 $sheet->setCellValue('D'.$row, $container);
                 $sheet->setCellValue('E'.$row, $item->no_seal);
                 $sheet->setCellValue('F'.$row, 1);
@@ -63,10 +64,15 @@ class ManifestSugengExcelService
                 $sheet->setCellValue('AE'.$row, 1);
                 $sheet->setCellValue('AF'.$row, 'Unit');
                 $sheet->setCellValue('AG'.$row, trim($item->tipe_kontainer.' '.$item->size_kontainer));
+                foreach (($item->sheet_values['container'] ?? []) as $column => $value) {
+                    if (array_key_exists($column, $headers)) {
+                        $sheet->setCellValueExplicit($column.$row, (string) $value, DataType::TYPE_STRING);
+                    }
+                }
                 $sheet->getStyle('B'.$row.':AG'.$row)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('E9EFF7');
                 $row++;
             }
-            $lastContainer = $container;
+            $lastContainer = strtoupper($container);
 
             $manifestGoods = collect($item->manifest_goods ?? []);
             $details = collect($item->perincian_barang ?? []);
@@ -78,6 +84,11 @@ class ManifestSugengExcelService
                 $values = [
                     'B' => $line === 0 ? $item->nomor_bl : null,
                     'C' => implode("\n", (array) (data_get($good, 'hs_codes') ?: (data_get($good, 'hs_code') ? [data_get($good, 'hs_code')] : []))),
+                    'D' => ! $isLcl && $line === 0 ? $container : null,
+                    'E' => ! $isLcl && $line === 0 ? $item->no_seal : null,
+                    'F' => ! $isLcl && $line === 0 ? 1 : null,
+                    'G' => ! $isLcl && $line === 0 ? 'Unit' : null,
+                    'H' => ! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer).' stc :' : null,
                     'I' => data_get($good, 'jumlah'), 'J' => data_get($good, 'satuan'), 'K' => data_get($good, 'nama_barang'),
                     'L' => data_get($detail, 'jumlah'), 'M' => data_get($detail, 'satuan'), 'N' => data_get($detail, 'nama_barang'),
                     'O' => data_get($good, 'tonase'), 'P' => data_get($good, 'meter_kubik'),
@@ -89,7 +100,11 @@ class ManifestSugengExcelService
                     'AA' => $shipper?->document_ppftz_03, 'AB' => $shipper?->condition,
                     'AC' => $item->nomor_tanda_terima,
                     'AD' => $item->tanggal_tanda_terima?->format('d/m/Y'),
+                    'AE' => ! $isLcl && $line === 0 ? 1 : null,
+                    'AF' => ! $isLcl && $line === 0 ? 'Unit' : null,
+                    'AG' => ! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer) : null,
                 ];
+                $values = array_replace($values, $item->sheet_values['details'][$line] ?? []);
                 foreach ($values as $column => $value) {
                     if ($value !== null) {
                         if (in_array($column, ['I', 'L', 'O', 'P'], true) && $this->numericValue($value) !== null) {
