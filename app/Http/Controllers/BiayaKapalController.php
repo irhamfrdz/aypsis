@@ -7812,11 +7812,12 @@ class BiayaKapalController extends Controller
 
             $manifests = $query->orderBy('nomor_kontainer')->get();
 
-            // Keep each CARGO BL separate; only physical containers share a group.
-            $grouped = $manifests->groupBy(function ($item) {
+            // Buruh Batam selects CARGO per BL; other sections retain their grouping.
+            $splitCargoByBl = $request->boolean('split_cargo_by_bl');
+            $grouped = $manifests->groupBy(function ($item) use ($splitCargoByBl) {
                 $number = trim(strtoupper($item->nomor_kontainer));
 
-                return $number === 'CARGO' ? $number.'|'.$item->id : $number;
+                return $splitCargoByBl && $number === 'CARGO' ? $number.'|'.$item->id : $number;
             });
 
             $containers = $grouped->map(function ($items) {

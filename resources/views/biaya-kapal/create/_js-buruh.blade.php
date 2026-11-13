@@ -1258,7 +1258,8 @@
             return;
         }
 
-        fetch(`{{ url('biaya-kapal/get-manifest-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageValue)}`)
+        const splitCargoByBl = !section.closest('#buruh_bongkar_sections_container');
+        fetch(`{{ url('biaya-kapal/get-manifest-containers-by-voyage') }}?voyage=${encodeURIComponent(voyageValue)}&split_cargo_by_bl=${splitCargoByBl ? '1' : '0'}`)
             .then(res => res.json())
             .then(data => {
                 kontainerLoading.classList.add('hidden');
