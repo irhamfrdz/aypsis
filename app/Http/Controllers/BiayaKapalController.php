@@ -7812,13 +7812,16 @@ class BiayaKapalController extends Controller
 
             $manifests = $query->orderBy('nomor_kontainer')->get();
 
-            // Group by nomor_kontainer to eliminate duplicates for LCL shipments
+            // Keep each CARGO BL separate; only physical containers share a group.
             $grouped = $manifests->groupBy(function ($item) {
-                return trim(strtoupper($item->nomor_kontainer));
+                $number = trim(strtoupper($item->nomor_kontainer));
+
+                return $number === 'CARGO' ? $number.'|'.$item->id : $number;
             });
 
-            $containers = $grouped->map(function ($items, $containerNo) {
+            $containers = $grouped->map(function ($items) {
                 $first = $items->first();
+                $containerNo = trim(strtoupper($first->nomor_kontainer));
 
                 // Collect unique BL numbers
                 $bls = $items->pluck('nomor_bl')->filter()->unique()->values()->all();
