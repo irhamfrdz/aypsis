@@ -104,6 +104,7 @@
                     <select name="tipe" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Tipe</option>
                         <option value="FCL" {{ request('tipe') == 'FCL' ? 'selected' : '' }}>FCL</option>
+                        <option value="FCL Booking" {{ request('tipe') == 'FCL Booking' ? 'selected' : '' }}>FCL Booking</option>
                         <option value="LCL" {{ request('tipe') == 'LCL' ? 'selected' : '' }}>LCL</option>
                         <option value="CARGO" {{ request('tipe') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
                     </select>
