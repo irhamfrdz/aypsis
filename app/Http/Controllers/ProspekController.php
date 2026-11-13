@@ -326,12 +326,6 @@ class ProspekController extends Controller
                     'kode' => 'MDN',
                     'deskripsi' => 'Pelabuhan Belawan, Medan',
                 ],
-                (object) [
-                    'id' => 'fcl_booking',
-                    'nama' => 'FCL Booking',
-                    'kode' => 'FCL',
-                    'deskripsi' => 'Prospek dengan tipe FCL Booking',
-                ],
             ]);
 
             return view('prospek.pilih-tujuan', compact('prospeksAktif', 'tujuans'));
@@ -353,7 +347,7 @@ class ProspekController extends Controller
 
             // Validate tujuan_id
             $request->validate([
-                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan,fcl_booking',
+                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan',
             ]);
 
             $tujuanId = $request->tujuan_id;
@@ -390,12 +384,6 @@ class ProspekController extends Controller
                     'deskripsi' => 'Pelabuhan Belawan, Medan',
                     'keywords' => ['medan', 'belawan', 'mdn'],
                 ],
-                'fcl_booking' => [
-                    'nama' => 'FCL Booking',
-                    'kode' => 'FCL',
-                    'deskripsi' => 'Prospek dengan tipe FCL Booking',
-                    'keywords' => [],
-                ],
             ];
 
             $tujuan = (object) $tujuanMapping[$tujuanId];
@@ -405,10 +393,7 @@ class ProspekController extends Controller
             $prospeksAktif = Prospek::with('tandaTerima')
                 ->whereIn('status', ['aktif', 'batal'])
                 ->get()
-                ->filter(function ($prospek) use ($keywords, $tujuanId) {
-                    if ($tujuanId === 'fcl_booking') {
-                        return strcasecmp(trim((string) $prospek->tipe), 'FCL Booking') === 0;
-                    }
+                ->filter(function ($prospek) use ($keywords) {
                     $tujuanPengiriman = strtolower($prospek->tujuan_pengiriman ?? '');
                     foreach ($keywords as $keyword) {
                         if (stripos($tujuanPengiriman, strtolower($keyword)) !== false) {
@@ -500,7 +485,7 @@ class ProspekController extends Controller
 
             // Validate input
             $validatedData = $request->validate([
-                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan,fcl_booking',
+                'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan',
                 'tanggal' => 'required|date',
                 'kapal_id' => 'required|exists:master_kapals,id',
                 'no_voyage' => 'required|string|max:50',
@@ -522,7 +507,6 @@ class ProspekController extends Controller
                 'pinang' => ['nama' => 'Pinang', 'keywords' => ['pinang', 'penang', 'malaysia', 'png']],
                 'surabaya' => ['nama' => 'Surabaya', 'keywords' => ['surabaya', 'tanjung perak', 'sby']],
                 'medan' => ['nama' => 'Medan', 'keywords' => ['medan', 'belawan', 'mdn']],
-                'fcl_booking' => ['nama' => 'FCL Booking', 'keywords' => []],
             ];
 
             $tujuanData = $tujuanMapping[$tujuanId];
@@ -600,7 +584,7 @@ class ProspekController extends Controller
                     'nama_kapal' => $masterKapal->nama_kapal,
                     'no_voyage' => $request->no_voyage,
                     'pelabuhan_asal' => $request->pelabuhan_asal,
-                    'pelabuhan_tujuan' => $tujuanId === 'fcl_booking' ? $prospek->tujuan_pengiriman : $tujuanData['nama'],
+                    'pelabuhan_tujuan' => $tujuanData['nama'],
                     'tanggal_muat' => $request->tanggal,
                     'total_volume' => $prospek->total_volume,
                     'total_tonase' => $prospek->total_ton,
