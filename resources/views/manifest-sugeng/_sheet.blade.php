@@ -18,7 +18,7 @@
     .sugeng-sheet td[data-state="error"] { background: #fee2e2; }
     .sugeng-sheet tbody td:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
     .sugeng-sheet .sheet-goods-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
-    .sugeng-sheet td:focus-within .sheet-goods-content { max-height: none; overflow: visible; }
+    .sugeng-sheet td:focus-within .sheet-goods-content { overflow: auto; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
