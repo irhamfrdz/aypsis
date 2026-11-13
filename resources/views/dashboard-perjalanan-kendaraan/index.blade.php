@@ -258,6 +258,7 @@
                             <tr>
                                 <th class="whitespace-nowrap px-4 py-3">No.</th>
                                 <th class="whitespace-nowrap px-4 py-3"><i class="fas fa-truck mr-1.5 text-slate-400" aria-hidden="true"></i>Kendaraan</th>
+                                <th class="whitespace-nowrap px-4 py-3">Ukuran</th>
                                 <th class="whitespace-nowrap px-4 py-3"><i class="fas fa-user mr-1.5 text-slate-400" aria-hidden="true"></i>Nama supir</th>
                                 @foreach($rankings as $ranking)
                                     <th class="whitespace-nowrap px-4 py-3"><i class="fas {{ match ($ranking['label']) {
@@ -275,6 +276,7 @@
                             @foreach($vehicleStats as $index => $row)
                                 @php
                                     $vehicleLabel = $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id;
+                                    $vehicleSize = strtolower(trim((string) $row->mobil?->ukuran_tractor_head));
                                     $driverLabel = $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat');
                                     $aiMetrics = $rankings->map(function ($ranking) use ($vehicleLabel) {
                                         $entry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel);
@@ -284,6 +286,13 @@
                                 <tr class="hover:bg-slate-50">
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-500">{{ $index + 1 }}</td>
                                 <th scope="row" class="whitespace-nowrap px-4 py-3 text-left font-semibold text-slate-800">{{ $vehicleLabel }}</th>
+                                    <td class="whitespace-nowrap px-4 py-3">
+                                        @if(in_array($vehicleSize, ['panjang', 'pendek'], true))
+                                            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-semibold {{ $vehicleSize === 'panjang' ? 'bg-blue-50 text-blue-700' : 'bg-slate-100 text-slate-700' }}">{{ strtoupper($vehicleSize) }}</span>
+                                        @else
+                                            <span class="text-slate-400">Belum diisi</span>
+                                        @endif
+                                    </td>
                                     <td class="whitespace-nowrap px-4 py-3 text-slate-700">{{ $row->mobil?->karyawan?->nama_panggilan ?: ($row->mobil?->karyawan?->nama_lengkap ?: 'Supir tidak tercatat') }}</td>
                                     @foreach($rankings as $ranking)
                                         @php $rankEntry = $ranking['rows']->firstWhere('vehicle', $vehicleLabel); @endphp
@@ -293,7 +302,7 @@
                                     @endforeach
                                 </tr>
                                 <tr class="bg-indigo-50/40">
-                                    <td colspan="9" class="px-4 pb-3 pt-0">
+                                    <td colspan="{{ 4 + $rankings->count() }}" class="px-4 pb-3 pt-0">
                                         <button type="button" class="ai-ranking-explain cursor-pointer text-xs font-semibold text-indigo-700 hover:text-indigo-900" data-payload="{{ json_encode(['vehicle' => $vehicleLabel, 'driver' => $driverLabel, 'period' => \Carbon\Carbon::parse($tanggalDari)->format('d/m/Y').' - '.\Carbon\Carbon::parse($tanggalSampai)->format('d/m/Y'), 'metrics' => $aiMetrics], JSON_HEX_APOS | JSON_HEX_QUOT) }}">Buat penjelasan AI untuk {{ $vehicleLabel }}</button>
                                         <p class="ai-ranking-result mt-2 hidden whitespace-pre-line rounded-lg border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-700" role="status"></p>
                                     </td>
