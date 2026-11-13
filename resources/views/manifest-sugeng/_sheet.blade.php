@@ -18,6 +18,7 @@
     .sugeng-sheet td[data-state="error"] { background: #fee2e2; }
     .sugeng-sheet tbody td:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
     .sugeng-sheet tbody td[data-column="C"], .sugeng-sheet tbody td[data-column="D"] { text-align: center; vertical-align: middle; }
+    .sugeng-sheet tbody td[data-column="AA"] { text-align: center; vertical-align: middle; }
     .sugeng-sheet tbody td[data-column="F"], .sugeng-sheet tbody td[data-column="I"], .sugeng-sheet tbody td[data-column="L"], .sugeng-sheet tbody td[data-column="AE"] { text-align: right; }
     .sugeng-sheet tbody td[data-column="G"], .sugeng-sheet tbody td[data-column="J"], .sugeng-sheet tbody td[data-column="M"], .sugeng-sheet tbody td[data-column="AF"] { text-align: left; }
     .sugeng-sheet .sheet-cell-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
