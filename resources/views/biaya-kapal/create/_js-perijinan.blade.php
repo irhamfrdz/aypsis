@@ -879,9 +879,13 @@
                     this.innerHTML = btnOriginalHtml;
                     this.disabled = false;
 
-                    if (data.success && data.data && data.data.length > 0) {
+                    const eligibleVoyages = (data.data || []).filter(item =>
+                        !/(?:PJ|BJ)(?=[\d\-/\s]|$)/i.test(String(item.no_voyage || ''))
+                    );
+
+                    if (data.success && eligibleVoyages.length > 0) {
                         clearAllPerijinanSections();
-                        data.data.forEach(item => {
+                        eligibleVoyages.forEach(item => {
                             addPerijinanSection({
                                 nama_kapal: item.nama_kapal,
                                 no_voyage: item.no_voyage,
