@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.validateCatAkunItems = () => {
         const items = [...rows.querySelectorAll('.cat-akun-row')];
         const ids = items.map(row => row.querySelector('.cat-akun-select').value);
-        return items.length > 0 && ids.every(Boolean) && new Set(ids).size === ids.length
+        return items.length > 0 && ids.every(Boolean)
             && items.every(row => Number(row.querySelector('.cat-akun-nominal').value) > 0)
             && Math.round(sum() * 100) === Math.round(finalAmount() * 100);
     };

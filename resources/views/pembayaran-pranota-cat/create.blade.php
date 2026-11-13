@@ -350,7 +350,7 @@
 
             if (!window.validateCatAkunItems?.()) {
                 e.preventDefault();
-                alert('Pilih akun berbeda dengan nominal positif. Total nominal akun harus sama dengan total akhir pembayaran.');
+                alert('Pilih akun biaya dan isi nominal positif pada setiap baris. Total nominal akun harus sama dengan total akhir pembayaran.');
                 return false;
             }
 
