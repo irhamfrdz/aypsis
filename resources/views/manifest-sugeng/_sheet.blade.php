@@ -1,23 +1,15 @@
 <style>
     .sugeng-sheet-scroll { overflow: auto; max-height: 75vh; background: #e5e7eb; padding: 16px; }
     .sugeng-sheet { border-collapse: collapse; table-layout: fixed; background: white; color: #000; font: 12px Arial, sans-serif; }
-    .sugeng-sheet th, .sugeng-sheet td { border: 1px solid #222; padding: 3px 5px; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
+    .sugeng-sheet th, .sugeng-sheet td { border: 1px solid #222; padding: 5px 6px; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
     .sugeng-sheet thead th { text-align: center; vertical-align: middle; font-size: 11px; font-weight: bold; background: white; }
     .sugeng-sheet .sheet-title td { border: 0; padding: 4px 8px; }
-    .sugeng-sheet .sheet-company { font: bold 24px 'Book Antiqua', Georgia, serif; }
-    .sugeng-sheet .sheet-subtitle { font: 16px 'Monotype Corsiva', cursive; }
-    .sugeng-sheet .sheet-heading { text-align: center; font-size: 29px; font-weight: bold; padding: 8px 0; }
-    .sugeng-sheet .sheet-voyage td { font-size: 14px; font-weight: bold; white-space: nowrap; }
+    .sugeng-sheet .sheet-company { font: bold 22px 'Book Antiqua', Georgia, serif; }
+    .sugeng-sheet .sheet-heading { text-align: center; font-size: 28px; font-weight: bold; padding: 14px 0; }
     .sugeng-sheet .sheet-section th { border: 0; text-align: left; }
     .sugeng-sheet .sheet-section .sheet-manifest { background: #92d050; }
     .sugeng-sheet .sheet-section .sheet-detail { background: #00b0f0; }
-    .sugeng-sheet .sheet-columns th { border-bottom: 3px double #222; }
-    .sugeng-sheet .sheet-columns .sheet-manifest { background: #92d050; }
-    .sugeng-sheet .sheet-columns .sheet-detail { background: #00b0f0; }
-    .sugeng-sheet .sheet-columns .sheet-shipper { background: #ff0000; }
-    .sugeng-sheet .sheet-columns .sheet-consignee { background: #92d050; }
-    .sugeng-sheet .sheet-columns .sheet-notify { background: #ffc000; }
-    .sugeng-sheet .sheet-container td { font-weight: bold; }
+    .sugeng-sheet .sheet-container td { font-weight: bold; border-top: 2px solid #222; }
     .sugeng-sheet a { color: #1d4ed8; text-decoration: underline; }
     .sugeng-sheet td[contenteditable="true"] { cursor: text; }
     .sugeng-sheet td[contenteditable="true"]:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
@@ -32,28 +24,27 @@
 </style>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
-        $widths = [64,100,140,100,98,88,258,98,88,807,98,88,807,162,148,268,220,207,268,220,207,268,220,207,268,154,152,136,188,148,52,332];
+        $widths = [140,95,135,95,55,65,180,65,65,360,65,65,360,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
     <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}">
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
             <tr class="sheet-title"><td colspan="33" class="sheet-company">PT. ALEXINDO YAKIN PRIMA</td></tr>
-            <tr class="sheet-title"><td colspan="33" class="sheet-subtitle">Perusahaan Pelayaran Nasional</td></tr>
+            <tr class="sheet-title"><td colspan="33">Perusahaan Pelayaran Nasional</td></tr>
             <tr class="sheet-title"><td colspan="33" class="sheet-heading">M A N I F E S T &nbsp; O F &nbsp; C A R G O</td></tr>
-            <tr class="sheet-title sheet-voyage"><td colspan="16">SHIPPED PER &quot; {{ request('nama_kapal') ?: ($items->first()?->nama_kapal ?? '') }} &quot; Voy : {{ request('no_voyage') ?: ($items->first()?->no_voyage ?? '') }}</td><td colspan="6">NATIONALITY &quot; INDONESIA &quot;</td><td colspan="11">MASTER :</td></tr>
-            <tr class="sheet-title sheet-voyage"><td colspan="16">FROM :</td><td colspan="6">TO :</td><td colspan="11">SAILING ON :</td></tr>
+            <tr class="sheet-title"><td colspan="33">{{ request('nama_kapal') }}{{ request('no_voyage') ? ' / '.request('no_voyage') : '' }}</td></tr>
             <tr class="sheet-section"><th></th><th colspan="7"></th><th colspan="3" class="sheet-manifest">MANIFEST</th><th colspan="3" class="sheet-detail">PERINCIAN</th><th colspan="19"></th></tr>
-            <tr class="sheet-columns">
+            <tr>
                 <th rowspan="2" class="sheet-row-number">#</th>
                 @foreach(['B/L NO.', 'HS CODE', 'MARK AND NUMBERS', 'SEAL NO.'] as $heading)<th rowspan="2">{{ $heading }}</th>@endforeach
-                <th colspan="6" rowspan="2" class="sheet-manifest">DESCRIPTION OF GOODS</th>
-                <th colspan="3" rowspan="2" class="sheet-detail">DESCRIPTION OF GOODS</th>
-                @foreach(['WEIGHT', 'MEASS', 'SHIPPER', 'ADDRESS', 'NO. IDENTITAS (NPWP SHIPPER)', 'CONSIGNEE', 'ADDRESS', 'NO. IDENTITAS (NPWP CONSIGNEE)', 'NOTIFY PARTY (CONSIGNEE)', 'ADDRESS', 'NO. IDENTITAS (NPWP NOTIFY PARTY CONSIGNEE)', 'DELIVERY ADDRESS & CONTACT PERSON', 'DOCUMENT PPFTZ-03', 'CONDITION'] as $heading)<th rowspan="2" @class(['sheet-shipper' => in_array($loop->index, [2, 3, 4]), 'sheet-consignee' => in_array($loop->index, [5, 6, 7]), 'sheet-notify' => in_array($loop->index, [8, 9, 10])])>{{ $heading }}</th>@endforeach
+                <th colspan="6" rowspan="2">DESCRIPTION OF GOODS</th>
+                <th colspan="3" rowspan="2">DESCRIPTION OF GOODS</th>
+                @foreach(['WEIGHT', 'MEASS', 'SHIPPER', 'ADDRESS', 'NO. IDENTITAS (NPWP SHIPPER)', 'CONSIGNEE', 'ADDRESS', 'NO. IDENTITAS (NPWP CONSIGNEE)', 'NOTIFY PARTY (CONSIGNEE)', 'ADDRESS', 'NO. IDENTITAS (NPWP NOTIFY PARTY CONSIGNEE)', 'DELIVERY ADDRESS & CONTACT PERSON', 'DOCUMENT PPFTZ-03', 'CONDITION'] as $heading)<th rowspan="2">{{ $heading }}</th>@endforeach
                 <th colspan="2">RECEIPT SIGNS & ROAD LETTERS</th>
                 <th colspan="3" rowspan="2">K E T E R A N G A N<br>PERHITUNGAN M3 / KGS</th>
             </tr>
-            <tr class="sheet-columns"><th>NUMBER</th><th>DATE</th></tr>
+            <tr><th>NUMBER</th><th>DATE</th></tr>
         </thead>
         <tbody>
             @php $sheetRow = 1; @endphp
