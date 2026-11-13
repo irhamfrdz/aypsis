@@ -17,8 +17,8 @@
     .sugeng-sheet td[data-state="saved"] { background: #dcfce7; }
     .sugeng-sheet td[data-state="error"] { background: #fee2e2; }
     .sugeng-sheet tbody td:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
-    .sugeng-sheet .sheet-goods-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
-    .sugeng-sheet td:focus-within .sheet-goods-content { overflow: auto; }
+    .sugeng-sheet .sheet-cell-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
+    .sugeng-sheet td:focus-within .sheet-cell-content { overflow: auto; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
@@ -73,7 +73,7 @@
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
                     <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
-                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan>@if(in_array($column, ['K', 'N']))<div class="sheet-goods-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div>@else{{ data_get($item->sheet_values, 'container.'.$column, $value) }}@endif</td>
+                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div></td>
                     @endforeach</tr>
                 @endif
                 @php $lastContainer = $containerKey; @endphp
@@ -104,7 +104,7 @@
                     @endphp
                     <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
-                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan>@if(in_array($column, ['K', 'N']))<div class="sheet-goods-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div>@else{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}@endif</td>
+                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div></td>
                     @endforeach</tr>
                 @endfor
             @empty
