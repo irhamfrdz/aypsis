@@ -2453,6 +2453,7 @@ class StockAmprahanController extends Controller
                 'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
                 'tipe' => $item->type_amprahan ?? 'Penerimaan Barang',
                 'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'lokasi' => $item->lokasi ?: '-',
                 'no_faktur' => $item->nomor_bukti ?? '-',
                 'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
                 'kts_masuk' => $initialStock,
@@ -2494,6 +2495,7 @@ class StockAmprahanController extends Controller
                 'tanggal_raw' => $usage->tanggal_pengambilan,
                 'tipe' => 'Pemakaian Bahan Baku',
                 'nama_barang' => $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-'),
+                'lokasi' => $usage->stockAmprahan->lokasi ?: '-',
                 'no_faktur' => '-',
                 'referensi' => $noFaktur,
                 'kts_masuk' => 0,
@@ -2532,7 +2534,6 @@ class StockAmprahanController extends Controller
 
         return view('stock-amprahan.valuasi-print', [
             'masterItem' => $masterItem,
-            'lokasi' => ucfirst($request->lokasi),
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'saldoAwalQty' => $saldoAwalQty,

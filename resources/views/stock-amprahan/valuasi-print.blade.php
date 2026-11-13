@@ -98,7 +98,6 @@
     <div class="header-container">
         <div class="company-name">AYPSIS</div>
         <div class="report-title">Rincian Valuasi Persediaan</div>
-        <div class="report-period">Lokasi: {{ $lokasi }}</div>
         <div class="report-period">Dari {{ $fromDate->format('d M Y') }} ke {{ $toDate->format('d M Y') }}</div>
     </div>
 
@@ -127,6 +126,7 @@
                 <th style="width: 80px;">Tanggal</th>
                 <th>Tipe</th>
                 <th>Nama Barang</th>
+                <th>Lokasi</th>
                 <th>No. Bukti</th>
                 <th>Dikeluarkan Ke</th>
                 <th class="right">Kts. Masuk</th>
@@ -155,6 +155,7 @@
                     <td>{{ $trx->tanggal }}</td>
                     <td>{{ $trx->tipe }}</td>
                     <td>{{ $trx->nama_barang }}</td>
+                    <td>{{ $trx->lokasi }}</td>
                     <td>{{ $trx->no_faktur }}</td>
                     <td>{{ $trx->kts_masuk > 0 ? '' : $trx->referensi }}</td>
                     <td class="right">{{ $trx->kts_masuk > 0 ? number_format($trx->kts_masuk, 0, ',', '.') : '0' }}</td>
@@ -166,11 +167,11 @@
                 </tr>
             @empty
                 <tr>
-                    <td colspan="11" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
+                    <td colspan="12" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
-                <td colspan="5"></td>
+                <td colspan="6"></td>
                 <td class="right">{{ number_format($totalKtsMasuk, 0, ',', '.') }}</td>
                 <td class="right">{{ number_format($totalNilaiMasuk, 0, ',', '.') }}</td>
                 <td class="right">{{ number_format($totalKtsKeluar, 0, ',', '.') }}</td>
