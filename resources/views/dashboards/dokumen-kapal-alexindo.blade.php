@@ -5,120 +5,151 @@
 
 @push('styles')
 <style>
-    /* ===== MOBILE CARD LIST (mengganti tabel di mobile) ===== */
-    .mobile-card-list { display: none; }
-
+    body:has(.ship-document-dashboard) { font-family: Arial, sans-serif; font-size: 12px; }
+    body:has(.ship-document-dashboard) #page-content { background: #F5F7FA; }
+    body:has(.ship-document-dashboard) > header h1 { font-family: Arial, sans-serif; font-size: 20px; }
+    body:has(.ship-document-dashboard) #sidebar :is(a, input, .menu-text),
+    body:has(.ship-document-dashboard) > header :is(button, a, span:not([class*="fa-"])) {
+        font-family: Arial, sans-serif; font-size: 12px;
+    }
+    .ship-document-dashboard {
+        --doc-navy: #1E3A5F;
+        --doc-bg: #F5F7FA;
+        --doc-line: #e1e6ed;
+        font: 12px/1.5 Arial, sans-serif;
+        color: #344256;
+        min-width: 0;
+        background: var(--doc-bg);
+    }
+    .ship-document-dashboard :is(p, span, a, button, input, select, label, table, th, td) {
+        font-family: Arial, sans-serif; font-size: 12px;
+    }
+    .ship-document-dashboard h2 { font: 600 16px/1.4 Arial, sans-serif; color: var(--doc-navy); }
+    .ship-document-dashboard > * + * { margin-top: 20px; }
+    .ship-document-dashboard .stats-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+    .ship-document-dashboard :is(.stat-card, .collapsible-section, .doc-mobile-card) {
+        background: #fff; border: 1px solid var(--doc-line); border-radius: 8px;
+        box-shadow: 0 2px 6px rgb(30 58 95 / 5%);
+    }
+    .ship-document-dashboard .stat-card {
+        padding: 16px; border-top: 3px solid #8799b0; min-width: 0;
+        display: flex; flex-direction: column; transition: none; transform: none;
+    }
+    .ship-document-dashboard .stat-card[data-target="section-total"] { border-top-color: var(--doc-navy); }
+    .ship-document-dashboard .stat-card[data-target="section-expiring"] { border-top-color: #bc9345; }
+    .ship-document-dashboard .stat-card[data-target="section-expired"] { border-top-color: #bc6767; }
+    .ship-document-dashboard .stat-card[data-target="section-nodate"] { border-top-color: #97a1af; }
+    .ship-document-dashboard .stat-card:hover { background: #fafbfd; border-color: #aab9cc; box-shadow: 0 2px 6px rgb(30 58 95 / 5%); transform: none; }
+    .ship-document-dashboard .stat-card[aria-expanded="true"] {
+        background: #f3f6fa; outline: 1px solid var(--doc-navy); outline-offset: -1px;
+    }
+    .ship-document-dashboard :is(.stat-card, a, button, input, select):focus-visible {
+        outline: 2px solid #6b86a8; outline-offset: 2px;
+    }
+    .ship-document-dashboard .stat-card > .flex { gap: 10px; align-items: flex-start; }
+    .ship-document-dashboard .stat-card > .flex > div:first-child { flex: 1; min-width: 0; }
+    .ship-document-dashboard .stat-label { color: #647184; min-height: 36px; line-height: 18px; }
+    .ship-document-dashboard .stat-number { color: var(--doc-navy); font-size: 20px; font-weight: 700; line-height: 1.3; margin: 6px 0 10px; font-variant-numeric: tabular-nums; }
+    .ship-document-dashboard [data-target="section-expiring"] .stat-number { color: #966712; }
+    .ship-document-dashboard [data-target="section-expired"] .stat-number { color: #b34242; }
+    .ship-document-dashboard [data-target="section-nodate"] .stat-number { color: #657184; }
+    .ship-document-dashboard .stat-card .p-2 { padding: 7px; background: #f2f5f8; border-radius: 6px; }
+    .ship-document-dashboard .stat-card .p-2 svg { width: 18px; height: 18px; color: #71839b; }
+    .ship-document-dashboard .toggle-hint { color: #7a8797; font-weight: 400; margin-top: auto; padding-top: 8px; border-top: 1px solid #edf0f4; }
+    .ship-document-dashboard .stat-card[aria-expanded="true"] .toggle-hint { color: var(--doc-navy); }
+    .ship-document-dashboard .collapsible-section { scroll-margin-top: 16px; }
+    .ship-document-dashboard .collapsible-section > :first-child { background: #fff; border-color: var(--doc-line); padding: 16px; }
+    .ship-document-dashboard .section-header-inner { flex-wrap: wrap; gap: 12px 20px; }
+    .ship-document-dashboard .section-header-title { min-width: 0; flex: 1 1 340px; gap: 8px; }
+    .ship-document-dashboard .section-header-title > svg { width: 18px; height: 18px; color: #71839b; }
+    .ship-document-dashboard .section-header-title > span { background: #f1f4f8; color: var(--doc-navy); border: 1px solid #e2e7ee; border-radius: 5px; padding: 2px 8px; white-space: nowrap; }
+    .ship-document-dashboard .section-header-actions { gap: 8px; }
+    .ship-document-dashboard .section-header-actions button {
+        background: var(--doc-navy); color: #fff; min-height: 32px; padding: 6px 12px;
+        border: 1px solid var(--doc-navy); border-radius: 5px; transition: none;
+    }
+    .ship-document-dashboard .section-header-actions button + button { background: #fff; color: var(--doc-navy); border-color: #cdd7e4; }
+    .ship-document-dashboard .section-header-actions button:hover { background: #2b4c75; color: #fff; }
+    .ship-document-dashboard .section-header-actions button + button:hover { background: #edf2f8; color: var(--doc-navy); }
+    .ship-document-dashboard .section-header-actions svg { width: 14px; height: 14px; margin-right: 6px; }
+    .ship-document-dashboard table { width: 100%; min-width: 900px; border-collapse: collapse; table-layout: fixed; }
+    .ship-document-dashboard th { background: var(--doc-bg); color: #647184; font-weight: 600; padding: 10px 12px; border-color: var(--doc-line); letter-spacing: .01em; }
+    .ship-document-dashboard td { padding: 9px 12px; border-color: var(--doc-line); vertical-align: middle; overflow-wrap: anywhere; }
+    .ship-document-dashboard th:first-child { width: 44px; }
+    .ship-document-dashboard th:nth-child(2) { width: 14%; }
+    .ship-document-dashboard th:nth-child(3) { width: 34%; }
+    .ship-document-dashboard th:nth-child(4) { width: 14%; }
+    .ship-document-dashboard th:nth-child(5) { width: 130px; }
+    .ship-document-dashboard th:nth-child(6) { width: 130px; }
+    .ship-document-dashboard th:last-child { width: 78px; }
+    .ship-document-dashboard td:first-child { color: #7a8594; font-variant-numeric: tabular-nums; }
+    .ship-document-dashboard td:nth-child(2) { font-weight: 700; color: var(--doc-navy); }
+    .ship-document-dashboard td:nth-child(3) { line-height: 1.6; }
+    .ship-document-dashboard td:nth-child(5) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+    .ship-document-dashboard tbody tr:hover { background: #f8fafc; }
+    .ship-document-dashboard :is(td, .doc-row) .inline-flex { padding: 3px 7px; border-radius: 4px; font-weight: 600; }
+    .ship-document-dashboard :is(td, .doc-row) .bg-red-100 { background: #fbeded; color: #ad3d3d; }
+    .ship-document-dashboard :is(td, .doc-row) .bg-yellow-100 { background: #fcf5e6; color: #8b651f; }
+    .ship-document-dashboard :is(td, .doc-row) .bg-green-100 { background: #edf6f1; color: #34704f; }
+    .ship-document-dashboard .document-status-empty { background: #f0f2f5; color: #697586; }
+    .ship-document-dashboard :is(td, .doc-footer) a {
+        display: inline-flex; justify-content: center; align-items: center; min-height: 28px; padding: 4px 10px;
+        border: 1px solid #cdd7e4; border-radius: 5px; background: #fff; color: var(--doc-navy); transition: none;
+    }
+    .ship-document-dashboard :is(td, .doc-footer) a:hover { background: #edf2f8; border-color: #91a5bd; }
+    .ship-document-dashboard .mobile-card-list { display: none; }
+    @media (max-width: 1100px) {
+        .ship-document-dashboard .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
     @media (max-width: 767px) {
-        /* Sembunyikan tabel biasa di mobile */
-        .desktop-table { display: none !important; }
-        /* Tampilkan card list di mobile */
-        .mobile-card-list { display: block; }
-
-        /* Stat cards: 2 kolom di mobile */
-        .stats-grid {
-            display: grid !important;
-            grid-template-columns: 1fr 1fr !important;
-            gap: 0.75rem !important;
-        }
-
-        /* Kurangi padding card di mobile */
-        .stat-card { padding: 0.875rem !important; }
-        .stat-card .stat-number { font-size: 1.75rem !important; }
-        .stat-card .stat-label { font-size: 0.7rem !important; }
-        .stat-card .toggle-hint { font-size: 0.65rem !important; margin-top: 0.5rem !important; }
-
-        /* Section header di mobile: tumpuk vertikal */
-        .section-header-inner {
-            flex-direction: column !important;
-            align-items: flex-start !important;
-            gap: 0.5rem !important;
-        }
-        .section-header-title {
-            flex-wrap: wrap !important;
-            gap: 0.5rem !important;
-        }
-        .section-header-title h2 { font-size: 1rem !important; }
-        .section-header-actions { width: 100%; justify-content: flex-end; }
-
-        /* Mobile individual dokumen card */
-        .doc-mobile-card {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 0.875rem;
-            margin-bottom: 0.625rem;
-            border: 1px solid #e5e7eb;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-        }
-        .doc-mobile-card:last-child { margin-bottom: 0; }
-        .doc-mobile-card .doc-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 0.625rem;
-        }
-        .doc-mobile-card .doc-kapal {
-            font-weight: 700;
-            font-size: 0.875rem;
-            color: #1f2937;
-        }
-        .doc-mobile-card .doc-no {
-            font-size: 0.7rem;
-            color: #9ca3af;
-            background: #f3f4f6;
-            border-radius: 9999px;
-            padding: 0.1rem 0.5rem;
-        }
-        .doc-mobile-card .doc-rows {
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-        .doc-mobile-card .doc-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.775rem;
-        }
-        .doc-mobile-card .doc-row .label {
-            color: #6b7280;
-            font-size: 0.7rem;
-            min-width: 90px;
-        }
-        .doc-mobile-card .doc-row .value {
-            font-weight: 500;
-            color: #374151;
-            text-align: right;
-            flex: 1;
-        }
-        .doc-mobile-card .doc-footer {
-            display: flex;
-            justify-content: flex-end;
-            margin-top: 0.625rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #f3f4f6;
-        }
-        .mobile-empty {
-            text-align: center;
-            color: #9ca3af;
-            padding: 2rem 1rem;
-            font-size: 0.875rem;
-        }
-        .mobile-card-wrapper {
-            padding: 0.75rem;
-        }
+        .ship-document-dashboard .desktop-table { display: none; }
+        .ship-document-dashboard .mobile-card-list { display: block; }
+        .ship-document-dashboard .section-header-title { flex-basis: 100%; }
+        .ship-document-dashboard .section-header-actions { margin-left: auto; }
+        .ship-document-dashboard .mobile-card-wrapper { padding: 12px; background: var(--doc-bg); }
+        .ship-document-dashboard .doc-mobile-card { padding: 14px; margin-bottom: 10px; border-left-width: 1px; }
+        .ship-document-dashboard .doc-mobile-card:last-child { margin-bottom: 0; }
+        .ship-document-dashboard .doc-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1px solid #edf0f4; }
+        .ship-document-dashboard .doc-kapal { color: var(--doc-navy); font-weight: 700; overflow-wrap: anywhere; }
+        .ship-document-dashboard .doc-no { background: #f1f4f8; color: #788596; border-radius: 4px; padding: 1px 6px; flex-shrink: 0; }
+        .ship-document-dashboard .doc-rows { display: flex; flex-direction: column; gap: 8px; }
+        .ship-document-dashboard .doc-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+        .ship-document-dashboard .doc-row .label { color: #748091; flex: 0 0 82px; }
+        .ship-document-dashboard .doc-row .value { flex: 1; min-width: 0; text-align: right; overflow-wrap: anywhere; }
+        .ship-document-dashboard .document-empty-date { margin-top: 8px; margin-bottom: 8px; }
+        .ship-document-dashboard .doc-footer { display: flex; justify-content: flex-end; border-top: 1px solid #edf0f4; margin-top: 12px; padding-top: 10px; }
+        .ship-document-dashboard .mobile-empty { text-align: center; color: #748091; padding: 24px 12px; }
+    }
+    @media (max-width: 480px) {
+        .ship-document-dashboard > * + * { margin-top: 16px; }
+        .ship-document-dashboard .stats-grid { gap: 10px; }
+        .ship-document-dashboard .stat-card { padding: 12px; }
+        .ship-document-dashboard .stat-label { min-height: 54px; }
+        .ship-document-dashboard .stat-card > .flex { gap: 6px; }
+        .ship-document-dashboard .stat-card .p-2 { padding: 4px; }
+        .ship-document-dashboard .stat-card .p-2 svg { width: 14px; height: 14px; }
+        .ship-document-dashboard .toggle-hint { gap: 4px; align-items: flex-start; }
+        .ship-document-dashboard .toggle-hint svg { flex-shrink: 0; margin-top: 3px; }
+    }
+    @media (max-width: 350px) {
+        .ship-document-dashboard .stats-grid { grid-template-columns: 1fr; }
+        .ship-document-dashboard .stat-label { min-height: 0; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+        .ship-document-dashboard { scroll-behavior: auto; }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="space-y-6">
+<div class="ship-document-dashboard space-y-6">
 
     {{-- ===== STATS CARDS ===== --}}
     <div class="stats-grid grid grid-cols-1 md:grid-cols-4 gap-4">
 
         {{-- Total --}}
         <div class="stat-card bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 select-none card-toggle"
-             data-target="section-total">
+             data-target="section-total" role="button" tabindex="0" aria-controls="section-total" aria-expanded="false">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="stat-label text-sm text-gray-600 font-medium">Total Dokumen (Berjangka)</p>
@@ -138,7 +169,7 @@
 
         {{-- Expiring Soon --}}
         <div class="stat-card bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 select-none card-toggle"
-             data-target="section-expiring">
+             data-target="section-expiring" role="button" tabindex="0" aria-controls="section-expiring" aria-expanded="false">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="stat-label text-sm text-gray-600 font-medium">Jatuh Tempo 30 Hari</p>
@@ -158,7 +189,7 @@
 
         {{-- Expired --}}
         <div class="stat-card bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 select-none card-toggle"
-             data-target="section-expired">
+             data-target="section-expired" role="button" tabindex="0" aria-controls="section-expired" aria-expanded="false">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="stat-label text-sm text-gray-600 font-medium">Sudah Lewat Tempo</p>
@@ -178,7 +209,7 @@
 
         {{-- No Date --}}
         <div class="stat-card bg-white rounded-lg shadow-md p-6 border-l-4 border-gray-500 cursor-pointer hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 select-none card-toggle"
-             data-target="section-nodate">
+             data-target="section-nodate" role="button" tabindex="0" aria-controls="section-nodate" aria-expanded="false">
             <div class="flex items-center justify-between">
                 <div>
                     <p class="stat-label text-sm text-gray-600 font-medium">Tanpa Tanggal Berakhir</p>
@@ -211,11 +242,11 @@
                 <div class="section-header-actions flex gap-2 shrink-0">
                     <button onclick="downloadExcel('total-table', 'Total_Dokumen_Berjangka')" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span class="hidden sm:inline">Excel</span>
+                        <span>Excel</span>
                     </button>
                     <button onclick="printTable('total-table')" class="inline-flex items-center px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        <span class="hidden sm:inline">Print</span>
+                        <span>Print</span>
                     </button>
                 </div>
             </div>
@@ -250,7 +281,7 @@
                         <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
-                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d M Y') }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d/M/Y') }}</td>
                         <td class="py-2 px-3"><span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $stClass }}">{{ $stLabel }}</span></td>
                         <td class="py-2 px-3 text-center">
                             <a href="{{ route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id) }}" class="bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600">Detail</a>
@@ -290,7 +321,7 @@
                     </div>
                     <div class="doc-row">
                         <span class="label">Tgl Berakhir</span>
-                        <span class="value">{{ $tanggal->format('d M Y') }}</span>
+                        <span class="value">{{ $tanggal->format('d/M/Y') }}</span>
                     </div>
                     <div class="doc-row">
                         <span class="label">Status</span>
@@ -321,11 +352,11 @@
                 <div class="section-header-actions flex gap-2 shrink-0">
                     <button onclick="downloadExcel('expiring-table', 'Dokumen_Expiring_30_Hari')" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span class="hidden sm:inline">Excel</span>
+                        <span>Excel</span>
                     </button>
                     <button onclick="printTable('expiring-table')" class="inline-flex items-center px-3 py-1.5 bg-yellow-600 hover:bg-yellow-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        <span class="hidden sm:inline">Print</span>
+                        <span>Print</span>
                     </button>
                 </div>
             </div>
@@ -357,7 +388,7 @@
                         <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
-                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d M Y') }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d/M/Y') }}</td>
                         <td class="py-2 px-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold {{ $diffDays <= 7 ? 'bg-red-100 text-red-800' : 'bg-yellow-100 text-yellow-800' }}">{{ $diffDays }} hari</span>
                         </td>
@@ -397,7 +428,7 @@
                     </div>
                     <div class="doc-row">
                         <span class="label">Tgl Berakhir</span>
-                        <span class="value">{{ $tanggal->format('d M Y') }}</span>
+                        <span class="value">{{ $tanggal->format('d/M/Y') }}</span>
                     </div>
                     <div class="doc-row">
                         <span class="label">Sisa Hari</span>
@@ -428,11 +459,11 @@
                 <div class="section-header-actions flex gap-2 shrink-0">
                     <button onclick="downloadExcel('expired-table', 'Dokumen_Expired')" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span class="hidden sm:inline">Excel</span>
+                        <span>Excel</span>
                     </button>
                     <button onclick="printTable('expired-table')" class="inline-flex items-center px-3 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        <span class="hidden sm:inline">Print</span>
+                        <span>Print</span>
                     </button>
                 </div>
             </div>
@@ -464,7 +495,7 @@
                         <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
-                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d M Y') }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $tanggal->format('d/M/Y') }}</td>
                         <td class="py-2 px-3">
                             <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold bg-red-100 text-red-800">{{ $diffDays }} hari</span>
                         </td>
@@ -503,7 +534,7 @@
                     </div>
                     <div class="doc-row">
                         <span class="label">Tgl Berakhir</span>
-                        <span class="value">{{ $tanggal->format('d M Y') }}</span>
+                        <span class="value">{{ $tanggal->format('d/M/Y') }}</span>
                     </div>
                     <div class="doc-row">
                         <span class="label">Lewat</span>
@@ -534,11 +565,11 @@
                 <div class="section-header-actions flex gap-2 shrink-0">
                     <button onclick="downloadExcel('nodate-table', 'Dokumen_Tanpa_Tanggal')" class="inline-flex items-center px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                        <span class="hidden sm:inline">Excel</span>
+                        <span>Excel</span>
                     </button>
                     <button onclick="printTable('nodate-table')" class="inline-flex items-center px-3 py-1.5 bg-gray-600 hover:bg-gray-700 text-white text-xs font-medium rounded-lg transition-colors no-print">
                         <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
-                        <span class="hidden sm:inline">Print</span>
+                        <span>Print</span>
                     </button>
                 </div>
             </div>
@@ -553,6 +584,8 @@
                         <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase">Kapal</th>
                         <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase">Nama Dokumen</th>
                         <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase">Nomor Dokumen</th>
+                        <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal Berakhir</th>
+                        <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                         <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase">Aksi</th>
                     </tr>
                 </thead>
@@ -563,12 +596,14 @@
                         <td class="py-2 px-3 text-sm font-semibold">{{ $dokumen->kapal->nama_kapal ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->sertifikatKapal->nama_sertifikat ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $dokumen->nomor_dokumen ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">-</td>
+                        <td class="py-2 px-3"><span class="document-status-empty inline-flex items-center px-2 py-0.5 rounded-full text-xs font-bold">Tanpa tanggal</span></td>
                         <td class="py-2 px-3 text-center">
                             <a href="{{ route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id) }}" class="bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600">Detail</a>
                         </td>
                     </tr>
                     @empty
-                    <tr><td colspan="5" class="py-8 text-center text-gray-500">Tidak ada dokumen tanpa tanggal berakhir</td></tr>
+                    <tr><td colspan="7" class="py-8 text-center text-gray-500">Tidak ada dokumen tanpa tanggal berakhir</td></tr>
                     @endforelse
                 </tbody>
             </table>
@@ -592,6 +627,14 @@
                         <span class="value">{{ $dokumen->nomor_dokumen ?? '-' }}</span>
                     </div>
                 </div>
+                <div class="doc-row document-empty-date">
+                    <span class="label">Tgl Berakhir</span>
+                    <span class="value">-</span>
+                </div>
+                <div class="doc-row">
+                    <span class="label">Status</span>
+                    <span class="value"><span class="document-status-empty inline-flex px-2 py-0.5 rounded-full text-xs font-bold">Tanpa tanggal</span></span>
+                </div>
                 <div class="doc-footer">
                     <a href="{{ route('master-dokumen-kapal-alexindo.show', $dokumen->kapal_id) }}" class="bg-blue-500 text-white py-1.5 px-4 rounded-lg text-xs font-medium hover:bg-blue-600 active:bg-blue-700 transition-colors">Detail</a>
                 </div>
@@ -607,16 +650,23 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 <script>
 // ======== CARD TOGGLE ========
-document.querySelectorAll('.card-toggle').forEach(function(card) {
+document.querySelectorAll('.ship-document-dashboard .card-toggle').forEach(function(card) {
+    card.addEventListener('keydown', function(event) {
+        if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            this.click();
+        }
+    });
     card.addEventListener('click', function() {
         var targetId = this.getAttribute('data-target');
         var targetSection = document.getElementById(targetId);
 
-        document.querySelectorAll('.collapsible-section').forEach(function(section) {
+        document.querySelectorAll('.ship-document-dashboard .collapsible-section').forEach(function(section) {
             if (section.id !== targetId) section.classList.add('hidden');
         });
 
-        document.querySelectorAll('.card-toggle').forEach(function(c) {
+        document.querySelectorAll('.ship-document-dashboard .card-toggle').forEach(function(c) {
+            c.setAttribute('aria-expanded', 'false');
             var hint = c.querySelector('.toggle-hint');
             if (hint) hint.innerHTML = '<svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg> Tap untuk lihat data';
         });
@@ -624,6 +674,7 @@ document.querySelectorAll('.card-toggle').forEach(function(card) {
         var isHidden = targetSection.classList.contains('hidden');
         if (isHidden) {
             targetSection.classList.remove('hidden');
+            this.setAttribute('aria-expanded', 'true');
             setTimeout(function() {
                 targetSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 50);
@@ -659,7 +710,7 @@ function printTable(tableId) {
     };
     const printWindow = window.open('', '', 'height=600,width=800');
     printWindow.document.write('<html><head><title>Print</title>');
-    printWindow.document.write('<style>table{width:100%;border-collapse:collapse}th,td{border:1px solid #ddd;padding:8px;text-align:left}th{background:#f3f4f6}</style>');
+    printWindow.document.write('<style>body{font:12px/1.5 Arial,sans-serif;color:#344256;padding:16px}h2{font:600 18px/1.4 Arial,sans-serif;color:#1E3A5F}table{width:100%;border-collapse:collapse;font-size:12px}th,td{border-bottom:1px solid #e1e6ed;padding:8px;text-align:left;font-size:12px}th{background:#F5F7FA;color:#647184}td:nth-child(2){font-weight:700}a{color:#1E3A5F;text-decoration:none}.inline-flex{display:inline-block;border-radius:4px;padding:2px 6px;font-size:12px}.bg-red-100{background:#fbeded;color:#ad3d3d}.bg-yellow-100{background:#fcf5e6;color:#8b651f}.bg-green-100{background:#edf6f1;color:#34704f}.document-status-empty{background:#f0f2f5;color:#697586}thead{display:table-header-group}tr{break-inside:avoid}</style>');
     printWindow.document.write('</head><body>');
     printWindow.document.write('<h2>' + (titles[tableId] || 'Dashboard Dokumen') + '</h2>');
     printWindow.document.write(tableContainer.innerHTML);

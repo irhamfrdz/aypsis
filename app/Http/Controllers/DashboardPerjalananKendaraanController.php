@@ -68,6 +68,9 @@ class DashboardPerjalananKendaraanController extends Controller
     public function index(Request $request, RitSuratJalanService $ritService)
     {
         $search = trim($request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? '');
+        $ukuran = $request->validate([
+            'ukuran' => ['nullable', 'in:semua,panjang,pendek,belum_diisi'],
+        ])['ukuran'] ?? 'semua';
         $hasReport = $request->hasAny(['tanggal_dari', 'tanggal_sampai']);
         $tanggalDari = (string) $request->query('tanggal_dari', '');
         $tanggalSampai = (string) $request->query('tanggal_sampai', '');
@@ -97,6 +100,16 @@ class DashboardPerjalananKendaraanController extends Controller
                 ->get()
                 ->sortByDesc(fn ($row) => (float) $row->total_km)
                 ->values();
+
+            if ($ukuran !== 'semua') {
+                $vehicleStats = $vehicleStats->filter(function ($row) use ($ukuran) {
+                    $size = strtolower(trim((string) $row->mobil?->ukuran_tractor_head));
+
+                    return $ukuran === 'belum_diisi'
+                        ? ! in_array($size, ['panjang', 'pendek'], true)
+                        : $size === $ukuran;
+                })->values();
+            }
 
             if ($search !== '') {
                 $normalize = fn ($value) => preg_replace('/\s+/u', '', mb_strtolower((string) $value));
@@ -199,7 +212,7 @@ class DashboardPerjalananKendaraanController extends Controller
             }
 
             $dailyTotals = GpsDailyDistance::query()
-                ->when($search !== '', fn ($query) => $query->whereIn('mobil_id', $vehicleStats->pluck('mobil_id')))
+                ->when($search !== '' || $ukuran !== 'semua', fn ($query) => $query->whereIn('mobil_id', $vehicleStats->pluck('mobil_id')))
                 ->select('date')
                 ->selectRaw('SUM(distance_km) as total_km, COUNT(*) as vehicle_count')
                 ->whereBetween('date', [$tanggalDari, $tanggalSampai])
@@ -245,7 +258,7 @@ class DashboardPerjalananKendaraanController extends Controller
 
         return view('dashboard-perjalanan-kendaraan.index', compact(
             'hasReport', 'tanggalDari', 'tanggalSampai', 'vehicleStats', 'dailyTotals',
-            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance', 'rankings', 'search'
+            'totalDistance', 'maxVehicleDistance', 'maxDailyDistance', 'rankings', 'search', 'ukuran'
         ));
     }
 }

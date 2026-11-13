@@ -2,10 +2,98 @@
 
 @section('title', 'Surat Jalan Bongkaran')
 
+
+@push('styles')
+<style>
+    body:has(.bongkaran-page) { font-family: Arial, sans-serif; font-size: 12px; }
+    body:has(.bongkaran-page) #page-content { background: #F5F7FA; }
+    body:has(.bongkaran-page) > header h1 { font-family: Arial, sans-serif; font-size: 20px; }
+    body:has(.bongkaran-page) #sidebar :is(a, input, .menu-text),
+    body:has(.bongkaran-page) > header :is(button, a, span:not([class*="fa-"])) { font-family: Arial, sans-serif; font-size: 12px; }
+    .bongkaran-page { --bongkaran-navy: #1E3A5F; --bongkaran-line: #e1e6ed; font: 12px/1.5 Arial, sans-serif; color: #344256; padding: 0; min-width: 0; }
+    .bongkaran-page :is(p, span, a, button, input, select, textarea, label, table, th, td, div) { font-family: Arial, sans-serif; font-size: 12px; }
+    .bongkaran-page h1 { font: 600 20px/1.4 Arial, sans-serif; color: var(--bongkaran-navy); }
+    .bongkaran-page :is(h2, h3) { font: 600 16px/1.4 Arial, sans-serif; color: var(--bongkaran-navy); }
+    .bongkaran-page h4 { font: 600 12px/1.5 Arial, sans-serif; color: var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-heading { margin-bottom: 18px; }
+    .bongkaran-page .bongkaran-heading nav { color: #8490a1; }
+    .bongkaran-page .bongkaran-heading a { color: #5b718d; }
+    .bongkaran-page .bongkaran-panel { border-color: var(--bongkaran-line); border-radius: 8px; background: #fff; box-shadow: 0 2px 6px rgb(30 58 95 / 4%); min-width: 0; }
+    .bongkaran-page .bongkaran-panel-header { padding: 16px; border-color: var(--bongkaran-line); }
+    .bongkaran-page .bongkaran-panel-header > .flex { flex-wrap: wrap; gap: 12px 20px; }
+    .bongkaran-page .bongkaran-panel-header > .flex > div:first-child > .flex { margin-top: 5px; flex-wrap: wrap; gap: 6px 20px; color: #748091; }
+    .bongkaran-page .bongkaran-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+    .bongkaran-page .bongkaran-actions :is(a, button) { min-height: 34px; padding: 7px 12px; border: 1px solid #cdd7e4; border-radius: 5px; background: #fff; color: var(--bongkaran-navy); box-shadow: none; font-weight: 500; transition: none; white-space: nowrap; }
+    .bongkaran-page .bongkaran-actions > button:first-child { background: var(--bongkaran-navy); color: #fff; border-color: var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-actions :is(a, button):hover { background: #edf2f8; }
+    .bongkaran-page .bongkaran-actions > button:first-child:hover { background: #2b4c75; }
+    .bongkaran-page .bongkaran-actions :is(svg, i) { width: 14px; height: 14px; font-size: 12px; margin-right: 6px; }
+    .bongkaran-page .bongkaran-panel-body { padding: 16px; }
+    .bongkaran-page .bongkaran-filters { margin-bottom: 16px; padding: 12px; background: #fafbfd; border: 1px solid #e7ebf1; border-radius: 6px; }
+    .bongkaran-page .bongkaran-filters > .flex { gap: 12px; }
+    .bongkaran-page .bongkaran-filters > .flex > .flex:first-child { gap: 12px 20px; }
+    .bongkaran-page .bongkaran-filters .gap-3 { gap: 8px; }
+    .bongkaran-page .bongkaran-filters .gap-4 { gap: 12px; }
+    .bongkaran-page .bongkaran-filters .gap-4 > .flex { flex-wrap: wrap; }
+    .bongkaran-page .bongkaran-filters label, .bongkaran-page .bongkaran-filters span { color: #617087; font-weight: 400; }
+    .bongkaran-page input:not([type="hidden"]):not([type="radio"]):not([type="checkbox"]),
+    .bongkaran-page select, .bongkaran-page textarea { min-height: 34px; padding: 7px 10px; border-color: #d5dde7; border-radius: 5px; background-color: #fff; box-shadow: none; font-size: 12px; }
+    .bongkaran-page select { padding-right: 30px; }
+    .bongkaran-page input:is([type="checkbox"], [type="radio"]) { width: 14px; height: 14px; color: var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-filters button[type="submit"] { background: var(--bongkaran-navy); border: 1px solid var(--bongkaran-navy); border-radius: 5px; min-height: 34px; padding: 7px 12px; transition: none; }
+    .bongkaran-page .bongkaran-filters .items-end > a { background: #fff; color: var(--bongkaran-navy); border: 1px solid #cdd7e4; border-radius: 5px; min-height: 34px; padding: 7px 12px; transition: none; }
+    .bongkaran-page .bongkaran-filters .items-end > a:hover { background: #edf2f8; }
+    .bongkaran-page .bongkaran-summary { display: flex; flex-wrap: wrap; gap: 4px 20px; padding: 10px 12px; background: #f5f7fa; border: 1px solid #e6ebf1; border-radius: 5px; color: #748091; }
+    .bongkaran-page .bongkaran-summary strong { color: #536379; font-weight: 600; }
+    .bongkaran-page :is(#manifestTable, #suratJalanTable) { width: 100%; min-width: 1400px; border-collapse: collapse; }
+    .bongkaran-page thead th { background: #F5F7FA; color: #647184; font-size: 12px; font-weight: 600; letter-spacing: .01em; padding: 10px 12px; border-bottom: 1px solid var(--bongkaran-line); }
+    .bongkaran-page :is(#manifestTable, #suratJalanTable) th { min-width: 86px; }
+    .bongkaran-page :is(#manifestTable, #suratJalanTable) th:first-child { min-width: 64px; width: 64px; }
+    .bongkaran-page td { padding: 10px 12px; border-color: var(--bongkaran-line); vertical-align: middle; color: #344256; line-height: 1.5; }
+    .bongkaran-page tbody tr:hover { background: #f8fafc; }
+    .bongkaran-page .bongkaran-pending { display: inline-flex; padding: 3px 7px; border-radius: 4px; background: #fcf3e5; color: #946b2c; font-weight: 500; }
+    .bongkaran-page tbody td .text-blue-600 { color: var(--bongkaran-navy); }
+    .bongkaran-page td > .inline-flex { border-radius: 4px; font-weight: 500; }
+    .bongkaran-page td .bg-green-100 { background: #edf6f1; color: #34704f; }
+    .bongkaran-page td .bg-gray-100 { background: #f1f3f6; color: #8b97a6; }
+    .bongkaran-page :is(#manifestTable, #suratJalanTable) button.w-8 { background: var(--bongkaran-navy); border: 1px solid var(--bongkaran-navy); width: 28px; height: 28px; border-radius: 5px; box-shadow: none; transition: none; }
+    .bongkaran-page :is(#manifestTable, #suratJalanTable) button.w-8:hover { background: #2b4c75; }
+    .bongkaran-page [id^="dropdown-"] { border: 1px solid var(--bongkaran-line); border-radius: 6px; box-shadow: 0 4px 12px rgb(30 58 95 / 10%); }
+    .bongkaran-page [id^="dropdown-"] a:not(.text-red-700) { color: var(--bongkaran-navy); }
+    .bongkaran-page [id^="dropdown-"] a:hover { background: #f3f6fa; }
+    .bongkaran-page :is(a, button, input, select, textarea):focus-visible { outline: 2px solid #718cac; outline-offset: 2px; box-shadow: none; }
+    .bongkaran-page .overflow-x-auto::-webkit-scrollbar { height: 5px; }
+    .bongkaran-page .overflow-x-auto::-webkit-scrollbar-thumb { background: #d5dde7; border-radius: 4px; }
+    .bongkaran-page .bongkaran-panel-body > .border-t { margin-top: 16px; padding-top: 12px; border-color: var(--bongkaran-line); gap: 8px; }
+    .bongkaran-page nav svg { width: 16px; height: 16px; }
+    .bongkaran-page td[colspan] { padding: 28px 16px; }
+    .bongkaran-page td[colspan] > div > svg { width: 32px; height: 32px; margin-bottom: 10px; }
+    .bongkaran-page :is(#modalBuatSuratJalan, #modalEditSuratJalan, #modalBuatSuratJalanMassal) > div { border-radius: 8px; border-color: var(--bongkaran-line); box-shadow: 0 8px 30px rgb(30 58 95 / 12%); }
+    .bongkaran-page :is(#modalBuatSuratJalan, #modalEditSuratJalan, #modalBuatSuratJalanMassal) button.bg-blue-600 { background: var(--bongkaran-navy); border-radius: 5px; }
+    .bongkaran-page .bongkaran-date { position: relative; }
+    .bongkaran-page .bongkaran-date-display { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); pointer-events: none; color: #344256; }
+    .bongkaran-page .bongkaran-date input[type="date"] { color: transparent; }
+    .bongkaran-page .bongkaran-date input::-webkit-datetime-edit { opacity: 0; }
+    body:has(.bongkaran-page) #bulkResultOverlay { font: 12px/1.5 Arial, sans-serif; }
+    body:has(.bongkaran-page) #bulkResultOverlay :is(div, button) { font-size: 12px; }
+    body:has(.bongkaran-page) #bulkResultOverlay h3 { font: 600 16px/1.4 Arial, sans-serif; color: #1E3A5F; }
+    body:has(.bongkaran-page) #bulkResultOverlay svg { width: 32px; height: 32px; }
+    @media (max-width: 1100px) {
+        .bongkaran-page .bongkaran-actions { width: 100%; }
+    }
+    @media (max-width: 640px) {
+        .bongkaran-page .bongkaran-panel-header, .bongkaran-page .bongkaran-panel-body { padding: 12px; }
+        .bongkaran-page .bongkaran-actions { gap: 6px; }
+        .bongkaran-page .bongkaran-actions :is(a, button) { padding: 7px 9px; }
+        .bongkaran-page .bongkaran-filters > .flex > .flex:first-child > .flex:last-child { flex-wrap: wrap; gap: 8px; }
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="flex-1 p-6">
+<div class="bongkaran-page flex-1 p-6">
     <!-- Page Header -->
-    <div class="flex items-center justify-between mb-6">
+    <div class="bongkaran-heading flex items-center justify-between mb-6">
         <div>
             <h1 class="text-2xl font-bold text-gray-900">Surat Jalan Bongkaran</h1>
             <nav class="flex text-sm text-gray-600 mt-1">
@@ -46,9 +134,9 @@
     @endif
 
     <!-- Main Card -->
-    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+    <div class="bongkaran-panel bg-white rounded-lg shadow-sm border border-gray-200">
         <!-- Card Header -->
-        <div class="px-6 py-4 border-b border-gray-200">
+        <div class="bongkaran-panel-header px-6 py-4 border-b border-gray-200">
             <div class="flex items-center justify-between">
                 <div>
                     <h2 class="text-lg font-semibold text-gray-900">Surat Jalan Bongkaran</h2>
@@ -61,7 +149,7 @@
                         </span>
                     </div>
                 </div>
-                <div class="flex gap-2">
+                <div class="bongkaran-actions flex gap-2">
                     <button onclick="buatSuratJalanManual()" 
                             class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -102,9 +190,9 @@
         </div>
 
         <!-- Card Body -->
-        <div class="p-6">
+        <div class="bongkaran-panel-body p-6">
             <!-- Search Form -->
-            <form method="GET" action="{{ route('surat-jalan-bongkaran-batam.list') }}" class="mb-6">
+            <form method="GET" action="{{ route('surat-jalan-bongkaran-batam.list') }}" class="bongkaran-filters mb-6">
                 <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
                 <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
                 
@@ -183,8 +271,8 @@
 
                     <!-- Debug Info -->
             @if(config('app.debug'))
-                <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-                    <strong>Debug Info:</strong><br>
+                <div class="bongkaran-summary mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                    <strong>Ringkasan data</strong>
                     @if(request('mode') == 'surat_jalan')
                         Total Surat Jalan: {{ $suratJalans->total() }}
                     @else
@@ -278,7 +366,7 @@
                                     <td class="px-4 py-3 text-sm">
                                         <span class="font-semibold text-gray-900">{{ $sj->nomor_surat_jalan ?: '-' }}</span>
                                     </td>
-                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->tanggal_surat_jalan ? $sj->tanggal_surat_jalan->format('d/M/Y') : '-' }}</td>
                                     @if($showKapalVoyage)
                                         <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->manifest->nama_kapal ?? '-' }}</td>
                                         <td class="px-4 py-3 text-sm text-gray-900">{{ $sj->manifest->no_voyage ?? '-' }}</td>
@@ -436,7 +524,7 @@
                                         @if($manifest->suratJalanBongkaranBatam)
                                             <span class="font-semibold text-blue-600">{{ $manifest->suratJalanBongkaranBatam->nomor_surat_jalan }}</span>
                                         @else
-                                            <span class="text-orange-600 font-medium">Perlu surat jalan</span>
+                                            <span class="bongkaran-pending text-orange-600 font-medium">Perlu surat jalan</span>
                                         @endif
                                     </td>
 
@@ -1736,6 +1824,49 @@
 
 @push('scripts')
 <script>
+
+function formatBongkaranDisplayDate(value) {
+    if (!value) return '';
+    const text = String(value);
+    let match = text.match(/^(\d{4})-(\d{2})-(\d{2})(?:T.*)?$/);
+    if (!match) {
+        const local = text.match(/^(\d{1,2})[/-](\d{1,2})[/-](\d{4})$/);
+        if (local) match = [local[0], local[3], local[2].padStart(2, '0'), local[1].padStart(2, '0')];
+    }
+    if (!match) return text;
+    const date = new Date(`${match[1]}-${match[2]}-${match[3]}T00:00:00`);
+    if (Number.isNaN(date.getTime())) return text;
+    return new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: 'short', year: 'numeric' })
+        .format(date).replace(/ /g, '/').replace('Sept', 'Sep');
+}
+
+function refreshBongkaranDateDisplays() {
+    document.querySelectorAll('.bongkaran-page .bongkaran-date').forEach(function(control) {
+        const input = control.querySelector('input');
+        control.querySelector('.bongkaran-date-display').textContent = formatBongkaranDisplayDate(input.value) || 'dd/mmm/yyyy';
+    });
+}
+
+document.querySelectorAll('.bongkaran-page input[type="date"]').forEach(function(input) {
+    const control = document.createElement('div');
+    control.className = 'bongkaran-date';
+    const display = document.createElement('span');
+    display.className = 'bongkaran-date-display';
+    display.setAttribute('aria-hidden', 'true');
+    input.before(control);
+    control.append(input, display);
+    input.addEventListener('input', refreshBongkaranDateDisplays);
+    input.addEventListener('change', refreshBongkaranDateDisplays);
+    input.addEventListener('focus', refreshBongkaranDateDisplays);
+});
+document.querySelectorAll('.bongkaran-page > [id^="modal"]').forEach(function(modal) {
+    new MutationObserver(refreshBongkaranDateDisplays).observe(modal, { attributes: true, attributeFilter: ['class'] });
+});
+document.querySelectorAll('.bongkaran-page form').forEach(function(form) {
+    form.addEventListener('reset', function() { requestAnimationFrame(refreshBongkaranDateDisplays); });
+});
+refreshBongkaranDateDisplays();
+
 // Helper to parse JSON response and handle HTML errors gracefully
 function parseJsonResponse(response) {
     const contentType = response.headers.get('content-type');
@@ -3409,14 +3540,14 @@ async function parseBulkData() {
         bulkParsedRows.push(row);
 
         // Fungsi bantuan untuk format tanggal Excel di preview
-        let displayTanggal = row.tanggal_surat_jalan || '<span class="text-gray-400 italic">hari ini</span>';
+        let displayTanggal = formatBongkaranDisplayDate(row.tanggal_surat_jalan) || '<span class="text-gray-400 italic">hari ini</span>';
         if (row.tanggal_surat_jalan && !isNaN(row.tanggal_surat_jalan) && parseInt(row.tanggal_surat_jalan) > 10000) {
             const serial = parseInt(row.tanggal_surat_jalan);
             const jsDate = new Date(Math.round((serial - 25569) * 86400 * 1000));
             const y = jsDate.getUTCFullYear();
             const m = String(jsDate.getUTCMonth() + 1).padStart(2, '0');
             const d = String(jsDate.getUTCDate()).padStart(2, '0');
-            displayTanggal = `${d}/${m}/${y}`;
+            displayTanggal = formatBongkaranDisplayDate(`${y}-${m}-${d}`);
             row.tanggal_surat_jalan = `${y}-${m}-${d}`;
         }
 

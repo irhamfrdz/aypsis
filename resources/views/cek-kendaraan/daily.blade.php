@@ -4,9 +4,9 @@
 @section('page_title', 'Dashboard Cek Kendaraan Harian')
 
 @section('content')
-<div class="p-4 sm:p-6 max-w-[1600px] mx-auto">
+<div class="daily-dashboard p-4 sm:p-6 max-w-[1600px] mx-auto">
     {{-- Header Section --}}
-    <div class="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
+    <div class="daily-header mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-gray-900 tracking-tight">Status Kendaraan <span class="text-blue-600">Harian</span></h1>
             <p class="text-gray-500 mt-2 flex items-center">
@@ -14,13 +14,14 @@
                 Memantau kelengkapan pengecekan harian oleh seluruh supir armada
             </p>
         </div>
-        <div class="flex items-center gap-3">
-            <form action="{{ route('admin.cek-kendaraan.daily') }}" method="GET" class="relative group">
+        <div class="daily-actions flex items-center gap-3">
+            <form action="{{ route('admin.cek-kendaraan.daily') }}" method="GET" class="daily-date-control relative group">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-blue-500 transition-colors">
                     <i class="fas fa-calendar-day"></i>
                 </div>
-                <input type="date" name="date" value="{{ $date }}" 
-                    class="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm font-bold text-gray-700 outline-none" 
+                <span class="daily-date-display" aria-hidden="true">{{ \Carbon\Carbon::parse($date)->format('d/M/Y') }}</span>
+                <input aria-label="Tanggal monitoring" type="date" name="date" value="{{ $date }}"
+                    class="pl-10 pr-4 py-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm focus:ring-4 focus:ring-blue-100 focus:border-blue-500 transition-all text-sm font-bold text-gray-700 outline-none"
                     onchange="this.form.submit()">
                 @if(isset($cabang))
                     <input type="hidden" name="cabang" value="{{ $cabang }}">
@@ -30,24 +31,24 @@
                 <i class="fas fa-file-excel"></i>
                 <span>Export Excel</span>
             </a>
-            <button onclick="window.location.reload()" class="p-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:bg-gray-50 text-gray-600 transition-all tooltip" title="Refresh Data">
+            <button aria-label="Refresh data" onclick="window.location.reload()" class="p-2.5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:bg-gray-50 text-gray-600 transition-all tooltip" title="Refresh Data">
                 <i class="fas fa-sync-alt"></i>
             </button>
         </div>
     </div>
 
     {{-- Cabang Tabs --}}
-    <div class="mb-8 flex items-center p-1.5 bg-gray-100/50 w-fit rounded-2xl border border-gray-200/50">
-        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date]) }}" 
-           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ !$cabang ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+    <div class="daily-branches mb-8 flex items-center p-1.5 bg-gray-100/50 w-fit rounded-2xl border border-gray-200/50">
+        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date]) }}"
+           aria-current="{{ !$cabang ? 'page' : 'false' }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ !$cabang ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             Semua Cabang
         </a>
-        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date, 'cabang' => 'JAKARTA']) }}" 
-           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'JAKARTA' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date, 'cabang' => 'JAKARTA']) }}"
+           aria-current="{{ $cabang === 'JAKARTA' ? 'page' : 'false' }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'JAKARTA' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             <i class="fas fa-city mr-2 {{ $cabang === 'JAKARTA' ? 'text-blue-500' : 'text-gray-400' }}"></i> Jakarta
         </a>
-        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date, 'cabang' => 'BATAM']) }}" 
-           class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'BATAM' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
+        <a href="{{ route('admin.cek-kendaraan.daily', ['date' => $date, 'cabang' => 'BATAM']) }}"
+           aria-current="{{ $cabang === 'BATAM' ? 'page' : 'false' }}" class="px-6 py-2.5 rounded-xl text-sm font-bold transition-all {{ $cabang === 'BATAM' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-700' }}">
             <i class="fas fa-ship mr-2 {{ $cabang === 'BATAM' ? 'text-blue-500' : 'text-gray-400' }}"></i> Batam
         </a>
     </div>
@@ -62,10 +63,9 @@
     @endphp
 
     {{-- Stats Cards --}}
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="daily-stats grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         {{-- Total Supir --}}
-        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-gray-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+        <div class="daily-stat bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
             <div class="relative flex items-start justify-between">
                 <div>
                     <p class="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">Total Supir</p>
@@ -81,8 +81,7 @@
         </div>
 
         {{-- Selesai Cek --}}
-        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-emerald-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+        <div class="daily-stat bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
             <div class="relative flex items-start justify-between">
                 <div>
                     <p class="text-xs font-bold text-emerald-500 uppercase tracking-widest mb-1">Selesai Cek</p>
@@ -98,8 +97,7 @@
         </div>
 
         {{-- Belum Cek --}}
-        <div class="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
-            <div class="absolute -right-4 -top-4 w-24 h-24 bg-rose-50 rounded-full opacity-50 group-hover:scale-110 transition-transform"></div>
+        <div class="daily-stat bg-white p-6 rounded-3xl border border-gray-100 shadow-sm hover:shadow-md transition-all group overflow-hidden relative">
             <div class="relative flex items-start justify-between">
                 <div>
                     <p class="text-xs font-bold text-rose-400 uppercase tracking-widest mb-1">Belum Cek</p>
@@ -114,34 +112,26 @@
             </div>
         </div>
 
-        {{-- Progress Circle --}}
-        <div class="bg-blue-600 p-6 rounded-3xl shadow-lg shadow-blue-200 group overflow-hidden relative">
-            <div class="absolute -left-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full"></div>
+        {{-- Progress --}}
+        <div class="daily-stat daily-progress bg-white p-6 rounded-3xl shadow-lg shadow-blue-200 group overflow-hidden relative">
             <div class="relative flex items-center justify-between h-full">
                 <div>
                     <p class="text-xs font-bold text-blue-100 uppercase tracking-widest mb-1">Progress</p>
                     <h3 class="text-4xl font-black text-white leading-none">{{ $completionRate }}%</h3>
                 </div>
-                <div class="relative w-16 h-16 flex items-center justify-center">
-                    <svg class="w-full h-full transform -rotate-90">
-                        <circle cx="32" cy="32" r="28" stroke="rgba(255,255,255,0.2)" stroke-width="6" fill="transparent" />
-                        <circle cx="32" cy="32" r="28" stroke="white" stroke-width="6" fill="transparent"
-                            stroke-dasharray="175.9" stroke-dashoffset="{{ 175.9 - (175.9 * $completionRate / 100) }}"
-                            stroke-linecap="round" />
-                    </svg>
-                </div>
+                <progress class="daily-progress-bar" value="{{ $completionRate }}" max="100" aria-label="Progress pengecekan harian">{{ $completionRate }}%</progress>
             </div>
         </div>
     </div>
 
     {{-- Data Table Section --}}
-    <div class="bg-white rounded-[2rem] border border-gray-100 shadow-xl overflow-hidden">
-        <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="daily-monitoring bg-white rounded-[2rem] border border-gray-100 shadow-xl overflow-hidden">
+        <div class="daily-toolbar p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div class="relative flex-1 max-w-md">
                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                     <i class="fas fa-search text-xs"></i>
                 </div>
-                <input type="text" id="driverSearch" placeholder="Cari nama supir atau NIK..." 
+                <input type="text" id="driverSearch" aria-label="Cari nama supir atau NIK" placeholder="Cari nama supir atau NIK..."
                     class="w-full pl-9 pr-4 py-2.5 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-blue-100 transition-all text-sm font-medium outline-none">
             </div>
             <div class="flex items-center gap-2">
@@ -153,7 +143,7 @@
         </div>
 
         {{-- Desktop Table --}}
-        <div class="hidden lg:block overflow-x-auto">
+        <div class="daily-desktop hidden lg:block overflow-x-auto">
             <table id="driverTable" class="w-full text-left">
                 <thead>
                     <tr class="bg-gray-50/50 text-gray-400 text-[10px] uppercase font-black tracking-[0.2em]">
@@ -174,7 +164,7 @@
                         <tr class="driver-row hover:bg-blue-50/30 transition-colors group" data-status="{{ $status }}" data-search="{{ strtolower($driver->nama_lengkap . ' ' . $driver->nik) }}">
                             <td class="px-8 py-5">
                                 <div class="flex items-center">
-                                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-br {{ $check ? 'from-blue-500 to-indigo-600 text-white' : 'from-gray-100 to-gray-200 text-gray-500' }} flex items-center justify-center font-black text-lg shadow-sm group-hover:scale-110 transition-transform">
+                                    <div class="w-12 h-12 rounded-2xl daily-avatar {{ $check ? 'from-blue-500 to-indigo-600 text-white' : 'from-gray-100 to-gray-200 text-gray-500' }} flex items-center justify-center font-black text-lg shadow-sm group-hover:scale-110 transition-transform">
                                         {{ substr($driver->nama_lengkap, 0, 1) }}
                                     </div>
                                     <div class="ml-4">
@@ -226,7 +216,7 @@
                             </td>
                             <td class="px-8 py-5 text-right">
                                 @if($check)
-                                    <a href="{{ route('admin.cek-kendaraan.show', $check->id) }}" target="_blank" 
+                                    <a href="{{ route('admin.cek-kendaraan.show', $check->id) }}" target="_blank"
                                         class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white transition-all shadow-sm">
                                         <i class="fas fa-eye"></i>
                                     </a>
@@ -265,7 +255,7 @@
                 <div class="driver-row bg-white p-5 rounded-2xl border border-gray-100 shadow-sm transition-all active:scale-[0.98]" data-status="{{ $status }}" data-search="{{ strtolower($driver->nama_lengkap . ' ' . $driver->nik) }}">
                     <div class="flex items-center justify-between mb-4">
                         <div class="flex items-center">
-                            <div class="w-10 h-10 rounded-xl bg-gradient-to-br {{ $check ? 'from-blue-500 to-indigo-600' : 'from-gray-100 to-gray-200 text-gray-400' }} text-white flex items-center justify-center font-black text-sm shadow-sm">
+                            <div class="w-10 h-10 rounded-xl daily-avatar {{ $check ? 'from-blue-500 to-indigo-600' : 'from-gray-100 to-gray-200 text-gray-400' }} text-white flex items-center justify-center font-black text-sm shadow-sm">
                                 @if($check)
                                     {{ substr($driver->nama_lengkap, 0, 1) }}
                                 @else
@@ -295,7 +285,7 @@
                             </span>
                         @endif
                     </div>
-                    
+
                     <div class="grid grid-cols-2 gap-3 mb-4">
                         <div class="bg-gray-50 p-3 rounded-xl border border-gray-100">
                             <p class="text-[9px] font-black text-gray-400 uppercase tracking-[0.1em] mb-1">Kendaraan</p>
@@ -334,32 +324,120 @@
 </div>
 
 <style>
-    .sidebar-search-highlight {
-        background-color: #fef08a;
-        color: #854d0e;
-        border-radius: 2px;
-        padding: 0 1px;
+    body:has(.daily-dashboard) { font-family: Arial, sans-serif; font-size: 12px; }
+    body:has(.daily-dashboard) #page-content { background: #F5F7FA; }
+    body:has(.daily-dashboard) > header h1 { font-family: Arial, sans-serif; font-size: 20px; }
+    body:has(.daily-dashboard) #sidebar :is(a, input, .menu-text),
+    body:has(.daily-dashboard) > header :is(button, a, span:not([class*="fa-"])) { font-family: Arial, sans-serif; font-size: 12px; }
+    .daily-dashboard {
+        --daily-navy: #1E3A5F; --daily-bg: #F5F7FA; --daily-line: #e1e6ed;
+        padding: 0; max-width: none; font: 12px/1.5 Arial, sans-serif; color: #344256; min-width: 0;
     }
-    
-    .status-btn.active {
-        background-color: rgba(59, 130, 246, 0.1);
-        color: #2563eb;
+    .daily-dashboard :is(p, span, a, button, input, select, label, table, th, td, h4) { font-family: Arial, sans-serif; font-size: 12px; }
+    .daily-dashboard h1, .daily-dashboard h1 span { font: 600 20px/1.4 Arial, sans-serif; color: var(--daily-navy); letter-spacing: 0; }
+    .daily-dashboard h3 { font: 700 20px/1.3 Arial, sans-serif; }
+    .daily-dashboard .daily-header { align-items: center; margin-bottom: 18px; gap: 16px; }
+    .daily-dashboard .daily-header p { color: #748091; margin-top: 4px; }
+    .daily-dashboard .daily-header p i { color: #8a99ad; }
+    .daily-dashboard .daily-actions { gap: 8px; flex-shrink: 0; }
+    .daily-dashboard .daily-actions :is(input, a, button) { min-height: 34px; border-radius: 5px; font-weight: 500; box-shadow: none; transition: none; }
+    .daily-dashboard .daily-actions > a { background: var(--daily-navy); border: 1px solid var(--daily-navy); padding: 7px 12px; }
+    .daily-dashboard .daily-actions > a:hover { background: #2b4c75; }
+    .daily-dashboard .daily-actions > button { width: 34px; padding: 7px; color: var(--daily-navy); border-color: #d5dde7; }
+    .daily-dashboard .daily-date-control { width: 165px; }
+    .daily-dashboard .daily-date-control input { width: 100%; background: #fff; border: 1px solid #d5dde7; padding: 7px 8px 7px 32px; color: transparent; }
+    .daily-dashboard .daily-date-control input::-webkit-datetime-edit { opacity: 0; }
+    .daily-dashboard .daily-date-display { position: absolute; left: 32px; top: 50%; transform: translateY(-50%); color: #344256; pointer-events: none; }
+    .daily-dashboard .daily-date-control .absolute { padding-left: 10px; }
+    .daily-dashboard :is(a, button, input):focus-visible { outline: 2px solid #6b86a8; outline-offset: 2px; box-shadow: none; }
+    .daily-dashboard .daily-branches { gap: 3px; padding: 4px; background: #eef1f5; border: 1px solid var(--daily-line); border-radius: 6px; margin-bottom: 18px; max-width: 100%; }
+    .daily-dashboard .daily-branches a { padding: 7px 14px; color: #6b7788; border-radius: 4px; font-weight: 500; transition: none; white-space: nowrap; }
+    .daily-dashboard .daily-branches a[aria-current="page"] { color: var(--daily-navy); background: #fff; box-shadow: 0 1px 3px rgb(30 58 95 / 6%); font-weight: 600; }
+    .daily-dashboard .daily-branches a:hover { color: var(--daily-navy); }
+    .daily-dashboard .daily-branches i { color: #8798ae; margin-right: 6px; }
+    .daily-dashboard .daily-stats { gap: 16px; margin-bottom: 20px; }
+    .daily-dashboard :is(.daily-stat, .daily-monitoring) { background: #fff; border: 1px solid var(--daily-line); border-radius: 8px; box-shadow: 0 2px 5px rgb(30 58 95 / 4%); }
+    .daily-dashboard .daily-stat { padding: 16px; display: flex; flex-direction: column; min-width: 0; transition: none; }
+    .daily-dashboard .daily-stat > .relative { gap: 12px; }
+    .daily-dashboard .daily-stat .uppercase { color: #6b7788; letter-spacing: .02em; font-weight: 500; }
+    .daily-dashboard .daily-stat h3 { color: var(--daily-navy); font-variant-numeric: tabular-nums; }
+    .daily-dashboard .daily-stat h3.text-emerald-600 { color: #34704f; }
+    .daily-dashboard .daily-stat h3.text-rose-500 { color: #ad5252; }
+    .daily-dashboard .daily-stat .w-12 { width: 30px; height: 30px; border-radius: 6px; background: #f2f5f8; }
+    .daily-dashboard .daily-stat .w-12 i { font-size: 14px; }
+    .daily-dashboard .daily-stat > .mt-4 { margin-top: 10px; color: #748091; font-weight: 400; }
+    .daily-dashboard .daily-stat > .mt-4 span { background: #f1f4f8; border-radius: 4px; }
+    .daily-dashboard .daily-progress > .relative { flex-direction: column; align-items: stretch; justify-content: space-between; height: 100%; gap: 12px; }
+    .daily-dashboard .daily-progress-bar { display: block; width: 100%; height: 6px; border: 0; border-radius: 4px; background: #e8edf3; color: var(--daily-navy); appearance: none; overflow: hidden; }
+    .daily-dashboard .daily-progress-bar::-webkit-progress-bar { background: #e8edf3; border-radius: 4px; }
+    .daily-dashboard .daily-progress-bar::-webkit-progress-value { background: var(--daily-navy); border-radius: 4px; }
+    .daily-dashboard .daily-progress-bar::-moz-progress-bar { background: var(--daily-navy); border-radius: 4px; }
+    .daily-dashboard .daily-toolbar { padding: 14px 16px; border-color: var(--daily-line); align-items: center; gap: 12px; }
+    .daily-dashboard #driverSearch { background: #f8fafc; border: 1px solid #dce3eb; border-radius: 5px; padding: 7px 10px 7px 32px; min-height: 34px; font-weight: 400; transition: none; }
+    .daily-dashboard .daily-toolbar > .flex { gap: 4px; flex-wrap: wrap; }
+    .daily-dashboard .daily-toolbar > .flex > span { font-weight: 500; color: #748091; text-transform: none; margin-right: 6px; }
+    .daily-dashboard .status-btn { padding: 6px 11px; min-height: 32px; border-radius: 5px; border: 1px solid transparent; font-weight: 500; transition: none; }
+    .daily-dashboard .status-btn.active { background: #edf2f8; border-color: #dae3ef; color: var(--daily-navy); }
+    .daily-dashboard .status-btn:hover { background: #f3f6fa; }
+    .daily-dashboard table { min-width: 800px; border-collapse: collapse; }
+    .daily-dashboard th { background: var(--daily-bg); color: #647184; letter-spacing: .02em; font-weight: 600; padding: 11px 16px; border-bottom: 1px solid var(--daily-line); }
+    .daily-dashboard td { padding: 12px 16px; border-color: var(--daily-line); }
+    .daily-dashboard th:first-child { width: 36%; }
+    .daily-dashboard .driver-row { transition: none; transform: none; }
+    .daily-dashboard tr.driver-row:hover { background: #f8fafc; }
+    .daily-dashboard .daily-avatar { width: 32px; height: 32px; border-radius: 6px; background: #f0f2f5; background-image: none; color: #8490a1; font: 600 12px Arial, sans-serif; box-shadow: none; transform: none; flex-shrink: 0; }
+    .daily-dashboard .driver-row[data-status="selesai"] .daily-avatar { background: #edf2f8; color: var(--daily-navy); }
+    .daily-dashboard td .ml-4 { margin-left: 10px; }
+    .daily-dashboard .driver-row .tracking-widest { letter-spacing: 0; font-weight: 400; color: #7b8797; text-transform: none; }
+    .daily-dashboard .driver-row .tracking-wider { letter-spacing: 0; font-weight: 500; }
+    .daily-dashboard .driver-row .bg-blue-100 { background: #edf2f8; color: #456386; font-weight: 500; letter-spacing: 0; }
+    .daily-dashboard .driver-row .bg-amber-100 { background: #faf3e7; color: #8a6b35; font-weight: 500; letter-spacing: 0; }
+    .daily-dashboard .driver-row :is(.bg-emerald-100, .bg-rose-100) { border-radius: 4px; font-weight: 500; text-transform: none; letter-spacing: 0; padding: 3px 7px; }
+    .daily-dashboard .driver-row .bg-emerald-100 { background: #edf6f1; color: #34704f; }
+    .daily-dashboard .driver-row .bg-rose-100 { background: #fcf2e7; color: #946b2c; }
+    .daily-dashboard .driver-row .text-gray-300 { color: #929cab; font-style: normal; }
+    .daily-dashboard .driver-row .font-black { font-weight: 600; }
+    .daily-dashboard td:last-child :is(a, button) { width: 30px; height: 30px; border: 1px solid #d4ddea; border-radius: 5px; box-shadow: none; background: #fff; color: var(--daily-navy); transition: none; }
+    .daily-dashboard td:last-child a:hover { background: #edf2f8; }
+    .daily-dashboard td:last-child button:disabled { background: #f6f8fa; border-color: #e9edf2; color: #b0bac8; }
+    .daily-dashboard td[colspan] { padding: 30px 16px; }
+    .daily-dashboard td[colspan] .w-20 { width: 36px; height: 36px; border: 0; box-shadow: none; margin-bottom: 12px; }
+    .daily-dashboard td[colspan] i { font-size: 18px; }
+    .daily-dashboard td[colspan] h3 { font-size: 16px; }
+    .daily-dashboard .daily-monitoring > .border-t { padding: 12px 16px; border-color: var(--daily-line); background: #fafbfd; color: #7b8797; font-weight: 400; letter-spacing: 0; text-transform: none; }
+    .daily-dashboard .overflow-x-auto::-webkit-scrollbar { height: 5px; }
+    .daily-dashboard .overflow-x-auto::-webkit-scrollbar-thumb { background: #d5dde7; border-radius: 4px; }
+    .daily-dashboard #mobileCards { background: var(--daily-bg); padding: 12px; gap: 12px; }
+    .daily-dashboard #mobileCards .driver-row { border: 1px solid var(--daily-line); border-radius: 8px; padding: 14px; box-shadow: 0 1px 3px rgb(30 58 95 / 3%); }
+    .daily-dashboard #mobileCards .driver-row > .flex { gap: 8px; margin-bottom: 12px; align-items: flex-start; }
+    .daily-dashboard #mobileCards h4 { overflow-wrap: anywhere; }
+    .daily-dashboard #mobileCards .ml-3 { min-width: 0; margin-left: 8px; }
+    .daily-dashboard #mobileCards .ml-3 > .flex { flex-wrap: wrap; gap: 4px; }
+    .daily-dashboard #mobileCards .grid { gap: 8px; margin-bottom: 12px; }
+    .daily-dashboard #mobileCards .grid > div { border-color: #edf0f4; border-radius: 5px; background: #f8fafc; padding: 9px; }
+    .daily-dashboard #mobileCards .grid .uppercase { color: #7b8797; font-weight: 400; letter-spacing: 0; }
+    .daily-dashboard #mobileCards .driver-row > a { background: #fff; color: var(--daily-navy); border: 1px solid #cdd7e4; border-radius: 5px; padding: 7px 10px; box-shadow: none; transform: none; transition: none; }
+    .daily-dashboard #mobileCards .driver-row > a:hover { background: #edf2f8; }
+    .daily-dashboard #mobileCards .driver-row > button { border-radius: 5px; padding: 7px 10px; font-weight: 400; background: #f1f3f6; color: #8c98a8; }
+    @media (max-width: 1200px) {
+        .daily-dashboard .daily-header { flex-direction: column; align-items: flex-start; }
+        .daily-dashboard .daily-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
-    /* Custom Scrollbar for overflow-x-auto */
-    .overflow-x-auto::-webkit-scrollbar {
-        height: 6px;
+    @media (max-width: 767px) {
+        .daily-dashboard .daily-toolbar { align-items: stretch; }
+        .daily-dashboard .daily-toolbar > .relative { max-width: none; }
     }
-    .overflow-x-auto::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 10px;
+    @media (max-width: 540px) {
+        .daily-dashboard .daily-actions { flex-wrap: wrap; gap: 6px; }
+        .daily-dashboard .daily-branches { width: 100%; }
+        .daily-dashboard .daily-branches a { flex: 1; padding: 7px 8px; text-align: center; }
+        .daily-dashboard .daily-stats { gap: 10px; }
+        .daily-dashboard .daily-stat { padding: 12px; }
+        .daily-dashboard .daily-stat > .relative { gap: 8px; }
+        .daily-dashboard #mobileCards .driver-row > .flex { flex-wrap: wrap; }
     }
-    .overflow-x-auto::-webkit-scrollbar-thumb {
-        background: #e2e8f0;
-        border-radius: 10px;
-    }
-    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
-        background: #cbd5e1;
+    @media (max-width: 350px) {
+        .daily-dashboard .daily-stats { grid-template-columns: 1fr; }
     }
 </style>
 
@@ -371,7 +449,7 @@
             btn.classList.remove('active', 'bg-blue-50', 'text-blue-600');
             btn.classList.add('text-gray-500', 'hover:bg-gray-50');
         });
-        
+
         const activeBtn = event.target;
         activeBtn.classList.add('active', 'bg-blue-50', 'text-blue-600');
         activeBtn.classList.remove('text-gray-500', 'hover:bg-gray-50');
@@ -390,7 +468,7 @@
     document.getElementById('driverSearch').addEventListener('input', function(e) {
         const term = e.target.value.toLowerCase();
         const rows = document.querySelectorAll('.driver-row');
-        
+
         rows.forEach(row => {
             const searchText = row.dataset.search;
             if (searchText.includes(term)) {

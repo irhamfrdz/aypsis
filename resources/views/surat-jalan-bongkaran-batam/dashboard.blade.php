@@ -2,10 +2,88 @@
 
 @section('title', 'Dashboard Surat Jalan Bongkaran Batam')
 
+
+@push('styles')
+<style>
+    body:has(.batam-dashboard) { font-family: Arial, sans-serif; font-size: 12px; }
+    body:has(.batam-dashboard) #page-content { background: #F5F7FA; }
+    body:has(.batam-dashboard) > header h1 { font-family: Arial, sans-serif; font-size: 20px; }
+    body:has(.batam-dashboard) #sidebar :is(a, input, .menu-text),
+    body:has(.batam-dashboard) > header :is(button, a, span:not([class*="fa-"])) { font-family: Arial, sans-serif; font-size: 12px; }
+    .batam-dashboard { --batam-navy: #1E3A5F; --batam-line: #e1e6ed; font: 12px/1.5 Arial, sans-serif; color: #344256; padding: 0; background: transparent; min-height: 0; min-width: 0; }
+    .batam-dashboard :is(p, span, a, button, input, select, label, nav) { font-family: Arial, sans-serif; font-size: 12px; }
+    .batam-dashboard h1 { font: 600 20px/1.4 Arial, sans-serif; letter-spacing: 0; color: var(--batam-navy); }
+    .batam-dashboard h3 { font: 600 16px/1.4 Arial, sans-serif; color: var(--batam-navy); }
+    .batam-dashboard .batam-heading { margin-bottom: 18px; gap: 12px 20px; }
+    .batam-dashboard .batam-heading nav { margin-top: 4px; color: #8490a1; font-weight: 400; }
+    .batam-dashboard .batam-heading nav a { color: #5b718d; }
+    .batam-dashboard .batam-heading-actions { gap: 8px; flex-wrap: wrap; }
+    .batam-dashboard .batam-heading-actions :is(a, button) { min-height: 34px; padding: 7px 12px; border: 1px solid #cdd7e4; border-radius: 5px; background: #fff; color: var(--batam-navy); box-shadow: none; transition: none; font-weight: 500; }
+    .batam-dashboard .batam-heading-actions button { background: var(--batam-navy); border-color: var(--batam-navy); color: #fff; }
+    .batam-dashboard .batam-heading-actions a:hover { background: #edf2f8; }
+    .batam-dashboard .batam-heading-actions button:hover { background: #2b4c75; }
+    .batam-dashboard .batam-heading-actions svg { width: 14px; height: 14px; margin-right: 6px; }
+    .batam-dashboard :is(.batam-filters, .batam-stat, .batam-chart-panel) { background: #fff; border: 1px solid var(--batam-line); border-radius: 8px; box-shadow: 0 2px 6px rgb(30 58 95 / 4%); }
+    .batam-dashboard .batam-filters { padding: 14px 16px; margin-bottom: 18px; }
+    .batam-dashboard .batam-filters form { gap: 12px; }
+    .batam-dashboard .batam-filters label { color: #647184; font-weight: 500; letter-spacing: 0; text-transform: none; margin-bottom: 6px; }
+    .batam-dashboard .batam-filters input { min-height: 34px; padding-top: 7px; padding-bottom: 7px; padding-left: 32px; border: 1px solid #d5dde7; border-radius: 5px; box-shadow: none; transition: none; }
+    .batam-dashboard .batam-filters :is(button, a) { min-height: 34px; padding: 7px 12px; border-radius: 5px; box-shadow: none; transition: none; }
+    .batam-dashboard .batam-filters button { background: var(--batam-navy); border: 1px solid var(--batam-navy); }
+    .batam-dashboard .batam-filters a { background: #fff; color: var(--batam-navy); border-color: #cdd7e4; }
+    .batam-dashboard .batam-filters a:hover { background: #edf2f8; }
+    .batam-dashboard :is(a, button, input):focus-visible { outline: 2px solid #718cac; outline-offset: 2px; box-shadow: none; }
+    .batam-dashboard .batam-stats { gap: 16px; margin-bottom: 18px; }
+    .batam-dashboard .batam-stat { padding: 16px; display: flex; flex-direction: column; min-width: 0; transition: none; }
+    .batam-dashboard .batam-stat > .flex { align-items: flex-start; gap: 10px; }
+    .batam-dashboard .batam-stat > .flex > div:first-child { width: 30px; height: 30px; padding: 7px; border-radius: 6px; box-shadow: none; background: #f1f4f8; color: #71839b; flex-shrink: 0; }
+    .batam-dashboard .batam-stat > .flex > div:first-child svg { width: 16px; height: 16px; }
+    .batam-dashboard .batam-stat .ml-4 { margin-left: 0; min-width: 0; }
+    .batam-dashboard .batam-stat p { color: #6b7788; font-weight: 500; letter-spacing: 0; text-transform: none; }
+    .batam-dashboard .batam-stat h3 { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 5px; }
+    .batam-dashboard .batam-stat h3 .text-3xl { font-size: 20px; }
+    .batam-dashboard .batam-stat h3 .text-lg { font-size: 12px; color: #748091; }
+    .batam-dashboard .batam-stat:nth-child(2) h3 { color: #34704f; }
+    .batam-dashboard .batam-stat:nth-child(3) h3 { color: #966712; }
+    .batam-dashboard .batam-stat > .border-t { margin-top: auto; padding-top: 10px; border-color: #edf0f4; }
+    .batam-dashboard .batam-stat > .flex:first-child { margin-bottom: 10px; }
+    .batam-dashboard .batam-stat .text-orange-600 { color: #a07632; }
+    .batam-dashboard .batam-stat .text-emerald-600 { color: #34704f; }
+    .batam-dashboard .batam-stat .h-1\.5 { height: 4px; }
+    .batam-dashboard .batam-stat .bg-emerald-500 { background: #5e9574; }
+    .batam-dashboard .batam-charts { gap: 16px; margin-bottom: 0; }
+    .batam-dashboard .batam-chart-panel { padding: 16px; min-width: 0; }
+    .batam-dashboard .batam-chart-panel h3 { margin-bottom: 12px; }
+    .batam-dashboard .batam-chart-area { height: 230px; min-width: 0; }
+    .batam-dashboard .batam-chart-area > .text-center i { font-size: 26px; color: #a2adba; margin-bottom: 8px; }
+    @media (min-width: 768px) { .batam-dashboard .batam-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 1200px) { .batam-dashboard .batam-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 540px) {
+        .batam-dashboard .batam-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+        .batam-dashboard .batam-stat { padding: 12px; }
+        .batam-dashboard .batam-stat > .flex { gap: 7px; }
+        .batam-dashboard .batam-stat > .flex > div:first-child { width: 26px; height: 26px; padding: 5px; }
+        .batam-dashboard .batam-stat p { min-height: 36px; }
+        .batam-dashboard .batam-filters, .batam-dashboard .batam-chart-panel { padding: 12px; }
+    }
+    @media (max-width: 350px) { .batam-dashboard .batam-stats { grid-template-columns: 1fr; } }
+    @media print {
+        html:has(.batam-dashboard), body:has(.batam-dashboard) { height: auto; overflow: visible; }
+        body:has(.batam-dashboard) { display: block; }
+        body:has(.batam-dashboard) > header, body:has(.batam-dashboard) #sidebar, body:has(.batam-dashboard) #sidebar-overlay,
+        .batam-dashboard .batam-heading-actions, .batam-dashboard .batam-filters button, .batam-dashboard .batam-filters a { display: none !important; }
+        body:has(.batam-dashboard) #page-content { margin: 0; height: auto; overflow: visible; }
+        .batam-dashboard .batam-stats { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+        .batam-dashboard .batam-charts { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .batam-dashboard :is(.batam-stat, .batam-chart-panel) { break-inside: avoid; box-shadow: none; }
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="flex-1 p-6 bg-gray-50/50 min-h-screen">
+<div class="batam-dashboard flex-1 p-6 bg-gray-50/50 min-h-screen">
     <!-- Page Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
+    <div class="batam-heading flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Dashboard Bongkaran Batam</h1>
             <nav class="flex text-sm text-gray-600 mt-2 font-medium">
@@ -14,7 +92,7 @@
                 <span class="text-gray-500">Bongkaran Batam</span>
             </nav>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="batam-heading-actions flex items-center gap-3">
             <a href="{{ route('surat-jalan-bongkaran-batam.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium rounded-lg shadow-sm transition-all duration-200">
                 <svg class="w-4 h-4 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"></path>
@@ -31,24 +109,24 @@
     </div>
 
     <!-- Filter Bar -->
-    <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
+    <div class="batam-filters bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
         <form method="GET" action="{{ route('surat-jalan-bongkaran-batam.dashboard') }}" class="flex flex-col md:flex-row gap-4 items-end">
             <div class="flex-1 w-full">
-                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Filter Kapal</label>
+                <label for="batam-filter-kapal" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Filter Kapal</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-ship text-gray-400"></i>
                     </div>
-                    <input type="text" name="nama_kapal" value="{{ $selectedKapal }}" placeholder="Cari Nama Kapal..." class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow">
+                    <input type="text" id="batam-filter-kapal" name="nama_kapal" value="{{ $selectedKapal }}" placeholder="Cari Nama Kapal..." class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow">
                 </div>
             </div>
             <div class="flex-1 w-full">
-                <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Filter Voyage</label>
+                <label for="batam-filter-voyage" class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-2">Filter Voyage</label>
                 <div class="relative">
                     <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                         <i class="fas fa-hashtag text-gray-400"></i>
                     </div>
-                    <input type="text" name="no_voyage" value="{{ $selectedVoyage }}" placeholder="Cari No Voyage..." class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow">
+                    <input type="text" id="batam-filter-voyage" name="no_voyage" value="{{ $selectedVoyage }}" placeholder="Cari No Voyage..." class="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-shadow">
                 </div>
             </div>
             <div class="w-full md:w-auto flex gap-2">
@@ -56,7 +134,7 @@
                     Terapkan Filter
                 </button>
                 @if($selectedKapal || $selectedVoyage)
-                <a href="{{ route('surat-jalan-bongkaran-batam.dashboard') }}" class="inline-flex justify-center items-center px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg border border-red-100 transition-all duration-200" title="Reset Filter">
+                <a href="{{ route('surat-jalan-bongkaran-batam.dashboard') }}" class="inline-flex justify-center items-center px-4 py-2.5 bg-red-50 hover:bg-red-100 text-red-600 text-sm font-medium rounded-lg border border-red-100 transition-all duration-200" title="Reset Filter" aria-label="Reset filter">
                     <i class="fas fa-times"></i>
                 </a>
                 @endif
@@ -65,10 +143,9 @@
     </div>
 
     <!-- Dashboard Stats (Original 4 Cards, enhanced design) -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="batam-stats grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Manifest -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-blue-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+        <div class="batam-stat bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
             <div class="flex items-start">
                 <div class="p-3.5 rounded-xl bg-blue-100 text-blue-600 z-10 shadow-inner">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,8 +163,7 @@
         </div>
 
         <!-- Sudah Surat Jalan -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-emerald-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+        <div class="batam-stat bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
             <div class="flex items-start">
                 <div class="p-3.5 rounded-xl bg-emerald-100 text-emerald-600 z-10 shadow-inner">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,8 +190,7 @@
         </div>
 
         <!-- Belum Surat Jalan -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-orange-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+        <div class="batam-stat bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
             <div class="flex items-start">
                 <div class="p-3.5 rounded-xl bg-orange-100 text-orange-600 z-10 shadow-inner">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,8 +210,7 @@
         </div>
 
         <!-- Avg Leadtime -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
-            <div class="absolute right-0 top-0 w-24 h-24 bg-purple-50 rounded-bl-full -mr-8 -mt-8 transition-transform group-hover:scale-110"></div>
+        <div class="batam-stat bg-white rounded-xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group hover:shadow-md transition-shadow duration-300">
             <div class="flex items-start">
                 <div class="p-3.5 rounded-xl bg-purple-100 text-purple-600 z-10 shadow-inner">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -160,13 +234,13 @@
     </div>
 
     <!-- Charts Section -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+    <div class="batam-charts grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
         <!-- Tipe Kontainer Donut Chart -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="batam-chart-panel bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-900 mb-6">Proporsi Tipe Kontainer</h3>
-            <div class="relative h-64 flex justify-center items-center">
+            <div class="batam-chart-area relative h-64 flex justify-center items-center">
                 @if(count($chartTipeKontainer) > 0)
-                    <canvas id="tipeKontainerChart"></canvas>
+                    <canvas id="tipeKontainerChart" role="img" aria-label="Proporsi tipe kontainer berdasarkan filter aktif"></canvas>
                 @else
                     <div class="text-center text-gray-500">
                         <i class="fas fa-chart-pie text-4xl mb-3 text-gray-300"></i>
@@ -177,11 +251,11 @@
         </div>
 
         <!-- Status Penyelesaian SJ Chart -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div class="batam-chart-panel bg-white rounded-xl shadow-sm border border-gray-100 p-6">
             <h3 class="text-lg font-bold text-gray-900 mb-6">Status Penyelesaian Surat Jalan</h3>
-            <div class="relative h-64 flex justify-center items-center">
+            <div class="batam-chart-area relative h-64 flex justify-center items-center">
                 @if($stats->total_manifest > 0)
-                    <canvas id="statusSJChart"></canvas>
+                    <canvas id="statusSJChart" role="img" aria-label="Jumlah manifest sudah dan belum surat jalan"></canvas>
                 @else
                     <div class="text-center text-gray-500">
                         <i class="fas fa-chart-bar text-4xl mb-3 text-gray-300"></i>
@@ -207,11 +281,11 @@
             datasets: [{
                 data: {!! json_encode($chartTipeKontainer->pluck('total')) !!},
                 backgroundColor: [
-                    'rgba(59, 130, 246, 0.8)',  // Blue
-                    'rgba(16, 185, 129, 0.8)',  // Emerald
-                    'rgba(245, 158, 11, 0.8)',  // Amber
-                    'rgba(139, 92, 246, 0.8)',  // Purple
-                    'rgba(107, 114, 128, 0.8)'  // Gray
+                    '#1E3A5F', // Navy
+                    '#7894B3', // Steel blue
+                    '#5F8B78', // Muted green
+                    '#C0A36A', // Muted amber
+                    '#A6AFBB'  // Gray
                 ],
                 borderWidth: 0,
                 hoverOffset: 4
@@ -225,18 +299,41 @@
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'right',
+                        position: 'bottom',
                         labels: {
                             usePointStyle: true,
-                            padding: 20,
+                            boxWidth: 8,
+                            boxHeight: 8,
+                            generateLabels(chart) {
+                                const total = chart.data.datasets[0].data.reduce((sum, value) => sum + Number(value), 0);
+                                return Chart.overrides.doughnut.plugins.legend.labels.generateLabels(chart).map(item => {
+                                    const value = Number(chart.data.datasets[0].data[item.index]);
+                                    const percentage = total > 0 ? (value / total * 100).toLocaleString('id-ID', { maximumFractionDigits: 1 }) : '0';
+                                    return { ...item, text: `${item.text}: ${value.toLocaleString('id-ID')} (${percentage}%)` };
+                                });
+                            },
+                            padding: 12,
                             font: {
-                                family: "'Inter', sans-serif",
+                                family: 'Arial',
                                 size: 12
+                            }
+                        }
+                    },
+                    tooltip: {
+                        titleFont: { family: 'Arial', size: 12 },
+                        bodyFont: { family: 'Arial', size: 12 },
+                        callbacks: {
+                            label(context) {
+                                const total = context.dataset.data.reduce((sum, value) => sum + Number(value), 0);
+                                const value = Number(context.raw);
+                                const percentage = total > 0 ? (value / total * 100).toLocaleString('id-ID', { maximumFractionDigits: 1 }) : '0';
+                                return `${context.label}: ${value.toLocaleString('id-ID')} (${percentage}%)`;
                             }
                         }
                     }
                 },
-                cutout: '70%'
+                cutout: '68%',
+                animation: false
             }
         });
         @endif
@@ -246,36 +343,57 @@
         const ctxStatus = document.getElementById('statusSJChart').getContext('2d');
         new Chart(ctxStatus, {
             type: 'bar',
+            plugins: [{
+                id: 'batamBarValues',
+                afterDatasetsDraw(chart) {
+                    const { ctx } = chart;
+                    ctx.save();
+                    ctx.font = '600 12px Arial';
+                    ctx.fillStyle = '#1E3A5F';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'bottom';
+                    chart.getDatasetMeta(0).data.forEach((bar, index) => {
+                        const value = chart.data.datasets[0].data[index];
+                        ctx.fillText(Number(value).toLocaleString('id-ID'), bar.x, bar.y - 6);
+                    });
+                    ctx.restore();
+                }
+            }],
             data: {
                 labels: ['Sudah SJ', 'Belum SJ'],
                 datasets: [{
                     label: 'Jumlah Manifest',
                     data: [{{ $stats->sudah_sj }}, {{ $stats->belum_sj }}],
                     backgroundColor: [
-                        'rgba(16, 185, 129, 0.8)', // Emerald
-                        'rgba(249, 115, 22, 0.8)'  // Orange
+                        '#5F8B78', // Completed
+                        '#C0A36A'  // Pending
                     ],
-                    borderRadius: 6,
+                    borderRadius: 4,
+                    maxBarThickness: 72,
                     borderWidth: 0
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                animation: false,
+                layout: { padding: { top: 22 } },
                 plugins: {
-                    legend: {
-                        display: false
+                    legend: { display: false },
+                    tooltip: {
+                        titleFont: { family: 'Arial', size: 12 },
+                        bodyFont: { family: 'Arial', size: 12 }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
                         grid: {
-                            color: 'rgba(243, 244, 246, 1)',
+                            color: '#E9EDF3',
                             drawBorder: false
                         },
                         ticks: {
-                            font: { family: "'Inter', sans-serif" }
+                            font: { family: 'Arial', size: 12 }, precision: 0, color: '#748091'
                         }
                     },
                     x: {
@@ -284,7 +402,7 @@
                             drawBorder: false
                         },
                         ticks: {
-                            font: { family: "'Inter', sans-serif", weight: '600' }
+                            font: { family: 'Arial', size: 12, weight: '500' }, color: '#647184'
                         }
                     }
                 }

@@ -80,7 +80,7 @@
             </div>
         @endif
 
-        <form method="GET" action="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 lg:items-end">
+        <form method="GET" action="{{ route('dashboard-perjalanan-kendaraan.index') }}" class="grid gap-4 sm:grid-cols-2 lg:grid-cols-5 lg:items-end">
             <div class="min-w-0">
                 <label for="tanggal_dari" class="mb-2 block text-sm font-semibold text-slate-700"><i class="fas fa-calendar-alt mr-1.5 text-slate-400" aria-hidden="true"></i>Dari tanggal</label>
                 <input id="tanggal_dari" name="tanggal_dari" type="date" required value="{{ old('tanggal_dari', $tanggalDari) }}" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
@@ -92,6 +92,15 @@
             <div class="min-w-0">
                 <label for="search" class="mb-2 block text-sm font-semibold text-slate-700"><i class="fas fa-search mr-1.5 text-slate-400" aria-hidden="true"></i>Cari kendaraan / supir</label>
                 <input id="search" name="search" type="search" maxlength="100" value="{{ $search }}" placeholder="Nomor polisi, KIR, kode, atau supir" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:bg-white focus:ring-indigo-500">
+            </div>
+            <div class="min-w-0">
+                <label for="ukuran" class="mb-2 block text-sm font-semibold text-slate-700">Ukuran kendaraan</label>
+                <select id="ukuran" name="ukuran" class="block h-11 w-full rounded-xl border-slate-300 bg-slate-50 px-3 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500">
+                    <option value="semua" @selected($ukuran === 'semua')>Semua unit</option>
+                    <option value="panjang" @selected($ukuran === 'panjang')>Kendaraan panjang</option>
+                    <option value="pendek" @selected($ukuran === 'pendek')>Kendaraan pendek</option>
+                    <option value="belum_diisi" @selected($ukuran === 'belum_diisi')>Ukuran belum diisi / lainnya</option>
+                </select>
             </div>
             <button type="submit" class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-indigo-600 px-6 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600">
                 <i class="fas fa-chart-line" aria-hidden="true"></i> Tampilkan
@@ -106,6 +115,14 @@
             <p class="mt-1 text-sm text-slate-600">Tentukan tanggal awal dan akhir, lalu tampilkan laporan perjalanan.</p>
         </div>
     @else
+        <nav class="flex flex-wrap gap-2" aria-label="Kelompok ukuran kendaraan">
+            @foreach(['semua' => 'Semua unit', 'panjang' => 'Kendaraan panjang', 'pendek' => 'Kendaraan pendek', 'belum_diisi' => 'Ukuran belum diisi / lainnya'] as $size => $sizeLabel)
+                <a href="{{ route('dashboard-perjalanan-kendaraan.index', array_merge(request()->query(), ['ukuran' => $size])) }}"
+                   aria-current="{{ $ukuran === $size ? 'page' : 'false' }}"
+                   class="rounded-lg border px-3 py-2 text-xs font-semibold {{ $ukuran === $size ? 'border-slate-700 bg-slate-700 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50' }}">{{ $sizeLabel }}</a>
+            @endforeach
+        </nav>
+        <p class="text-xs text-slate-500">Ringkasan, ranking, grafik, dan rincian mengikuti kelompok ukuran yang dipilih berdasarkan Master Mobil.</p>
         <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
                 <p class="text-xs font-semibold uppercase tracking-wider text-indigo-600">Ringkasan Perjalanan</p>

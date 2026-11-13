@@ -4,9 +4,9 @@
 @section('page_title', 'Dashboard Jatuh Tempo Asset')
 
 @section('content')
-<div class="space-y-6">
+<div class="asset-expiry-dashboard space-y-6">
     <!-- Tab Navigation -->
-    <div class="bg-white rounded-lg shadow-md overflow-hidden">
+    <div class="asset-tabs bg-white rounded-lg shadow-md overflow-hidden">
         <div class="border-b border-gray-200">
             <nav class="flex -mb-px">
                 <button onclick="switchTab('asuransi')" id="tab-asuransi" class="tab-button active group relative min-w-0 flex-1 overflow-hidden bg-white py-4 px-4 text-sm font-medium text-center hover:bg-gray-50 focus:z-10 transition-colors">
@@ -30,9 +30,9 @@
     </div>
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+    <div class="asset-stats grid grid-cols-1 md:grid-cols-4 gap-4">
         <!-- Total Assets Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
+        <div class="asset-stat asset-stat-blue bg-white rounded-lg shadow-md p-6 border-l-4 border-blue-500">
             <div class="flex items-center justify-between">
                 <div>
                     <p id="total-assets-label" class="text-sm text-gray-600 font-medium">Total Asset dengan Asuransi</p>
@@ -49,7 +49,7 @@
         </div>
 
         <!-- Expiring Soon Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
+        <div class="asset-stat asset-stat-yellow bg-white rounded-lg shadow-md p-6 border-l-4 border-yellow-500">
             <div class="flex items-center justify-between">
                 <div>
                     <p id="expiring-label" class="text-sm text-gray-600 font-medium">Asuransi Jatuh Tempo 30 Hari</p>
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Expired Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
+        <div class="asset-stat asset-stat-red bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
             <div class="flex items-center justify-between">
                 <div>
                     <p id="expired-label" class="text-sm text-gray-600 font-medium">Asuransi Sudah Lewat Tempo</p>
@@ -83,7 +83,7 @@
         </div>
 
         <!-- No Date Card -->
-        <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-gray-500">
+        <div class="asset-stat asset-stat-gray bg-white rounded-lg shadow-md p-6 border-l-4 border-gray-500">
             <div class="flex items-center justify-between">
                 <div>
                     <p id="nodate-label" class="text-sm text-gray-600 font-medium">Asset Tanpa Tanggal Asuransi</p>
@@ -116,8 +116,8 @@
 
         <!-- Expiring Soon Section -->
         @if($expiringAssets[$type]->count() > 0)
-        <div class="bg-white rounded-lg shadow-md overflow-hidden">
-            <div class="bg-yellow-50 border-b border-yellow-200 px-6 py-4">
+        <div class="asset-panel asset-panel-expiring bg-white rounded-lg shadow-md overflow-hidden">
+            <div class="asset-panel-header bg-yellow-50 border-b border-yellow-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <svg class="w-6 h-6 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -142,7 +142,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="overflow-x-auto" id="expiring-table-{{ $type }}">
                 <table class="min-w-full bg-white divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
@@ -167,13 +167,13 @@
                             $tanggal = \Carbon\Carbon::parse($asset->$dateField)->startOfDay();
                             $today = \Carbon\Carbon::today();
                             $diffDays = (int) $today->diffInDays($tanggal, false);
-                            
+
                             $bulanIndonesia = [
                                 1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
                                 5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
                                 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
                             ];
-                            $formattedDate = $tanggal->format('d') . ' ' . $bulanIndonesia[$tanggal->month] . ' ' . $tanggal->format('Y');
+                            $formattedDate = $tanggal->format('d/M/Y');
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="py-2 px-3 text-sm">{{ $index + 1 }}</td>
@@ -230,7 +230,7 @@
             </div>
         </div>
         @else
-        <div class="bg-white rounded-lg shadow-md p-8">
+        <div class="asset-empty bg-white rounded-lg shadow-md p-8">
             <div class="text-center">
                 <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -243,8 +243,8 @@
 
         <!-- Expired Section -->
         @if($expiredAssets[$type]->count() > 0)
-        <div class="bg-white rounded-lg shadow-md overflow-hidden mt-6">
-            <div class="bg-red-50 border-b border-red-200 px-6 py-4">
+        <div class="asset-panel asset-panel-expired bg-white rounded-lg shadow-md overflow-hidden mt-6">
+            <div class="asset-panel-header bg-red-50 border-b border-red-200 px-6 py-4">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center">
                         <svg class="w-6 h-6 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -269,7 +269,7 @@
                     </div>
                 </div>
             </div>
-            
+
             <div class="overflow-x-auto" id="expired-table-{{ $type }}">
                 <table class="min-w-full bg-white divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
@@ -294,13 +294,13 @@
                             $tanggal = \Carbon\Carbon::parse($asset->$dateField)->startOfDay();
                             $today = \Carbon\Carbon::today();
                             $diffDays = abs((int) $today->diffInDays($tanggal, false));
-                            
+
                             $bulanIndonesia = [
                                 1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
                                 5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
                                 9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
                             ];
-                            $formattedDate = $tanggal->format('d') . ' ' . $bulanIndonesia[$tanggal->month] . ' ' . $tanggal->format('Y');
+                            $formattedDate = $tanggal->format('d/M/Y');
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="py-2 px-3 text-sm">{{ $index + 1 }}</td>
@@ -347,7 +347,7 @@
             </div>
         </div>
         @else
-        <div class="bg-white rounded-lg shadow-md p-8 mt-6">
+        <div class="asset-empty bg-white rounded-lg shadow-md p-8 mt-6">
             <div class="text-center">
                 <svg class="mx-auto h-12 w-12 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -365,69 +365,131 @@
 <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
 
 <style>
-/* Tab Styles */
-.tab-button {
-    color: #6b7280;
+/* All dashboard styling is scoped to this page, including its print view. */
+.asset-expiry-dashboard {
+    --asset-navy: #1E3A5F;
+    --asset-bg: #F5F7FA;
+    --asset-border: #e1e6ed;
+    color: #344256;
+    font: 12px/1.5 Arial, sans-serif;
+    min-width: 0;
 }
-
-.tab-button.active {
-    color: #2563eb;
-    font-weight: 600;
+.asset-expiry-dashboard :is(table, p, span, a, button, input, select, label, th, td, nav) {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
 }
-
-.tab-button .tab-indicator {
-    transition: opacity 0.2s;
+body:has(.asset-expiry-dashboard) { font-family: Arial, sans-serif; font-size: 12px; }
+body:has(.asset-expiry-dashboard) #page-content { background: #F5F7FA; }
+body:has(.asset-expiry-dashboard) > header h1 { font-family: Arial, sans-serif; font-size: 20px; }
+body:has(.asset-expiry-dashboard) #sidebar :is(a, input, .menu-text),
+body:has(.asset-expiry-dashboard) > header :is(button, a, span:not([class*="fa-"])) {
+    font-family: Arial, sans-serif; font-size: 12px;
 }
-
-.tab-button.active .tab-indicator {
-    opacity: 1 !important;
+.asset-expiry-dashboard h2, .asset-expiry-dashboard h3 {
+    font-family: Arial, sans-serif; font-size: 16px; line-height: 1.4; color: var(--asset-navy); font-weight: 600;
 }
-
-/* Print Styles */
+.asset-expiry-dashboard > * + * { margin-top: 20px; }
+.asset-expiry-dashboard :is(.asset-tabs, .asset-stat, .asset-panel, .asset-empty) {
+    background: #fff; border: 1px solid var(--asset-border); border-radius: 8px;
+    box-shadow: 0 2px 6px rgb(30 58 95 / 5%);
+}
+.asset-expiry-dashboard .asset-tabs nav { margin-bottom: 0; }
+.asset-expiry-dashboard .asset-tabs > div { border-bottom: 0; }
+.asset-expiry-dashboard .tab-button {
+    color: #6b7788; background: #fff; padding: 13px 12px; min-height: 44px;
+    font-weight: 500; transition: none; white-space: nowrap;
+}
+.asset-expiry-dashboard .tab-button:hover { color: var(--asset-navy); background: #f8fafc; }
+.asset-expiry-dashboard .tab-button.active { color: var(--asset-navy); font-weight: 700; }
+.asset-expiry-dashboard .tab-indicator { background: var(--asset-navy); transition: none; height: 2px; }
+.asset-expiry-dashboard .tab-button.active .tab-indicator { opacity: 1 !important; }
+.asset-expiry-dashboard :is(button, a, input, select):focus-visible { outline: 2px solid #6b86a8; outline-offset: -3px; }
+.asset-expiry-dashboard .asset-stats { gap: 16px; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.asset-expiry-dashboard .asset-stat { padding: 16px; border-left-width: 3px; min-width: 0; }
+.asset-expiry-dashboard .asset-stat-blue { border-left-color: var(--asset-navy); }
+.asset-expiry-dashboard .asset-stat-yellow { border-left-color: #c39539; }
+.asset-expiry-dashboard .asset-stat-red { border-left-color: #c46060; }
+.asset-expiry-dashboard .asset-stat-gray { border-left-color: #97a1af; }
+.asset-expiry-dashboard .asset-stat > .flex { gap: 12px; align-items: flex-start; }
+.asset-expiry-dashboard .asset-stat > .flex > div:first-child { flex: 1; min-width: 0; }
+.asset-expiry-dashboard .asset-stat p:first-child { color: #647184; min-height: 36px; line-height: 18px; }
+.asset-expiry-dashboard .asset-stat .text-3xl { margin-top: 6px; line-height: 1.2; }
+.asset-expiry-dashboard .asset-stat .text-3xl span { font-size: 20px; color: var(--asset-navy); font-weight: 700; font-variant-numeric: tabular-nums; }
+.asset-expiry-dashboard .asset-stat-yellow .text-3xl span { color: #966712; }
+.asset-expiry-dashboard .asset-stat-red .text-3xl span { color: #b34242; }
+.asset-expiry-dashboard .asset-stat-gray .text-3xl span { color: #657184; }
+.asset-expiry-dashboard .asset-stat .p-2 { padding: 7px; border-radius: 6px; background: #f2f5f8; flex-shrink: 0; }
+.asset-expiry-dashboard .asset-stat svg { width: 18px; height: 18px; color: #6f8198; }
+.asset-expiry-dashboard .asset-stat-yellow svg { color: #a17624; }
+.asset-expiry-dashboard .asset-stat-red svg { color: #b45d5d; }
+.asset-expiry-dashboard .asset-panel { margin-top: 20px; }
+.asset-expiry-dashboard .tab-content > .asset-panel:first-child { margin-top: 0; }
+.asset-expiry-dashboard .asset-panel-header { background: #fff; border-color: var(--asset-border); padding: 16px; }
+.asset-expiry-dashboard .asset-panel-header > .flex { gap: 12px 20px; flex-wrap: wrap; }
+.asset-expiry-dashboard .asset-panel-header > .flex > .flex:first-child { flex: 1 1 400px; gap: 8px; flex-wrap: wrap; }
+.asset-expiry-dashboard .asset-panel-header > .flex > .flex:first-child > svg { width: 18px; height: 18px; flex-shrink: 0; margin-right: 0; color: #a17624; }
+.asset-expiry-dashboard .asset-panel-expired .asset-panel-header > .flex > .flex:first-child > svg { color: #b34242; }
+.asset-expiry-dashboard .asset-panel-header h2 { margin: 0; }
+.asset-expiry-dashboard .asset-panel-header span { background: #f1f4f8; color: var(--asset-navy); border: 1px solid #e2e7ee; border-radius: 5px; margin-left: 0; padding: 2px 8px; white-space: nowrap; }
+.asset-expiry-dashboard .asset-panel-header .no-print {
+    min-height: 32px; padding: 6px 12px; border-radius: 5px; border: 1px solid var(--asset-navy);
+    background: var(--asset-navy); color: #fff; transition: none;
+}
+.asset-expiry-dashboard .asset-panel-header .no-print + .no-print { background: #fff; color: var(--asset-navy); border-color: #ced7e2; }
+.asset-expiry-dashboard .asset-panel-header .no-print:hover { background: #2b4c75; color: #fff; }
+.asset-expiry-dashboard .asset-panel-header .no-print + .no-print:hover { background: #edf2f8; color: var(--asset-navy); }
+.asset-expiry-dashboard table { width: 100%; min-width: 950px; border-collapse: collapse; }
+.asset-expiry-dashboard th { background: var(--asset-bg); color: #647184; font-weight: 600; letter-spacing: .02em; padding: 10px 12px; white-space: nowrap; border-bottom: 1px solid var(--asset-border); }
+.asset-expiry-dashboard td { padding: 9px 12px; vertical-align: middle; border-color: var(--asset-border); }
+.asset-expiry-dashboard tbody tr:hover { background: #f8fafc; }
+.asset-expiry-dashboard td:first-child { color: #7a8594; width: 44px; }
+.asset-expiry-dashboard td:nth-child(2) { color: var(--asset-navy); font-variant-numeric: tabular-nums; }
+.asset-expiry-dashboard td:nth-last-child(3), .asset-expiry-dashboard td:nth-last-child(2) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.asset-expiry-dashboard td .bg-blue-100 { background: #edf2f8; color: #34577e; border: 1px solid #dce5ef; border-radius: 4px; }
+.asset-expiry-dashboard td .bg-green-100 { background: #edf6f1; color: #3a6d55; border: 1px solid #dbeae2; border-radius: 4px; }
+.asset-expiry-dashboard td :is(.bg-red-100, .bg-orange-100, .bg-yellow-100) { font-weight: 600; border-radius: 4px; padding: 2px 7px; }
+.asset-expiry-dashboard td .bg-red-100 { background: #fbeded; color: #ad3d3d; }
+.asset-expiry-dashboard td .bg-orange-100 { background: #fff1df; color: #996114; }
+.asset-expiry-dashboard td .bg-yellow-100 { background: #fcf5e6; color: #8b651f; }
+.asset-expiry-dashboard td a {
+    display: inline-flex; justify-content: center; align-items: center; min-height: 28px; padding: 4px 10px;
+    background: #fff; color: var(--asset-navy); border: 1px solid #cdd7e4; border-radius: 5px; transition: none;
+}
+.asset-expiry-dashboard td a:hover { background: #edf2f8; border-color: #91a5bd; }
+.asset-expiry-dashboard .asset-empty { padding: 24px 16px; }
+.asset-expiry-dashboard .asset-empty svg { width: 28px; height: 28px; color: #4d8569; }
+.asset-expiry-dashboard .asset-empty p { color: #748091; }
+@media (max-width: 1100px) {
+    .asset-expiry-dashboard .asset-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 540px) {
+    .asset-expiry-dashboard > * + * { margin-top: 16px; }
+    .asset-expiry-dashboard .asset-stats { gap: 10px; }
+    .asset-expiry-dashboard .asset-stat { padding: 12px; }
+    .asset-expiry-dashboard .asset-stat > .flex { gap: 6px; }
+    .asset-expiry-dashboard .asset-stat p:first-child { min-height: 54px; }
+    .asset-expiry-dashboard .asset-stat .p-2 { padding: 4px; }
+    .asset-expiry-dashboard .asset-stat svg { width: 14px; height: 14px; }
+    .asset-expiry-dashboard .asset-stat .text-3xl span { font-size: 20px; }
+    .asset-expiry-dashboard .tab-button { padding: 12px 7px; }
+    .asset-expiry-dashboard .asset-panel-header { padding: 14px; }
+    .asset-expiry-dashboard .asset-panel-header > .flex > .flex:first-child { flex-basis: 100%; }
+    .asset-expiry-dashboard .asset-panel-header h2 { flex: 1 1 180px; }
+}
+@media (max-width: 360px) {
+    .asset-expiry-dashboard .asset-stats { grid-template-columns: 1fr; }
+    .asset-expiry-dashboard .asset-stat p:first-child { min-height: 0; }
+}
 @media print {
-    body * {
-        visibility: hidden;
-    }
-    
-    #print-area, #print-area * {
-        visibility: visible;
-    }
-    
-    #print-area {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-    }
-    
-    .no-print, .no-print * {
-        display: none !important;
-    }
-    
-    table {
-        page-break-inside: auto;
-    }
-    
-    tr {
-        page-break-inside: avoid;
-        page-break-after: auto;
-    }
-    
-    thead {
-        display: table-header-group;
-    }
-    
-    .bg-yellow-50, .bg-red-50 {
-        background-color: white !important;
-    }
-    
-    .shadow-md {
-        box-shadow: none !important;
-    }
-    
-    .bg-blue-100, .bg-green-100, .bg-yellow-100, .bg-red-100, .bg-orange-100 {
-        border: 1px solid #000;
-    }
+    body:has(.asset-expiry-dashboard) * { visibility: hidden; }
+    body:has(.asset-expiry-dashboard) #print-area,
+    body:has(.asset-expiry-dashboard) #print-area * { visibility: visible; }
+    body:has(.asset-expiry-dashboard) #print-area { position: absolute; left: 0; top: 0; width: 100%; }
+    .asset-expiry-dashboard .no-print, .asset-expiry-dashboard .no-print * { display: none !important; }
+    .asset-expiry-dashboard table { page-break-inside: auto; }
+    .asset-expiry-dashboard tr { page-break-inside: avoid; page-break-after: auto; }
+    .asset-expiry-dashboard thead { display: table-header-group; }
+    .asset-expiry-dashboard .asset-panel { box-shadow: none; }
 }
 </style>
 
@@ -441,20 +503,20 @@ function switchTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(content => {
         content.classList.add('hidden');
     });
-    
+
     // Show selected tab content
     document.getElementById(`content-${tabName}`).classList.remove('hidden');
-    
+
     // Update tab buttons
     document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.remove('active');
         button.querySelector('.tab-indicator').style.opacity = '0';
     });
-    
+
     const activeButton = document.getElementById(`tab-${tabName}`);
     activeButton.classList.add('active');
     activeButton.querySelector('.tab-indicator').style.opacity = '1';
-    
+
     // Define labels for each category
     const labels = {
         'asuransi': {
@@ -482,13 +544,13 @@ function switchTab(tabName) {
             nodate: 'Asset Tanpa Tanggal Pajak'
         }
     };
-    
+
     // Update statistics cards counts
     document.getElementById('total-assets-count').textContent = statsData[tabName].total_assets;
     document.getElementById('expiring-count').textContent = statsData[tabName].expiring_soon;
     document.getElementById('expired-count').textContent = statsData[tabName].expired;
     document.getElementById('nodate-count').textContent = statsData[tabName].no_date;
-    
+
     // Update statistics cards labels
     document.getElementById('total-assets-label').textContent = labels[tabName].total;
     document.getElementById('expiring-label').textContent = labels[tabName].expiring;
@@ -499,22 +561,22 @@ function switchTab(tabName) {
 // Excel Download Function
 function downloadExcel(tableId, filename) {
     const tableContainer = document.getElementById(tableId);
-    
+
     if (!tableContainer) {
         alert('Tabel tidak ditemukan!');
         return;
     }
-    
+
     const table = tableContainer.querySelector('table');
-    
+
     if (!table) {
         alert('Tabel tidak ditemukan!');
         return;
     }
-    
+
     // Extract data
     const data = [];
-    
+
     // Headers - Build custom headers with separated Plat and KIR columns
     const headers = [];
     const originalHeaders = table.querySelectorAll('thead th');
@@ -528,51 +590,51 @@ function downloadExcel(tableId, filename) {
         }
     });
     data.push(headers);
-    
+
     // Body data
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         const rowData = [];
         const cells = row.querySelectorAll('td');
-        
+
         cells.forEach((cell, index) => {
             // Skip action column (last column)
             if (index === cells.length - 1) {
                 return;
             }
-            
+
             // Check if this is the Plat/KIR column (index 2)
             if (index === 2) {
                 // Extract Plat (nomor_polisi)
                 const platBadge = cell.querySelector('.bg-blue-100');
                 const platText = platBadge ? platBadge.textContent.trim() : '-';
                 rowData.push(platText);
-                
+
                 // Extract KIR (no_kir)
                 const kirBadge = cell.querySelector('.bg-green-100');
                 const kirText = kirBadge ? kirBadge.textContent.trim() : '-';
                 rowData.push(kirText);
             } else {
                 let cellText = cell.textContent.trim();
-                
+
                 if (cell.querySelector('.inline-flex')) {
                     const badges = cell.querySelectorAll('.inline-flex');
                     const badgeTexts = Array.from(badges).map(badge => badge.textContent.trim());
                     cellText = badgeTexts.join(', ');
                 }
-                
+
                 cellText = cellText.replace(/\s+/g, ' ').trim();
                 rowData.push(cellText);
             }
         });
-        
+
         data.push(rowData);
     });
-    
+
     // Create workbook
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(data);
-    
+
     const colWidths = [
         { wch: 5 },   // No
         { wch: 15 },  // Kode No
@@ -585,30 +647,30 @@ function downloadExcel(tableId, filename) {
         { wch: 12 }   // Sisa Hari/Lewat
     ];
     ws['!cols'] = colWidths;
-    
+
     XLSX.utils.book_append_sheet(wb, ws, 'Data');
-    
+
     const today = new Date();
     const dateStr = today.toISOString().split('T')[0];
     const fullFilename = `${filename}_${dateStr}.xlsx`;
-    
+
     XLSX.writeFile(wb, fullFilename);
 }
 
 // Print Function
 function printTable(tableId) {
     const tableContainer = document.getElementById(tableId);
-    
+
     if (!tableContainer) {
         alert('Tabel tidak ditemukan!');
         return;
     }
-    
+
     const table = tableContainer.querySelector('table');
-    
+
     // Build custom table with separated Plat and KIR columns
     let tableHTML = '<table>';
-    
+
     // Build headers
     tableHTML += '<thead><tr>';
     const originalHeaders = table.querySelectorAll('thead th');
@@ -622,27 +684,27 @@ function printTable(tableId) {
         }
     });
     tableHTML += '</tr></thead>';
-    
+
     // Build body
     tableHTML += '<tbody>';
     const rows = table.querySelectorAll('tbody tr');
     rows.forEach(row => {
         tableHTML += '<tr>';
         const cells = row.querySelectorAll('td');
-        
+
         cells.forEach((cell, index) => {
             // Skip action column (last column)
             if (index === cells.length - 1) {
                 return;
             }
-            
+
             // Check if this is the Plat/KIR column (index 2)
             if (index === 2) {
                 // Extract Plat (nomor_polisi)
                 const platBadge = cell.querySelector('.bg-blue-100');
                 const platText = platBadge ? platBadge.textContent.trim() : '-';
                 tableHTML += '<td>' + platText + '</td>';
-                
+
                 // Extract KIR (no_kir)
                 const kirBadge = cell.querySelector('.bg-green-100');
                 const kirText = kirBadge ? kirBadge.textContent.trim() : '-';
@@ -651,53 +713,50 @@ function printTable(tableId) {
                 tableHTML += '<td>' + cell.innerHTML + '</td>';
             }
         });
-        
+
         tableHTML += '</tr>';
     });
     tableHTML += '</tbody>';
     tableHTML += '</table>';
-    
+
     // Determine table title
     let headerTitle = tableId.includes('expiring') ? 'Asset Jatuh Tempo 30 Hari Ke Depan' : 'Asset Sudah Lewat Jatuh Tempo';
-    
+
     const printWindow = window.open('', '', 'height=600,width=800');
-    
+
     printWindow.document.write('<html><head><title>' + headerTitle + '</title>');
     printWindow.document.write('<style>');
-    printWindow.document.write('body { font-family: Arial, sans-serif; padding: 20px; }');
+    printWindow.document.write('body { font-family: Arial, sans-serif; font-size: 12px; padding: 20px; color: #344256; }');
     printWindow.document.write('h1 { text-align: center; font-size: 18px; margin-bottom: 20px; }');
     printWindow.document.write('table { width: 100%; border-collapse: collapse; margin-top: 20px; }');
-    printWindow.document.write('th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 11px; }');
+    printWindow.document.write('th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }');
     printWindow.document.write('th { background-color: #f3f4f6; font-weight: bold; }');
     printWindow.document.write('tr:nth-child(even) { background-color: #f9fafb; }');
-    printWindow.document.write('.inline-flex { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 10px; margin: 2px 0; }');
+    printWindow.document.write('.inline-flex { display: inline-block; padding: 2px 6px; border-radius: 4px; font-size: 12px; margin: 2px 0; }');
     printWindow.document.write('.bg-blue-100 { background-color: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }');
     printWindow.document.write('.bg-green-100 { background-color: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }');
     printWindow.document.write('.bg-yellow-100 { background-color: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }');
     printWindow.document.write('.bg-red-100 { background-color: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }');
     printWindow.document.write('.bg-orange-100 { background-color: #ffedd5; color: #9a3412; border: 1px solid #fdba74; }');
-    printWindow.document.write('.print-date { text-align: right; font-size: 10px; color: #666; margin-bottom: 10px; }');
+    printWindow.document.write('.print-date { text-align: right; font-size: 12px; color: #666; margin-bottom: 10px; }');
     printWindow.document.write('@media print { body { padding: 10px; } }');
     printWindow.document.write('</style>');
     printWindow.document.write('</head><body>');
     printWindow.document.write('<h1>' + headerTitle + '</h1>');
-    
+
     const today = new Date();
-    const dateStr = today.toLocaleDateString('id-ID', { 
-        year: 'numeric', 
-        month: 'long', 
-        day: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-    });
+    const dateStr = new Intl.DateTimeFormat('en-GB', {
+        year: 'numeric', month: 'short', day: '2-digit'
+    }).format(today).replace(/ /g, '/').replace('Sept', 'Sep')
+        + ' ' + today.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
     printWindow.document.write('<div class="print-date">Dicetak pada: ' + dateStr + '</div>');
-    
+
     printWindow.document.write(tableHTML);
     printWindow.document.write('</body></html>');
-    
+
     printWindow.document.close();
     printWindow.focus();
-    
+
     setTimeout(() => {
         printWindow.print();
         printWindow.close();
