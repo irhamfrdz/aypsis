@@ -2451,13 +2451,21 @@
             <!-- Modal Body -->
             <form action="{{ route('stock-amprahan.valuasi-print') }}" method="GET" target="_blank" class="mt-4">
                 <div class="mb-4">
-                    <label class="block text-sm font-semibold text-gray-700 mb-1">Barang <span class="text-red-500">*</span></label>
-                    <input type="text" id="valuasi_barang_search" placeholder="Cari barang..." class="w-full px-3 py-2 border border-gray-300 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
+                    <label for="valuasi_lokasi" class="mb-1 block text-sm font-semibold text-gray-700">Lokasi <span class="text-red-500">*</span></label>
+                    <select id="valuasi_lokasi" name="lokasi" required class="w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm">
+                        <option value="">-- Pilih Lokasi --</option>
+                        <option value="jakarta">Jakarta</option>
+                        <option value="batam">Batam</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Type Barang <span class="text-red-500">*</span></label>
+                    <input type="text" id="valuasi_barang_search" placeholder="Cari type barang..." class="w-full px-3 py-2 border border-gray-300 rounded-t-lg focus:outline-none focus:ring-2 focus:ring-rose-500 transition-all text-sm text-gray-700">
                     <div id="valuasi_barang_checkboxes" class="border border-t-0 border-gray-300 rounded-b-lg p-3 max-h-60 overflow-y-auto bg-white space-y-2">
-                        @foreach($uniqueNamaBarang as $name)
+                        @foreach($masterItems as $master)
                             <div class="flex items-center barang-checkbox-item">
-                                <input type="checkbox" name="nama_barang[]" value="{{ $name }}" id="val_barang_{{ $loop->iteration }}" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500 mr-2">
-                                <label for="val_barang_{{ $loop->iteration }}" class="text-sm text-gray-700 select-none cursor-pointer">{{ $name }}</label>
+                                <input type="checkbox" name="type_barang_id[]" value="{{ $master->id }}" id="val_barang_{{ $loop->iteration }}" class="rounded border-gray-300 text-rose-600 focus:ring-rose-500 mr-2">
+                                <label for="val_barang_{{ $loop->iteration }}" class="text-sm text-gray-700 select-none cursor-pointer">{{ $master->nama_barang }}</label>
                             </div>
                         @endforeach
                     </div>
@@ -2899,8 +2907,10 @@
         form.action = "{{ route('stock-amprahan.valuasi-excel') }}";
         form.target = '_self';
         
-        form.submit();
-        
+        if (form.reportValidity()) {
+            form.submit();
+        }
+
         form.action = originalAction;
         form.target = originalTarget;
     }

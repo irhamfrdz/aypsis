@@ -4,21 +4,36 @@
 
 @section('content')
 <div class="p-6">
-    <div class="mb-6"><h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-boxes mr-2 text-indigo-600" aria-hidden="true"></i>Rekap Pemakaian Barang</h2><p class="mt-1 text-sm text-gray-500">Pilih periode, lalu pilih unit kendaraan untuk melihat seluruh barang yang digunakan.</p></div>
+    <div class="mb-6"><h2 class="text-2xl font-bold text-gray-800"><i class="fas fa-boxes mr-2 text-indigo-600" aria-hidden="true"></i>Rekap Pemakaian Barang</h2><p class="mt-1 text-sm text-gray-500">Pilih barang dan periode, lalu pilih unit kendaraan untuk melihat pemakaiannya.</p></div>
     <div class="mb-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-6">
-        <h3 class="font-semibold text-gray-900">1. Pilih rentang tanggal</h3>
+        <h3 class="font-semibold text-gray-900">1. Pilih barang</h3>
         @if($errors->any())<div role="alert" class="mt-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>@endif
-        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="mt-4 flex flex-wrap items-end gap-3">
+        <form method="GET" action="{{ route('rekap-pemakaian-barang.index') }}" class="mt-4 space-y-5">
+            <div>
+                <label for="barang-search" class="mb-1 block text-sm font-semibold text-gray-700">Barang <span class="text-red-500">*</span></label>
+                <input id="barang-search" type="search" placeholder="Cari barang..." class="w-full rounded-t-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
+                <div id="barang-options" class="max-h-60 space-y-2 overflow-y-auto rounded-b-lg border border-t-0 border-gray-300 bg-white p-3">
+                    @forelse($pilihanBarang as $barang)
+                        <label class="barang-option flex cursor-pointer items-center gap-2 text-sm text-gray-700"><input type="checkbox" name="barang[]" value="{{ $barang }}" @checked(in_array($barang, $selectedBarang, true)) class="rounded border-gray-300 text-indigo-600"><span>{{ $barang }}</span></label>
+                    @empty
+                        <p class="text-sm text-gray-500">Belum ada barang tersedia.</p>
+                    @endforelse
+                </div>
+                <div class="mt-1 flex justify-between text-xs text-gray-500"><span>Pilih satu atau lebih barang</span><span><button type="button" id="barang-select-all" class="text-indigo-600 hover:underline">Pilih Semua</button> · <button type="button" id="barang-clear" class="text-red-600 hover:underline">Hapus Semua Pilihan</button></span></div>
+            </div>
+            <h3 class="font-semibold text-gray-900">2. Pilih rentang tanggal</h3>
+            <div class="flex flex-wrap items-end gap-3">
             <div class="w-full sm:w-52"><label for="start_date" class="mb-2 block text-sm font-medium text-gray-700">Dari Tanggal <span class="text-red-500">*</span></label><input id="start_date" type="date" name="start_date" value="{{ old('start_date', $startDate) }}" required class="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"></div>
             <div class="w-full sm:w-52"><label for="end_date" class="mb-2 block text-sm font-medium text-gray-700">Sampai Tanggal <span class="text-red-500">*</span></label><input id="end_date" type="date" name="end_date" value="{{ old('end_date', $endDate) }}" required class="h-11 w-full rounded-xl border border-gray-300 px-3 text-sm"></div>
             <button type="submit" class="h-11 rounded-xl bg-indigo-600 px-5 text-sm font-semibold text-white hover:bg-indigo-700">Tampilkan Unit</button>
             <a href="{{ route('rekap-pemakaian-barang.index') }}" class="inline-flex h-11 items-center rounded-xl border border-gray-300 px-4 text-sm font-semibold text-gray-600 hover:bg-gray-50">Reset</a>
+            </div>
         </form>
     </div>
     @if($startDate && $endDate)
         @php($units = $results->filter(fn ($row) => $row->unit && $row->unit !== '-')->groupBy('unit')->sortKeys())
         <section class="rounded-2xl border border-gray-200 bg-white shadow-sm" aria-labelledby="unit-title">
-            <div class="border-b border-gray-100 p-5 sm:p-6"><h3 id="unit-title" class="font-semibold text-gray-900">2. Pilih unit kendaraan</h3><p class="mt-1 text-sm text-gray-500">Periode {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p></div>
+            <div class="border-b border-gray-100 p-5 sm:p-6"><h3 id="unit-title" class="font-semibold text-gray-900">3. Pilih unit kendaraan</h3><p class="mt-1 text-sm text-gray-500">Periode {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} – {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p></div>
             <div class="p-5 sm:p-6">
                 @if($units->isNotEmpty())
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4" id="unit-list">
@@ -40,7 +55,7 @@
             </div>
         </section>
     @else
-        <div class="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">Pilih rentang tanggal untuk melihat unit kendaraan.</div>
+        <div class="rounded-xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">Pilih barang dan rentang tanggal untuk melihat unit kendaraan.</div>
     @endif
 </div>
 @endsection
@@ -48,6 +63,19 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const barangOptions = [...document.querySelectorAll('.barang-option')];
+    document.getElementById('barang-search')?.addEventListener('input', event => {
+        const search = event.target.value.trim().toLocaleLowerCase('id-ID');
+        barangOptions.forEach(option => option.classList.toggle('hidden', !option.textContent.toLocaleLowerCase('id-ID').includes(search)));
+    });
+    document.getElementById('barang-select-all')?.addEventListener('click', () => barangOptions.forEach(option => { if (!option.classList.contains('hidden')) option.querySelector('input').checked = true; }));
+    document.getElementById('barang-clear')?.addEventListener('click', () => barangOptions.forEach(option => { option.querySelector('input').checked = false; }));
+    document.querySelector('form[action="{{ route('rekap-pemakaian-barang.index') }}"]')?.addEventListener('submit', event => {
+        if (!barangOptions.some(option => option.querySelector('input').checked)) {
+            event.preventDefault();
+            alert('Pilih minimal satu barang.');
+        }
+    });
     const cards = document.querySelectorAll('.unit-card');
     const rows = document.querySelectorAll('.result-row');
     cards.forEach(card => card.addEventListener('click', () => {

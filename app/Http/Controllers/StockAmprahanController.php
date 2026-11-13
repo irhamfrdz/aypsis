@@ -2354,23 +2354,24 @@ class StockAmprahanController extends Controller
     public function valuasiPrint(Request $request)
     {
         $request->validate([
-            'nama_barang' => 'required|array',
-            'nama_barang.*' => 'string',
+            'lokasi' => 'required|in:jakarta,batam',
+            'type_barang_id' => 'required|array|min:1',
+            'type_barang_id.*' => 'required|integer|exists:master_nama_barang_amprahans,id',
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
 
-        $namaBarang = $request->nama_barang;
+        $typeBarangIds = $request->type_barang_id;
         $masterItem = (object) [
             'id' => '-',
-            'nama_barang' => implode(', ', $namaBarang),
+            'nama_barang' => \App\Models\MasterNamaBarangAmprahan::whereIn('id', $typeBarangIds)->pluck('nama_barang')->implode(', '),
         ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
 
         // Saldo Awal (sebelum from_date)
         // Masuk sebelum from_date
-        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('master_nama_barang_amprahan_id', $typeBarangIds)
             ->where(function ($q) use ($fromDate) {
                 $q->whereDate('tanggal_beli', '<', $fromDate)
                     ->orWhere(function ($sq) use ($fromDate) {
@@ -2387,7 +2388,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $masukSebelum = $masukSebelumQuery->get();
+        $masukSebelum = $masukSebelumQuery->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%')->get();
         $qtyMasukSebelum = 0;
         $nilaiMasukSebelum = 0;
 
@@ -2400,8 +2401,8 @@ class StockAmprahanController extends Controller
         }
 
         // Keluar sebelum from_date
-        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
-            $q->whereIn('nama_barang', $namaBarang);
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($typeBarangIds) {
+            $q->whereIn('master_nama_barang_amprahan_id', $typeBarangIds);
         })
             ->whereDate('tanggal_pengambilan', '<', $fromDate);
 
@@ -2414,7 +2415,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $keluarSebelum = $keluarSebelumQuery->with('stockAmprahan')->get();
+        $keluarSebelum = $keluarSebelumQuery->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%'))->with('stockAmprahan')->get();
         $qtyKeluarSebelum = 0;
         $nilaiKeluarSebelum = 0;
 
@@ -2427,7 +2428,7 @@ class StockAmprahanController extends Controller
         $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
 
         // Transaksi dalam periode
-        $additionsQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+        $additionsQuery = \App\Models\StockAmprahan::whereIn('master_nama_barang_amprahan_id', $typeBarangIds)
             ->where(function ($q) use ($fromDate, $toDate) {
                 $q->where(function ($qq) use ($fromDate, $toDate) {
                     $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
@@ -2443,7 +2444,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $additions = $additionsQuery->get()->map(function ($item) {
+        $additions = $additionsQuery->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%')->get()->map(function ($item) {
             $totalUsage = $item->usages()->sum('jumlah');
             $initialStock = $item->jumlah + $totalUsage;
 
@@ -2462,8 +2463,8 @@ class StockAmprahanController extends Controller
         });
 
         $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
-            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
-                $q->whereIn('nama_barang', $namaBarang);
+            ->whereHas('stockAmprahan', function ($q) use ($typeBarangIds) {
+                $q->whereIn('master_nama_barang_amprahan_id', $typeBarangIds);
             })
             ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
 
@@ -2476,7 +2477,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $usages = $usagesQuery->get()->map(function ($usage) {
+        $usages = $usagesQuery->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%'))->get()->map(function ($usage) {
             $noFaktur = '-';
             if ($usage->kendaraan) {
                 $noFaktur = $usage->kendaraan->nomor_polisi;
@@ -2542,23 +2543,24 @@ class StockAmprahanController extends Controller
     public function valuasiExcel(Request $request)
     {
         $request->validate([
-            'nama_barang' => 'required|array',
-            'nama_barang.*' => 'string',
+            'lokasi' => 'required|in:jakarta,batam',
+            'type_barang_id' => 'required|array|min:1',
+            'type_barang_id.*' => 'required|integer|exists:master_nama_barang_amprahans,id',
             'from_date' => 'required|date',
             'to_date' => 'required|date',
         ]);
 
-        $namaBarang = $request->nama_barang;
+        $typeBarangIds = $request->type_barang_id;
         $masterItem = (object) [
             'id' => '-',
-            'nama_barang' => implode(', ', $namaBarang),
+            'nama_barang' => \App\Models\MasterNamaBarangAmprahan::whereIn('id', $typeBarangIds)->pluck('nama_barang')->implode(', '),
         ];
         $fromDate = \Carbon\Carbon::parse($request->from_date)->startOfDay();
         $toDate = \Carbon\Carbon::parse($request->to_date)->endOfDay();
 
         // Saldo Awal (sebelum from_date)
         // Masuk sebelum from_date
-        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+        $masukSebelumQuery = \App\Models\StockAmprahan::whereIn('master_nama_barang_amprahan_id', $typeBarangIds)
             ->where(function ($q) use ($fromDate) {
                 $q->whereDate('tanggal_beli', '<', $fromDate)
                     ->orWhere(function ($sq) use ($fromDate) {
@@ -2575,7 +2577,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $masukSebelum = $masukSebelumQuery->get();
+        $masukSebelum = $masukSebelumQuery->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%')->get();
         $qtyMasukSebelum = 0;
         $nilaiMasukSebelum = 0;
 
@@ -2587,8 +2589,8 @@ class StockAmprahanController extends Controller
         }
 
         // Keluar sebelum from_date
-        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($namaBarang) {
-            $q->whereIn('nama_barang', $namaBarang);
+        $keluarSebelumQuery = \App\Models\StockAmprahanUsage::whereHas('stockAmprahan', function ($q) use ($typeBarangIds) {
+            $q->whereIn('master_nama_barang_amprahan_id', $typeBarangIds);
         })
             ->whereDate('tanggal_pengambilan', '<', $fromDate);
 
@@ -2601,7 +2603,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $keluarSebelum = $keluarSebelumQuery->with('stockAmprahan')->get();
+        $keluarSebelum = $keluarSebelumQuery->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%'))->with('stockAmprahan')->get();
         $qtyKeluarSebelum = 0;
         $nilaiKeluarSebelum = 0;
 
@@ -2614,7 +2616,7 @@ class StockAmprahanController extends Controller
         $saldoAwalNilai = $nilaiMasukSebelum - $nilaiKeluarSebelum;
 
         // Transaksi dalam periode
-        $additionsQuery = \App\Models\StockAmprahan::whereIn('nama_barang', $namaBarang)
+        $additionsQuery = \App\Models\StockAmprahan::whereIn('master_nama_barang_amprahan_id', $typeBarangIds)
             ->where(function ($q) use ($fromDate, $toDate) {
                 $q->where(function ($qq) use ($fromDate, $toDate) {
                     $qq->whereNotNull('tanggal_beli')->whereBetween('tanggal_beli', [$fromDate, $toDate]);
@@ -2630,7 +2632,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $additions = $additionsQuery->get()->map(function ($item) {
+        $additions = $additionsQuery->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%')->get()->map(function ($item) {
             $totalUsage = $item->usages()->sum('jumlah');
             $initialStock = $item->jumlah + $totalUsage;
 
@@ -2649,8 +2651,8 @@ class StockAmprahanController extends Controller
         });
 
         $usagesQuery = \App\Models\StockAmprahanUsage::with('stockAmprahan')
-            ->whereHas('stockAmprahan', function ($q) use ($namaBarang) {
-                $q->whereIn('nama_barang', $namaBarang);
+            ->whereHas('stockAmprahan', function ($q) use ($typeBarangIds) {
+                $q->whereIn('master_nama_barang_amprahan_id', $typeBarangIds);
             })
             ->whereBetween('tanggal_pengambilan', [$fromDate, $toDate]);
 
@@ -2663,7 +2665,7 @@ class StockAmprahanController extends Controller
             }
         }
 
-        $usages = $usagesQuery->get()->map(function ($usage) {
+        $usages = $usagesQuery->whereHas('stockAmprahan', fn ($q) => $q->where('lokasi', 'like', '%'.strtoupper($request->lokasi).'%'))->get()->map(function ($usage) {
             $noFaktur = '-';
             if ($usage->kendaraan) {
                 $noFaktur = $usage->kendaraan->nomor_polisi;

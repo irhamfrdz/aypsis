@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\StockAmprahanUsage;
 use App\Models\StockBan;
+use App\Models\StockAmprahan;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 
@@ -14,6 +15,8 @@ class RekapPemakaianBarangController extends Controller
         $filters = $request->validate([
             'start_date' => 'nullable|required_with:end_date|date_format:Y-m-d',
             'end_date' => 'nullable|required_with:start_date|date_format:Y-m-d|after_or_equal:start_date',
+            'barang' => 'nullable|required_with:start_date,end_date|array|min:1',
+            'barang.*' => 'string|max:255',
         ]);
         $startDate = $filters['start_date'] ?? null;
         $endDate = $filters['end_date'] ?? null;
@@ -21,6 +24,12 @@ class RekapPemakaianBarangController extends Controller
         $lokasi = null;
 
         $results = collect();
+        $selectedBarang = $filters['barang'] ?? [];
+        $namaBarang = StockAmprahan::query()->whereNotNull('nama_barang')->where('nama_barang', '!=', '')
+            ->distinct()->orderBy('nama_barang')->pluck('nama_barang');
+        $namaBan = StockBan::query()->with('namaStockBan')->get()
+            ->map(fn ($ban) => 'Ban: '.($ban->namaStockBan->nama ?? 'Unknown').' ('.($ban->merk ?? '-').')');
+        $pilihanBarang = $namaBarang->concat($namaBan)->unique()->sort()->values();
 
         if ($startDate && $endDate) {
             {
@@ -157,10 +166,11 @@ class RekapPemakaianBarangController extends Controller
             }
 
             // Sort results by date desc
-            $results = $results->sortByDesc('tanggal')->values();
+            $results = $results->filter(fn ($row) => in_array($row->nama_barang, $selectedBarang, true))
+                ->sortByDesc('tanggal')->values();
         }
 
-        return view('rekap-pemakaian-barang.index', compact('results', 'startDate', 'endDate'));
+        return view('rekap-pemakaian-barang.index', compact('results', 'startDate', 'endDate', 'pilihanBarang', 'selectedBarang'));
     }
 
     private function normalizeAssetLocation(?string $location): ?string
