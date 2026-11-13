@@ -7075,9 +7075,21 @@ class BiayaKapalController extends Controller
                 }
             }
 
+            // Only generate permit sections for ships owned by Alexindo.
+            $alexindoShips = MasterKapal::query()
+                ->whereRaw('UPPER(TRIM(pelayaran)) = ?', ['PT. ALEXINDO YAKIN PRIMA'])
+                ->pluck('nama_kapal')
+                ->map(fn ($name) => preg_replace('/[^A-Z0-9]/', '', strtoupper(trim($name))))
+                ->flip();
+
             // Format dates and prepare response
             $results = [];
             foreach ($voyagesMap as $key => $data) {
+                $normalizedShip = preg_replace('/[^A-Z0-9]/', '', strtoupper(trim($data['nama_kapal'])));
+                if (! $alexindoShips->has($normalizedShip)) {
+                    continue;
+                }
+
                 $results[] = [
                     'nama_kapal' => $data['nama_kapal'],
                     'no_voyage' => $data['no_voyage'],
