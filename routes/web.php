@@ -7668,6 +7668,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('manifest-sugeng/{manifestSugeng}', [\App\Http\Controllers\ManifestSugengController::class, 'show'])
         ->name('manifest-sugeng.show')
         ->middleware('can:manifest-sugeng-view');
+    Route::put('manifest-sugeng/{manifestSugeng}/incomplete', [\App\Http\Controllers\ManifestSugengController::class, 'setIncomplete'])
+        ->name('manifest-sugeng.set-incomplete')
+        ->middleware('can:manifest-sugeng-manage');
     Route::delete('manifest-sugeng/{manifestSugeng}', [\App\Http\Controllers\ManifestSugengController::class, 'destroy'])
         ->name('manifest-sugeng.destroy')
         ->middleware('can:manifest-sugeng-manage');

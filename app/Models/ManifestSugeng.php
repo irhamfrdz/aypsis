@@ -12,7 +12,7 @@ class ManifestSugeng extends Model
         'nomor_tanda_terima', 'tanggal_tanda_terima',
         'nomor_kontainer', 'pengirim', 'tujuan_pengiriman', 'shipper_jb_id',
         'manifest_goods', 'dikirim_oleh', 'dikirim_pada',
-        'sheet_values',
+        'sheet_values', 'belum_selesai',
     ];
 
     protected $casts = [
@@ -21,6 +21,7 @@ class ManifestSugeng extends Model
         'perincian_barang' => 'array',
         'sheet_values' => 'array',
         'dikirim_pada' => 'datetime',
+        'belum_selesai' => 'boolean',
     ];
 
     public function shipperJb()

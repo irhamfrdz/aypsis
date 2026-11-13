@@ -21,6 +21,7 @@ class ManifestSugengController extends Controller
             'search' => 'nullable|string|max:255',
             'nama_kapal' => 'nullable|string|max:255',
             'no_voyage' => 'nullable|string|max:255',
+            'status' => 'nullable|in:belum_selesai',
         ]);
 
         $items = ManifestSugeng::query()
@@ -28,6 +29,7 @@ class ManifestSugengController extends Controller
             ->when($filters['type'] ?? null, fn ($query, $type) => $query->where('source_type', $type))
             ->when($filters['nama_kapal'] ?? null, fn ($query, $ship) => $query->where('nama_kapal', $ship))
             ->when($filters['no_voyage'] ?? null, fn ($query, $voyage) => $query->where('no_voyage', $voyage))
+            ->when($filters['status'] ?? null, fn ($query) => $query->where('belum_selesai', true))
             ->when(trim($filters['search'] ?? '') !== '', function ($query) use ($filters) {
                 $search = trim($filters['search']);
                 $query->where(fn ($query) => $query
@@ -65,6 +67,16 @@ class ManifestSugengController extends Controller
 
         return redirect()->route('manifest-sugeng.index')
             ->with('success', 'Data Manifest Sugeng berhasil dihapus.');
+    }
+
+    public function setIncomplete(Request $request, ManifestSugeng $manifestSugeng): RedirectResponse
+    {
+        $data = $request->validate(['belum_selesai' => 'required|boolean']);
+        $manifestSugeng->update(['belum_selesai' => $data['belum_selesai']]);
+
+        return back()->with('success', $data['belum_selesai']
+            ? 'Manifest ditandai belum selesai.'
+            : 'Tanda belum selesai berhasil dilepas.');
     }
 
     public function update(Request $request, ManifestSugeng $manifestSugeng): RedirectResponse

@@ -18,6 +18,7 @@
         <input name="no_voyage" list="manifest-sugeng-voyages" value="{{ request('no_voyage') }}" placeholder="No. voyage" class="rounded-lg border border-gray-300 px-3 py-2 text-sm">
         <datalist id="manifest-sugeng-voyages">@foreach($voyages as $voyage)<option value="{{ $voyage }}">@endforeach</datalist>
         <select name="type" class="rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">Semua jenis</option>@foreach(['fcl' => 'FCL', 'lcl' => 'LCL', 'ttsj' => 'TTSJ'] as $value => $label)<option value="{{ $value }}" @selected(request('type') === $value)>{{ $label }}</option>@endforeach</select>
+        <select name="status" class="rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">Semua status</option><option value="belum_selesai" @selected(request('status') === 'belum_selesai')>Belum selesai</option></select>
         <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Cari</button>
     </form>
     @include('manifest-sugeng._sheet')
