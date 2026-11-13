@@ -2354,6 +2354,7 @@ class StockAmprahanController extends Controller
     public function valuasiPrint(Request $request)
     {
         $request->validate([
+            'gunakan_nominal' => 'required|boolean',
             'lokasi' => 'required|in:jakarta,batam',
             'type_barang_id' => 'required|array|min:1',
             'type_barang_id.*' => 'required|integer|exists:master_nama_barang_amprahans,id',
@@ -2534,6 +2535,7 @@ class StockAmprahanController extends Controller
 
         return view('stock-amprahan.valuasi-print', [
             'masterItem' => $masterItem,
+            'gunakanNominal' => $request->boolean('gunakan_nominal'),
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'saldoAwalQty' => $saldoAwalQty,
@@ -2545,6 +2547,7 @@ class StockAmprahanController extends Controller
     public function valuasiExcel(Request $request)
     {
         $request->validate([
+            'gunakan_nominal' => 'required|boolean',
             'lokasi' => 'required|in:jakarta,batam',
             'type_barang_id' => 'required|array|min:1',
             'type_barang_id.*' => 'required|integer|exists:master_nama_barang_amprahans,id',
@@ -2720,6 +2723,7 @@ class StockAmprahanController extends Controller
 
         $data = [
             'masterItem' => $masterItem,
+            'gunakanNominal' => $request->boolean('gunakan_nominal'),
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'saldoAwalQty' => $saldoAwalQty,

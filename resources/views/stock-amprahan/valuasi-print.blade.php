@@ -115,8 +115,10 @@
         <tr>
             <td class="label-col">Deskripsi Barang</td>
             <td class="value-col">: {{ $masterItem->nama_barang }}</td>
-            <td class="label-col" style="text-align: right; padding-right: 20px;">Nilai Saldo Awal</td>
-            <td class="value-col">: {{ number_format($saldoAwalNilai, 0, ',', '.') }}</td>
+            @if($gunakanNominal)
+                <td class="label-col" style="text-align: right; padding-right: 20px;">Nilai Saldo Awal</td>
+                <td class="value-col">: {{ number_format($saldoAwalNilai, 0, ',', '.') }}</td>
+            @endif
         </tr>
     </table>
 
@@ -130,11 +132,11 @@
                 <th>No. Bukti</th>
                 <th>Dikeluarkan Ke</th>
                 <th class="right">Kts. Masuk</th>
-                <th class="right">Nilai masuk</th>
+                @if($gunakanNominal)<th class="right">Nilai masuk</th>@endif
                 <th class="right">Kts. Keluar</th>
-                <th class="right">Nilai keluar</th>
+                @if($gunakanNominal)<th class="right">Nilai keluar</th>@endif
                 <th class="right">Kuantitas</th>
-                <th class="right">Nilai Akhir</th>
+                @if($gunakanNominal)<th class="right">Nilai Akhir</th>@endif
             </tr>
         </thead>
         <tbody>
@@ -159,24 +161,24 @@
                     <td>{{ $trx->no_faktur }}</td>
                     <td>{{ $trx->kts_masuk > 0 ? '' : $trx->referensi }}</td>
                     <td class="right">{{ $trx->kts_masuk > 0 ? number_format($trx->kts_masuk, 0, ',', '.') : '0' }}</td>
-                    <td class="right">{{ $trx->nilai_masuk > 0 ? number_format($trx->nilai_masuk, 0, ',', '.') : '0' }}</td>
+                    @if($gunakanNominal)<td class="right">{{ $trx->nilai_masuk > 0 ? number_format($trx->nilai_masuk, 0, ',', '.') : '0' }}</td>@endif
                     <td class="right">{{ $trx->kts_keluar > 0 ? number_format($trx->kts_keluar, 0, ',', '.') : '0' }}</td>
-                    <td class="right">{{ $trx->nilai_keluar > 0 ? number_format($trx->nilai_keluar, 0, ',', '.') : '0' }}</td>
+                    @if($gunakanNominal)<td class="right">{{ $trx->nilai_keluar > 0 ? number_format($trx->nilai_keluar, 0, ',', '.') : '0' }}</td>@endif
                     <td class="right">{{ number_format($trx->kuantitas, 0, ',', '.') }}</td>
-                    <td class="right">{{ number_format($trx->nilai_akhir, 0, ',', '.') }}</td>
+                    @if($gunakanNominal)<td class="right">{{ number_format($trx->nilai_akhir, 0, ',', '.') }}</td>@endif
                 </tr>
             @empty
                 <tr>
-                    <td colspan="12" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
+                    <td colspan="{{ $gunakanNominal ? 12 : 9 }}" class="center" style="padding: 20px;">Tidak ada transaksi dalam periode ini.</td>
                 </tr>
             @endforelse
             <tr class="totals-row">
                 <td colspan="6"></td>
                 <td class="right">{{ number_format($totalKtsMasuk, 0, ',', '.') }}</td>
-                <td class="right">{{ number_format($totalNilaiMasuk, 0, ',', '.') }}</td>
+                @if($gunakanNominal)<td class="right">{{ number_format($totalNilaiMasuk, 0, ',', '.') }}</td>@endif
                 <td class="right">{{ number_format($totalKtsKeluar, 0, ',', '.') }}</td>
-                <td class="right">{{ number_format($totalNilaiKeluar, 0, ',', '.') }}</td>
-                <td colspan="2"></td>
+                @if($gunakanNominal)<td class="right">{{ number_format($totalNilaiKeluar, 0, ',', '.') }}</td>@endif
+                <td colspan="{{ $gunakanNominal ? 2 : 1 }}"></td>
             </tr>
         </tbody>
     </table>
