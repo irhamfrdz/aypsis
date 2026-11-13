@@ -24,6 +24,13 @@
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
     .sugeng-sheet tbody tr[data-selected="true"] td:focus { background: #eef2ff; }
 </style>
+<div class="sugeng-formula-bar mb-2 flex items-start gap-2 rounded border border-gray-300 bg-gray-100 p-2" aria-label="Isi sel terpilih">
+    <output class="sugeng-cell-address mt-1 w-16 shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm" aria-label="Alamat sel">—</output>
+    <span class="mt-1 text-lg italic text-gray-500" aria-hidden="true">fx</span>
+    <label class="sr-only" for="sugeng-formula-input">Isi lengkap sel terpilih</label>
+    <textarea id="sugeng-formula-input" class="sugeng-formula-input min-h-16 flex-1 resize-y rounded border border-gray-300 bg-white px-3 py-2 text-sm" rows="3" placeholder="Pilih sel untuk melihat isi lengkapnya" @cannot('manifest-sugeng-manage') readonly @endcannot></textarea>
+    @can('manifest-sugeng-manage')<button type="button" class="sugeng-formula-save rounded bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700" disabled>Simpan</button>@endcan
+</div>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
         $widths = [140,95,135,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];

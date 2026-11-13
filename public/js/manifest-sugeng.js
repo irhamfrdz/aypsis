@@ -5,8 +5,24 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     const directions = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
     let anchor = -1;
     let selectedCell = null;
+    const formulaBar = table.parentElement.previousElementSibling;
+    const address = formulaBar?.querySelector('.sugeng-cell-address');
+    const formulaInput = formulaBar?.querySelector('.sugeng-formula-input');
+    const formulaSave = formulaBar?.querySelector('.sugeng-formula-save');
 
     const valueOf = cell => (cell.querySelector('.sheet-cell-content')?.textContent ?? cell.innerText).replace(/\r\n/g, '\n').replace(/\n$/, '');
+    const showCell = cell => {
+        selectedCell = cell;
+        if (!cell || !formulaInput) return;
+        address.textContent = `${cell.dataset.column || ''}${rows.indexOf(cell.parentElement) + 9}`;
+        formulaInput.value = valueOf(cell);
+        if (formulaSave) formulaSave.disabled = !cell.isContentEditable;
+    };
+    const commitFormula = () => {
+        if (selectedCell?.isContentEditable && formulaInput && formulaInput.value !== valueOf(selectedCell)) {
+            setCell(selectedCell, formulaInput.value);
+        }
+    };
     const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
     const selectRows = (indices, keep = false) => {
         if (!keep) rows.forEach(row => delete row.dataset.selected);
@@ -18,6 +34,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         const content = cell.querySelector('.sheet-cell-content');
         if (content) content.textContent = value;
         else cell.textContent = value;
+        if (cell === selectedCell && formulaInput) formulaInput.value = value;
         save(cell);
     };
 
@@ -57,13 +74,32 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     table.addEventListener('focusin', event => {
         const cell = event.target.closest('td[contenteditable="true"]');
         if (cell) {
-            selectedCell = cell;
+            showCell(cell);
             if (!saved.has(cell)) saved.set(cell, valueOf(cell));
         }
     });
     table.addEventListener('focusout', event => {
         const cell = event.target.closest('td[contenteditable="true"]');
         if (cell) save(cell);
+    });
+    table.addEventListener('click', event => {
+        const cell = event.target.closest('tbody td[data-column]');
+        if (cell) showCell(cell);
+    });
+    table.addEventListener('input', event => {
+        const cell = event.target.closest('tbody td[data-column]');
+        if (cell === selectedCell && formulaInput) formulaInput.value = valueOf(cell);
+    });
+    formulaSave?.addEventListener('click', commitFormula);
+    formulaInput?.addEventListener('blur', commitFormula);
+    formulaInput?.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+            formulaInput.value = selectedCell ? valueOf(selectedCell) : '';
+            formulaInput.blur();
+        } else if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') {
+            event.preventDefault();
+            commitFormula();
+        }
     });
     table.addEventListener('keydown', event => {
         const rowHeader = event.target.closest('tbody .sheet-row-number');
