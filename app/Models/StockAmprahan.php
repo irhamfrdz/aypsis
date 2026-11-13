@@ -22,6 +22,8 @@ class StockAmprahan extends Model
         'jumlah',
         'satuan',
         'lokasi',
+        'lokasi_penyimpanan',
+        'gudang',
         'keterangan',
         'vendor_amprahan_id',
         'created_by',

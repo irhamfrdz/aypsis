@@ -246,30 +246,27 @@
                             <p class="mt-1 text-[10px] text-gray-500 italic">Input Harga Satuan & Jumlah untuk hitung Total, ATAU input Harga Total untuk hitung Harga Satuan</p>
                         </div>
 
-                        {{-- Lokasi --}}
                         <div>
-                            <label for="lokasi" class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Penyimpanan</label>
-                            <div class="relative">
-                                <div class="dropdown-container-lokasi">
-                                    <input type="text" id="search_lokasi" placeholder="Search Location..." autocomplete="off"
-                                           class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
-                                    <select name="lokasi" id="lokasi" 
-                                            class="hidden w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 transition-all duration-200">
-                                        <option value="">Select a location</option>
-                                        @foreach($gudangItems as $gudang)
-                                            <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi', $item->lokasi) == $gudang->nama_gudang ? 'selected' : '' }}>
-                                                {{ $gudang->nama_gudang }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div id="dropdown_options_lokasi" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                        {{-- Options will be populated by JavaScript --}}
-                                    </div>
-                                </div>
-                            </div>
-                            @error('lokasi')
-                                <p class="mt-1 text-xs text-red-500">{{ $message }}</p>
-                            @enderror
+                            <label for="lokasi_penyimpanan" class="block text-sm font-semibold text-gray-700 mb-1">Lokasi Penyimpanan</label>
+                            <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" required class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                                <option value="">Pilih lokasi penyimpanan</option>
+                                <option value="KANTOR AYP BATAM" @selected(old('lokasi_penyimpanan', $item->lokasi_penyimpanan ?? $item->lokasi) === 'KANTOR AYP BATAM')>KANTOR AYP BATAM</option>
+                                <option value="KANTOR AYP JAKARTA" @selected(old('lokasi_penyimpanan', $item->lokasi_penyimpanan ?? $item->lokasi) === 'KANTOR AYP JAKARTA')>KANTOR AYP JAKARTA</option>
+                            </select>
+                            @error('lokasi_penyimpanan')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
+                        </div>
+                        <div>
+                            <label for="gudang" class="block text-sm font-semibold text-gray-700 mb-1">Gudang</label>
+                            <select name="gudang" id="gudang" required class="w-full rounded-lg border-gray-300 focus:border-indigo-500 focus:ring focus:ring-indigo-200">
+                                <option value="">Pilih gudang</option>
+                                @foreach(['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'] as $namaGudang)
+                                    <option value="{{ $namaGudang }}" data-city="KANTOR AYP BATAM" @selected(old('gudang', $item->gudang ?? $item->lokasi) === $namaGudang)>{{ $namaGudang }}</option>
+                                @endforeach
+                                @foreach(['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'] as $namaGudang)
+                                    <option value="{{ $namaGudang }}" data-city="KANTOR AYP JAKARTA" @selected(old('gudang', $item->gudang ?? $item->lokasi) === $namaGudang)>{{ $namaGudang }}</option>
+                                @endforeach
+                            </select>
+                            @error('gudang')<p class="mt-1 text-xs text-red-500">{{ $message }}</p>@enderror
                         </div>
 
                         {{-- Keterangan --}}
@@ -656,13 +653,19 @@ document.addEventListener('DOMContentLoaded', function() {
         containerClass: 'dropdown-container-type-barang'
     });
 
-    // Initialize Lokasi dropdown
-    createSearchableDropdown({
-        selectId: 'lokasi',
-        searchId: 'search_lokasi',
-        dropdownId: 'dropdown_options_lokasi',
-        containerClass: 'dropdown-container-lokasi'
+    const lokasiPenyimpanan = document.getElementById('lokasi_penyimpanan');
+    const gudangSelect = document.getElementById('gudang');
+    function filterGudang() {
+        Array.from(gudangSelect.options).forEach(option => {
+            if (option.dataset.city) option.disabled = option.hidden = option.dataset.city !== lokasiPenyimpanan.value;
+        });
+        if (gudangSelect.selectedOptions[0]?.disabled) gudangSelect.value = '';
+    }
+    lokasiPenyimpanan.addEventListener('change', () => {
+        gudangSelect.value = '';
+        filterGudang();
     });
+    filterGudang();
 
     // Initialize Usage Fields Dropdowns
     createSearchableDropdown({

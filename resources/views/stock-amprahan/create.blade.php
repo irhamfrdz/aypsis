@@ -312,23 +312,23 @@
                             </label>
                             <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" required class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
                                 <option value="">Pilih Lokasi Penyimpanan</option>
-                                <option value="batam" @selected(old('lokasi_penyimpanan') === 'batam')>Batam</option>
-                                <option value="jakarta" @selected(old('lokasi_penyimpanan') === 'jakarta')>Jakarta</option>
+                                <option value="KANTOR AYP BATAM" @selected(old('lokasi_penyimpanan') === 'KANTOR AYP BATAM')>KANTOR AYP BATAM</option>
+                                <option value="KANTOR AYP JAKARTA" @selected(old('lokasi_penyimpanan') === 'KANTOR AYP JAKARTA')>KANTOR AYP JAKARTA</option>
                             </select>
                             @error('lokasi_penyimpanan')<p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>@enderror
                         </div>
                         <div class="group">
-                            <label for="lokasi" class="block text-sm font-bold text-gray-700 mb-2">Gudang <span class="text-red-500">*</span></label>
-                            <select name="lokasi" id="lokasi" required class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                            <label for="gudang" class="block text-sm font-bold text-gray-700 mb-2">Gudang <span class="text-red-500">*</span></label>
+                            <select name="gudang" id="gudang" required class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
                                 <option value="">Pilih Gudang</option>
                                 @foreach(['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'] as $namaGudang)
-                                    <option value="{{ $namaGudang }}" data-city="batam" @selected(old('lokasi') === $namaGudang)>{{ $namaGudang }}</option>
+                                    <option value="{{ $namaGudang }}" data-city="KANTOR AYP BATAM" @selected(old('gudang') === $namaGudang)>{{ $namaGudang }}</option>
                                 @endforeach
                                 @foreach(['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'] as $namaGudang)
-                                    <option value="{{ $namaGudang }}" data-city="jakarta" @selected(old('lokasi') === $namaGudang)>{{ $namaGudang }}</option>
+                                    <option value="{{ $namaGudang }}" data-city="KANTOR AYP JAKARTA" @selected(old('gudang') === $namaGudang)>{{ $namaGudang }}</option>
                                 @endforeach
                             </select>
-                            @error('lokasi')
+                            @error('gudang')
                                 <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
                                 </p>
@@ -828,7 +828,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     const lokasiPenyimpanan = document.getElementById('lokasi_penyimpanan');
-    const gudangSelect = document.getElementById('lokasi');
+    const gudangSelect = document.getElementById('gudang');
     function filterGudang() {
         Array.from(gudangSelect.options).forEach(option => {
             if (!option.dataset.city) return;

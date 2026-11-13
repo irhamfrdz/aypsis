@@ -298,8 +298,8 @@ class StockAmprahanController extends Controller
     public function store(Request $request)
     {
         $gudangByCity = [
-            'batam' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
-            'jakarta' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
+            'KANTOR AYP BATAM' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
+            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
         ];
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
@@ -313,7 +313,7 @@ class StockAmprahanController extends Controller
             'jumlah' => 'required|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
             'lokasi_penyimpanan' => ['required', Rule::in(array_keys($gudangByCity))],
-            'lokasi' => ['required', Rule::in($gudangByCity[$request->input('lokasi_penyimpanan')] ?? [])],
+            'gudang' => ['required', Rule::in($gudangByCity[$request->input('lokasi_penyimpanan')] ?? [])],
             'keterangan' => 'nullable|string',
             'vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
 
@@ -354,7 +354,9 @@ class StockAmprahanController extends Controller
             'adjustment' => $data['adjustment'] ?? 0,
             'jumlah' => $data['jumlah'],
             'satuan' => $data['satuan'],
-            'lokasi' => $data['lokasi'],
+            'lokasi' => $data['lokasi_penyimpanan'],
+            'lokasi_penyimpanan' => $data['lokasi_penyimpanan'],
+            'gudang' => $data['gudang'],
             'keterangan' => $data['keterangan'],
             'vendor_amprahan_id' => $data['vendor_amprahan_id'],
             'created_by' => $data['created_by'],
@@ -443,6 +445,11 @@ class StockAmprahanController extends Controller
     {
         $item = StockAmprahan::with('usages')->findOrFail($id);
 
+        $gudangByCity = [
+            'KANTOR AYP BATAM' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
+            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
+        ];
+
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
@@ -454,7 +461,8 @@ class StockAmprahanController extends Controller
             'adjustment' => 'nullable|numeric',
             'jumlah' => 'required|numeric|min:0', // This is the TOTAL quantity in the form
             'satuan' => 'nullable|string|max:50',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi_penyimpanan' => ['required', Rule::in(array_keys($gudangByCity))],
+            'gudang' => ['required', Rule::in($gudangByCity[$request->input('lokasi_penyimpanan')] ?? [])],
             'keterangan' => 'nullable|string',
             'vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
             'is_langsung_pakai' => 'nullable',
@@ -502,7 +510,9 @@ class StockAmprahanController extends Controller
             'jumlah' => $finalJumlah,
             'type_bon_amprahan_id' => $data['type_bon_amprahan_id'],
             'satuan' => $data['satuan'],
-            'lokasi' => $data['lokasi'],
+            'lokasi' => $data['lokasi_penyimpanan'],
+            'lokasi_penyimpanan' => $data['lokasi_penyimpanan'],
+            'gudang' => $data['gudang'],
             'keterangan' => $data['keterangan'],
             'vendor_amprahan_id' => $data['vendor_amprahan_id'],
             'updated_by' => $data['updated_by'],
