@@ -270,6 +270,7 @@
                                         default => 'fa-chart-bar',
                                     } }} mr-1.5 text-slate-400" aria-hidden="true"></i>{{ $ranking['label'] }}</th>
                                 @endforeach
+                                <th class="whitespace-nowrap px-4 py-3">OB</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
@@ -300,9 +301,10 @@
                                             @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
                                         </td>
                                     @endforeach
+                                    <td class="whitespace-nowrap px-4 py-3 text-slate-400" aria-label="Data OB belum tersedia">—</td>
                                 </tr>
                                 <tr class="bg-indigo-50/40">
-                                    <td colspan="{{ 4 + $rankings->count() }}" class="px-4 pb-3 pt-0">
+                                    <td colspan="{{ 5 + $rankings->count() }}" class="px-4 pb-3 pt-0">
                                         <button type="button" class="ai-ranking-explain cursor-pointer text-xs font-semibold text-indigo-700 hover:text-indigo-900" data-payload="{{ json_encode(['vehicle' => $vehicleLabel, 'driver' => $driverLabel, 'period' => \Carbon\Carbon::parse($tanggalDari)->format('d/m/Y').' - '.\Carbon\Carbon::parse($tanggalSampai)->format('d/m/Y'), 'metrics' => $aiMetrics], JSON_HEX_APOS | JSON_HEX_QUOT) }}">Buat penjelasan AI untuk {{ $vehicleLabel }}</button>
                                         <p class="ai-ranking-result mt-2 hidden whitespace-pre-line rounded-lg border border-indigo-100 bg-white p-3 text-xs leading-relaxed text-slate-700" role="status"></p>
                                     </td>

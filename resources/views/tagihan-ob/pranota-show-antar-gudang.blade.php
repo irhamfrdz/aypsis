@@ -126,7 +126,7 @@
             {{-- Table Kontainer --}}
             <h3 class="text-sm font-bold text-gray-900 mb-3 flex items-center">
                 <i class="fas fa-cubes text-teal-600 mr-2"></i>
-                Daftar Kontainer Terkait ({{ $pranota->items->count() }} Item)
+                Daftar Kontainer Terkait ({{ $pranota->items->sum(fn ($detail) => 1 + (filled($detail->tagihanOb?->nomor_kontainer_kedua) ? 1 : 0)) }} Kontainer)
             </h3>
             <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
@@ -147,7 +147,7 @@
                                 <tr class="hover:bg-teal-50/10 transition duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->tagihanOb->created_at->format('d/m/Y H:i') }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-semibold font-mono text-gray-900">{{ $item->tagihanOb->nomor_kontainer }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-xs font-semibold font-mono text-gray-900">{{ $item->tagihanOb->nomor_kontainer }}@if(filled($item->tagihanOb->nomor_kontainer_kedua))<br>{{ $item->tagihanOb->nomor_kontainer_kedua }}@endif</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ $item->tagihanOb->nama_supir }}</td>
                                     <td class="px-6 py-4 text-xs text-gray-900">{{ $item->tagihanOb->keterangan }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-xs">

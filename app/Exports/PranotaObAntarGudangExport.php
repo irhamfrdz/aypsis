@@ -32,7 +32,7 @@ class PranotaObAntarGudangExport implements FromArray, ShouldAutoSize, WithColum
             $rows[] = [
                 $index + 1,
                 $tagihan?->created_at?->format('d/m/Y H:i') ?? '-',
-                $tagihan?->nomor_kontainer ?? '-',
+                collect([$tagihan?->nomor_kontainer, $tagihan?->nomor_kontainer_kedua])->filter(fn ($number) => filled($number))->implode(' / ') ?: '-',
                 $tagihan?->nama_supir ?? '-',
                 $tagihan?->status_kontainer ?? '-',
                 $tagihan?->keterangan ?? '-',

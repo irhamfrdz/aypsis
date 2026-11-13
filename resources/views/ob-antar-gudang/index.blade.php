@@ -504,11 +504,17 @@
                                     <select name="nama_supir" id="nama_supir" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Supir--</option>
                                         @foreach($supirs as $supir)
-                                            <option value="{{ $supir->nama_lengkap }}">{{ $supir->nama_lengkap }} {{ $supir->nama_panggilan ? '(' . $supir->nama_panggilan . ')' : '' }}</option>
+                                            <option value="{{ $supir->nama_lengkap }}" data-vehicles="{{ json_encode($obVehiclesByDriver->get($supir->id, collect())->values()) }}">{{ $supir->nama_lengkap }} {{ $supir->nama_panggilan ? '(' . $supir->nama_panggilan . ')' : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
 
+                                <div>
+                                    <label for="ob_mobil_id" class="block text-sm font-medium text-gray-700 mb-1">Nomor Plat Kendaraan</label>
+                                    <input type="hidden" name="mobil_id" id="ob_mobil_id">
+                                    <input type="text" id="ob_nomor_polisi" readonly placeholder="Pilih supir terlebih dahulu" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 text-sm">
+                                    <p id="ob_plate_note" class="mt-1 text-xs text-gray-500"></p>
+                                </div>
                                 <div>
                                     <label for="modal_status_service" class="block text-sm font-medium text-gray-700 mb-1">Status Service <span class="text-red-500">*</span></label>
                                     <select name="status_service" id="modal_status_service" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
@@ -525,6 +531,19 @@
                                     <p class="mt-1 pl-6 text-[10px] text-orange-700">Jika dicentang, nominal OB menjadi Rp 37.500.</p>
                                 </div>
 
+                                <div id="combo_second_wrapper" class="hidden">
+                                    <label for="combo_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Kontainer kedua (20 ft) *</label>
+                                    <input type="search" id="combo_kontainer_search" placeholder="Cari nomor kontainer..." autocomplete="off" disabled class="mb-2 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm">
+                                    <select id="combo_kontainer" name="combo_kontainer" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm">
+                                        <option value="">--Pilih kontainer kedua--</option>
+                                        @foreach($comboKontainers as $container)
+                                            <option value="{{ $container['key'] }}" data-number="{{ $container['number'] }}">{{ $container['number'] }}</option>
+                                        @endforeach
+                                    </select>
+                                    <p id="combo_search_empty" class="hidden mt-1 text-xs text-gray-500" role="status">Nomor kontainer tidak ditemukan.</p>
+                                    <p id="paired_ob_total" class="mt-2 text-sm font-semibold">Grand Total: Rp 75.000 (2 &times; Rp 37.500)</p>
+                                </div>
+
                                 <div id="modal_ckls_mobil_panjang_wrapper" class="hidden rounded-md border border-blue-200 bg-blue-50 p-3">
                                     <label class="flex cursor-pointer items-center gap-2 text-sm font-medium text-blue-900">
                                         <input type="checkbox" name="is_ckls_mobil_panjang" id="modal_ckls_mobil_panjang" value="1" class="h-4 w-4 rounded border-blue-300 text-blue-600 focus:ring-blue-500">
@@ -538,7 +557,7 @@
                                         <input type="checkbox" name="is_zona_mobil_panjang" id="modal_zona_mobil_panjang" value="1" class="h-4 w-4 rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500">
                                         <span>Memakai mobil panjang</span>
                                     </label>
-                                    <p class="mt-1 pl-6 text-[10px] text-indigo-700">Jika dicentang, nominal OB menjadi Rp 150.000.</p>
+                                    <p class="mt-1 pl-6 text-[10px] text-indigo-700">Tarif Rp 150.000 per kontainer. Pilih satu kontainer 20 ft tambahan; Grand Total Rp 300.000.</p>
                                 </div>
 
                                 <div id="modal_sekalian_antar_wrapper" class="hidden rounded-md border border-emerald-200 bg-emerald-50 p-3">
@@ -582,7 +601,7 @@
                                 </div>
 
                                 <div>
-                                    <label for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal OB <span class="text-red-500">*</span></label>
+                                    <label id="nominal_ob_label" for="nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal OB <span class="text-red-500">*</span></label>
                                     <input type="number" name="nominal" id="nominal" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required readonly placeholder="Pilih status untuk mengisi harga...">
                                 </div>
 
@@ -638,9 +657,12 @@
         document.getElementById('modal_nomor_kontainer').value = nomor;
         document.getElementById('modal_ukuran').value = ukuran;
         document.getElementById('modal_source').value = source;
+        updateObVehicle();
         document.getElementById('modal_status_service').value = 'non_service';
         document.getElementById('modal_status_kontainer').value = '';
         document.getElementById('modal_combo').checked = false;
+        document.getElementById('combo_kontainer').value = '';
+        document.getElementById('combo_kontainer_search').value = '';
         document.getElementById('modal_ckls_mobil_panjang').checked = false;
         document.getElementById('modal_zona_mobil_panjang').checked = false;
         document.getElementById('modal_sekalian_antar').checked = false;
@@ -1035,6 +1057,19 @@
     });
 
     function updateNominalFromSelection() {
+        const longVehicleActive = document.getElementById('modal_zona_mobil_panjang').checked;
+        const comboActive = document.getElementById('modal_combo').checked || longVehicleActive;
+        document.getElementById('paired_ob_total').textContent = longVehicleActive ? 'Grand Total: Rp 300.000 (2 x Rp 150.000)' : 'Grand Total: Rp 75.000 (2 x Rp 37.500)';
+        document.getElementById('nominal_ob_label').innerHTML = (comboActive ? 'Grand Total OB' : 'Nominal OB') + ' <span class="text-red-500">*</span>';
+        const secondContainer = document.getElementById('combo_kontainer');
+        document.getElementById('combo_second_wrapper').classList.toggle('hidden', !comboActive);
+        secondContainer.disabled = !comboActive;
+        secondContainer.required = comboActive;
+        if (!comboActive) secondContainer.value = '';
+        const comboSearch = document.getElementById('combo_kontainer_search');
+        comboSearch.disabled = !comboActive;
+        if (!comboActive) comboSearch.value = '';
+        filterComboContainers();
         const isCustomRate = document.getElementById('modal_zona_mobil_panjang').checked
             || document.getElementById('modal_ckls_mobil_panjang').checked
             || document.getElementById('modal_sekalian_antar').checked
@@ -1053,7 +1088,7 @@
         }
 
         if (document.getElementById('modal_zona_mobil_panjang').checked) {
-            document.getElementById('nominal').value = '150000';
+            document.getElementById('nominal').value = '300000';
             return;
         }
 
@@ -1070,7 +1105,7 @@
         }
 
         if (document.getElementById('modal_combo').checked) {
-            document.getElementById('nominal').value = '37500';
+            document.getElementById('nominal').value = '75000';
             return;
         }
 
@@ -1082,6 +1117,36 @@
             document.getElementById('nominal').value = '';
         }
     }
+
+    function filterComboContainers() {
+        const select = document.getElementById('combo_kontainer');
+        const search = document.getElementById('combo_kontainer_search').value.trim().toUpperCase();
+        const primary = document.getElementById('modal_nomor_kontainer').value.trim().toUpperCase();
+        let matches = 0;
+        Array.from(select.options).forEach(option => {
+            if (!option.value) return;
+            const number = (option.dataset.number || '').trim().toUpperCase();
+            const available = number !== primary && number.includes(search);
+            option.hidden = !available;
+            option.disabled = !available;
+            if (available) matches++;
+            if (!available && option.selected) select.value = '';
+        });
+        document.getElementById('combo_search_empty').classList.toggle('hidden', matches > 0);
+    }
+    document.getElementById('combo_kontainer_search').addEventListener('input', filterComboContainers);
+
+    function updateObVehicle() {
+        const driver = document.getElementById('nama_supir');
+        const vehicles = JSON.parse(driver.selectedOptions[0]?.dataset.vehicles || '[]');
+        vehicles.sort((a, b) => Number(b.id) - Number(a.id));
+        const vehicle = vehicles[0];
+        document.getElementById('ob_mobil_id').value = vehicle?.id || '';
+        document.getElementById('ob_nomor_polisi').value = vehicle?.nomor_polisi || '';
+        document.getElementById('ob_plate_note').textContent = driver.value && !vehicle ? 'Kendaraan belum terdaftar untuk supir ini.' : '';
+
+    }
+    document.getElementById('nama_supir').addEventListener('change', updateObVehicle);
 
     function closeTagihanModal() {
         const modal = document.getElementById('tagihanModal');

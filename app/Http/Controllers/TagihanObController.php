@@ -490,7 +490,7 @@ class TagihanObController extends Controller
             abort(403);
         }
 
-        $query = \App\Models\PranotaObAntarGudang::with(['creator', 'items']);
+        $query = \App\Models\PranotaObAntarGudang::with(['creator', 'items.tagihanOb']);
 
         if ($request->filled('search')) {
             $search = $request->search;

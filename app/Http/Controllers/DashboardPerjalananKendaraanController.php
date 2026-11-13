@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GpsDailyDistance;
+use App\Models\TagihanOb;
 use App\Services\RitSuratJalanService;
 use App\Services\VehicleAmprahanUsageService;
 use App\Services\VehicleTireReplacementService;
@@ -197,7 +198,23 @@ class DashboardPerjalananKendaraanController extends Controller
                     }
                 }
 
+                // One tagihan row represents one OB, even when it records two containers.
+                $obCounts = TagihanOb::query()
+                    ->whereDate('tanggal_ob', '>=', $tanggalDari)
+                    ->whereDate('tanggal_ob', '<=', $tanggalSampai)
+                    ->select('nama_supir')
+                    ->selectRaw('COUNT(*) as ob_count')
+                    ->groupBy('nama_supir')
+                    ->get()
+                    ->groupBy(fn ($entry) => mb_strtoupper(preg_replace('/\s+/', ' ', trim((string) $entry->nama_supir))))
+                    ->map(fn ($entries) => (int) $entries->sum('ob_count'));
+
                 foreach ($vehicleStats as $row) {
+                    $driverNames = collect([$row->mobil?->karyawan?->nama_lengkap, $row->mobil?->karyawan?->nama_panggilan])
+                        ->filter()
+                        ->map(fn ($name) => mb_strtoupper(preg_replace('/\s+/', ' ', trim($name))))
+                        ->unique();
+                    $row->ob_count = $driverNames->sum(fn ($name) => $obCounts->get($name, 0));
                     $row->amprahan_usages = $amprahanUsages->get($row->mobil_id, collect());
                     $tires = $tireReplacements->get($row->mobil_id, ['replacement_count' => 0, 'tire_count' => 0]);
                     $row->tire_replacement_count = $tires['replacement_count'];

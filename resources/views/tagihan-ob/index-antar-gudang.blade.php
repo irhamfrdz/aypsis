@@ -226,6 +226,7 @@
                                     <div class="editable-field" data-field="nomor_kontainer" data-id="{{ $item->id }}" title="Klik untuk edit nomor kontainer">
                                         <span class="field-display font-semibold font-mono text-gray-900 bg-gray-50 px-2 py-1 rounded border border-gray-200">
                                             {{ $item->nomor_kontainer }}
+                                            @if($item->nomor_kontainer_kedua)<br>{{ $item->nomor_kontainer_kedua }}@endif
                                         </span>
                                         <input type="text" class="field-input hidden w-full px-2 py-1 border border-teal-500 rounded text-xs font-mono focus:outline-none focus:ring-1 focus:ring-teal-500" value="{{ $item->nomor_kontainer }}">
                                         <div class="edit-tooltip">Klik untuk edit</div>

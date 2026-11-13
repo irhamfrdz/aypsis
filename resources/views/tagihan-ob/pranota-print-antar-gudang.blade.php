@@ -283,7 +283,7 @@
                         <tr>
                             <td class="text-center">{{ $index + 1 }}</td>
                             <td class="text-center">{{ $item->snapshot ? \Carbon\Carbon::parse($detail->tanggal_ob ?? $detail->created_at)->format('d/m/Y H:i') : $detail->created_at->format('d/m/Y H:i') }}</td>
-                            <td class="font-bold text-center">{{ $detail->nomor_kontainer }}</td>
+                            <td class="font-bold text-center">{{ $detail->nomor_kontainer }}@if(filled($detail->nomor_kontainer_kedua))<br>{{ $detail->nomor_kontainer_kedua }}@endif</td>
                             <td>{{ $detail->nama_supir }}</td>
                             <td>{{ $detail->tujuan_gudang ?? '-' }}</td>
                             <td class="text-right font-bold">Rp {{ number_format($detail->biaya, 0, ',', '.') }}</td>

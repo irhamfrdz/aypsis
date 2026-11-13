@@ -18,7 +18,10 @@ class TagihanOb extends Model
         'kegiatan', // muat atau bongkar
         'tanggal_ob', // tanggal kegiatan ob
         'nomor_kontainer',
+        'nomor_kontainer_kedua',
         'nama_supir',
+        'mobil_id',
+        'nomor_polisi',
         'surat_jalan_id',
         'nomor_surat_jalan',
         'gudang_asal_id',

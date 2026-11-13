@@ -94,7 +94,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">{{ \Carbon\Carbon::parse($item->tanggal_pranota)->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900 text-center font-bold">
                                     <span class="inline-flex px-2 py-0.5 rounded bg-teal-50 text-teal-800 text-[11px]">
-                                        {{ $item->items->count() }} kontainer
+                                        {{ $item->items->sum(fn ($detail) => 1 + (filled($detail->tagihanOb?->nomor_kontainer_kedua) ? 1 : 0)) }} kontainer
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-xs text-gray-900">Rp {{ number_format($item->nominal, 0, ',', '.') }}</td>

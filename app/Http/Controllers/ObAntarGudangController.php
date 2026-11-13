@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Gudang;
 use App\Models\HistoryKontainer;
 use App\Models\Karyawan;
+use App\Models\Mobil;
 use App\Models\Kontainer;
 use App\Models\MasterPricelistObAntarGudang;
 use App\Models\StockKontainer;
@@ -83,6 +84,15 @@ class ObAntarGudangController extends Controller
 
         $gudang = $gudangId ? Gudang::find($gudangId) : null;
         $gudangs = Gudang::orderBy('nama_gudang')->get();
+
+        $comboKontainers = collect();
+        foreach (['stock' => StockKontainer::class, 'kontainer' => Kontainer::class] as $source => $model) {
+            foreach ($model::query()->whereIn('ukuran', ['20', '20ft', '20 ft'])->get() as $container) {
+                $number = $container->nomor_seri_gabungan ?: $container->awalan_kontainer.$container->nomor_seri_kontainer;
+                $comboKontainers->push(['key' => $source.':'.$container->id, 'number' => $number]);
+            }
+        }
+        view()->share('comboKontainers', $comboKontainers->sortBy('number'));
 
         // Build queries with filters
         $search = $request->input('search');
@@ -179,6 +189,8 @@ class ObAntarGudangController extends Controller
             ->pluck('total', 'ukuran')
             ->toArray();
 
+        view()->share('obVehiclesByDriver', Mobil::query()->whereNotNull('karyawan_id')->get(['id', 'karyawan_id', 'nomor_polisi'])->groupBy('karyawan_id'));
+
         // Fetch supirs for the modal
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
             ->orderBy('nama_lengkap')
@@ -221,6 +233,7 @@ class ObAntarGudangController extends Controller
             'nomor_kontainer' => 'required|string',
             'ukuran' => 'required|string',
             'nama_supir' => 'required|string',
+            'mobil_id' => 'nullable|integer|exists:mobils,id',
             'pricelist_id' => [
                 'nullable',
                 Rule::requiredIf(fn () => ! $request->boolean('is_zona_mobil_panjang') && ! $request->boolean('is_ckls_mobil_panjang') && ! $request->boolean('is_sekalian_antar')),
@@ -233,6 +246,7 @@ class ObAntarGudangController extends Controller
                 Rule::requiredIf(fn () => $request->input('status_service') !== 'service'),
             ],
             'is_combo' => 'sometimes|boolean',
+            'combo_kontainer' => [Rule::requiredIf(fn () => $request->boolean('is_combo') || $request->boolean('is_zona_mobil_panjang')), 'nullable', 'string'],
             'is_ckls_mobil_panjang' => 'sometimes|boolean',
             'is_zona_mobil_panjang' => 'sometimes|boolean',
             'is_sekalian_antar' => 'sometimes|boolean',
@@ -244,6 +258,11 @@ class ObAntarGudangController extends Controller
             'source' => 'required|in:stock,kontainer',
             'keterangan' => 'nullable|string',
         ]);
+
+        $selectedMobil = Mobil::query()
+            ->whereHas('karyawan', fn ($query) => $query->where('nama_lengkap', $validated['nama_supir']))
+            ->orderByDesc('id')
+            ->first();
 
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
         $validated['is_combo'] = $request->boolean('is_combo');
@@ -418,12 +437,37 @@ class ObAntarGudangController extends Controller
             }
         }
 
+        $comboContainer = null;
+        $comboSource = null;
+        if ($validated['is_combo'] || $validated['is_zona_mobil_panjang']) {
+            [$comboSource, $comboId] = array_pad(explode(':', $validated['combo_kontainer'], 2), 2, null);
+            $comboModel = match ($comboSource) { 'stock' => StockKontainer::class, 'kontainer' => Kontainer::class, default => null };
+            $comboContainer = $comboModel && ctype_digit((string) $comboId) ? $comboModel::find($comboId) : null;
+            $comboNumber = $comboContainer ? ($comboContainer->nomor_seri_gabungan ?: $comboContainer->awalan_kontainer.$comboContainer->nomor_seri_kontainer) : null;
+            if (! $comboContainer || preg_replace('/\s+/', '', str_ireplace('ft', '', (string) $comboContainer->ukuran)) !== '20'
+                || strcasecmp(trim($comboNumber), trim($validated['nomor_kontainer'])) === 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages(['combo_kontainer' => 'Pilih kontainer 20 ft kedua yang berbeda dan terdaftar.']);
+            }
+        }
+
         try {
             DB::beginTransaction();
 
             $validated['gudang_id'] = $effectiveGudangId;
             $gudangAsal = $gudangAsalInput;
 
+            $comboItems = [$validated];
+            if ($comboContainer) {
+                $second = $validated;
+                $second['nomor_kontainer'] = $comboNumber;
+                $second['source'] = $comboSource;
+                $second['surat_jalan_id'] = null;
+                $second['gudang_id'] = $comboContainer->gudangs_id;
+                $comboItems[] = $second;
+            }
+            foreach ($comboItems as $itemIndex => $item) {
+                $validated = $item;
+                $gudangAsal = Gudang::find($validated['gudang_id']);
             $tagihan = new TagihanOb;
             $tagihan->tanggal_ob = $validated['tanggal_ob'];
             $tagihan->kapal = 'ANTAR GUDANG';
@@ -432,7 +476,9 @@ class ObAntarGudangController extends Controller
             $tagihan->nomor_kontainer = $validated['nomor_kontainer'];
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
-            $tagihan->surat_jalan_id = $suratJalanId;
+            $tagihan->mobil_id = $selectedMobil?->id;
+            $tagihan->nomor_polisi = $selectedMobil?->nomor_polisi;
+            $tagihan->surat_jalan_id = $comboContainer && $validated['nomor_kontainer'] === $comboNumber ? null : $suratJalanId;
             $tagihan->status_kontainer = $validated['status_kontainer'];
             $tagihan->is_combo = $validated['is_combo'];
             $tagihan->is_ckls_mobil_panjang = $validated['is_ckls_mobil_panjang'];
@@ -458,7 +504,13 @@ class ObAntarGudangController extends Controller
                 default => $pricelist?->biaya ?? $validated['nominal'],
             };
 
-            $tagihan->save();
+            if ($comboContainer) {
+                $tagihan->nomor_kontainer_kedua = $comboNumber;
+                $tagihan->biaya = ($validated['is_combo'] ? self::COMBO_BIAYA_20FT_SERVICE : self::ZONA_MOBIL_PANJANG_BIAYA) * 2;
+            }
+            if (! $comboContainer || $itemIndex === 0) {
+                $tagihan->save();
+            }
 
             // Update gudang_id pada kontainer terkait (pindahkan ke gudang tujuan)
             if ($validated['source'] === 'stock') {
@@ -507,9 +559,13 @@ class ObAntarGudangController extends Controller
                 }
             }
 
+            }
+
             DB::commit();
 
-            return redirect()->back()->with('success', 'Tagihan OB Antar Gudang berhasil dibuat. Kontainer '.$validated['nomor_kontainer'].' dipindahkan ke '.($gudangTujuan->nama_gudang ?? 'gudang tujuan').'.');
+            return redirect()->back()->with('success', $comboContainer
+                ? 'Satu tagihan untuk dua kontainer berhasil dibuat. Grand Total Rp '.number_format($tagihan->biaya, 0, ',', '.').'.'
+                : 'Tagihan OB Antar Gudang berhasil dibuat. Kontainer '.$validated['nomor_kontainer'].' dipindahkan ke '.($gudangTujuan->nama_gudang ?? 'gudang tujuan').'.');
         } catch (\Exception $e) {
             DB::rollBack();
 
