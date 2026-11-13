@@ -5486,6 +5486,9 @@ Route::middleware([
         Route::get('history-kontainer', [\App\Http\Controllers\HistoryKontainerController::class, 'index'])
             ->name('history-kontainer.index')
             ->middleware('can:master-kontainer-view');
+        Route::patch('history-kontainer/{id}/tanggal', [\App\Http\Controllers\HistoryKontainerController::class, 'updateTanggal'])
+            ->name('history-kontainer.update-tanggal')
+            ->middleware('can:master-kontainer-update');
         Route::delete('history-kontainer/{id}', [\App\Http\Controllers\HistoryKontainerController::class, 'destroy'])
             ->name('history-kontainer.destroy')
             ->middleware('can:master-kontainer-delete');

@@ -102,4 +102,16 @@ class HistoryKontainerController extends Controller
 
         return redirect()->back()->with('success', 'History pergerakan berhasil dihapus.');
     }
+
+    public function updateTanggal(Request $request, $id)
+    {
+        $validated = $request->validate([
+            'tanggal_kegiatan' => ['required', 'date_format:Y-m-d'],
+        ]);
+
+        $history = HistoryKontainer::findOrFail($id);
+        $history->update($validated);
+
+        return redirect()->back()->with('success', 'Tanggal history pergerakan berhasil diperbarui.');
+    }
 }

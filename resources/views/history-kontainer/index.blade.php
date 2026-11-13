@@ -21,6 +21,12 @@
     </div>
     @endif
 
+    @if($errors->any())
+    <div class="mb-8 rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800" role="alert">
+        {{ $errors->first() }}
+    </div>
+    @endif
+
     <!-- Filter Section -->
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 transition-all hover:shadow-md">
         <form action="{{ route('history-kontainer.index') }}" method="GET">
@@ -98,9 +104,9 @@
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ke</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Keterangan</th>
                         <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Oleh</th>
-                        @can('master-kontainer-delete')
+                        @if(auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete'))
                         <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
-                        @endcan
+                        @endif
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
@@ -169,8 +175,20 @@
                                     <span class="text-xs font-medium text-gray-500">{{ $history->creator->name ?? 'System' }}</span>
                                 </div>
                             </td>
-                            @can('master-kontainer-delete')
+                            @if(auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete'))
                             <td class="px-6 py-4 whitespace-nowrap text-center">
+                                @can('master-kontainer-update')
+                                <form action="{{ route('history-kontainer.update-tanggal', $history->id) }}" method="POST" class="inline-flex items-center gap-2 mr-2">
+                                    @csrf
+                                    @method('PATCH')
+                                    <label for="tanggal-kegiatan-{{ $history->id }}" class="sr-only">Tanggal kegiatan {{ $history->nomor_kontainer }}</label>
+                                    <input type="date" id="tanggal-kegiatan-{{ $history->id }}" name="tanggal_kegiatan"
+                                        value="{{ $history->tanggal_kegiatan->format('Y-m-d') }}" required
+                                        class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                    <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700" title="Simpan tanggal">Simpan</button>
+                                </form>
+                                @endcan
+                                @can('master-kontainer-delete')
                                 <form action="{{ route('history-kontainer.destroy', $history->id) }}" method="POST" 
                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus history ini? Jika ini adalah history terbaru, posisi kontainer akan dikembalikan ke lokasi sebelumnya.')"
                                     class="inline-block">
@@ -184,8 +202,9 @@
                                         </svg>
                                     </button>
                                 </form>
+                                @endcan
                             </td>
-                            @endcan
+                            @endif
                         </tr>
                     @empty
                         <tr>
