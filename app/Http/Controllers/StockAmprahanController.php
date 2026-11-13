@@ -17,6 +17,7 @@ use App\Models\StockAmprahan;
 use App\Models\StockAmprahanUsage;
 use App\Models\VendorAmprahan;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -296,6 +297,10 @@ class StockAmprahanController extends Controller
 
     public function store(Request $request)
     {
+        $gudangByCity = [
+            'batam' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
+            'jakarta' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
+        ];
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
             'tanggal_beli' => 'nullable|date',
@@ -307,7 +312,8 @@ class StockAmprahanController extends Controller
             'adjustment' => 'nullable|numeric',
             'jumlah' => 'required|numeric|min:0',
             'satuan' => 'nullable|string|max:50',
-            'lokasi' => 'nullable|string|max:255',
+            'lokasi_penyimpanan' => ['required', Rule::in(array_keys($gudangByCity))],
+            'lokasi' => ['required', Rule::in($gudangByCity[$request->input('lokasi_penyimpanan')] ?? [])],
             'keterangan' => 'nullable|string',
             'vendor_amprahan_id' => 'required|exists:vendor_amprahans,id',
 

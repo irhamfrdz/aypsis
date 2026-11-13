@@ -305,29 +305,29 @@
                             </p>
                         </div>
 
-                        {{-- Lokasi --}}
+                        {{-- Lokasi dan gudang --}}
                         <div class="group">
-                            <label for="lokasi" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
+                            <label for="lokasi_penyimpanan" class="block text-sm font-bold text-gray-700 mb-2 group-focus-within:text-indigo-600 transition-colors">
                                 <i class="fas fa-map-marker-alt mr-2 text-gray-400 group-focus-within:text-indigo-500"></i>Lokasi Penyimpanan
                             </label>
-                            <div class="relative">
-                                <div class="dropdown-container-lokasi">
-                                    <input type="text" id="search_lokasi" placeholder="Search Location..." autocomplete="off" value="{{ old('lokasi') }}"
-                                           class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                    <select name="lokasi" id="lokasi" 
-                                            class="hidden w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100 transition-all duration-200 shadow-sm">
-                                        <option value="">Select a location</option>
-                                        @foreach($gudangItems as $gudang)
-                                            <option value="{{ $gudang->nama_gudang }}" {{ old('lokasi') == $gudang->nama_gudang ? 'selected' : '' }}>
-                                                {{ $gudang->nama_gudang }}
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    <div id="dropdown_options_lokasi" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
-                                        {{-- Options will be populated by JavaScript --}}
-                                    </div>
-                                </div>
-                            </div>
+                            <select name="lokasi_penyimpanan" id="lokasi_penyimpanan" required class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                                <option value="">Pilih Lokasi Penyimpanan</option>
+                                <option value="batam" @selected(old('lokasi_penyimpanan') === 'batam')>Batam</option>
+                                <option value="jakarta" @selected(old('lokasi_penyimpanan') === 'jakarta')>Jakarta</option>
+                            </select>
+                            @error('lokasi_penyimpanan')<p class="mt-2 text-xs font-medium text-red-500">{{ $message }}</p>@enderror
+                        </div>
+                        <div class="group">
+                            <label for="lokasi" class="block text-sm font-bold text-gray-700 mb-2">Gudang <span class="text-red-500">*</span></label>
+                            <select name="lokasi" id="lokasi" required class="block w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-700 focus:bg-white focus:border-indigo-500 focus:ring-4 focus:ring-indigo-100">
+                                <option value="">Pilih Gudang</option>
+                                @foreach(['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'] as $namaGudang)
+                                    <option value="{{ $namaGudang }}" data-city="batam" @selected(old('lokasi') === $namaGudang)>{{ $namaGudang }}</option>
+                                @endforeach
+                                @foreach(['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'] as $namaGudang)
+                                    <option value="{{ $namaGudang }}" data-city="jakarta" @selected(old('lokasi') === $namaGudang)>{{ $namaGudang }}</option>
+                                @endforeach
+                            </select>
                             @error('lokasi')
                                 <p class="mt-2 text-xs font-medium text-red-500 flex items-center">
                                     <i class="fas fa-exclamation-circle mr-1"></i>{{ $message }}
@@ -827,13 +827,20 @@ document.addEventListener('DOMContentLoaded', function() {
         containerClass: 'dropdown-container-type-bon'
     });
 
-    // Initialize Lokasi dropdown
-    createSearchableDropdown({
-        selectId: 'lokasi',
-        searchId: 'search_lokasi',
-        dropdownId: 'dropdown_options_lokasi',
-        containerClass: 'dropdown-container-lokasi'
+    const lokasiPenyimpanan = document.getElementById('lokasi_penyimpanan');
+    const gudangSelect = document.getElementById('lokasi');
+    function filterGudang() {
+        Array.from(gudangSelect.options).forEach(option => {
+            if (!option.dataset.city) return;
+            option.hidden = option.disabled = option.dataset.city !== lokasiPenyimpanan.value;
+        });
+        if (gudangSelect.selectedOptions[0]?.disabled) gudangSelect.value = '';
+    }
+    lokasiPenyimpanan.addEventListener('change', () => {
+        gudangSelect.value = '';
+        filterGudang();
     });
+    filterGudang();
 
     // Initialize Usage Fields Dropdowns
     createSearchableDropdown({
