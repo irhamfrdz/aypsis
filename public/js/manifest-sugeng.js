@@ -11,6 +11,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     const formulaSave = formulaBar?.querySelector('.sugeng-formula-save');
 
     const valueOf = cell => (cell.querySelector('.sheet-cell-content')?.textContent ?? cell.innerText).replace(/\r\n/g, '\n').replace(/\n$/, '');
+    const updateDocumentColor = cell => {
+        if (cell.dataset.column === 'AA') cell.classList.toggle('sheet-ayp', valueOf(cell).trim().toUpperCase() === 'AYP');
+    };
     const showCell = cell => {
         selectedCell = cell;
         if (!cell || !formulaInput) return;
@@ -34,6 +37,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         const content = cell.querySelector('.sheet-cell-content');
         if (content) content.textContent = value;
         else cell.textContent = value;
+        updateDocumentColor(cell);
         if (cell === selectedCell && formulaInput) formulaInput.value = value;
         save(cell);
     };
@@ -88,6 +92,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     });
     table.addEventListener('input', event => {
         const cell = event.target.closest('tbody td[data-column]');
+        if (cell) updateDocumentColor(cell);
         if (cell === selectedCell && formulaInput) formulaInput.value = valueOf(cell);
     });
     formulaSave?.addEventListener('click', commitFormula);
@@ -189,6 +194,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
                         const content = cell.querySelector('.sheet-cell-content');
                         if (content) content.textContent = '';
                         else cell.textContent = '';
+                        updateDocumentColor(cell);
                         saved.set(cell, '');
                     }));
                 }).catch(error => alert(error.message || 'Baris gagal dikosongkan.'))
