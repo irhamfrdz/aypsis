@@ -98,11 +98,12 @@
     <div class="header-container">
         <div class="company-name">AYPSIS</div>
         <div class="report-title">Rincian Valuasi Persediaan</div>
+        <div class="report-period">Lokasi: {{ $lokasi }}</div>
         <div class="report-period">Dari {{ $fromDate->format('d M Y') }} ke {{ $toDate->format('d M Y') }}</div>
     </div>
 
     <div class="filter-text">
-        Filter berdasarkan : Tanggal, Barang
+        Filter berdasarkan : Lokasi, Tanggal, Type Barang
     </div>
 
     <table class="info-table">

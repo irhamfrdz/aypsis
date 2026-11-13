@@ -2532,6 +2532,7 @@ class StockAmprahanController extends Controller
 
         return view('stock-amprahan.valuasi-print', [
             'masterItem' => $masterItem,
+            'lokasi' => ucfirst($request->lokasi),
             'fromDate' => $fromDate,
             'toDate' => $toDate,
             'saldoAwalQty' => $saldoAwalQty,
