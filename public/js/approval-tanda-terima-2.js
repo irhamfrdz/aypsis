@@ -225,8 +225,8 @@
 (() => {
     'use strict';
 
-    const bulkForm = document.getElementById('approval-bulk-export-form');
-    const bulkClearForm = document.getElementById('approval-bulk-clear-form');
+    const bulkForm = null;
+    const bulkClearForm = null;
     const manifestSugengForm = document.getElementById('approval-manifest-sugeng-form');
     const manifestSugengDialog = document.getElementById('approval-manifest-sugeng-dialog');
     const manifestSugengOpen = document.getElementById('approval-manifest-sugeng-open');
@@ -287,24 +287,18 @@
     bulkCheckboxes.forEach(checkbox => {
         if (Object.hasOwn(selected, checkbox.value)) {
             checkbox.checked = true;
-            selected[checkbox.value] = checkbox.dataset.exported === 'true';
+            selected[checkbox.value] = true;
         }
     });
     saveSelection();
     function updateBulkSelection() {
-        if (!bulkForm) return;
         const values = Object.values(selected);
         const count = values.length;
-        const exportedCount = values.filter(Boolean).length;
-        bulkForm.querySelector('button').disabled = count === 0;
-        bulkForm.querySelector('button span').textContent = `Export Pilihan (${count})`;
         if (manifestSugengForm) {
             manifestSugengForm.classList.toggle('hidden', count === 0);
             manifestSugengForm.querySelector('button').disabled = count === 0;
             manifestSugengForm.querySelector('button span').textContent = `Kirim ke Manifest Sugeng (${count})`;
         }
-        bulkClearForm.querySelector('button').disabled = exportedCount === 0;
-        bulkClearForm.querySelector('button span').textContent = `Lepas Tanda Export (${exportedCount})`;
         clearSelection.disabled = count === 0;
         if (selectAll) {
             const currentPageCount = bulkCheckboxes.filter(checkbox => checkbox.checked).length;
@@ -316,7 +310,7 @@
         const previous = { ...selected };
         bulkCheckboxes.forEach(checkbox => {
             checkbox.checked = selectAll.checked;
-            if (checkbox.checked) selected[checkbox.value] = checkbox.dataset.exported === 'true';
+            if (checkbox.checked) selected[checkbox.value] = true;
             else delete selected[checkbox.value];
         });
         if (Object.keys(selected).length > 300) {
@@ -334,7 +328,7 @@
             checkbox.checked = false;
             alert('Maksimal 300 tanda terima dapat dipilih sekaligus.');
         }
-        if (checkbox.checked) selected[checkbox.value] = checkbox.dataset.exported === 'true';
+        if (checkbox.checked) selected[checkbox.value] = true;
         else delete selected[checkbox.value];
         saveSelection();
         updateBulkSelection();

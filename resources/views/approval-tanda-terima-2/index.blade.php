@@ -172,7 +172,6 @@
                         <option value="">Semua status</option>
                         <option value="belum" @selected(request('status') === 'belum')>Belum dipilih</option>
                         <option value="sudah" @selected(request('status') === 'sudah')>Sudah dipilih</option>
-                        <option value="belum_lengkap" @selected(request('status') === 'belum_lengkap')>Belum lengkap</option>
                     </select>
                 </div>
                 <div>
@@ -283,12 +282,6 @@
                     @if($containerQuantityTotal !== null)
                         <span class="rounded-lg bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-800">Total barang kontainer: {{ number_format($containerQuantityTotal, 0, ',', '.') }}</span>
                     @endif
-                    <form id="approval-bulk-export-form" method="POST" action="{{ route('approval-tanda-terima-2.export-bulk', ['sourceType' => $type]) }}" class="approval-export-form">
-                        @csrf
-                        <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-100 disabled:cursor-not-allowed disabled:opacity-50" disabled>
-                            <i class="fas fa-file-excel" aria-hidden="true"></i><span>Export Pilihan (0)</span>
-                        </button>
-                    </form>
                     @can('manifest-sugeng-manage')
                     <form id="approval-manifest-sugeng-form" method="POST" action="{{ route('approval-tanda-terima-2.manifest-sugeng', ['sourceType' => $type]) }}" class="hidden">
                         @csrf
@@ -325,13 +318,6 @@
                         </dialog>
                     </form>
                     @endcan
-                    <form id="approval-bulk-clear-form" method="POST" action="{{ route('approval-tanda-terima-2.clear-export-bulk', ['sourceType' => $type]) }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>
-                            <i class="fas fa-rotate-left" aria-hidden="true"></i><span>Lepas Tanda Export (0)</span>
-                        </button>
-                    </form>
                     <button id="approval-clear-selection" type="button" class="rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50" disabled>Hapus Pilihan</button>
                 @endcan
                 <span class="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">{{ $items->count() }} data di halaman ini</span>
@@ -375,8 +361,6 @@
                             $manifestGood = collect($goodsOverride?->manifest_goods ?? [])->first();
                             $manifestQuantity = data_get($manifestGood, 'jumlah');
                             $manifestUnit = data_get($manifestGood, 'satuan');
-                            $isIncomplete = $incompleteMarks->has($item->id);
-                            $isExported = $exportedMarks->has($item->id);
                             $goods = $goodsOverride ? collect($goodsOverride->goods) : match ($type) {
                                 'fcl' => collect($item->dimensi_items ?: $item->dimensi_details ?: $item->nama_barang ?: []),
                                 'lcl' => $item->items,
@@ -400,9 +384,9 @@
                                 : $goods->take(1)->values();
                             $keteranganBarang = $goodsOverride ? $goodsOverride->keterangan_barang : $item->keterangan_barang;
                         @endphp
-                        <tr data-receipt-id="{{ $item->id }}" class="{{ $isExported ? 'bg-green-100 hover:bg-green-100' : ($isIncomplete ? 'bg-yellow-100 hover:bg-yellow-100' : 'hover:bg-gray-50/70') }}">
+                        <tr data-receipt-id="{{ $item->id }}" class="hover:bg-gray-50/70">
                             @can('approval-tanda-terima-2-approve')
-                                <td class="approval-receipt-select"><input type="checkbox" name="ids[]" value="{{ $item->id }}" form="approval-bulk-export-form" data-exported="{{ $isExported ? 'true' : 'false' }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
+                                <td class="approval-receipt-select"><input type="checkbox" value="{{ $item->id }}" class="approval-bulk-checkbox rounded border-gray-300 text-emerald-600 focus:ring-emerald-500" aria-label="Pilih tanda terima {{ $number ?: $item->id }}"></td>
                             @endcan
                             <td class="approval-receipt-order text-center font-semibold text-gray-700">
                                 <span class="inline-flex items-center justify-center gap-1">
@@ -455,33 +439,7 @@
                                     </div>
                                 @endif
                             </td>
-                            <td data-label="Aksi" class="approval-actions-cell {{ $isExported ? 'bg-green-200' : ($isIncomplete ? 'bg-yellow-200' : '') }}">
-                                @if($isIncomplete)
-                                    <span class="mr-2 inline-flex rounded bg-yellow-300 px-2 py-1 text-xs font-semibold text-yellow-950">Belum lengkap</span>
-                                @endif
-                                @can('approval-tanda-terima-2-approve')
-                                    <form method="POST" action="{{ route('approval-tanda-terima-2.export', ['sourceType' => $type, 'id' => $item->id]) }}" class="approval-export-form mr-2 inline-block">
-                                        @csrf
-                                        <button type="submit" class="approval-export-button inline-flex items-center gap-2 rounded-lg border px-3 py-2 text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-green-500 {{ $isExported ? 'border-green-500 bg-green-300 text-green-950 hover:bg-green-400' : 'border-emerald-300 bg-emerald-50 text-emerald-800 hover:bg-emerald-100' }}">
-                                            <i class="fas fa-file-excel" aria-hidden="true"></i><span>{{ $isExported ? 'Export Lagi' : 'Export Excel' }}</span>
-                                        </button>
-                                    </form>
-                                    <form method="POST" action="{{ route('approval-tanda-terima-2.clear-export', ['sourceType' => $type, 'id' => $item->id]) }}" class="approval-export-reset-form mr-2 {{ $isExported ? 'inline-block' : 'hidden' }}">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50">
-                                            <i class="fas fa-rotate-left" aria-hidden="true"></i>Lepas Tanda Export
-                                        </button>
-                                    </form>
-                                    <form method="POST" action="{{ route('approval-tanda-terima-2.set-incomplete', ['sourceType' => $type, 'id' => $item->id]) }}" class="mr-2 inline-block">
-                                        @csrf
-                                        @method('PUT')
-                                        <input type="hidden" name="incomplete" value="{{ $isIncomplete ? '0' : '1' }}">
-                                        <button type="submit" class="inline-flex items-center gap-2 rounded-lg border border-yellow-400 bg-yellow-100 px-3 py-2 text-xs font-semibold text-yellow-900 hover:bg-yellow-200 focus:outline-none focus:ring-2 focus:ring-yellow-500">
-                                            <i class="fas fa-highlighter" aria-hidden="true"></i>{{ $isIncomplete ? 'Batalkan Tanda' : 'Tandai Belum Lengkap' }}
-                                        </button>
-                                    </form>
-                                @endcan
+                            <td data-label="Aksi" class="approval-actions-cell">
                                 @cannot('approval-tanda-terima-2-approve')
                                     <button type="button" class="approval-goods-open inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                         data-dialog-id="approval-goods-{{ $type }}-{{ $item->id }}">
