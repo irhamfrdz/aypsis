@@ -102,10 +102,15 @@
     </div>
 
     <div class="filter-text">
-        Filter berdasarkan : Lokasi, Tanggal, Type Barang
+        Filter berdasarkan : Cabang, Tanggal, Type Barang
     </div>
 
     <table class="info-table">
+        <tr>
+            <td class="label-col">Cabang</td>
+            <td class="value-col">: {{ $cabang }}</td>
+            <td colspan="2"></td>
+        </tr>
         <tr>
             <td class="label-col">No. Barang</td>
             <td class="value-col">: {{ $masterItem->id }}</td>
@@ -128,7 +133,7 @@
                 <th style="width: 80px;">Tanggal</th>
                 <th>Tipe</th>
                 <th>Nama Barang</th>
-                <th>Lokasi</th>
+                <th>Gudang Lokasi</th>
                 <th>No. Bukti</th>
                 <th>Dikeluarkan Ke</th>
                 <th class="right">Kts. Masuk</th>
@@ -157,7 +162,7 @@
                     <td>{{ $trx->tanggal }}</td>
                     <td>{{ $trx->tipe }}</td>
                     <td>{{ $trx->nama_barang }}</td>
-                    <td>{{ $trx->lokasi }}</td>
+                    <td>{{ $trx->gudang }}</td>
                     <td>{{ $trx->no_faktur }}</td>
                     <td>{{ $trx->kts_masuk > 0 ? '' : $trx->referensi }}</td>
                     <td class="right">{{ $trx->kts_masuk > 0 ? number_format($trx->kts_masuk, 0, ',', '.') : '0' }}</td>

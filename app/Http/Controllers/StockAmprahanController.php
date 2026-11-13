@@ -2470,7 +2470,7 @@ class StockAmprahanController extends Controller
                 'tanggal_raw' => $item->tanggal_beli ?? $item->created_at,
                 'tipe' => $item->type_amprahan ?? 'Penerimaan Barang',
                 'nama_barang' => $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-'),
-                'lokasi' => $item->lokasi ?: '-',
+                'gudang' => $item->gudang ?: (! in_array($item->lokasi, ['KANTOR AYP BATAM', 'KANTOR AYP JAKARTA'], true) ? ($item->lokasi ?: '-') : '-'),
                 'no_faktur' => $item->nomor_bukti ?? '-',
                 'referensi' => $item->vendorAmprahan->nama_toko ?? '-',
                 'kts_masuk' => $initialStock,
@@ -2512,7 +2512,7 @@ class StockAmprahanController extends Controller
                 'tanggal_raw' => $usage->tanggal_pengambilan,
                 'tipe' => 'Pemakaian Bahan Baku',
                 'nama_barang' => $usage->stockAmprahan->nama_barang ?? ($usage->stockAmprahan->masterNamaBarangAmprahan->nama_barang ?? '-'),
-                'lokasi' => $usage->stockAmprahan->lokasi ?: '-',
+                'gudang' => $usage->stockAmprahan->gudang ?: (! in_array($usage->stockAmprahan->lokasi, ['KANTOR AYP BATAM', 'KANTOR AYP JAKARTA'], true) ? ($usage->stockAmprahan->lokasi ?: '-') : '-'),
                 'no_faktur' => '-',
                 'referensi' => $noFaktur,
                 'kts_masuk' => 0,
@@ -2551,6 +2551,7 @@ class StockAmprahanController extends Controller
 
         return view('stock-amprahan.valuasi-print', [
             'masterItem' => $masterItem,
+            'cabang' => 'KANTOR AYP '.strtoupper($request->lokasi),
             'gunakanNominal' => $request->boolean('gunakan_nominal'),
             'fromDate' => $fromDate,
             'toDate' => $toDate,
