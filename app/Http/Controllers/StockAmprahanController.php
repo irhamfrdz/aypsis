@@ -299,7 +299,7 @@ class StockAmprahanController extends Controller
     {
         $gudangByCity = [
             'KANTOR AYP BATAM' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
-            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
+            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Gudang Garasi Semut', 'Dock'],
         ];
         $data = $request->validate([
             'nomor_bukti' => 'nullable|string|max:255',
@@ -447,7 +447,7 @@ class StockAmprahanController extends Controller
 
         $gudangByCity = [
             'KANTOR AYP BATAM' => ['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'],
-            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'],
+            'KANTOR AYP JAKARTA' => ['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Gudang Garasi Semut', 'Dock'],
         ];
 
         $data = $request->validate([

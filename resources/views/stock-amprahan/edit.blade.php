@@ -262,7 +262,7 @@
                                 @foreach(['Gudang Kantor Srimas', 'Gudang Kontainer Bengkel Batam'] as $namaGudang)
                                     <option value="{{ $namaGudang }}" data-city="KANTOR AYP BATAM" @selected(old('gudang', $item->gudang ?? $item->lokasi) === $namaGudang)>{{ $namaGudang }}</option>
                                 @endforeach
-                                @foreach(['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Dock Gudang Garasi Semut'] as $namaGudang)
+                                @foreach(['Gudang Garasi Pluit', 'Gudang Ruko 10', 'Gudang Ruko 17', 'Gudang Ruko 18', 'Gudang Kantor AYP Jakarta', 'Gudang Pelabuhan', 'Gudang Garasi Semut', 'Dock'] as $namaGudang)
                                     <option value="{{ $namaGudang }}" data-city="KANTOR AYP JAKARTA" @selected(old('gudang', $item->gudang ?? $item->lokasi) === $namaGudang)>{{ $namaGudang }}</option>
                                 @endforeach
                             </select>
