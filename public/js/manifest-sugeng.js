@@ -6,7 +6,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     let anchor = -1;
     let selectedCell = null;
 
-    const valueOf = cell => cell.innerText.replace(/\r\n/g, '\n').replace(/\n$/, '');
+    const valueOf = cell => (cell.querySelector('.sheet-goods-content')?.textContent ?? cell.innerText).replace(/\r\n/g, '\n').replace(/\n$/, '');
     const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
     const selectRows = (indices, keep = false) => {
         if (!keep) rows.forEach(row => delete row.dataset.selected);
@@ -15,7 +15,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     const setCell = (cell, value) => {
         if (!cell?.isContentEditable) return;
         if (!saved.has(cell)) saved.set(cell, valueOf(cell));
-        cell.textContent = value;
+        const content = cell.querySelector('.sheet-goods-content');
+        if (content) content.textContent = value;
+        else cell.textContent = value;
         save(cell);
     };
 
@@ -148,7 +150,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
                     const result = await response.json();
                     if (!response.ok) throw new Error(result.message || 'Baris gagal dikosongkan.');
                     selection.forEach(row => Array.from(row.cells).slice(1).forEach(cell => {
-                        cell.textContent = '';
+                        const content = cell.querySelector('.sheet-goods-content');
+                        if (content) content.textContent = '';
+                        else cell.textContent = '';
                         saved.set(cell, '');
                     }));
                 }).catch(error => alert(error.message || 'Baris gagal dikosongkan.'))

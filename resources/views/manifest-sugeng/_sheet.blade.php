@@ -17,6 +17,8 @@
     .sugeng-sheet td[data-state="saved"] { background: #dcfce7; }
     .sugeng-sheet td[data-state="error"] { background: #fee2e2; }
     .sugeng-sheet tbody td:focus { outline: 2px solid #4f46e5; outline-offset: -2px; background: #eef2ff; }
+    .sugeng-sheet .sheet-goods-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
+    .sugeng-sheet td:focus-within .sheet-goods-content { max-height: none; overflow: visible; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
@@ -24,7 +26,7 @@
 </style>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
-        $widths = [140,95,135,95,55,65,180,65,65,360,65,65,360,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
+        $widths = [140,95,135,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
     <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}">
@@ -71,7 +73,7 @@
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
                     <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
-                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</td>
+                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" data-column="{{ $column }}" @endcan>@if(in_array($column, ['K', 'N']))<div class="sheet-goods-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div>@else{{ data_get($item->sheet_values, 'container.'.$column, $value) }}@endif</td>
                     @endforeach</tr>
                 @endif
                 @php $lastContainer = $containerKey; @endphp
@@ -102,7 +104,7 @@
                     @endphp
                     <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
-                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan>{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</td>
+                        <td tabindex="-1" @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" data-column="{{ $column }}" @endcan>@if(in_array($column, ['K', 'N']))<div class="sheet-goods-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div>@else{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}@endif</td>
                     @endforeach</tr>
                 @endfor
             @empty
