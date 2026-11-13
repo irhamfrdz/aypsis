@@ -36,12 +36,16 @@
                             'batam' => ['batam', 'sekupang', 'btm'],
                             'pinang' => ['pinang', 'penang', 'malaysia', 'png'],
                             'surabaya' => ['surabaya', 'tanjung perak', 'sby'],
-                            'medan' => ['medan', 'belawan', 'mdn']
+                            'medan' => ['medan', 'belawan', 'mdn'],
+                            'fcl_booking' => []
                         ];
                         
                         $keywords = $tujuanKeywords[$tujuan->id] ?? [$tujuan->nama];
                         
-                        $prospekPerTujuan = $prospeksAktif->filter(function($prospek) use ($keywords) {
+                        $prospekPerTujuan = $prospeksAktif->filter(function($prospek) use ($keywords, $tujuan) {
+                            if ($tujuan->id === 'fcl_booking') {
+                                return strcasecmp(trim((string) $prospek->tipe), 'FCL Booking') === 0;
+                            }
                             $tujuanPengiriman = strtolower($prospek->tujuan_pengiriman ?? '');
                             foreach ($keywords as $keyword) {
                                 if (stripos($tujuanPengiriman, strtolower($keyword)) !== false) {
@@ -57,7 +61,8 @@
                             'batam' => ['bg' => 'bg-green-50', 'border' => 'border-green-200', 'text' => 'text-green-800', 'icon' => 'text-green-600'],
                             'pinang' => ['bg' => 'bg-orange-50', 'border' => 'border-orange-200', 'text' => 'text-orange-800', 'icon' => 'text-orange-600'],
                             'surabaya' => ['bg' => 'bg-purple-50', 'border' => 'border-purple-200', 'text' => 'text-purple-800', 'icon' => 'text-purple-600'],
-                            'medan' => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'text' => 'text-red-800', 'icon' => 'text-red-600']
+                            'medan' => ['bg' => 'bg-red-50', 'border' => 'border-red-200', 'text' => 'text-red-800', 'icon' => 'text-red-600'],
+                            'fcl_booking' => ['bg' => 'bg-cyan-50', 'border' => 'border-cyan-200', 'text' => 'text-cyan-800', 'icon' => 'text-cyan-600']
                         ];
                         $config = $colorConfig[$tujuan->id] ?? ['bg' => 'bg-gray-50', 'border' => 'border-gray-200', 'text' => 'text-gray-800', 'icon' => 'text-gray-600'];
                     @endphp
@@ -96,7 +101,7 @@
                                         })->count();
                                         
                                         $fcl20ft = $prospekPerTujuan->filter(function($p) {
-                                            return strtoupper($p->tipe ?? '') === 'FCL' && 
+                                            return in_array(strtoupper($p->tipe ?? ''), ['FCL', 'FCL BOOKING'], true) &&
                                                    (stripos($p->ukuran ?? '', '20') !== false || 
                                                     $p->ukuran == '20' ||
                                                     stripos($p->ukuran ?? '', "20'") !== false);
@@ -110,7 +115,7 @@
                                         })->count();
                                         
                                         $fcl40ft = $prospekPerTujuan->filter(function($p) {
-                                            return strtoupper($p->tipe ?? '') === 'FCL' && 
+                                            return in_array(strtoupper($p->tipe ?? ''), ['FCL', 'FCL BOOKING'], true) &&
                                                    (stripos($p->ukuran ?? '', '40') !== false || 
                                                     $p->ukuran == '40' ||
                                                     stripos($p->ukuran ?? '', "40'") !== false);
