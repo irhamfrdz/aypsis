@@ -263,12 +263,6 @@
     }
     manifestSugengShip?.addEventListener('change', () => loadManifestSugengVoyages());
     document.getElementById('approval-manifest-sugeng-cancel')?.addEventListener('click', () => manifestSugengDialog?.close());
-    manifestSugengOpen?.addEventListener('click', () => {
-        if (manifestSugengOpen.disabled || !manifestSugengDialog) return;
-        manifestSugengDialog.showModal();
-        if (manifestSugengShip?.value && manifestSugengVoyage?.disabled) loadManifestSugengVoyages(manifestSugengDialog.dataset.selectedVoyage || '');
-        manifestSugengShip?.focus();
-    });
     const bulkCheckboxes = Array.from(document.querySelectorAll('.approval-bulk-checkbox'));
     const selectAll = document.getElementById('approval-select-all');
     const clearSelection = document.getElementById('approval-clear-selection');
@@ -372,10 +366,6 @@
         });
     });
     updateBulkSelection();
-    if (manifestSugengDialog?.dataset.openOnError === 'true' && Object.keys(selected).length > 0) {
-        manifestSugengDialog.showModal();
-        loadManifestSugengVoyages(manifestSugengDialog.dataset.selectedVoyage || '');
-    }
 
     document.querySelectorAll('.approval-export-form').forEach(form => {
         form.addEventListener('submit', async event => {

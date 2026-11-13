@@ -578,8 +578,6 @@ class ApprovalTandaTerimaDuaController extends Controller
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:300'],
             'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
-            'nama_kapal' => ['required', 'string', 'max:255'],
-            'no_voyage' => ['required', 'string', 'max:255'],
         ]);
         $ids = array_map('intval', $validated['ids']);
         $receipts = self::SOURCES[$sourceType]::query()
@@ -598,8 +596,7 @@ class ApprovalTandaTerimaDuaController extends Controller
                     ['source_type' => $sourceType, 'source_id' => $id],
                     function (bool $exists) use ($sourceType, $receipt, $goods, $id, $now, $validated) {
                         return [
-                            'nama_kapal' => trim($validated['nama_kapal']),
-                            'no_voyage' => trim($validated['no_voyage']),
+                            ...($exists ? [] : ['nama_kapal' => null, 'no_voyage' => null]),
                             'no_seal' => $sourceType === 'lcl' ? null : $receipt->no_seal,
                             'tipe_kontainer' => $sourceType === 'lcl' ? 'LCL' : $receipt->tipe_kontainer,
                             'size_kontainer' => $sourceType === 'fcl' ? $receipt->size : ($sourceType === 'lcl' ? $receipt->ukuran : ($receipt->size_kontainer ?: $receipt->ukuran)),

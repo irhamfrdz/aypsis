@@ -285,7 +285,7 @@
                     @can('manifest-sugeng-manage')
                     <form id="approval-manifest-sugeng-form" method="POST" action="{{ route('approval-tanda-terima-2.manifest-sugeng', ['sourceType' => $type]) }}" class="hidden">
                         @csrf
-                        <button id="approval-manifest-sugeng-open" type="button" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                        <button id="approval-manifest-sugeng-open" type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
                             <i class="fas fa-ship" aria-hidden="true"></i><span>Kirim ke Manifest Sugeng (0)</span>
                         </button>
                         <dialog id="approval-manifest-sugeng-dialog" aria-labelledby="approval-manifest-sugeng-title" data-voyages-url="{{ url('/api/manifests/voyages') }}" data-selected-voyage="{{ old('no_voyage') }}" data-open-on-error="{{ $errors->has('nama_kapal') || $errors->has('no_voyage') ? 'true' : 'false' }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/50">
@@ -296,7 +296,7 @@
                             <div class="space-y-5 px-6 py-5">
                                 <div>
                                     <label for="approval-manifest-sugeng-kapal" class="mb-2 block text-sm font-semibold text-gray-700">Nama kapal <span class="text-red-600">*</span></label>
-                                    <select id="approval-manifest-sugeng-kapal" name="nama_kapal" required class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
+                                    <select id="approval-manifest-sugeng-kapal" name="nama_kapal" class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
                                         <option value="">-- Pilih Kapal --</option>
                                         @foreach($kapals as $kapal)<option value="{{ $kapal }}" @selected(old('nama_kapal') === $kapal)>{{ $kapal }}</option>@endforeach
                                     </select>
@@ -304,7 +304,7 @@
                                 </div>
                                 <div>
                                     <label for="approval-manifest-sugeng-voyage" class="mb-2 block text-sm font-semibold text-gray-700">No. voyage <span class="text-red-600">*</span></label>
-                                    <select id="approval-manifest-sugeng-voyage" name="no_voyage" required disabled class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-gray-100 disabled:text-gray-500">
+                                    <select id="approval-manifest-sugeng-voyage" name="no_voyage" disabled class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-gray-100 disabled:text-gray-500">
                                         <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                                     </select>
                                     <p id="approval-manifest-sugeng-voyage-help" class="mt-1 text-xs text-gray-500">Voyage akan muncul sesuai kapal yang dipilih.</p>
