@@ -1,4 +1,49 @@
 document.querySelectorAll('.sugeng-sheet').forEach(table => {
+    const sizeControls = table.closest('.sugeng-sheet-scroll')?.previousElementSibling;
+    if (sizeControls?.classList.contains('sugeng-size-controls')) {
+        const columns = [...table.querySelectorAll('colgroup col')].slice(1);
+        const defaults = columns.map(col => parseInt(col.style.width, 10));
+        const columnNames = [...'BCDEFGHIJKLMNOPQRSTUVWXYZ', 'AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG'];
+        const columnSelect = sizeControls.querySelector('.sugeng-size-column');
+        const widthInput = sizeControls.querySelector('.sugeng-size-width');
+        const heightInput = sizeControls.querySelector('.sugeng-size-height');
+        const storageKey = 'manifest-sugeng-table-size';
+        let settings = {};
+        try { settings = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { settings = {}; }
+        const applySizes = () => {
+            columns.forEach((col, index) => {
+                const width = Number(settings.widths?.[columnNames[index]]) || defaults[index];
+                col.style.width = `${width}px`;
+            });
+            table.style.width = `${44 + columns.reduce((sum, col) => sum + parseInt(col.style.width, 10), 0)}px`;
+            const height = Number(settings.height) || 46;
+            table.querySelectorAll('tbody tr').forEach(row => { row.style.height = `${height}px`; });
+            table.querySelectorAll('tbody .sheet-cell-content').forEach(content => { content.style.maxHeight = `${Math.max(12, height - 12)}px`; });
+            widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10);
+            heightInput.value = height;
+        };
+        const saveSizes = () => { try { localStorage.setItem(storageKey, JSON.stringify(settings)); } catch (_) {} };
+        columnSelect.addEventListener('change', () => { widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10); });
+        widthInput.addEventListener('change', () => {
+            const width = Number(widthInput.value);
+            if (!Number.isInteger(width) || width < 40 || width > 1600) { applySizes(); return; }
+            settings.widths ??= {};
+            settings.widths[columnSelect.value] = width;
+            applySizes(); saveSizes();
+        });
+        heightInput.addEventListener('change', () => {
+            const height = Number(heightInput.value);
+            if (!Number.isInteger(height) || height < 24 || height > 500) { applySizes(); return; }
+            settings.height = height;
+            applySizes(); saveSizes();
+        });
+        sizeControls.querySelector('.sugeng-size-reset').addEventListener('click', () => {
+            settings = {};
+            try { localStorage.removeItem(storageKey); } catch (_) {}
+            applySizes();
+        });
+        applySizes();
+    }
     const rows = Array.from(table.tBodies[0]?.rows || []);
     const saved = new WeakMap();
     const busy = new WeakSet();

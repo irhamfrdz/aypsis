@@ -38,6 +38,20 @@
     <textarea id="sugeng-formula-input" class="sugeng-formula-input min-h-16 flex-1 resize-y rounded border border-gray-300 bg-white px-3 py-2 text-sm" rows="3" placeholder="Pilih sel untuk melihat isi lengkapnya" @cannot('manifest-sugeng-manage') readonly @endcannot></textarea>
     @can('manifest-sugeng-manage')<button type="button" class="sugeng-formula-save rounded bg-indigo-600 px-3 py-2 text-sm font-semibold text-white hover:bg-indigo-700" disabled>Simpan</button>@endcan
 </div>
+<div class="sugeng-size-controls mb-2 flex flex-wrap items-end gap-3 rounded border border-gray-300 bg-white p-3 text-sm" aria-label="Pengaturan ukuran tabel">
+    <label class="flex flex-col gap-1">Kolom
+        <select class="sugeng-size-column rounded border border-gray-300 px-2 py-1">
+            @foreach(array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']) as $column)<option value="{{ $column }}">{{ $column }}</option>@endforeach
+        </select>
+    </label>
+    <label class="flex flex-col gap-1">Lebar kolom (px)
+        <input type="number" class="sugeng-size-width w-28 rounded border border-gray-300 px-2 py-1" min="40" max="1600" step="1">
+    </label>
+    <label class="flex flex-col gap-1">Tinggi baris (px)
+        <input type="number" class="sugeng-size-height w-28 rounded border border-gray-300 px-2 py-1" min="24" max="500" step="1" value="46">
+    </label>
+    <button type="button" class="sugeng-size-reset rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Reset ukuran</button>
+</div>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
         $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
