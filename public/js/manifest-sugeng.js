@@ -17,8 +17,11 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             });
             table.style.width = `${44 + columns.reduce((sum, col) => sum + parseInt(col.style.width, 10), 0)}px`;
             const height = Number(settings.height) || 46;
-            table.querySelectorAll('tbody tr').forEach(row => { row.style.height = `${height}px`; });
-            table.querySelectorAll('tbody .sheet-cell-content').forEach(content => { content.style.maxHeight = `${Math.max(12, height - 12)}px`; });
+            table.querySelectorAll('tbody tr').forEach(row => {
+                const rowHeight = Number(settings.rowHeights?.[`${row.dataset.itemId}-${row.dataset.kind}-${row.dataset.line}`]) || height;
+                row.style.height = `${rowHeight}px`;
+                row.querySelectorAll('.sheet-cell-content').forEach(content => { content.style.maxHeight = `${Math.max(12, rowHeight - 12)}px`; });
+            });
             widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10);
             heightInput.value = height;
         };
@@ -43,6 +46,43 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             applySizes();
         });
         applySizes();
+        table.querySelectorAll('.sheet-column-resize').forEach(handle => {
+            handle.addEventListener('pointerdown', event => {
+                if (event.button !== 0) return;
+                event.preventDefault(); event.stopPropagation();
+                const column = handle.dataset.column;
+                const index = columnNames.indexOf(column);
+                const startX = event.clientX;
+                const initialWidth = parseInt(columns[index].style.width, 10);
+                const move = moveEvent => {
+                    settings.widths ??= {};
+                    settings.widths[column] = Math.min(1600, Math.max(40, initialWidth + moveEvent.clientX - startX));
+                    applySizes();
+                };
+                const stop = () => { window.removeEventListener('pointermove', move); saveSizes(); };
+                window.addEventListener('pointermove', move);
+                window.addEventListener('pointerup', stop, { once: true });
+            });
+        });
+        table.querySelectorAll('tbody .sheet-row-resize').forEach(handle => {
+            handle.addEventListener('click', event => event.stopPropagation());
+            handle.addEventListener('pointerdown', event => {
+                if (event.button !== 0) return;
+                event.preventDefault(); event.stopPropagation();
+                const row = handle.closest('tr');
+                const key = `${row.dataset.itemId}-${row.dataset.kind}-${row.dataset.line}`;
+                const startY = event.clientY;
+                const initialHeight = row.getBoundingClientRect().height;
+                const move = moveEvent => {
+                    settings.rowHeights ??= {};
+                    settings.rowHeights[key] = Math.min(500, Math.max(24, Math.round(initialHeight + moveEvent.clientY - startY)));
+                    applySizes();
+                };
+                const stop = () => { window.removeEventListener('pointermove', move); saveSizes(); };
+                window.addEventListener('pointermove', move);
+                window.addEventListener('pointerup', stop, { once: true });
+            });
+        });
     }
     const rows = Array.from(table.tBodies[0]?.rows || []);
     const saved = new WeakMap();
@@ -50,7 +90,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
     const directions = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] };
     let anchor = -1;
     let selectedCell = null;
-    const formulaBar = table.parentElement.previousElementSibling;
+    const formulaBar = table.closest('.sugeng-sheet-scroll')?.parentElement?.querySelector('.sugeng-formula-bar');
     const address = formulaBar?.querySelector('.sugeng-cell-address');
     const formulaInput = formulaBar?.querySelector('.sugeng-formula-input');
     const formulaSave = formulaBar?.querySelector('.sugeng-formula-save');

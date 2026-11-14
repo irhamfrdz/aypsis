@@ -25,6 +25,10 @@
     .sugeng-sheet .sheet-cell-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
     .sugeng-sheet td:focus-within .sheet-cell-content { overflow: auto; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
+    .sugeng-sheet .sheet-size-heading { position: relative; height: 24px; padding: 2px; background: #f3f4f6; color: #374151; font-size: 10px; user-select: none; }
+    .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; }
+    .sugeng-sheet tbody .sheet-row-number { position: sticky; }
+    .sugeng-sheet .sheet-row-resize { position: absolute; bottom: -4px; left: 0; z-index: 3; width: 100%; height: 8px; cursor: row-resize; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr.sheet-incomplete td, .sugeng-sheet tbody tr.sheet-incomplete .sheet-row-number { background: #fef3c7; }
     .sugeng-sheet tbody tr.sheet-incomplete[data-selected="true"] td { background: #dbeafe; }
@@ -51,6 +55,7 @@
         <input type="number" class="sugeng-size-height w-28 rounded border border-gray-300 px-2 py-1" min="24" max="500" step="1" value="46">
     </label>
     <button type="button" class="sugeng-size-reset rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Reset ukuran</button>
+    <span class="text-gray-600">Tarik batas kanan huruf kolom untuk lebar, atau batas bawah nomor baris untuk tinggi.</span>
 </div>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
@@ -60,6 +65,7 @@
     <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}">
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
+            <tr class="sheet-size-headings"><th class="sheet-size-heading">#</th>@foreach($columns as $column)<th class="sheet-size-heading">{{ $column }}<span class="sheet-column-resize" data-column="{{ $column }}" title="Tarik untuk mengatur lebar kolom"></span></th>@endforeach</tr>
             <tr class="sheet-title"><td colspan="33" class="sheet-company">PT. ALEXINDO YAKIN PRIMA</td></tr>
             <tr class="sheet-title"><td colspan="33">Perusahaan Pelayaran Nasional</td></tr>
             <tr class="sheet-title"><td colspan="33" class="sheet-heading">M A N I F E S T &nbsp; O F &nbsp; C A R G O</td></tr>
@@ -99,7 +105,7 @@
                     $shipper = $item->shipperJb;
                 @endphp
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
-                    <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}</th>@foreach($containerCells as $value)
+                    <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'container.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div></td>
                     @endforeach</tr>
@@ -130,7 +136,7 @@
                             !$isLcl && $line === 0 ? $containerDescription : '',
                         ];
                     @endphp
-                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @class(['sheet-incomplete' => $item->belum_selesai])><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}@if($line === 0)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @class(['sheet-incomplete' => $item->belum_selesai])><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span>@if($line === 0)
                         @can('manifest-sugeng-manage')<form method="POST" action="{{ route('manifest-sugeng.set-incomplete', $item) }}" onclick="event.stopPropagation()" class="mt-1">@csrf @method('PUT')<input type="hidden" name="belum_selesai" value="{{ $item->belum_selesai ? '0' : '1' }}"><button type="submit" class="rounded px-1 text-xs {{ $item->belum_selesai ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-600' }}" title="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}" aria-label="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}"><i class="fas fa-highlighter" aria-hidden="true"></i></button></form>
                         @elsecan('manifest-sugeng-view')
                             @if($item->belum_selesai)<span class="block text-xs text-amber-800" title="Belum selesai">●</span>@endif
