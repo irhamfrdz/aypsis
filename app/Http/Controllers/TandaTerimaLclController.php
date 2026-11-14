@@ -1580,8 +1580,9 @@ class TandaTerimaLclController extends Controller
 
         // Get available containers for new stuffing (include all containers, sealed or not)
         // Containers can be reused - if sealed, new stuffing will create new batch
-        $kontainers = Kontainer::where('status', '!=', 'inactive')->get(['nomor_kontainer', 'ukuran']);
-        $stockKontainers = StockKontainer::active()->get(['nomor_kontainer', 'ukuran']);
+        $containerColumns = ['nomor_seri_gabungan', 'awalan_kontainer', 'nomor_seri_kontainer', 'akhiran_kontainer', 'ukuran'];
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get($containerColumns);
+        $stockKontainers = StockKontainer::active()->get($containerColumns);
 
         $availableKontainers = collect();
         $existingNomor = [];
