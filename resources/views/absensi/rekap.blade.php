@@ -270,7 +270,7 @@
                             <th scope="col" class="ar-col-number ar-group-identity">No.</th>
                             <th scope="col" class="ar-col-nik ar-group-identity">NIK</th>
                             <th scope="col" class="ar-col-name ar-group-identity">Nama Lengkap</th>
-                            <th scope="col" class="ar-group-identity">Departemen</th>
+                            <th scope="col" class="ar-group-identity">Penempatan</th>
                             <th scope="col" class="ar-group-attendance">Hadir</th>
                             <th scope="col" class="ar-group-attendance">Terlambat</th>
                             <th scope="col" class="ar-group-attendance">Pulang Cepat</th>
@@ -309,7 +309,7 @@
                                     {{ $karyawan->nama_lengkap }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-gray-500">
-                                    {{ $karyawan->departemen ?: '-' }}
+                                    {{ $karyawan->penempatan ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <button type="button" data-nama="{{ $karyawan->nama_lengkap }}" data-dates="{{ json_encode($stats['detail_hadir'] ?? []) }}" class="btn-detail-hadir inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-1 {{ $stats['total_masuk'] > 0 ? 'bg-green-100 text-green-800 hover:bg-green-200' : 'bg-gray-100 text-gray-500 hover:bg-gray-200' }}">
