@@ -1476,32 +1476,8 @@ class TandaTerimaLclController extends Controller
      */
     public function stuffing(Request $request)
     {
-        // Query pivot table with relationships
-        $query = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
-
-        // Filter pencarian
-        if ($request->filled('search')) {
-            $searchTerm = $request->search;
-            $query->where(function ($q) use ($searchTerm) {
-                $q->where('nomor_kontainer', 'LIKE', '%'.$searchTerm.'%')
-                    ->orWhereHas('tandaTerima', function ($sq) use ($searchTerm) {
-                        $sq->where('nomor_tanda_terima', 'LIKE', '%'.$searchTerm.'%')
-                            ->orWhere('nama_penerima', 'LIKE', '%'.$searchTerm.'%')
-                            ->orWhere('nama_pengirim', 'LIKE', '%'.$searchTerm.'%');
-                    });
-            });
-        }
-
-        // Filter by container
-        if ($request->filled('kontainer')) {
-            $query->where('nomor_kontainer', $request->kontainer);
-        }
-
-        $pivotData = $query->orderBy('nomor_kontainer')->orderBy('assigned_at', 'desc')->paginate(20);
-
-        // Group data by container AND seal status for display
-        // This allows same container number to be used multiple times (different batches)
-        $groupedQuery = TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'assignedByUser']);
+        // Paginate container/seal batches before loading their receipts and items.
+        $groupedQuery = TandaTerimaLclKontainerPivot::query();
 
         // Apply search filter to grouped query
         if ($request->filled('search')) {
@@ -1530,7 +1506,24 @@ class TandaTerimaLclController extends Controller
             $groupedQuery->whereNull('nomor_seal');
         }
 
-        $groupedPivotData = $groupedQuery->get()->groupBy(function ($item) {
+        $batchPage = $groupedQuery->select('nomor_kontainer', 'nomor_seal')
+            ->groupBy('nomor_kontainer', 'nomor_seal')
+            ->orderBy('nomor_kontainer')
+            ->orderBy('nomor_seal')
+            ->paginate(20)->withQueryString();
+
+        $batchRows = $batchPage->count() === 0 ? collect() : TandaTerimaLclKontainerPivot::with(['tandaTerima.items'])
+            ->where(function ($query) use ($batchPage) {
+                foreach ($batchPage as $batch) {
+                    $query->orWhere(function ($match) use ($batch) {
+                        $match->where('nomor_kontainer', $batch->nomor_kontainer);
+                        $batch->nomor_seal === null
+                            ? $match->whereNull('nomor_seal')
+                            : $match->where('nomor_seal', $batch->nomor_seal);
+                    });
+                }
+            })->get();
+        $groupedPivotData = $batchRows->groupBy(function ($item) {
             // Group by container number and seal status
             // Sealed containers are grouped separately from unsealed ones with same number
             return $item->nomor_kontainer.'|'.($item->nomor_seal ?? 'unsealed');
@@ -1540,6 +1533,13 @@ class TandaTerimaLclController extends Controller
         $uniqueContainerNumbers = $groupedPivotData->flatMap(function ($items) {
             return $items->pluck('nomor_kontainer');
         })->unique()->filter()->toArray();
+
+        $sealedBatchesByContainer = TandaTerimaLclKontainerPivot::query()
+            ->whereIn('nomor_kontainer', $uniqueContainerNumbers)
+            ->whereNotNull('nomor_seal')
+            ->get(['nomor_kontainer', 'nomor_seal', 'tanggal_seal'])
+            ->unique(fn ($pivot) => $pivot->nomor_kontainer.'|'.$pivot->nomor_seal)
+            ->groupBy('nomor_kontainer');
 
         $allProspeks = \App\Models\Prospek::whereIn('nomor_kontainer', $uniqueContainerNumbers)
             ->orderBy('created_at', 'desc')
@@ -1580,8 +1580,8 @@ class TandaTerimaLclController extends Controller
 
         // Get available containers for new stuffing (include all containers, sealed or not)
         // Containers can be reused - if sealed, new stuffing will create new batch
-        $kontainers = Kontainer::where('status', '!=', 'inactive')->get();
-        $stockKontainers = StockKontainer::active()->get();
+        $kontainers = Kontainer::where('status', '!=', 'inactive')->get(['nomor_kontainer', 'ukuran']);
+        $stockKontainers = StockKontainer::active()->get(['nomor_kontainer', 'ukuran']);
 
         $availableKontainers = collect();
         $existingNomor = [];
@@ -1610,11 +1610,6 @@ class TandaTerimaLclController extends Controller
         }
 
         // Get LCL yang belum di-stuffing untuk add new functionality
-        $unstuffedLcl = TandaTerimaLcl::with('items')
-            ->doesntHave('kontainerPivot')
-            ->orderBy('created_at', 'desc')
-            ->get();
-
         // Get unique containers for filter
         $uniqueContainers = TandaTerimaLclKontainerPivot::select('nomor_kontainer')
             ->distinct()
@@ -1623,9 +1618,9 @@ class TandaTerimaLclController extends Controller
 
         // Get statistics
         $stats = [
-            'total_containers' => $groupedByContainer->count(),
+            'total_containers' => $batchPage->total(),
             'total_lcl_stuffed' => TandaTerimaLclKontainerPivot::count(),
-            'total_lcl_unstuffed' => $unstuffedLcl->count(),
+            'total_lcl_unstuffed' => TandaTerimaLcl::doesntHave('kontainerPivot')->count(),
         ];
 
         // Get master tujuan kirim for dropdown
@@ -1638,16 +1633,35 @@ class TandaTerimaLclController extends Controller
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
         return view('tanda-terima-lcl.stuffing', compact(
-            'pivotData',
+            'batchPage',
             'groupedByContainer',
+            'sealedBatchesByContainer',
             'availableKontainers',
-            'unstuffedLcl',
             'uniqueContainers',
             'stats',
             'masterTujuanKirim',
             'gudangs',
             'kapals'
         ));
+    }
+
+    public function unstuffedForStuffing(Request $request)
+    {
+        $search = trim((string) $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? '');
+        $rows = TandaTerimaLcl::with('items')
+            ->doesntHave('kontainerPivot')
+            ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
+                $query->where('nomor_tanda_terima', 'like', '%'.$search.'%')
+                    ->orWhere('nama_penerima', 'like', '%'.$search.'%')
+                    ->orWhere('nama_pengirim', 'like', '%'.$search.'%');
+            }))
+            ->orderByDesc('created_at')
+            ->paginate(30);
+
+        return response()->json([
+            'rows' => view('tanda-terima-lcl.partials.unstuffed-rows', compact('rows'))->render(),
+            'pagination' => $rows->withQueryString()->links()->render(),
+        ]);
     }
 
     /**

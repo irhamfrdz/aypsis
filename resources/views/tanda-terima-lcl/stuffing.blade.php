@@ -295,17 +295,6 @@
                                     @php
                                         $firstPivot = $container['items']->first();
                                         $hasSealed = $firstPivot && $firstPivot->nomor_seal;
-                                        $sealedBatch = null;
-                                        $sealedPivot = null;
-                                        if (!$hasSealed) {
-                                            foreach($groupedByContainer as $k => $c) {
-                                                if ($c['nomor_kontainer'] === $container['nomor_kontainer'] && $c['items']->first() && $c['items']->first()->nomor_seal) {
-                                                    $sealedBatch = $c;
-                                                    $sealedPivot = $c['items']->first();
-                                                    break;
-                                                }
-                                            }
-                                        }
                                     @endphp
                                     @if($hasSealed)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -394,14 +383,7 @@
                                                 Seal
                                             </button>
                                             
-                                            @php
-                                                $sealedBatches = collect();
-                                                foreach($groupedByContainer as $k => $c) {
-                                                    if ($c['nomor_kontainer'] === $container['nomor_kontainer'] && $c['items']->first() && $c['items']->first()->nomor_seal) {
-                                                        $sealedBatches->push($c);
-                                                    }
-                                                }
-                                            @endphp
+                                            @php $sealedBatches = $sealedBatchesByContainer->get($container['nomor_kontainer'], collect()); @endphp
 
                                             @if($sealedBatches->count() > 0)
                                             <form action="{{ route('tanda-terima-lcl.merge-batch') }}" method="POST" class="inline-flex items-center gap-1 m-0 p-0" onsubmit="return confirm('Apakah Anda yakin ingin menggabungkan LCL ini ke batch seal terpilih? Data akan disatukan dengan prospek yang sudah ada.');">
@@ -411,8 +393,8 @@
                                                 <select name="target_seal" class="text-xs border-gray-300 rounded-md py-1.5 pl-2 pr-6 focus:ring-violet-500 focus:border-violet-500 shadow-sm" style="min-width: 120px;" required>
                                                     @foreach($sealedBatches as $sb)
                                                         @php
-                                                            $sealNum = $sb['items']->first()->nomor_seal;
-                                                            $sealDate = $sb['items']->first()->tanggal_seal ? \Carbon\Carbon::parse($sb['items']->first()->tanggal_seal)->format('d/m/Y') : '-';
+                                                            $sealNum = $sb->nomor_seal;
+                                                            $sealDate = $sb->tanggal_seal ? \Carbon\Carbon::parse($sb->tanggal_seal)->format('d/m/Y') : '-';
                                                         @endphp
                                                         <option value="{{ $sealNum }}" {{ $loop->last ? 'selected' : '' }}>
                                                             {{ $sealNum }} ({{ $sealDate }})
@@ -467,6 +449,7 @@
                 </table>
             </div>
         </div>
+        <div class="mt-4 px-2">{{ $batchPage->links() }}</div>
     </div>
 </div>
 
@@ -485,6 +468,7 @@
 
             <!-- Unstuffed LCL Table with Checkboxes -->
             <div class="mb-4">
+                <input id="unstuffedSearch" type="search" placeholder="Cari nomor tanda terima, penerima, atau pengirim" class="mb-3 w-full rounded-md border border-gray-300 px-3 py-2 text-sm">
                 <div class="bg-blue-50 border border-blue-200 rounded-md p-3 mb-4">
                     <p class="text-sm text-blue-800">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -509,44 +493,10 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Berat</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse($unstuffedLcl as $lcl)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-3">
-                                        <input type="checkbox" class="unstuffed-checkbox rounded border-gray-300 text-teal-600" value="{{ $lcl->id }}">
-                                    </td>
-                                    <td class="px-4 py-3 text-sm">{{ $lcl->nomor_tanda_terima ?? 'TT-LCL-' . $lcl->id }}</td>
-                                    <td class="px-4 py-3 text-sm">
-                                        @if($lcl->items->isNotEmpty())
-                                            <div class="max-w-xs">
-                                                @foreach($lcl->items as $item)
-                                                    <div class="text-xs {{ !$loop->last ? 'mb-1 pb-1 border-b border-gray-200' : '' }}">
-                                                        <span class="font-medium text-gray-700">{{ $item->nama_barang }}</span>
-                                                        @if($item->jumlah)
-                                                            <span class="text-gray-500">({{ $item->jumlah }} {{ $item->satuan ?? 'pcs' }})</span>
-                                                        @endif
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        @else
-                                            <span class="text-gray-400">-</span>
-                                        @endif
-                                    </td>
-                                    <td class="px-4 py-3 text-sm">{{ $lcl->nama_penerima ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ $lcl->nama_pengirim ?? '-' }}</td>
-                                    <td class="px-4 py-3 text-sm">{{ number_format($lcl->items->sum('meter_kubik'), 3) }} m³</td>
-                                    <td class="px-4 py-3 text-sm">{{ number_format($lcl->items->sum('tonase'), 3) }} ton</td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm">
-                                        Semua LCL sudah di-stuffing
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
+                        <tbody id="unstuffedRows" class="bg-white divide-y divide-gray-200"><tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Buka modal untuk memuat daftar LCL.</td></tr></tbody>
                     </table>
                 </div>
+                <div id="unstuffedPagination" class="mt-3"></div>
 
                 <div class="mt-3 text-sm text-gray-600">
                     <span id="selectedUnstuffedCount">0</span> LCL dipilih
@@ -1091,7 +1041,36 @@
 @push('scripts')
 <script src="https://cdn.jsdelivr.net/npm/select2@4.0.13/dist/js/select2.min.js"></script>
 <script>
+const selectedUnstuffedIds = new Set();
+const unstuffedUrl = @json(route('tanda-terima-lcl.stuffing.unstuffed'));
+let unstuffedSearchTimer;
+
+async function loadUnstuffedPage(url = unstuffedUrl) {
+    const rows = document.getElementById('unstuffedRows');
+    rows.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center">Memuat LCL...</td></tr>';
+    try {
+        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
+        if (!response.ok) throw new Error('Gagal memuat daftar LCL');
+        const data = await response.json();
+        rows.innerHTML = data.rows;
+        document.getElementById('unstuffedPagination').innerHTML = data.pagination;
+        rows.querySelectorAll('.unstuffed-checkbox').forEach(box => box.checked = selectedUnstuffedIds.has(box.value));
+        document.getElementById('selectAllUnstuffed').checked = false;
+    } catch (error) {
+        rows.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-red-600">Daftar LCL gagal dimuat. Coba cari kembali.</td></tr>';
+    }
+}
+
 jQuery(document).ready(function($) {
+    $('#unstuffedSearch').on('input', function() {
+        clearTimeout(unstuffedSearchTimer);
+        const search = this.value;
+        unstuffedSearchTimer = setTimeout(() => loadUnstuffedPage(unstuffedUrl + '?search=' + encodeURIComponent(search)), 300);
+    });
+    $('#unstuffedPagination').on('click', 'a', function(event) {
+        event.preventDefault();
+        loadUnstuffedPage(this.href);
+    });
     // Initialize container checkboxes
     initializeContainerCheckboxes();
     
@@ -1140,22 +1119,23 @@ jQuery(document).ready(function($) {
     
     // Unstuffed LCL checkboxes
     const selectAllUnstuffed = $('#selectAllUnstuffed');
-    const unstuffedCheckboxes = $('.unstuffed-checkbox');
     const selectedUnstuffedCount = $('#selectedUnstuffedCount');
     
     selectAllUnstuffed.on('change', function() {
-        unstuffedCheckboxes.prop('checked', this.checked);
+        $('.unstuffed-checkbox').prop('checked', this.checked).trigger('change');
         updateUnstuffedCount();
     });
     
-    unstuffedCheckboxes.on('change', function() {
+    $('#unstuffedRows').on('change', '.unstuffed-checkbox', function() {
+        if (this.checked) selectedUnstuffedIds.add(this.value);
+        else selectedUnstuffedIds.delete(this.value);
         updateSelectAllState();
         updateUnstuffedCount();
     });
     
     function updateSelectAllState() {
         const checkedBoxes = $('.unstuffed-checkbox:checked');
-        const totalBoxes = unstuffedCheckboxes.length;
+        const totalBoxes = $('.unstuffed-checkbox').length;
         
         if (checkedBoxes.length === 0) {
             selectAllUnstuffed.prop('indeterminate', false);
@@ -1169,8 +1149,7 @@ jQuery(document).ready(function($) {
     }
     
     function updateUnstuffedCount() {
-        const count = $('.unstuffed-checkbox:checked').length;
-        selectedUnstuffedCount.text(count);
+        selectedUnstuffedCount.text(selectedUnstuffedIds.size);
     }
 });
 
@@ -1206,21 +1185,24 @@ function closeUnsealModal() {
 
 function showUnstuffedModal() {
     document.getElementById('stuffingModal').classList.remove('hidden');
+    loadUnstuffedPage();
 }
 
 function closeStuffingModal() {
     document.getElementById('stuffingModal').classList.add('hidden');
     document.getElementById('stuffingForm').reset();
     jQuery('.select2-kontainer').val('').trigger('change');
-    jQuery('.unstuffed-checkbox').prop('checked', false);
+    selectedUnstuffedIds.clear();
+    document.getElementById('unstuffedSearch').value = '';
+    document.getElementById('unstuffedRows').innerHTML = '';
+    document.getElementById('unstuffedPagination').innerHTML = '';
     jQuery('#selectAllUnstuffed').prop('checked', false);
     jQuery('#selectedUnstuffedCount').text('0');
 }
 
 // Submit form with selected IDs
 document.getElementById('stuffingForm').addEventListener('submit', function(e) {
-    const checkedBoxes = document.querySelectorAll('.unstuffed-checkbox:checked');
-    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+    const selectedIds = Array.from(selectedUnstuffedIds);
     
     if (selectedIds.length === 0) {
         e.preventDefault();
