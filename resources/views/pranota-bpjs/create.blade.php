@@ -1,7 +1,12 @@
 @extends('layouts.app')
+@php
+    $editPranota = $editPranota ?? null;
+    $refreshPranota = $refreshPranota ?? null;
+    $formPranota = $editPranota ?? $refreshPranota;
+@endphp
 
-@section('title', $refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS')
-@section('page_title', $refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS')
+@section('title', $editPranota ? 'Edit Pranota BPJS' : ($refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS'))
+@section('page_title', $editPranota ? 'Edit Pranota BPJS' : ($refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS'))
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
@@ -18,7 +23,7 @@
                 <i class="fas fa-file-invoice-dollar text-lg"></i>
             </div>
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ $refreshPranota ? 'Update Data — '.$refreshPranota->nomor_pranota : 'Buat Pranota BPJS' }}</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ $editPranota ? 'Edit — '.$editPranota->nomor_pranota : ($refreshPranota ? 'Update Data — '.$refreshPranota->nomor_pranota : 'Buat Pranota BPJS') }}</h1>
                 <p class="text-xs sm:text-sm text-gray-500">Form pembuatan rincian tagihan & iuran BPJS karyawan</p>
             </div>
         </div>
@@ -67,8 +72,12 @@
     @if($refreshPranota)
         <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">Hanya karyawan yang belum tercatat pada pranota ini ditampilkan. Klik Hitung Semua Karyawan, tinjau hasilnya, lalu Simpan Update Data. Rincian lama dan pembayaran tetap dipertahankan.</div>
     @endif
-    <form id="pranota-form" action="{{ $refreshPranota ? route('pranota-bpjs.store-refresh', $refreshPranota->id) : route('pranota-bpjs.store') }}" method="POST">
+    @if($editPranota?->status === 'partial')
+        <div class="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">Pranota sudah dibayar sebagian. Ubah komponen yang belum dibayar. Nominal, tipe, dan group komponen yang sudah dibayar harus tetap sama; karyawan yang sudah dibayar tidak dapat dihapus.</div>
+    @endif
+    <form id="pranota-form" action="{{ $editPranota ? route('pranota-bpjs.update', $editPranota->id) : ($refreshPranota ? route('pranota-bpjs.store-refresh', $refreshPranota->id) : route('pranota-bpjs.store')) }}" method="POST">
         @csrf
+        @if($editPranota) @method('PUT') @endif
 
         {{-- ── Section 1: Informasi Periode Pranota ────────────────────────── --}}
         <div class="bg-white rounded-xl border border-gray-200 shadow-xs overflow-hidden">
@@ -89,7 +98,7 @@
                         </label>
                         <input id="tanggal_pranota" name="tanggal_pranota" type="date"
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition"
-                            value="{{ $refreshPranota ? $refreshPranota->tanggal_pranota->format('Y-m-d') : date('Y-m-d') }}" @readonly($refreshPranota) required />
+                            value="{{ old('tanggal_pranota', $formPranota?->tanggal_pranota?->format('Y-m-d') ?? date('Y-m-d')) }}" @readonly($refreshPranota) required />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5" for="periode_bulan">
@@ -99,7 +108,7 @@
                             @disabled($refreshPranota)
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition font-medium" required>
                             @for($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ ($refreshPranota->periode_bulan ?? date('n')) == $i ? 'selected' : '' }}>
+                                <option value="{{ $i }}" {{ old('periode_bulan', $formPranota->periode_bulan ?? date('n')) == $i ? 'selected' : '' }}>
                                     {{ str_pad($i, 2, '0', STR_PAD_LEFT) }} — {{ date('F', mktime(0, 0, 0, $i, 1)) }}
                                 </option>
                             @endfor
@@ -112,7 +121,7 @@
                         </label>
                         <input id="periode_tahun" name="periode_tahun" type="number"
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition font-medium"
-                            value="{{ $refreshPranota->periode_tahun ?? date('Y') }}" @readonly($refreshPranota) required />
+                            value="{{ old('periode_tahun', $formPranota->periode_tahun ?? date('Y')) }}" @readonly($refreshPranota) required />
                     </div>
                 </div>
 
@@ -123,7 +132,7 @@
                     <textarea id="keterangan" name="keterangan" rows="2"
                         @readonly($refreshPranota)
                         class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition placeholder:text-gray-400"
-                        placeholder="Tambahkan catatan khusus pranota ini jika diperlukan...">{{ $refreshPranota->keterangan ?? '' }}</textarea>
+                        placeholder="Tambahkan catatan khusus pranota ini jika diperlukan...">{{ old('keterangan', $formPranota->keterangan ?? '') }}</textarea>
                 </div>
             </div>
         </div>
@@ -433,7 +442,7 @@
                 <button type="submit"
                     class="inline-flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition-all">
                     <i class="fas fa-save text-xs"></i>
-                    {{ $refreshPranota ? 'Simpan Update Data' : 'Simpan Pranota' }}
+                    {{ $editPranota ? 'Simpan Perubahan' : ($refreshPranota ? 'Simpan Update Data' : 'Simpan Pranota') }}
                 </button>
             </div>
         </div>
@@ -449,8 +458,9 @@
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-saved.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-saved.js')) }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const container = document.getElementById('detail-container');
     const emptyState = document.getElementById('table-empty-state');
     const filterEmptyState = document.getElementById('table-filter-empty-state');
@@ -467,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Convert karyawans to JSON for select options
     let karyawans = @json($karyawans);
     let rumusBpjs = @json($rumusBpjs);
+    const existingDetails = @json($editPranota?->details ?? []);
     let rowCount = 0;
     let isGenerating = false;
     let rowTarget = container;
@@ -813,7 +824,7 @@ document.addEventListener('DOMContentLoaded', function() {
         BpjsAllowances.update(container, parseIdNumber, formatNumber);
     }
 
-    function addRow(karyawanId = null, autoCalculate = false) {
+    function addRow(karyawanId = null, autoCalculate = false, savedDetail = null) {
         rowCount++;
         
         let karyawanInputHTML = '';
@@ -1310,6 +1321,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
+        if (savedDetail) {
+            tr.allowanceOverrides = { ...(savedDetail.tunjangan_manual || {}) };
+            const amounts = BpjsSavedDetail.amounts(savedDetail);
+            Object.entries(amounts).forEach(([field, value]) => {
+                const input = tr.querySelector(`[name$="[${field}]"]`);
+                if (input) input.value = formatNumber(value);
+            });
+            tr.querySelector('.bpjs-voucher-input').value = savedDetail.no_voucher || '';
+            updateSubtotal();
+            BpjsAllowances.updateRow(tr, container, parseIdNumber, formatNumber);
+        }
+
         applyFilter();
     }
 
@@ -1477,6 +1500,12 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Inisialisasi awal
+    if (existingDetails.length) {
+        await generateRows(existingDetails, detail => {
+            const uniqueId = (detail.tipe_karyawan || 'App\\Models\\Karyawan').split('\\').pop() + '_' + detail.karyawan_id;
+            addRow(uniqueId, false, detail);
+        });
+    }
     populateGroupFilterOptions();
     populateCabangFilterOptions();
     applyFilter();

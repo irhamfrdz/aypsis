@@ -22,7 +22,7 @@
                 <i class="fas fa-arrow-left mr-2"></i> Kembali
             </a>
             @can('pranota-bpjs-update')
-                @if($pranota_bpj->status === 'draft')
+                @if(in_array($pranota_bpj->status, ['draft', 'partial'], true))
                     <a href="{{ route('pranota-bpjs.edit', $pranota_bpj->id) }}" class="inline-flex items-center rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm font-semibold text-indigo-700"><i class="fas fa-pen mr-2" aria-hidden="true"></i>Ubah Nominal</a>
                 @endif
             @endcan

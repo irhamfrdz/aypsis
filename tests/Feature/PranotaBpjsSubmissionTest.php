@@ -12,6 +12,40 @@ use Tests\TestCase;
 
 class PranotaBpjsSubmissionTest extends TestCase
 {
+    public function test_partial_edit_preserves_paid_detail_and_allows_unpaid_component_changes(): void
+    {
+        $this->createPranotaSchema();
+        Schema::create('pembayaran_pranota_bpjs_parts', function (Blueprint $table) {
+            $table->id();
+            $table->integer('pranota_bpjs_header_id');
+            $table->integer('pranota_bpjs_detail_id');
+            $table->string('komponen');
+            $table->decimal('subtotal', 18, 2);
+        });
+        $header = PranotaBpjsHeader::create(['nomor_pranota' => 'PARTIAL', 'status' => 'partial']);
+        $detail = $header->details()->create([
+            'karyawan_id' => 1, 'tipe_karyawan' => \App\Models\Karyawan::class,
+            'bpjs_kesehatan' => 100, 'total' => 150,
+            'snapshot_bpjs' => ['karyawan' => ['tipe_jkn' => 'KANTOR', 'group_jkn' => 'JKN-KIS']],
+            'rincian_bpjs' => ['jht_biaya' => 50],
+        ]);
+        DB::table('pembayaran_pranota_bpjs_parts')->insert(['pranota_bpjs_header_id' => $header->id,
+            'pranota_bpjs_detail_id' => $detail->id, 'komponen' => 'jkn', 'subtotal' => 100]);
+        $row = $detail->getAttributes();
+        unset($row['id']);
+        $row['rincian_bpjs'] = json_encode(['jht_biaya' => 70]);
+        $row['total'] = 170;
+        $service = new \App\Services\BpjsPartialPranotaEditor;
+        DB::transaction(fn () => $service->save($header, [$row]));
+        $this->assertEquals($detail->id, $header->details()->sole()->id);
+        $this->assertEquals(170, $detail->fresh()->total);
+        $this->assertSame('partial', $header->fresh()->status);
+        $this->assertEquals($detail->id, DB::table('pembayaran_pranota_bpjs_parts')->value('pranota_bpjs_detail_id'));
+        $row['bpjs_kesehatan'] = 120;
+        $this->expectException(\Illuminate\Validation\ValidationException::class);
+        DB::transaction(fn () => $service->save($header, [$row]));
+    }
+
     public function test_large_pranota_preserves_every_employee_and_total_on_create_and_update(): void
     {
         $this->createPranotaSchema();
@@ -158,7 +192,8 @@ class PranotaBpjsSubmissionTest extends TestCase
             Schema::create($tableName, function (Blueprint $table) {
                 $table->id();
                 foreach (['nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek',
-                    'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'tanggal_berhenti', 'tanggal_lahir'] as $column) {
+                    'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'tanggal_berhenti', 'tanggal_lahir',
+                    'ktp', 'nik_ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'grup', 'posisi', 'group', 'pekerjaan'] as $column) {
                     $table->string($column)->nullable();
                 }
                 $table->boolean('is_special_case')->default(false);

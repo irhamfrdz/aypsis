@@ -70,7 +70,7 @@ class PranotaBpjsListViewTest extends TestCase
         $this->assertSame(3, $xpath->query('//a[@title="Export Excel"]')->length);
         $this->assertSame(3, $xpath->query('//a[@title="Detail"]')->length);
         $this->assertSame(1, $xpath->query('//a[@title="Bayar Pranota"]')->length);
-        $this->assertSame(1, $xpath->query('//a[@title="Edit"]')->length);
+        $this->assertSame(2, $xpath->query('//a[@title="Edit"]')->length);
         $this->assertSame(1, $xpath->query('//button[@title="Hapus"]')->length);
         $this->assertStringContainsString('confirm(', $xpath->query('//button[@title="Hapus"]/ancestor::form')->item(0)->getAttribute('onsubmit'));
         $this->assertStringContainsString('Rp 601,25', $html);

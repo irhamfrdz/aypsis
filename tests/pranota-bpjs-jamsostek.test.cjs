@@ -55,7 +55,9 @@ test('create and edit row calculations both honor saved exemptions for crew and 
         const rule = { ...crew, tipe: type, diskon_pengecualian: [person.unique_id],
             jht_biaya: 2, jkk_tunjangan: 1, jkm_tunjangan: 6800 };
         for (const page of ['create', 'edit']) {
-            const view = fs.readFileSync('resources/views/pranota-bpjs/' + page + '.blade.php', 'utf8');
+            const source = fs.readFileSync('resources/views/pranota-bpjs/' + page + '.blade.php', 'utf8');
+            const view = source.includes("@extends('pranota-bpjs.create')")
+                ? fs.readFileSync('resources/views/pranota-bpjs/create.blade.php', 'utf8') : source;
             const start = view.indexOf('        function calculateBpjsForKaryawan(');
             const end = view.indexOf('        const handleKaryawanChange', start);
             const inputs = Object.fromEntries(inputNames.map(name => [name, { value: '0' }]));
@@ -65,8 +67,8 @@ test('create and edit row calculations both honor saved exemptions for crew and 
             const run = load([person], () => person, () => {}, [rule], calculator.parseAmount, String,
                 { getElementById: () => null }, () => {}, ...Object.values(inputs));
             run(person.unique_id, 'tunjangan_hutang');
-            const jkk = page === 'edit' ? 'inputJkk' : (type === 'CREW' ? 'inputBpuJkk' : 'inputNcJkk');
-            const jkm = page === 'edit' ? 'inputJkm' : (type === 'CREW' ? 'inputBpuJkm' : 'inputNcJkm');
+            const jkk = type === 'CREW' ? 'inputBpuJkk' : 'inputNcJkk';
+            const jkm = type === 'CREW' ? 'inputBpuJkm' : 'inputNcJkm';
             assert.equal(Number(inputs[jkk].value), type === 'CREW' ? 16280 : 22000, page + ' ' + type);
             assert.equal(Number(inputs[jkm].value), 6800, page + ' ' + type);
             rule.diskon_pengecualian = [];

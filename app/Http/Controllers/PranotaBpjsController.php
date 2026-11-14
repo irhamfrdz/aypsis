@@ -312,31 +312,41 @@ class PranotaBpjsController extends Controller
 
     public function edit(PranotaBpjsHeader $pranota_bpj)
     {
-        if ($pranota_bpj->status != 'draft') {
-            return redirect()->route('pranota-bpjs.index')->with('error', 'Hanya pranota berstatus Draft yang dapat diedit.');
+        if (! in_array($pranota_bpj->status, ['draft', 'partial'], true)) {
+            return redirect()->route('pranota-bpjs.index')->with('error', 'Hanya pranota berstatus Draft atau Partial yang dapat diedit.');
         }
 
         $pranota_bpj->load('details');
 
         $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti', 'tanggal_lahir'])
+            ->get(['id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'grup', 'posisi', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti', 'tanggal_lahir'])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
                 $k->tipe_label = 'Tetap';
+
+                $k->nik_ktp = $k->ktp ?? '';
+                $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
+                $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
+                $k->group_posisi = ! empty($k->grup) ? (is_array($k->grup) ? implode(', ', $k->grup) : $k->grup) : ($k->posisi ?? 'Crew');
 
                 return $k;
             });
 
         $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti'])
+            ->get(['id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'group', 'pekerjaan', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti'])
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';
                 $k->tipe_label = 'Tidak Tetap';
                 $k->tanggal_lahir = null;
+
+                $k->nik_ktp = $k->nik_ktp ?? '';
+                $k->no_bpjs = $k->no_ketenagakerjaan ?? ($k->jkn ?? '');
+                $k->lokasi = $k->cabang ?? ($k->penempatan ?? 'JKT');
+                $k->group_posisi = ! empty($k->group) ? (is_array($k->group) ? implode(', ', $k->group) : $k->group) : ($k->pekerjaan ?? 'Crew');
 
                 return $k;
             });
@@ -354,8 +364,8 @@ class PranotaBpjsController extends Controller
 
     public function update(Request $request, PranotaBpjsHeader $pranota_bpj)
     {
-        if ($pranota_bpj->status != 'draft') {
-            return redirect()->route('pranota-bpjs.index')->with('error', 'Hanya pranota berstatus Draft yang dapat diedit.');
+        if (! in_array($pranota_bpj->status, ['draft', 'partial'], true)) {
+            return redirect()->route('pranota-bpjs.index')->with('error', 'Hanya pranota berstatus Draft atau Partial yang dapat diedit.');
         }
 
         $this->decodeDetails($request);
@@ -409,7 +419,7 @@ class PranotaBpjsController extends Controller
             DB::beginTransaction();
 
             $pranota_bpj = PranotaBpjsHeader::whereKey($pranota_bpj->id)->lockForUpdate()->firstOrFail();
-            if ($pranota_bpj->status !== 'draft') {
+            if (! in_array($pranota_bpj->status, ['draft', 'partial'], true)) {
                 DB::rollBack();
 
                 return redirect()->route('pranota-bpjs.index')->with('error', 'Pranota sudah diproses dan tidak dapat diedit.');
@@ -423,8 +433,10 @@ class PranotaBpjsController extends Controller
                 'snapshot_rumus' => $pranota_bpj->snapshot_rumus ?? json_decode($request->input('snapshot_rumus_json', 'null'), true),
             ]);
 
-            // Hapus detail lama
-            $pranota_bpj->details()->delete();
+            // Preserve the detail IDs referenced by partial payments.
+            if ($pranota_bpj->status === 'draft') {
+                $pranota_bpj->details()->delete();
+            }
 
             $totalKes = 0;
             $totalKet = 0;
@@ -487,8 +499,12 @@ class PranotaBpjsController extends Controller
             }
 
             // Keep each statement below SQLite's parameter limit as well as MySQL's.
-            foreach (array_chunk($detailRows, 40) as $chunk) {
-                PranotaBpjsDetail::query()->insert($chunk);
+            if ($pranota_bpj->status === 'partial') {
+                (new \App\Services\BpjsPartialPranotaEditor)->save($pranota_bpj, $detailRows);
+            } else {
+                foreach (array_chunk($detailRows, 40) as $chunk) {
+                    PranotaBpjsDetail::query()->insert($chunk);
+                }
             }
 
             $pranota_bpj->update([
