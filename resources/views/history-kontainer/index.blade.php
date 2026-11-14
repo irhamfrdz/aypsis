@@ -34,13 +34,13 @@
                 <!-- Pilih Kontainer -->
                 <div>
                     <label for="nomor_kontainer" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nomor Kontainer</label>
-                    <select name="nomor_kontainer" id="nomor_kontainer" required
+                    <input type="search" name="nomor_kontainer" id="nomor_kontainer" list="history-kontainer-options"
+                        value="{{ old('nomor_kontainer', request('nomor_kontainer')) }}" required autocomplete="off"
+                        placeholder="Ketik nomor kontainer..."
                         class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600">
-                        <option value="">Pilih kontainer</option>
-                        @foreach($containerNumbers as $number)
-                            <option value="{{ $number }}" @selected(old('nomor_kontainer', request('nomor_kontainer')) === $number)>{{ $number }}</option>
-                        @endforeach
-                    </select>
+                    <datalist id="history-kontainer-options">
+                        @foreach($containerNumbers as $number)<option value="{{ $number }}"></option>@endforeach
+                    </datalist>
                 </div>
 
                 <!-- Jenis Kegiatan -->
