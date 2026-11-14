@@ -21,7 +21,7 @@
     </style>
 </head>
 <body>
-    <div class="actions"><a href="{{ route('master-kartu-bensin-batam.history', $card->id) }}">Kembali</a><button type="button" onclick="window.print()">Cetak Pranota</button></div>
+    <div class="actions"><a href="{{ route('pranota-topup-kartu-bensin-batam.index') }}">Daftar Pranota</a><a href="{{ route('master-kartu-bensin-batam.history', $card->id) }}">Riwayat Kartu</a><button type="button" onclick="window.print()">Cetak Pranota</button></div>
     <main class="sheet">
         <h1>PT. ALEXINDO YAKIN PRIMA</h1>
         <div class="muted">Pranota pengisian saldo kartu bensin Batam</div>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\BiayaBensin;
 use App\Models\MasterKartuBensinBatam;
+use App\Models\MasterKartuBensinBatamHistory;
 use App\Models\Mobil;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -331,5 +332,45 @@ class MasterKartuBensinBatamController extends Controller
         $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
 
         return view('master-kartu-bensin-batam.pranota', compact('card', 'log'));
+    }
+
+    public function pranotaIndex(Request $request)
+    {
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'search' => ['nullable', 'string', 'max:100'],
+            'start_date' => ['nullable', 'date_format:Y-m-d'],
+            'end_date' => array_filter(['nullable', 'date_format:Y-m-d', $request->filled('start_date') ? 'after_or_equal:start_date' : null]),
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('pranota-topup-kartu-bensin-batam.index')->withErrors($validator);
+        }
+        $filters = $validator->validated();
+
+        $query = MasterKartuBensinBatamHistory::query()
+            ->with('card')
+            ->whereNotNull('nomor_pranota')
+            ->where('nomor_pranota', '<>', '');
+
+        if (! empty($filters['search'])) {
+            $search = $filters['search'];
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_pranota', 'like', '%'.$search.'%')
+                    ->orWhereHas('card', function ($cardQuery) use ($search) {
+                        $cardQuery->where('nomor_kartu', 'like', '%'.$search.'%')
+                            ->orWhere('nama_kartu', 'like', '%'.$search.'%');
+                    });
+            });
+        }
+
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('tanggal', '>=', $filters['start_date']);
+        }
+        if (! empty($filters['end_date'])) {
+            $query->whereDate('tanggal', '<=', $filters['end_date']);
+        }
+
+        $pranotas = $query->orderByDesc('tanggal')->orderByDesc('id')->paginate(20)->withQueryString();
+
+        return view('master-kartu-bensin-batam.pranota-index', compact('pranotas'));
     }
 }
