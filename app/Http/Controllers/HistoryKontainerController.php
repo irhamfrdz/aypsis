@@ -26,8 +26,8 @@ class HistoryKontainerController extends Controller
 
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
             'nomor_kontainer' => ['required', 'string', 'exists:history_kontainers,nomor_kontainer'],
-            'start_date' => ['required', 'date_format:Y-m-d'],
-            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+            'start_date' => ['nullable', 'date_format:Y-m-d'],
+            'end_date' => array_filter(['nullable', 'date_format:Y-m-d', $request->filled('start_date') ? 'after_or_equal:start_date' : null]),
             'jenis_kegiatan' => ['nullable', 'in:Masuk,Keluar'],
         ]);
         if ($validator->fails()) {
@@ -58,10 +58,16 @@ class HistoryKontainerController extends Controller
             }, 'asal_gudang_nama')
             ->with(['gudang', 'creator'])
             ->where('nomor_kontainer', $filters['nomor_kontainer'])
-            ->whereDate('tanggal_kegiatan', '>=', $filters['start_date'])
-            ->whereDate('tanggal_kegiatan', '<=', $filters['end_date'])
             ->orderBy('tanggal_kegiatan', 'desc')
             ->orderBy('created_at', 'desc');
+
+        if (! empty($filters['start_date'])) {
+            $query->whereDate('tanggal_kegiatan', '>=', $filters['start_date']);
+        }
+
+        if (! empty($filters['end_date'])) {
+            $query->whereDate('tanggal_kegiatan', '<=', $filters['end_date']);
+        }
 
         if (! empty($filters['jenis_kegiatan'])) {
             $query->where('jenis_kegiatan', $filters['jenis_kegiatan']);

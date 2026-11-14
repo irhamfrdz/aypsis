@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">History Pergerakan Kontainer</h1>
-        <p class="mt-2 text-sm text-gray-500">Pilih kontainer dan rentang tanggal untuk melihat riwayat pergerakannya.</p>
+        <p class="mt-2 text-sm text-gray-500">Pilih kontainer untuk melihat seluruh riwayatnya. Isi tanggal jika ingin membatasi periode.</p>
     </div>
 
     @if(session('success'))
@@ -63,14 +63,14 @@
                 <!-- Tanggal Mulai -->
                 <div>
                     <label for="start_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', request('start_date')) }}" required
+                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', request('start_date')) }}"
                         class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer">
                 </div>
 
                 <!-- Tanggal Akhir -->
                 <div>
                     <label for="end_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sampai Tanggal</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ old('end_date', request('end_date')) }}" required
+                    <input type="date" name="end_date" id="end_date" value="{{ old('end_date', request('end_date')) }}"
                         class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer">
                 </div>
             </div>
@@ -226,7 +226,7 @@
     </div>
     @else
     <div class="rounded-2xl border border-blue-100 bg-blue-50 px-6 py-10 text-center text-sm text-blue-800">
-        Pilih nomor kontainer, tanggal mulai, dan tanggal akhir, lalu klik Tampilkan Riwayat.
+        Pilih nomor kontainer, lalu klik Tampilkan Riwayat. Rentang tanggal boleh dikosongkan untuk melihat semua data kontainer tersebut.
     </div>
     @endif
 </div>
