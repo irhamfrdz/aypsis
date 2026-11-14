@@ -1,51 +1,91 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    $paperSize = request('paper_size', 'Half-Folio');
+    $paperSizes = [
+        'Half-Folio' => ['size' => '215.9mm 165.1mm', 'width' => '195.9mm', 'font' => '9px'],
+        'A4' => ['size' => 'A4', 'width' => '190mm', 'font' => '11px'],
+        'Folio' => ['size' => '215.9mm 330.2mm', 'width' => '195.9mm', 'font' => '11px'],
+    ];
+    $paper = $paperSizes[$paperSize] ?? $paperSizes['Half-Folio'];
+@endphp
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Pranota Top Up {{ $log->nomor_pranota }}</title>
+    <title>Permohonan Transfer - {{ $log->nomor_pranota }}</title>
     <style>
-        body { margin: 0; background: #f3f4f6; color: #111827; font: 14px Arial, sans-serif; }
-        .sheet { box-sizing: border-box; max-width: 780px; margin: 32px auto; padding: 40px; background: white; box-shadow: 0 4px 24px #0001; }
-        h1 { margin: 0 0 4px; font-size: 22px; }
-        h2 { margin: 32px 0 16px; font-size: 18px; text-align: center; }
-        .muted { color: #6b7280; }
-        .meta { display: grid; grid-template-columns: 160px 1fr; gap: 10px 16px; margin: 24px 0; }
-        table { width: 100%; border-collapse: collapse; }
-        th, td { padding: 12px; border: 1px solid #d1d5db; text-align: left; }
-        th:last-child, td:last-child { text-align: right; }
-        .total { font-weight: bold; background: #eff6ff; }
-        .actions { max-width: 780px; margin: 20px auto 0; display: flex; gap: 10px; }
-        .actions a, .actions button { border: 0; border-radius: 6px; padding: 10px 14px; background: #1d4ed8; color: white; text-decoration: none; cursor: pointer; font: inherit; }
-        @media print { body { background: white; } .sheet { max-width: none; margin: 0; padding: 0; box-shadow: none; } .actions { display: none; } }
+        @page { size: {{ $paper['size'] }}; margin: 8mm; }
+        * { box-sizing: border-box; }
+        body { margin: 0; background: #f3f4f6; color: #111; font-family: Arial, sans-serif; font-size: {{ $paper['font'] }}; line-height: 1.35; }
+        .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; max-width: {{ $paper['width'] }}; margin: 16px auto; font-size: 12px; }
+        .toolbar a, .toolbar button { display: inline-block; padding: 7px 10px; border: 1px solid #d1d5db; border-radius: 5px; background: white; color: #111; text-decoration: none; cursor: pointer; font: inherit; }
+        .toolbar .active, .toolbar button { background: #4338ca; border-color: #4338ca; color: white; }
+        .sheet { width: {{ $paper['width'] }}; min-height: 145mm; margin: 0 auto 20px; padding: 8mm 0; background: white; }
+        h1 { margin: 0 0 8px; padding-bottom: 5px; border-bottom: 2px solid #222; text-align: center; font-size: 15px; letter-spacing: .4px; }
+        .meta { width: 100%; margin-bottom: 10px; border-collapse: collapse; }
+        .meta td { padding: 2px 3px 2px 0; vertical-align: top; }
+        .meta .label { width: 105px; font-weight: bold; }
+        .meta .separator { width: 10px; }
+        .items { width: 100%; border-collapse: collapse; table-layout: fixed; }
+        .items th, .items td { border: 1px solid #333; padding: 5px 4px; vertical-align: top; overflow-wrap: anywhere; }
+        .items th { background: #f2f2f2; text-align: center; }
+        .items tfoot th.right { text-align: right; }
+        .items tr { break-inside: avoid; page-break-inside: avoid; }
+        .right { text-align: right; }
+        .center { text-align: center; }
+        .note { margin-top: 9px; padding: 6px; border: 2px solid #333; white-space: pre-line; }
+        .signatures { width: 100%; margin-top: 18px; border-collapse: collapse; break-inside: avoid; page-break-inside: avoid; }
+        .signatures td { width: 33.33%; text-align: center; vertical-align: top; padding: 0 8px; }
+        .signature-space { height: 36px; }
+        .signature-name { display: inline-block; min-width: 110px; border-top: 1px solid #333; padding-top: 3px; }
+        @media print {
+            body { background: white; }
+            .toolbar { display: none; }
+            .sheet { width: 100%; min-height: 0; margin: 0; padding: 0; }
+            .items th { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+        }
     </style>
 </head>
 <body>
-    <div class="actions">
-        @can('pranota-topup-kartu-bensin-batam-view')<a href="{{ route('pranota-topup-kartu-bensin-batam.index') }}">Daftar Pranota</a>@endcan
-        @can('master-kartu-bensin-batam-view')<a href="{{ route('master-kartu-bensin-batam.history', $card->id) }}">Riwayat Kartu</a>@endcan
-        <button type="button" onclick="window.print()">Cetak Pranota</button>
-    </div>
-    <main class="sheet">
-        <h1>PT. ALEXINDO YAKIN PRIMA</h1>
-        <div class="muted">Pranota pengisian saldo kartu bensin Batam</div>
-        <h2>PRANOTA TOP UP KARTU BENSIN</h2>
-        <div class="meta">
-            <span>Nomor Pranota</span><strong>{{ $log->nomor_pranota }}</strong>
-            <span>Tanggal</span><span>{{ $log->tanggal?->translatedFormat('d F Y') }}</span>
-            <span>Nomor Kartu</span><span>{{ $card->nomor_kartu }}</span>
-            <span>Nama Kartu</span><span>{{ $card->nama_kartu }}</span>
-            <span>Provider</span><span>{{ $card->provider }}</span>
+    <div class="toolbar">
+        <div>
+            @can('pranota-topup-kartu-bensin-batam-view')<a href="{{ route('pranota-topup-kartu-bensin-batam.index') }}">Daftar Pranota</a>@endcan
+            <span>Ukuran kertas:</span>
+            @foreach(array_keys($paperSizes) as $size)
+                <a href="{{ route('master-kartu-bensin-batam.pranota', [$card->id, $log->id, 'paper_size' => $size]) }}" class="{{ $paperSize === $size ? 'active' : '' }}">{{ $size }}</a>
+            @endforeach
         </div>
-        <table>
-            <thead><tr><th>Rincian</th><th>Jumlah</th></tr></thead>
-            <tbody>
-                <tr><td>Top up saldo</td><td>Rp {{ number_format($log->nominal, 2, ',', '.') }}</td></tr>
-                <tr><td>Biaya admin</td><td>Rp {{ number_format($log->biaya_admin, 2, ',', '.') }}</td></tr>
-                <tr class="total"><td>Total pranota</td><td>Rp {{ number_format((float) $log->nominal + (float) $log->biaya_admin, 2, ',', '.') }}</td></tr>
-            </tbody>
+        <button type="button" onclick="window.print()">Cetak Permohonan Transfer</button>
+    </div>
+
+    <main class="sheet">
+        <h1>PERMOHONAN TRANSFER</h1>
+        <table class="meta">
+            <tr><td class="label">Nomor Pranota</td><td class="separator">:</td><td><strong>{{ $log->nomor_pranota }}</strong></td><td class="label">Tanggal</td><td class="separator">:</td><td>{{ $log->tanggal?->format('d/m/Y') ?: '-' }}</td></tr>
+            <tr><td class="label">Keperluan</td><td class="separator">:</td><td>Top up kartu bensin Batam</td><td class="label">Provider</td><td class="separator">:</td><td>{{ $card->provider ?: '-' }}</td></tr>
+            <tr><td class="label">Nama Kartu</td><td class="separator">:</td><td>{{ $card->nama_kartu ?: '-' }}</td><td class="label">Nomor Kartu</td><td class="separator">:</td><td>{{ $card->nomor_kartu ?: '-' }}</td></tr>
         </table>
-        <p><strong>Keterangan:</strong> {{ $log->keterangan ?: '-' }}</p>
+
+        <table class="items">
+            <thead><tr><th style="width: 8%">No.</th><th>Rincian</th><th style="width: 28%">Jumlah (Rp)</th></tr></thead>
+            <tbody>
+                <tr><td class="center">1</td><td>Top up saldo kartu bensin {{ $card->nama_kartu }}</td><td class="right">{{ number_format((float) $log->nominal, 2, ',', '.') }}</td></tr>
+                <tr><td class="center">2</td><td>Biaya admin</td><td class="right">{{ number_format((float) $log->biaya_admin, 2, ',', '.') }}</td></tr>
+            </tbody>
+            <tfoot><tr><th colspan="2" class="right">TOTAL PERMOHONAN TRANSFER</th><th class="right">Rp {{ number_format((float) $log->nominal + (float) $log->biaya_admin, 2, ',', '.') }}</th></tr></tfoot>
+        </table>
+
+        @if($log->keterangan)
+            <div class="note"><strong>Keterangan:</strong> {{ $log->keterangan }}</div>
+        @endif
+
+        <table class="signatures">
+            <tr>
+                <td>Dibuat Oleh,<div class="signature-space"></div><span class="signature-name">{{ $log->createdBy?->karyawan?->nama_lengkap ?? $log->createdBy?->username ?? 'Operasional Batam' }}</span></td>
+                <td>Diperiksa Oleh,<div class="signature-space"></div><span class="signature-name">Finance / Accounting</span></td>
+                <td>Disetujui Oleh,<div class="signature-space"></div><span class="signature-name">Direksi / Management</span></td>
+            </tr>
+        </table>
     </main>
 </body>
 </html>

@@ -73,7 +73,7 @@
                         <td class="whitespace-nowrap px-5 py-4">
                             @if($pranota->card)
                                 <div class="flex gap-3">
-                                    <a href="{{ route('master-kartu-bensin-batam.pranota', [$pranota->master_kartu_bensin_batam_id, $pranota->id]) }}" class="font-semibold text-blue-700 hover:underline">Lihat / Cetak</a>
+                                    <a href="{{ route('master-kartu-bensin-batam.pranota', [$pranota->master_kartu_bensin_batam_id, $pranota->id]) }}" target="_blank" rel="noopener" class="font-semibold text-blue-700 hover:underline">Cetak Permohonan Transfer</a>
                                     @can('master-kartu-bensin-batam-view')
                                         <a href="{{ route('master-kartu-bensin-batam.history', $pranota->master_kartu_bensin_batam_id) }}" class="text-gray-600 hover:underline">Riwayat</a>
                                     @endcan
