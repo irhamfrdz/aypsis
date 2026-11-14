@@ -1508,8 +1508,8 @@ class TandaTerimaLclController extends Controller
 
         $batchPage = $groupedQuery->select('nomor_kontainer', 'nomor_seal')
             ->groupBy('nomor_kontainer', 'nomor_seal')
-            ->orderBy('nomor_kontainer')
-            ->orderBy('nomor_seal')
+            ->orderByRaw('MAX(COALESCE(assigned_at, created_at)) DESC')
+            ->orderByRaw('MAX(id) DESC')
             ->paginate(20)->withQueryString();
 
         $batchRows = $batchPage->count() === 0 ? collect() : TandaTerimaLclKontainerPivot::with(['tandaTerima.items'])
@@ -1522,11 +1522,16 @@ class TandaTerimaLclController extends Controller
                             : $match->where('nomor_seal', $batch->nomor_seal);
                     });
                 }
-            })->get();
-        $groupedPivotData = $batchRows->groupBy(function ($item) {
+            })->orderByDesc('assigned_at')->orderByDesc('id')->get();
+        $batchGroups = $batchRows->groupBy(function ($item) {
             // Group by container number and seal status
             // Sealed containers are grouped separately from unsealed ones with same number
             return $item->nomor_kontainer.'|'.($item->nomor_seal ?? 'unsealed');
+        });
+        $groupedPivotData = $batchPage->getCollection()->mapWithKeys(function ($batch) use ($batchGroups) {
+            $key = $batch->nomor_kontainer.'|'.($batch->nomor_seal ?? 'unsealed');
+
+            return [$key => $batchGroups->get($key, collect())];
         });
 
         // Pre-load Prospeks to prevent N+1 query in the loop
