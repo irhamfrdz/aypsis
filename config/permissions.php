@@ -292,6 +292,14 @@ return [
                 'master-kartu-bensin-batam-delete' => 'Hapus Kartu Bensin Batam',
             ],
         ],
+        'pranota-topup-kartu-bensin-batam' => [
+            'name' => 'Pranota Top Up Kartu Bensin Batam',
+            'description' => 'Menu daftar pranota top up kartu bensin Batam',
+            'required' => true,
+            'sub_modules' => [
+                'pranota-topup-kartu-bensin-batam-view' => 'Lihat Pranota Top Up Kartu Bensin Batam',
+            ],
+        ],
         'gaji-supir-batam' => [
             'name' => 'Gaji Supir Batam',
             'description' => 'Menu Gaji Supir Batam',
@@ -480,6 +488,7 @@ return [
 
         // Master Kartu Bensin Batam - butuh master-kartu-bensin-batam-view
         'master-kartu-bensin-batam' => ['master-kartu-bensin-batam-view'],
+        'pranota-topup-kartu-bensin-batam' => ['pranota-topup-kartu-bensin-batam-view'],
 
         // Gaji Supir Batam - butuh gaji-supir-batam-view
         'gaji-supir-batam' => ['gaji-supir-batam-view'],

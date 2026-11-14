@@ -328,6 +328,10 @@ class MasterKartuBensinBatamController extends Controller
 
     public function showPranota($id, $historyId)
     {
+        abort_unless(
+            auth()->user()->can('master-kartu-bensin-batam-view') || auth()->user()->can('pranota-topup-kartu-bensin-batam-view'),
+            403
+        );
         $card = MasterKartuBensinBatam::findOrFail($id);
         $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
 

@@ -371,6 +371,12 @@ class UserController extends Controller
                 continue;
             }
 
+            if ($permissionName === 'pranota-topup-kartu-bensin-batam-view') {
+                $matrixPermissions['pranota-topup-kartu-bensin-batam']['view'] = true;
+
+                continue;
+            }
+
             if (strpos($permissionName, 'master-pricelist-biaya-storage-pelindo-') === 0) {
                 $module = 'master-pricelist-biaya-storage-pelindo';
                 $action = str_replace('master-pricelist-biaya-storage-pelindo-', '', $permissionName);
@@ -1945,6 +1951,17 @@ class UserController extends Controller
                     $dashboardViewPerm = Permission::where('name', 'dashboard-view')->first();
                     if ($dashboardViewPerm) {
                         $permissionIds[] = $dashboardViewPerm->id;
+                    }
+                }
+
+                continue;
+            }
+
+            if ($module === 'pranota-topup-kartu-bensin-batam') {
+                if (! empty($actions['view'])) {
+                    $permissionId = Permission::where('name', 'pranota-topup-kartu-bensin-batam-view')->value('id');
+                    if ($permissionId) {
+                        $permissionIds[] = $permissionId;
                     }
                 }
 

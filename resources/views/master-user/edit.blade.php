@@ -3538,6 +3538,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pranota Top Up Kartu Bensin Batam --}}
+                            <tr class="submodule-row" data-parent="aktivitas">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Top Up Kartu Bensin Batam</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-topup-kartu-bensin-batam][view]" value="1" class="permission-checkbox" @checked(!empty($userMatrixPermissions['pranota-topup-kartu-bensin-batam']['view']))></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Pranota Uang Rit --}}
                             <tr class="submodule-row" data-parent="aktivitas">
                                 <td class="submodule">

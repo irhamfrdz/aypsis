@@ -1026,6 +1026,7 @@
         $user->can('uang-jalan-bongkaran-delete') ||
         $user->can('pranota-lembur-view') ||
         $user->can('master-kartu-bensin-batam-view') ||
+        $user->can('pranota-topup-kartu-bensin-batam-view') ||
         $user->can('aktivitas-kontainer-view') ||
         $user->can('tagihan-kontainer-sewa-index') ||
         $user->can('pranota-kontainer-sewa-view') ||
@@ -1550,7 +1551,7 @@
                 @endif
 
                 {{-- Pranota Top Up Kartu Bensin Batam --}}
-                @if($user && ($user->can('master-kartu-bensin-batam-view') || $user->is_admin))
+                @if($user && $user->can('pranota-topup-kartu-bensin-batam-view'))
                     <a href="{{ route('pranota-topup-kartu-bensin-batam.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('pranota-topup-kartu-bensin-batam.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pranota Top Up Kartu Bensin Batam</span>
                     </a>

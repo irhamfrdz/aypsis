@@ -10,7 +10,9 @@
             <h1 class="text-2xl font-bold text-gray-900">Pranota Top Up Kartu Bensin Batam</h1>
             <p class="mt-1 text-sm text-gray-600">Daftar pranota yang dibuat dari transaksi top up saldo kartu bensin.</p>
         </div>
-        <a href="{{ route('master-kartu-bensin-batam.index') }}" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Lihat Kartu Bensin</a>
+        @can('master-kartu-bensin-batam-view')
+            <a href="{{ route('master-kartu-bensin-batam.index') }}" class="rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Lihat Kartu Bensin</a>
+        @endcan
     </div>
 
     @if($errors->any())
@@ -72,7 +74,9 @@
                             @if($pranota->card)
                                 <div class="flex gap-3">
                                     <a href="{{ route('master-kartu-bensin-batam.pranota', [$pranota->master_kartu_bensin_batam_id, $pranota->id]) }}" class="font-semibold text-blue-700 hover:underline">Lihat / Cetak</a>
-                                    <a href="{{ route('master-kartu-bensin-batam.history', $pranota->master_kartu_bensin_batam_id) }}" class="text-gray-600 hover:underline">Riwayat</a>
+                                    @can('master-kartu-bensin-batam-view')
+                                        <a href="{{ route('master-kartu-bensin-batam.history', $pranota->master_kartu_bensin_batam_id) }}" class="text-gray-600 hover:underline">Riwayat</a>
+                                    @endcan
                                 </div>
                             @else
                                 <span class="text-gray-400">Kartu tidak tersedia</span>
