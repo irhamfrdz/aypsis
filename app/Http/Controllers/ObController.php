@@ -450,6 +450,17 @@ class ObController extends Controller
             ->get(['id', 'nama_gudang', 'lokasi']);
 
         if ($kegiatan === 'muat_temas') {
+            $plateKey = static fn ($plate) => strtoupper(preg_replace('/[\s-]+/', '', (string) $plate));
+            $longVehiclePlates = \App\Models\Mobil::whereRaw('UPPER(TRIM(jenis)) = ?', ['TRACTOR HEAD'])
+                ->where('ukuran_tractor_head', 'panjang')
+                ->whereNotNull('nomor_polisi')
+                ->pluck('nomor_polisi')
+                ->map($plateKey)->filter()->flip();
+
+            foreach ($supirs as $supir) {
+                $supir->is_mobil_panjang = $longVehiclePlates->has($plateKey($supir->plat));
+            }
+
             $temasTagihans = TagihanOb::with(['pranotaMuatTemasItem', 'pranotaObItem', 'pranotaObAntarGudangItem'])
                 ->whereIn('naik_kapal_id', $naikKapals->pluck('id'))
                 ->where('kegiatan', 'MUAT TEMAS')->orderBy('id')->get()->groupBy('naik_kapal_id');

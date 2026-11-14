@@ -25,10 +25,10 @@
                 </div>
                 <div>
                     <label for="muatTemasSupir" class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-500">*</span></label>
-                    <select id="muatTemasSupir" required class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    <select id="muatTemasSupir" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="updateMuatTemasMobilPanjang()">
                         <option value="">--Pilih Supir--</option>
                         @foreach($supirs as $supir)
-                            <option value="{{ $supir->id }}">{{ $supir->nama_panggilan ?: $supir->nama_lengkap }}{{ $supir->plat ? ' - '.$supir->plat : '' }}</option>
+                            <option value="{{ $supir->id }}" data-mobil-panjang="{{ $supir->is_mobil_panjang ? '1' : '0' }}">{{ $supir->nama_panggilan ?: $supir->nama_lengkap }}{{ $supir->plat ? ' - '.$supir->plat : '' }}</option>
                         @endforeach
                     </select>
                 </div>

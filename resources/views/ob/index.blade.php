@@ -2349,6 +2349,12 @@ function filterMuatTemasPricelists() {
         : (available ? 'Tarif dari Pricelist OB Antar Gudang dengan tujuan Temas.' : 'Tidak ada pricelist Temas untuk ukuran dan status kontainer ini.');
 }
 
+function updateMuatTemasMobilPanjang() {
+    const option = document.getElementById('muatTemasSupir').selectedOptions[0];
+    document.getElementById('muatTemasMobilPanjang').checked = option?.dataset.mobilPanjang === '1';
+    updateMuatTemasBiaya();
+}
+
 function updateMuatTemasBiaya() {
     if (document.getElementById('muatTemasMobilPanjang').checked) {
         document.getElementById('muatTemasBiaya').value = 'Rp 250.000';

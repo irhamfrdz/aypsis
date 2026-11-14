@@ -18,7 +18,7 @@
 .overtime-page .ot-filter-grid { display: grid; grid-template-columns: 1.6fr 1fr 1fr 1fr; gap: 14px; align-items: end; }
 .overtime-page .ot-filter-grid label { font-size: 12px; color: #475569; font-weight: 500; margin-bottom: 6px; }
 .overtime-page .ot-filter-grid input, .overtime-page .ot-filter-grid select { height: 40px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 12px; color: #334155; background-color: white; box-shadow: none; }
-.overtime-page .ot-filter-actions { grid-column: span 2; flex-wrap: wrap; gap: 8px; }
+.overtime-page .ot-filter-actions { grid-column: auto; flex-wrap: wrap; gap: 8px; }
 .overtime-page .ot-filter-actions > * { min-height: 40px; font-size: 12px; border-radius: 8px; box-shadow: none; border: 1px solid #cbd5e1; }
 .overtime-page .ot-filter-actions > button[type=button], .overtime-page .ot-filter-actions > a { color: #475569; background: #fff; }
 .overtime-page .ot-filter-actions > button[type=button] i { color: #2563eb; }
