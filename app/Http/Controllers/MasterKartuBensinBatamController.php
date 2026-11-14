@@ -209,10 +209,12 @@ class MasterKartuBensinBatamController extends Controller
 
     public function updateHistory(Request $request, $id, $historyId)
     {
+        $existingLog = MasterKartuBensinBatam::findOrFail($id)->histories()->findOrFail($historyId);
         $validated = $request->validate([
             'tanggal' => 'required|date',
             'nominal' => 'required|numeric|gt:0',
             'keterangan' => 'nullable|string|max:1000',
+            'biaya_admin' => $existingLog->nomor_pranota ? 'required|numeric|min:0|max:9999999999999.99' : 'prohibited',
         ]);
 
         DB::transaction(function () use ($id, $historyId, $validated) {
@@ -265,6 +267,7 @@ class MasterKartuBensinBatamController extends Controller
         $validated = $request->validate([
             'tanggal' => 'required|date_format:Y-m-d',
             'nominal' => 'required|integer|min:1',
+            'biaya_admin' => 'required|numeric|min:0|max:9999999999999.99',
             'keterangan' => 'required|string|max:1000',
         ]);
 
@@ -274,18 +277,30 @@ class MasterKartuBensinBatamController extends Controller
             $saldoSesudah = round((float) $saldoSebelum + (float) $validated['nominal'], 2);
 
             $card->update(['saldo' => $saldoSesudah, 'updated_by' => auth()->id()]);
-            $card->histories()->create([
+            $log = $card->histories()->create([
                 'tanggal' => $validated['tanggal'],
                 'tipe' => 'bertambah',
                 'nominal' => $validated['nominal'],
+                'biaya_admin' => $validated['biaya_admin'],
                 'saldo_sebelum' => $saldoSebelum,
                 'saldo_sesudah' => $saldoSesudah,
                 'keterangan' => $validated['keterangan'],
                 'created_by' => auth()->id(),
             ]);
+            $log->update([
+                'nomor_pranota' => 'PR-KBB-'.\Carbon\Carbon::parse($validated['tanggal'])->format('Ym').'-'.str_pad((string) $log->id, 6, '0', STR_PAD_LEFT),
+            ]);
         });
 
         return redirect()->route('master-kartu-bensin-batam.history', $id)
             ->with('success', 'Top up saldo kartu bensin berhasil disimpan.');
+    }
+
+    public function showPranota($id, $historyId)
+    {
+        $card = MasterKartuBensinBatam::findOrFail($id);
+        $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
+
+        return view('master-kartu-bensin-batam.pranota', compact('card', 'log'));
     }
 }

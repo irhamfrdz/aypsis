@@ -85,6 +85,12 @@
                     @error('nominal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
+                    <label for="topup-biaya-admin" class="mb-1 block text-sm font-medium text-gray-700">Biaya Admin (Rp) <span class="text-red-500">*</span></label>
+                    <input type="number" id="topup-biaya-admin" name="biaya_admin" value="{{ old('biaya_admin', 0) }}" min="0" step="0.01" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                    <p class="mt-1 text-xs text-gray-500">Biaya admin menambah total pranota, bukan saldo kartu. Nomor pranota dibuat otomatis.</p>
+                    @error('biaya_admin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
                     <label for="topup-keterangan" class="mb-1 block text-sm font-medium text-gray-700">Keterangan <span class="text-red-500">*</span></label>
                     <textarea id="topup-keterangan" name="keterangan" rows="3" maxlength="1000" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan keterangan top up">{{ old('keterangan') }}</textarea>
                     @error('keterangan')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
@@ -116,6 +122,7 @@
                     <tr class="bg-gray-50 border-b border-gray-200 text-xs font-semibold text-gray-500 uppercase tracking-wider">
                         <th class="px-6 py-4">Tanggal & Waktu</th>
                         <th class="px-6 py-4">No. Transaksi</th>
+                        <th class="px-6 py-4">Pranota</th>
                         <th class="px-6 py-4">Tipe Aksi</th>
                         <th class="px-6 py-4">Nominal</th>
                         <th class="px-6 py-4">Saldo Sebelum</th>
@@ -135,6 +142,15 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap font-semibold text-blue-700">
                             {{ $log->nomor_transaksi ?? $log->legacy_nomor_transaksi ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($log->nomor_pranota)
+                                <a href="{{ route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]) }}" class="font-semibold text-blue-700 hover:underline">{{ $log->nomor_pranota }}</a>
+                                <div class="mt-1 text-xs text-gray-500">Admin Rp {{ number_format($log->biaya_admin, 0, ',', '.') }}</div>
+                                <div class="text-xs font-semibold text-gray-700">Total Rp {{ number_format((float) $log->nominal + (float) $log->biaya_admin, 0, ',', '.') }}</div>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($log->tipe == 'bertambah')
@@ -179,7 +195,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="{{ auth()->user()->can('master-kartu-bensin-batam-edit') ? 9 : 8 }}" class="px-6 py-12 text-center text-gray-500">
+                        <td colspan="{{ auth()->user()->can('master-kartu-bensin-batam-edit') ? 10 : 9 }}" class="px-6 py-12 text-center text-gray-500">
                             <i class="fas fa-history text-3xl mb-3 block text-gray-300"></i>
                             Belum ada riwayat perubahan saldo untuk kartu bensin ini.
                         </td>

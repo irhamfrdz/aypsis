@@ -14,6 +14,8 @@ class MasterKartuBensinBatamHistory extends Model
     protected $fillable = [
         'master_kartu_bensin_batam_id',
         'nomor_transaksi',
+        'nomor_pranota',
+        'biaya_admin',
         'tanggal',
         'tipe',
         'nominal',
@@ -26,6 +28,7 @@ class MasterKartuBensinBatamHistory extends Model
     protected $casts = [
         'tanggal' => 'datetime',
         'nominal' => 'decimal:2',
+        'biaya_admin' => 'decimal:2',
         'saldo_sebelum' => 'decimal:2',
         'saldo_sesudah' => 'decimal:2',
     ];

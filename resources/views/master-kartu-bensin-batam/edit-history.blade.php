@@ -22,6 +22,15 @@
                 <input type="number" id="nominal" name="nominal" min="0.01" step="0.01" value="{{ old('nominal', $log->nominal) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2">
                 @error('nominal')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
             </div>
+            @if($log->nomor_pranota)
+            <div class="rounded-lg bg-blue-50 px-4 py-3 text-sm text-blue-800">Nomor Pranota: <strong>{{ $log->nomor_pranota }}</strong></div>
+            <div>
+                <label for="biaya_admin" class="mb-1 block text-sm font-medium text-gray-700">Biaya Admin (Rp)</label>
+                <input type="number" id="biaya_admin" name="biaya_admin" min="0" step="0.01" value="{{ old('biaya_admin', $log->biaya_admin) }}" required class="w-full rounded-lg border border-gray-300 px-3 py-2">
+                <p class="mt-1 text-xs text-gray-500">Biaya admin tidak mengubah saldo kartu.</p>
+                @error('biaya_admin')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+            @endif
             <div>
                 <label for="keterangan" class="mb-1 block text-sm font-medium text-gray-700">Keterangan</label>
                 <textarea id="keterangan" name="keterangan" rows="4" maxlength="1000" class="w-full rounded-lg border border-gray-300 px-3 py-2">{{ old('keterangan', $log->keterangan) }}</textarea>
