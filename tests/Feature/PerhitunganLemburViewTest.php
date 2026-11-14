@@ -38,7 +38,7 @@ class PerhitunganLemburViewTest extends TestCase
         $html = view('payroll.perhitungan-lembur.index', [
             'rekapData' => $data, 'startDateStr' => '2026-11-01', 'endDateStr' => '2026-11-30',
             'grupsList' => ['UANG LEMBUR'], 'grupMap' => [], 'riwayatPranotaUser' => collect($history),
-            'penempatans' => collect(['JAKARTA PELABUHAN', 'BATAM']),
+            'cabangs' => collect(['JAKARTA', 'BATAM']),
         ])->render();
         $dom = new \DOMDocument;
         @$dom->loadHTML('<?xml encoding="UTF-8">'.$html);
@@ -74,7 +74,7 @@ class PerhitunganLemburViewTest extends TestCase
         $this->assertSame(3, $details->length);
         $this->assertSame('2026-11-02', json_decode($details->item(0)->getAttribute('data-detail'), true)[0]['tanggal']);
         $this->assertSame('Karyawan Contoh 0', trim($xpath->query('//div[contains(@class,"ot-employee-name")]')->item(0)->textContent));
-        foreach (['search', 'grup', 'sub_grup', 'status_pranota', 'penempatan', 'start_date', 'end_date'] as $field) {
+        foreach (['search', 'grup', 'sub_grup', 'status_pranota', 'cabang', 'start_date', 'end_date'] as $field) {
             $this->assertSame(1, $xpath->query('//*[@id="filterForm"]//*[@name="'.$field.'"]')->length);
         }
         $this->assertSame(route('payroll.perhitungan-lembur'), $xpath->query('//*[@id="filterForm"]')->item(0)->getAttribute('action'));

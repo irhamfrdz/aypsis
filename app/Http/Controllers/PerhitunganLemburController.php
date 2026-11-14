@@ -57,8 +57,8 @@ class PerhitunganLemburController extends Controller
             });
         }
 
-        if ($request->filled('penempatan')) {
-            $karyawanQuery->where('penempatan', $request->penempatan);
+        if ($request->filled('cabang')) {
+            $karyawanQuery->where('cabang', $request->cabang);
         }
 
         if ($request->filled('divisi')) {

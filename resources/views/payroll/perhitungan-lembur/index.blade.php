@@ -207,12 +207,12 @@
                     </div>
 
                     <div>
-                        <label for="penempatan" class="block text-xs font-semibold text-gray-700 mb-1">Lokasi</label>
-                        <select name="penempatan" id="penempatan"
+                        <label for="cabang" class="block text-xs font-semibold text-gray-700 mb-1">Cabang</label>
+                        <select name="cabang" id="cabang"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 text-xs">
-                            <option value="">Semua Lokasi</option>
-                            @foreach($penempatans as $lokasi)
-                                <option value="{{ $lokasi }}" @selected(request('penempatan') == $lokasi)>{{ $lokasi }}</option>
+                            <option value="">Semua Cabang</option>
+                            @foreach($cabangs as $cabang)
+                                <option value="{{ $cabang }}" @selected(request('cabang') == $cabang)>{{ $cabang }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -235,7 +235,7 @@
 
                     <!-- Action Buttons -->
                     <div class="ot-filter-actions flex items-end gap-2 justify-end">
-                        @if(request()->anyFilled(['search', 'grup', 'sub_grup', 'status_pranota', 'penempatan']))
+                        @if(request()->anyFilled(['search', 'grup', 'sub_grup', 'status_pranota', 'cabang']))
                             <a href="{{ route('payroll.perhitungan-lembur') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-lg focus:outline-none transition-colors duration-200 h-[38px] shadow-sm">
                                 Reset
                             </a>
