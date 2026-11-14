@@ -80,9 +80,8 @@
                     @error('tanggal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
-                    <label for="topup-nomor-pranota" class="mb-1 block text-sm font-medium text-gray-700">Nomor Pranota <span class="text-red-500">*</span></label>
-                    <input type="text" id="topup-nomor-pranota" name="nomor_pranota" value="{{ old('nomor_pranota') }}" maxlength="40" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nomor pranota">
-                    @error('nomor_pranota')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                    <label for="topup-nomor-pranota" class="mb-1 block text-sm font-medium text-gray-700">Nomor Pranota</label>
+                    <input type="text" id="topup-nomor-pranota" value="Dibuat otomatis setelah top up disimpan" readonly class="w-full rounded-lg border border-gray-200 bg-gray-100 px-3 py-2 text-sm text-gray-600">
                 </div>
                 <div>
                     <label for="topup-nominal" class="mb-1 block text-sm font-medium text-gray-700">Nominal (Rp) <span class="text-red-500">*</span></label>

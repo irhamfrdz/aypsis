@@ -266,7 +266,6 @@ class MasterKartuBensinBatamController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date_format:Y-m-d',
-            'nomor_pranota' => 'required|string|max:40|unique:master_kartu_bensin_batam_histories,nomor_pranota',
             'nominal' => 'required|integer|min:1',
             'biaya_admin' => 'required|numeric|min:0|max:9999999999999.99',
             'keterangan' => 'required|string|max:1000',
@@ -278,10 +277,9 @@ class MasterKartuBensinBatamController extends Controller
             $saldoSesudah = round((float) $saldoSebelum + (float) $validated['nominal'], 2);
 
             $card->update(['saldo' => $saldoSesudah, 'updated_by' => auth()->id()]);
-            $card->histories()->create([
+            $log = $card->histories()->create([
                 'tanggal' => $validated['tanggal'],
                 'tipe' => 'bertambah',
-                'nomor_pranota' => $validated['nomor_pranota'],
                 'nominal' => $validated['nominal'],
                 'biaya_admin' => $validated['biaya_admin'],
                 'saldo_sebelum' => $saldoSebelum,
@@ -289,6 +287,7 @@ class MasterKartuBensinBatamController extends Controller
                 'keterangan' => $validated['keterangan'],
                 'created_by' => auth()->id(),
             ]);
+            $log->update(['nomor_pranota' => $this->makePranotaNumber($log)]);
         });
 
         return redirect()->route('master-kartu-bensin-batam.history', $id)
