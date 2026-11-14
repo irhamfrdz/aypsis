@@ -7,6 +7,8 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         const columnSelect = sizeControls.querySelector('.sugeng-size-column');
         const widthInput = sizeControls.querySelector('.sugeng-size-width');
         const heightInput = sizeControls.querySelector('.sugeng-size-height');
+        const tableHeightInput = sizeControls.querySelector('.sugeng-size-table-height');
+        const scrollArea = table.closest('.sugeng-sheet-scroll');
         const storageKey = 'manifest-sugeng-table-size';
         let settings = {};
         try { settings = JSON.parse(localStorage.getItem(storageKey) || '{}') || {}; } catch (_) { settings = {}; }
@@ -24,6 +26,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             });
             widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10);
             heightInput.value = height;
+            if (settings.tableHeight) scrollArea.style.height = `${settings.tableHeight}px`;
+            else scrollArea.style.removeProperty('height');
+            tableHeightInput.value = Math.round(scrollArea.getBoundingClientRect().height);
         };
         const saveSizes = () => { try { localStorage.setItem(storageKey, JSON.stringify(settings)); } catch (_) {} };
         columnSelect.addEventListener('change', () => { widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10); });
@@ -39,6 +44,25 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             if (!Number.isInteger(height) || height < 24 || height > 500) { applySizes(); return; }
             settings.height = height;
             applySizes(); saveSizes();
+        });
+        tableHeightInput.addEventListener('change', () => {
+            const height = Number(tableHeightInput.value);
+            if (!Number.isInteger(height) || height < 200 || height > 2000) { applySizes(); return; }
+            settings.tableHeight = height;
+            applySizes(); saveSizes();
+        });
+        scrollArea.nextElementSibling?.classList.contains('sugeng-sheet-resize') && scrollArea.nextElementSibling.addEventListener('pointerdown', event => {
+            if (event.button !== 0) return;
+            event.preventDefault();
+            const startY = event.clientY;
+            const initialHeight = scrollArea.getBoundingClientRect().height;
+            const move = moveEvent => {
+                settings.tableHeight = Math.min(2000, Math.max(200, Math.round(initialHeight + moveEvent.clientY - startY)));
+                applySizes();
+            };
+            const stop = () => { window.removeEventListener('pointermove', move); saveSizes(); };
+            window.addEventListener('pointermove', move);
+            window.addEventListener('pointerup', stop, { once: true });
         });
         sizeControls.querySelector('.sugeng-size-reset').addEventListener('click', () => {
             settings = {};

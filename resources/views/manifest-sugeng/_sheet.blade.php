@@ -1,5 +1,7 @@
 <style>
-    .sugeng-sheet-scroll { overflow: auto; max-height: 75vh; background: #e5e7eb; padding: 16px; }
+    .sugeng-sheet-scroll { position: relative; overflow: auto; height: 75vh; background: #e5e7eb; padding: 16px; }
+    .sugeng-sheet-resize { height: 10px; margin-top: -5px; position: relative; z-index: 5; cursor: ns-resize; background: #d1d5db; border-radius: 0 0 6px 6px; }
+    .sugeng-sheet-resize:hover { background: #818cf8; }
     .sugeng-sheet { border-collapse: collapse; table-layout: fixed; background: white; color: #000; font: 12px Arial, sans-serif; }
     .sugeng-sheet th, .sugeng-sheet td { border: 1px solid #222; padding: 5px 6px; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
     .sugeng-sheet thead th { text-align: center; vertical-align: middle; font-size: 11px; font-weight: bold; background: white; }
@@ -54,8 +56,11 @@
     <label class="flex flex-col gap-1">Tinggi baris (px)
         <input type="number" class="sugeng-size-height w-28 rounded border border-gray-300 px-2 py-1" min="24" max="500" step="1" value="46">
     </label>
+    <label class="flex flex-col gap-1">Tinggi area tabel (px)
+        <input type="number" class="sugeng-size-table-height w-28 rounded border border-gray-300 px-2 py-1" min="200" max="2000" step="1">
+    </label>
     <button type="button" class="sugeng-size-reset rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">Reset ukuran</button>
-    <span class="text-gray-600">Tarik batas kanan huruf kolom untuk lebar, atau batas bawah nomor baris untuk tinggi.</span>
+    <span class="text-gray-600">Tarik batas kanan huruf kolom untuk lebar, batas bawah nomor baris untuk tinggi baris, atau bilah di bawah tabel untuk tinggi area tabel.</span>
 </div>
 <div class="sugeng-sheet-scroll" role="region" aria-label="Manifest dan perincian, geser untuk melihat seluruh kolom" tabindex="0">
     @php
@@ -152,3 +157,4 @@
         </tbody>
     </table>
 </div>
+<div class="sugeng-sheet-resize" title="Tarik untuk mengatur tinggi area tabel" aria-hidden="true"></div>
