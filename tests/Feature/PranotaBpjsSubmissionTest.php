@@ -79,7 +79,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $start = strpos($source, '        @php');
             $end = strpos($source, '        <div class="flex justify-end mt-16', $start);
             $template = substr($source, $start, $end - $start);
-            $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
+            $html = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header, 'paidJournal' => null]);
             $this->assertStringContainsString('Nama Saat Simpan', $html);
             $this->assertStringNotContainsString('Master Sudah Berubah', $html);
             $this->assertEquals(4, $header->snapshot_rumus[0]['nilai']);
@@ -87,7 +87,7 @@ class PranotaBpjsSubmissionTest extends TestCase
                 $this->assertStringContainsString($label, $html);
             }
             $header->details->first()->rincian_bpjs = null;
-            $legacyHtml = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header]);
+            $legacyHtml = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header, 'paidJournal' => null]);
             $this->assertStringContainsString('Jamsostek Gabungan', $legacyHtml);
             $this->assertStringContainsString('data lama tanpa rincian PPU/BPU terpisah', $legacyHtml);
         }
@@ -179,6 +179,53 @@ class PranotaBpjsSubmissionTest extends TestCase
         }
 
         $this->assertSame('Nama Lama', $saved->karyawan_pranota->nama_lengkap);
+    }
+
+    public function test_refresh_adds_missing_employees_once_and_preserves_paid_details(): void
+    {
+        $this->createPranotaSchema();
+        Schema::create('pembayaran_pranota_bpjs', function (Blueprint $table) {
+            $table->id();
+            $table->softDeletes();
+        });
+        Schema::create('pembayaran_pranota_bpjs_items', function (Blueprint $table) {
+            $table->unsignedBigInteger('pranota_bpjs_header_id');
+            $table->unsignedBigInteger('pembayaran_pranota_bpjs_id');
+            $table->decimal('subtotal', 18, 2);
+        });
+        $detail = [
+            'karyawan_id' => 1, 'tipe_karyawan' => \App\Models\Karyawan::class,
+            'bpjs_kesehatan' => 100, 'no_voucher' => 'KEEP',
+            'snapshot_karyawan' => ['unique_id' => 'Karyawan_1', 'nama_lengkap' => 'Lama'],
+            'ringkasan_bpjs' => array_fill_keys(['ppu', 'bpu', 'jkn', 'kary_jht', 'kary_jkn', 'pt', 'non_kary'], 0),
+        ];
+        $payload = ['tanggal_pranota' => '2026-11-12', 'periode_bulan' => 11, 'periode_tahun' => 2026,
+            'snapshot_rumus_json' => '[]', 'details_json' => json_encode([$detail])];
+        $controller = new PranotaBpjsController;
+        $controller->store(Request::create('/', 'POST', $payload));
+        $header = PranotaBpjsHeader::firstOrFail();
+        $saved = $header->details()->firstOrFail();
+        $header->update(['status' => 'paid']);
+        DB::table('pembayaran_pranota_bpjs')->insert(['id' => 1]);
+        DB::table('pembayaran_pranota_bpjs_items')->insert(['pranota_bpjs_header_id' => $header->id, 'pembayaran_pranota_bpjs_id' => 1, 'subtotal' => 100]);
+        $new = $detail;
+        $new['tipe_karyawan'] = \App\Models\KaryawanTidakTetap::class;
+        $new['bpjs_kesehatan'] = 50;
+        $new['snapshot_karyawan']['unique_id'] = 'KaryawanTidakTetap_1';
+        $detail['bpjs_kesehatan'] = 999;
+        $payload['details_json'] = json_encode([$detail, $new, $new]);
+        foreach (range(1, 2) as $attempt) {
+            $response = $controller->storeRefresh(Request::create('/', 'POST', $payload), $header);
+            $this->assertFalse(session()->has('error'), (string) session('error'));
+            $header->refresh();
+            $this->assertEquals(2, $header->total_karyawan);
+            $this->assertSame(2, $header->details()->count());
+            $this->assertSame('150.00', $header->grand_total);
+            $this->assertSame('partial', $header->status);
+            $this->assertSame('100.00', $saved->fresh()->total);
+            $this->assertSame('KEEP', $saved->fresh()->no_voucher);
+            $this->assertEquals(100, $header->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal'));
+        }
     }
 
     private function createPranotaSchema(): void

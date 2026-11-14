@@ -253,6 +253,7 @@
                                     @endcan
 
                                     @can('pranota-bpjs-update')
+                                        <a href="{{ route('pranota-bpjs.refresh-data', $pranota->id) }}" title="Update Data" aria-label="Update Data" class="inline-flex items-center justify-center w-7 h-7 rounded bg-amber-50 text-amber-700 hover:bg-amber-100 transition-colors"><i class="fas fa-arrows-rotate text-xs" aria-hidden="true"></i></a>
                                         @if($pranota->status == 'draft')
                                             <a href="{{ route('pranota-bpjs.edit', $pranota->id) }}"
                                                title="Edit"

@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Buat Pranota BPJS')
-@section('page_title', 'Buat Pranota BPJS')
+@section('title', $refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS')
+@section('page_title', $refreshPranota ? 'Update Data Pranota BPJS' : 'Buat Pranota BPJS')
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('css/pranota-bpjs-allowances.css') }}?v={{ filemtime(public_path('css/pranota-bpjs-allowances.css')) }}">
@@ -18,7 +18,7 @@
                 <i class="fas fa-file-invoice-dollar text-lg"></i>
             </div>
             <div>
-                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">Buat Pranota BPJS</h1>
+                <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">{{ $refreshPranota ? 'Update Data — '.$refreshPranota->nomor_pranota : 'Buat Pranota BPJS' }}</h1>
                 <p class="text-xs sm:text-sm text-gray-500">Form pembuatan rincian tagihan & iuran BPJS karyawan</p>
             </div>
         </div>
@@ -64,7 +64,10 @@
         </div>
     @endif
 
-    <form id="pranota-form" action="{{ route('pranota-bpjs.store') }}" method="POST">
+    @if($refreshPranota)
+        <div class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm text-blue-800">Hanya karyawan yang belum tercatat pada pranota ini ditampilkan. Klik Hitung Semua Karyawan, tinjau hasilnya, lalu Simpan Update Data. Rincian lama dan pembayaran tetap dipertahankan.</div>
+    @endif
+    <form id="pranota-form" action="{{ $refreshPranota ? route('pranota-bpjs.store-refresh', $refreshPranota->id) : route('pranota-bpjs.store') }}" method="POST">
         @csrf
 
         {{-- ── Section 1: Informasi Periode Pranota ────────────────────────── --}}
@@ -86,20 +89,22 @@
                         </label>
                         <input id="tanggal_pranota" name="tanggal_pranota" type="date"
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition"
-                            value="{{ date('Y-m-d') }}" required />
+                            value="{{ $refreshPranota ? $refreshPranota->tanggal_pranota->format('Y-m-d') : date('Y-m-d') }}" @readonly($refreshPranota) required />
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5" for="periode_bulan">
                             Bulan Periode <span class="text-rose-500">*</span>
                         </label>
                         <select id="periode_bulan" name="periode_bulan"
+                            @disabled($refreshPranota)
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition font-medium" required>
                             @for($i = 1; $i <= 12; $i++)
-                                <option value="{{ $i }}" {{ date('n') == $i ? 'selected' : '' }}>
+                                <option value="{{ $i }}" {{ ($refreshPranota->periode_bulan ?? date('n')) == $i ? 'selected' : '' }}>
                                     {{ str_pad($i, 2, '0', STR_PAD_LEFT) }} — {{ date('F', mktime(0, 0, 0, $i, 1)) }}
                                 </option>
                             @endfor
                         </select>
+                        @if($refreshPranota)<input type="hidden" name="periode_bulan" value="{{ $refreshPranota->periode_bulan }}">@endif
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-gray-700 mb-1.5" for="periode_tahun">
@@ -107,7 +112,7 @@
                         </label>
                         <input id="periode_tahun" name="periode_tahun" type="number"
                             class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition font-medium"
-                            value="{{ date('Y') }}" required />
+                            value="{{ $refreshPranota->periode_tahun ?? date('Y') }}" @readonly($refreshPranota) required />
                     </div>
                 </div>
 
@@ -116,8 +121,9 @@
                         Catatan / Keterangan <span class="text-gray-400 font-normal">(Opsional)</span>
                     </label>
                     <textarea id="keterangan" name="keterangan" rows="2"
+                        @readonly($refreshPranota)
                         class="w-full text-xs sm:text-sm rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs transition placeholder:text-gray-400"
-                        placeholder="Tambahkan catatan khusus pranota ini jika diperlukan..."></textarea>
+                        placeholder="Tambahkan catatan khusus pranota ini jika diperlukan...">{{ $refreshPranota->keterangan ?? '' }}</textarea>
                 </div>
             </div>
         </div>
@@ -427,7 +433,7 @@
                 <button type="submit"
                     class="inline-flex items-center gap-2 px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white text-xs font-bold rounded-lg shadow-sm hover:shadow transition-all">
                     <i class="fas fa-save text-xs"></i>
-                    Simpan Pranota
+                    {{ $refreshPranota ? 'Simpan Update Data' : 'Simpan Pranota' }}
                 </button>
             </div>
         </div>
@@ -1403,7 +1409,7 @@ document.addEventListener('DOMContentLoaded', function() {
         status.textContent = 'Memeriksa daftar karyawan tanpa diskon terbaru...';
         const generated = await generateRows(async () => {
             const data = await loadBpjsData({
-                url: @json(route('pranota-bpjs.create')),
+                url: @json($refreshPranota ? route('pranota-bpjs.refresh-data', $refreshPranota->id) : route('pranota-bpjs.create')),
             });
             karyawans = data.karyawans;
             rumusBpjs = data.rumusBpjs;
@@ -1435,7 +1441,7 @@ document.addEventListener('DOMContentLoaded', function() {
         status.textContent = 'Mengambil data karyawan dan rumus terbaru...';
         try {
             const result = await refreshBpjsData({
-                url: @json(route('pranota-bpjs.create')),
+                url: @json($refreshPranota ? route('pranota-bpjs.refresh-data', $refreshPranota->id) : route('pranota-bpjs.create')),
                 rows: Array.from(container.querySelectorAll('tr.detail-row')),
                 addEmployee(employee) { addRow(employee.unique_id, true); },
                 applyData(data) {
@@ -1474,6 +1480,9 @@ document.addEventListener('DOMContentLoaded', function() {
     populateGroupFilterOptions();
     populateCabangFilterOptions();
     applyFilter();
+    @if($refreshPranota)
+    document.getElementById('btn-generate-all').click();
+    @endif
 });
 </script>
 @endsection

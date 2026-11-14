@@ -19,7 +19,7 @@ class PranotaBpjsController extends Controller
         $this->middleware('permission:pranota-bpjs-view')->only(['index', 'show']);
         $this->middleware('permission:pranota-bpjs-view')->only(['exportExcel']);
         $this->middleware('permission:pranota-bpjs-create')->only(['create', 'store']);
-        $this->middleware('permission:pranota-bpjs-update')->only(['edit', 'update']);
+        $this->middleware('permission:pranota-bpjs-update')->only(['edit', 'update', 'refreshData', 'storeRefresh']);
         $this->middleware('permission:pranota-bpjs-delete')->only(['destroy']);
     }
 
@@ -56,7 +56,17 @@ class PranotaBpjsController extends Controller
         return view('pranota-bpjs.index', compact('pranotas', 'totalNominal', 'draftCount', 'statuses', 'isHistory'));
     }
 
-    public function create(Request $request)
+    public function refreshData(Request $request, PranotaBpjsHeader $pranota_bpj)
+    {
+        return $this->create($request, $pranota_bpj);
+    }
+
+    public function storeRefresh(Request $request, PranotaBpjsHeader $pranota_bpj)
+    {
+        return $this->store($request, $pranota_bpj);
+    }
+
+    public function create(Request $request, ?PranotaBpjsHeader $refreshPranota = null)
     {
         // Get active Karyawan that might have BPJS
         $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
@@ -102,15 +112,21 @@ class PranotaBpjsController extends Controller
 
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
 
+        if ($refreshPranota) {
+            $existing = $refreshPranota->details()->get()->map(fn ($detail) => class_basename($detail->tipe_karyawan).'_'.$detail->karyawan_id);
+            $karyawans = $karyawans->reject(fn ($employee) => $existing->contains($employee->unique_id))->values();
+            $rumusBpjs = $refreshPranota->snapshot_rumus ?? $rumusBpjs;
+        }
+
         if ($request->expectsJson()) {
             return response()->json(compact('karyawans', 'rumusBpjs'))
                 ->header('Cache-Control', 'no-store');
         }
 
-        return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs'));
+        return view('pranota-bpjs.create', compact('karyawans', 'rumusBpjs', 'refreshPranota'));
     }
 
-    public function store(Request $request)
+    public function store(Request $request, ?PranotaBpjsHeader $refreshPranota = null)
     {
         $this->decodeDetails($request);
         $request->validate([
@@ -162,27 +178,37 @@ class PranotaBpjsController extends Controller
         try {
             DB::beginTransaction();
 
-            $nomorPranota = $this->generateNomorPranota();
+            if ($refreshPranota) {
+                $header = PranotaBpjsHeader::whereKey($refreshPranota->id)->lockForUpdate()->firstOrFail();
+                $existing = $header->details()->get()->map(fn ($detail) => $detail->tipe_karyawan.'_'.$detail->karyawan_id)->all();
+            } else {
+                $nomorPranota = $this->generateNomorPranota();
 
-            $header = PranotaBpjsHeader::create([
-                'nomor_pranota' => $nomorPranota,
-                'tanggal_pranota' => $request->tanggal_pranota,
-                'periode_bulan' => $request->periode_bulan,
-                'periode_tahun' => $request->periode_tahun,
-                'keterangan' => $request->keterangan,
-                'status' => 'draft',
-                'created_by' => auth()->id(),
-                'snapshot_rumus' => json_decode($request->input('snapshot_rumus_json', 'null'), true),
-            ]);
+                $header = PranotaBpjsHeader::create([
+                    'nomor_pranota' => $nomorPranota,
+                    'tanggal_pranota' => $request->tanggal_pranota,
+                    'periode_bulan' => $request->periode_bulan,
+                    'periode_tahun' => $request->periode_tahun,
+                    'keterangan' => $request->keterangan,
+                    'status' => 'draft',
+                    'created_by' => auth()->id(),
+                    'snapshot_rumus' => json_decode($request->input('snapshot_rumus_json', 'null'), true),
+                ]);
+            }
 
-            $totalKes = 0;
-            $totalKet = 0;
-            $totalKaryawan = 0;
+            $totalKes = (float) ($header->total_bpjs_kesehatan ?? 0);
+            $totalKet = (float) ($header->total_bpjs_ketenagakerjaan ?? 0);
+            $totalKaryawan = (int) ($header->total_karyawan ?? 0);
             $detailRows = [];
             $timestamp = now();
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
+                    $identity = $detail['tipe_karyawan'].'_'.$detail['karyawan_id'];
+                    if (in_array($identity, $existing ?? [], true)) {
+                        continue;
+                    }
+                    $existing[] = $identity;
                     $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;
@@ -247,9 +273,17 @@ class PranotaBpjsController extends Controller
                 'total_karyawan' => $totalKaryawan,
             ]);
 
+            if ($refreshPranota) {
+                $paid = (float) $header->pembayaran()->sum('pembayaran_pranota_bpjs_items.subtotal');
+                $header->update([
+                    'updated_by' => auth()->id(),
+                    'status' => $paid > 0 ? ($paid >= round($totalKes + $totalKet, 2) ? 'paid' : 'partial') : $header->status,
+                ]);
+            }
+
             DB::commit();
 
-            return redirect()->route('pranota-bpjs.index')->with('success', 'Pranota BPJS berhasil dibuat.');
+            return redirect()->route($refreshPranota ? 'pranota-bpjs.history' : 'pranota-bpjs.index')->with('success', $refreshPranota ? 'Data pranota BPJS berhasil diperbarui. '.count($detailRows).' karyawan ditambahkan.' : 'Pranota BPJS berhasil dibuat.');
 
         } catch (\Exception $e) {
             DB::rollBack();

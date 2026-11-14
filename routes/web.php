@@ -362,6 +362,8 @@ Route::middleware([
     // 📦 Surat Jalan Pengambilan/Pengembalian Kontainer Sewa
 
     Route::get('pranota-bpjs/riwayat', [PranotaBpjsController::class, 'index'])->name('pranota-bpjs.history');
+    Route::get('pranota-bpjs/{pranota_bpj}/update-data', [PranotaBpjsController::class, 'refreshData'])->name('pranota-bpjs.refresh-data');
+    Route::post('pranota-bpjs/{pranota_bpj}/update-data', [PranotaBpjsController::class, 'storeRefresh'])->name('pranota-bpjs.store-refresh');
     Route::get('pranota-bpjs/{pranota_bpj}/export-excel', [PranotaBpjsController::class, 'exportExcel'])->name('pranota-bpjs.export-excel');
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
     Route::get('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/print', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'print'])->name('pembayaran-pranota-bpjs.print')->middleware('can:pembayaran-pranota-bpjs-view');
