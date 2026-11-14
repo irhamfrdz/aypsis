@@ -42,5 +42,20 @@
             </div>
         </form>
     </div>
+    @if($log->tipe === 'bertambah' && ! $log->nomor_pranota)
+    <div id="buat-pranota" class="mt-5 rounded-xl border border-emerald-200 bg-white p-6 shadow-sm">
+        <h3 class="text-lg font-bold text-gray-800">Jadikan Transaksi Ini Pranota</h3>
+        <p class="mt-1 text-sm text-gray-600">Nomor pranota dibuat otomatis. Biaya admin menambah total pranota tanpa mengubah saldo kartu.</p>
+        <form action="{{ route('master-kartu-bensin-batam.pranota.convert', [$card->id, $log->id]) }}" method="POST" class="mt-4 flex flex-wrap items-end gap-3">
+            @csrf
+            <div>
+                <label for="convert-biaya-admin" class="mb-1 block text-sm font-medium text-gray-700">Biaya Admin (Rp)</label>
+                <input type="number" id="convert-biaya-admin" name="biaya_admin" min="0" step="0.01" value="{{ old('biaya_admin', 0) }}" required class="rounded-lg border border-gray-300 px-3 py-2">
+                @error('biaya_admin')<p class="mt-1 text-sm text-red-600">{{ $message }}</p>@enderror
+            </div>
+            <button type="submit" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Buat Pranota</button>
+        </form>
+    </div>
+    @endif
 </div>
 @endsection

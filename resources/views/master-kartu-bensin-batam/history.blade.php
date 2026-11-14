@@ -187,9 +187,14 @@
                         </td>
                         @can('master-kartu-bensin-batam-edit')
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800" aria-label="Edit riwayat {{ $log->nomor_transaksi ?? $log->id }}">
-                                <i class="fas fa-edit"></i> Edit
-                            </a>
+                            <div class="flex flex-col items-start gap-1">
+                                <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800" aria-label="Edit riwayat {{ $log->nomor_transaksi ?? $log->id }}">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                @if($log->tipe === 'bertambah' && ! $log->nomor_pranota)
+                                <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}#buat-pranota" class="text-xs font-semibold text-emerald-700 hover:underline">Buat Pranota</a>
+                                @endif
+                            </div>
                         </td>
                         @endcan
                     </tr>

@@ -3589,6 +3589,9 @@ Route::middleware([
         Route::get('master-kartu-bensin-batam/{id}/history/{historyId}/pranota', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'showPranota'])
             ->name('master-kartu-bensin-batam.pranota')
             ->middleware('can:master-kartu-bensin-batam-view');
+        Route::post('master-kartu-bensin-batam/{id}/history/{historyId}/pranota', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'convertHistoryToPranota'])
+            ->name('master-kartu-bensin-batam.pranota.convert')
+            ->middleware('can:master-kartu-bensin-batam-edit');
 
         // 💳 Master Kartu Bensin Batam with permissions
         Route::resource('master-kartu-bensin-batam', \App\Http\Controllers\MasterKartuBensinBatamController::class)

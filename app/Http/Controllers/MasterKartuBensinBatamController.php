@@ -288,12 +288,43 @@ class MasterKartuBensinBatamController extends Controller
                 'created_by' => auth()->id(),
             ]);
             $log->update([
-                'nomor_pranota' => 'PR-KBB-'.\Carbon\Carbon::parse($validated['tanggal'])->format('Ym').'-'.str_pad((string) $log->id, 6, '0', STR_PAD_LEFT),
+                'nomor_pranota' => $this->makePranotaNumber($log),
             ]);
         });
 
         return redirect()->route('master-kartu-bensin-batam.history', $id)
             ->with('success', 'Top up saldo kartu bensin berhasil disimpan.');
+    }
+
+    public function convertHistoryToPranota(Request $request, $id, $historyId)
+    {
+        $validated = $request->validate([
+            'biaya_admin' => 'required|numeric|min:0|max:9999999999999.99',
+        ]);
+
+        DB::transaction(function () use ($id, $historyId, $validated) {
+            $card = MasterKartuBensinBatam::findOrFail($id);
+            $log = $card->histories()->lockForUpdate()->findOrFail($historyId);
+
+            if ($log->tipe !== 'bertambah' || $log->nomor_pranota) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'biaya_admin' => 'Riwayat ini tidak dapat dijadikan pranota.',
+                ]);
+            }
+
+            $log->update([
+                'nomor_pranota' => $this->makePranotaNumber($log),
+                'biaya_admin' => $validated['biaya_admin'],
+            ]);
+        });
+
+        return redirect()->route('master-kartu-bensin-batam.history', $id)
+            ->with('success', 'Riwayat top up berhasil dijadikan pranota.');
+    }
+
+    private function makePranotaNumber(\App\Models\MasterKartuBensinBatamHistory $log): string
+    {
+        return 'PR-KBB-'.$log->tanggal->format('Ym').'-'.str_pad((string) $log->id, 6, '0', STR_PAD_LEFT);
     }
 
     public function showPranota($id, $historyId)
