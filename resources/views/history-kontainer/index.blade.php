@@ -6,7 +6,7 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
     <div class="mb-8">
         <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">History Pergerakan Kontainer</h1>
-        <p class="mt-2 text-sm text-gray-500">Pantau seluruh riwayat log pergerakan kontainer dalam satu dashboard.</p>
+        <p class="mt-2 text-sm text-gray-500">Pilih kontainer dan rentang tanggal untuk melihat riwayat pergerakannya.</p>
     </div>
 
     @if(session('success'))
@@ -31,19 +31,16 @@
     <div class="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-8 transition-all hover:shadow-md">
         <form action="{{ route('history-kontainer.index') }}" method="GET">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <!-- Search -->
+                <!-- Pilih Kontainer -->
                 <div>
-                    <label for="search" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Cari Nomor Kontainer</label>
-                    <div class="relative group">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none transition-colors group-focus-within:text-blue-500">
-                            <svg class="h-5 w-5 text-gray-400 group-focus-within:text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                        </div>
-                        <input type="text" name="search" id="search" value="{{ request('search') }}" 
-                            class="block w-full pl-11 pr-4 py-2.5 bg-gray-50 border-gray-200 text-gray-900 text-sm rounded-xl border-0 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 transition-all" 
-                            placeholder="Contoh: BEAU123456...">
-                    </div>
+                    <label for="nomor_kontainer" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Nomor Kontainer</label>
+                    <select name="nomor_kontainer" id="nomor_kontainer" required
+                        class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600">
+                        <option value="">Pilih kontainer</option>
+                        @foreach($containerNumbers as $number)
+                            <option value="{{ $number }}" @selected(old('nomor_kontainer', request('nomor_kontainer')) === $number)>{{ $number }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <!-- Jenis Kegiatan -->
@@ -67,14 +64,14 @@
                 <!-- Tanggal Mulai -->
                 <div>
                     <label for="start_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Dari Tanggal</label>
-                    <input type="date" name="start_date" id="start_date" value="{{ request('start_date') }}" 
+                    <input type="date" name="start_date" id="start_date" value="{{ old('start_date', request('start_date')) }}" required
                         class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer">
                 </div>
 
                 <!-- Tanggal Akhir -->
                 <div>
                     <label for="end_date" class="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Sampai Tanggal</label>
-                    <input type="date" name="end_date" id="end_date" value="{{ request('end_date') }}" 
+                    <input type="date" name="end_date" id="end_date" value="{{ old('end_date', request('end_date')) }}" required
                         class="block w-full px-4 py-2.5 bg-gray-50 border-0 ring-1 ring-inset ring-gray-300 text-gray-900 text-sm rounded-xl focus:ring-2 focus:ring-blue-600 transition-all cursor-pointer">
                 </div>
             </div>
@@ -86,12 +83,13 @@
                 </a>
                 <button type="submit" 
                     class="inline-flex items-center px-8 py-2.5 border border-transparent text-sm font-semibold rounded-xl text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg shadow-blue-500/20 transition-all active:scale-95">
-                    Filter
+                    Tampilkan Riwayat
                 </button>
             </div>
         </form>
     </div>
 
+    @if($hasSelection)
     <!-- Table Section -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -227,6 +225,11 @@
     <div class="mt-8">
         {{ $histories->withQueryString()->links() }}
     </div>
+    @else
+    <div class="rounded-2xl border border-blue-100 bg-blue-50 px-6 py-10 text-center text-sm text-blue-800">
+        Pilih nomor kontainer, tanggal mulai, dan tanggal akhir, lalu klik Tampilkan Riwayat.
+    </div>
+    @endif
 </div>
 
 <style>

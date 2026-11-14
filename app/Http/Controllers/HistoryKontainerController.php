@@ -12,6 +12,32 @@ class HistoryKontainerController extends Controller
 {
     public function index(Request $request)
     {
+        $containerNumbers = HistoryKontainer::query()
+            ->whereNotNull('nomor_kontainer')
+            ->where('nomor_kontainer', '<>', '')
+            ->distinct()
+            ->orderBy('nomor_kontainer')
+            ->pluck('nomor_kontainer');
+
+        $hasSelection = $request->hasAny(['nomor_kontainer', 'start_date', 'end_date']);
+        if (! $hasSelection) {
+            return view('history-kontainer.index', compact('containerNumbers', 'hasSelection'));
+        }
+
+        $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
+            'nomor_kontainer' => ['required', 'string', 'exists:history_kontainers,nomor_kontainer'],
+            'start_date' => ['required', 'date_format:Y-m-d'],
+            'end_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:start_date'],
+            'jenis_kegiatan' => ['nullable', 'in:Masuk,Keluar'],
+        ]);
+        if ($validator->fails()) {
+            $hasSelection = false;
+
+            return view('history-kontainer.index', compact('containerNumbers', 'hasSelection'))
+                ->withErrors($validator);
+        }
+        $filters = $validator->validated();
+
         $query = HistoryKontainer::select('history_kontainers.*')
             ->selectSub(function ($q) {
                 // Derive the origin from the previous chronological movement first.
@@ -31,23 +57,14 @@ class HistoryKontainerController extends Controller
                 ');
             }, 'asal_gudang_nama')
             ->with(['gudang', 'creator'])
+            ->where('nomor_kontainer', $filters['nomor_kontainer'])
+            ->whereDate('tanggal_kegiatan', '>=', $filters['start_date'])
+            ->whereDate('tanggal_kegiatan', '<=', $filters['end_date'])
             ->orderBy('tanggal_kegiatan', 'desc')
             ->orderBy('created_at', 'desc');
 
-        if ($request->filled('search')) {
-            $query->where('nomor_kontainer', 'like', '%'.$request->search.'%');
-        }
-
-        if ($request->filled('start_date')) {
-            $query->whereDate('tanggal_kegiatan', '>=', $request->start_date);
-        }
-
-        if ($request->filled('end_date')) {
-            $query->whereDate('tanggal_kegiatan', '<=', $request->end_date);
-        }
-
-        if ($request->filled('jenis_kegiatan')) {
-            $query->where('jenis_kegiatan', $request->jenis_kegiatan);
+        if (! empty($filters['jenis_kegiatan'])) {
+            $query->where('jenis_kegiatan', $filters['jenis_kegiatan']);
         }
 
         $histories = $query->paginate(20);
@@ -89,7 +106,7 @@ class HistoryKontainerController extends Controller
             $history->setAttribute('is_masuk_via_tanda_terima', true);
         });
 
-        return view('history-kontainer.index', compact('histories'));
+        return view('history-kontainer.index', compact('histories', 'containerNumbers', 'hasSelection'));
     }
 
     public function destroy($id)
