@@ -79,6 +79,18 @@
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-400">
                                 {{ $item->keterangan ?? '-' }}
+                                @if($item->bankCoa)
+                                    <div class="mt-2 text-gray-600"><strong>Bank / Kas:</strong> {{ $item->bankCoa->nomor_akun }} — {{ $item->bankCoa->nama_akun }}</div>
+                                @endif
+                                @foreach($item->rincian_coa ?? [] as $account)
+                                    <div class="mt-2 rounded-lg bg-gray-50 p-2 text-gray-600">
+                                        <div class="font-semibold">{{ $account['nomor_akun'] }} — {{ $account['nama_akun'] }}</div>
+                                        @if(isset($account['nominal']))
+                                            <div>Nominal: Rp {{ number_format($account['nominal'], 2, ',', '.') }}</div>
+                                        @endif
+                                        <div class="whitespace-pre-wrap">Memo: {{ $account['memo'] ?: '-' }}</div>
+                                    </div>
+                                @endforeach
                             </td>
                         </tr>
                     @empty

@@ -18,15 +18,23 @@ class RiwayatUtangKaryawan extends Model
         'nominal',
         'referensi',
         'keterangan',
+        'bank_coa_id',
+        'rincian_coa',
     ];
 
     protected $casts = [
         'tanggal' => 'date',
         'nominal' => 'decimal:2',
+        'rincian_coa' => 'array',
     ];
 
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    public function bankCoa()
+    {
+        return $this->belongsTo(Coa::class, 'bank_coa_id');
     }
 }

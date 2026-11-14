@@ -18,9 +18,6 @@ class BpjsJournalAccount
         }
         [$number, $name] = explode(' - ', $label, 2);
         $accounts = Coa::where('nomor_akun', $number)->get();
-        if ($accounts->count() === 1) {
-            return $accounts->first();
-        }
         $matches = $accounts->filter(fn ($account) => $compact($account->nama_akun) === $compact($name));
 
         return $matches->count() === 1 ? $matches->first() : null;

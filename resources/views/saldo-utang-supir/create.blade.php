@@ -26,6 +26,11 @@
     @endif
 
     <!-- Form Card -->
+    @if($errors->any())
+        <div class="mb-6 p-4 bg-rose-50 border border-rose-200 text-rose-700 rounded-xl text-sm" role="alert">
+            <ul class="list-disc pl-5">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
+        </div>
+    @endif
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-8">
         <form action="{{ route('saldo-utang-karyawan.store') }}" method="POST">
             @csrf
@@ -74,23 +79,44 @@
 
                 <!-- Nominal -->
                 <div>
-                    <label for="nominal" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nominal (Rupiah)</label>
+                    <label for="nominal" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Grand Total (Rupiah)</label>
                     <div class="relative rounded-xl shadow-sm">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-400 text-xs font-bold">Rp</span>
                         </div>
-                        <input type="number" 
-                               name="nominal" 
+                        <input type="text"
                                id="nominal" 
-                               value="{{ old('nominal') }}"
-                               placeholder="Contoh: 150000"
-                               min="1"
-                               step="any"
+                               value="0,00"
+                               readonly aria-describedby="grand-total-help"
                                class="block w-full pl-9 pr-3 py-2.5 text-xs text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:ring-indigo-500 focus:border-indigo-500 @error('nominal') border-rose-300 @enderror">
                     </div>
+                    <p id="grand-total-help" class="mt-2 text-xs text-gray-400">Dihitung otomatis dari nominal seluruh rincian akun COA.</p>
                     @error('nominal')
                         <span class="text-rose-500 text-[10px] font-bold mt-1 block">{{ $message }}</span>
                     @enderror
+                </div>
+
+                <div>
+                    <label for="bank_coa_id" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Akun Bank / Kas</label>
+                    <select id="bank_coa_id" name="bank_coa_id" required class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500">
+                        <option value="">-- Pilih Akun Bank / Kas --</option>
+                        @foreach($bankAccounts as $account)
+                            <option value="{{ $account->id }}" @selected(old('bank_coa_id') == $account->id)>{{ $account->nomor_akun }} — {{ $account->nama_akun }}</option>
+                        @endforeach
+                    </select>
+                </div>
+
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-[10px] font-black text-gray-400 uppercase tracking-widest">Rincian Akun COA</h2>
+                        <button id="add-coa" type="button" class="rounded-xl bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors duration-200"><i class="fas fa-plus mr-1" aria-hidden="true"></i>Tambah Akun</button>
+                    </div>
+                    <div id="coa-rows" class="space-y-3">
+                        @foreach(old('rincian_coa', [['coa_id' => '', 'memo' => '']]) as $index => $row)
+                            @include('saldo-utang-supir.partials.coa-row')
+                        @endforeach
+                    </div>
+                    <template id="coa-row-template">@include('saldo-utang-supir.partials.coa-row', ['index' => '__INDEX__', 'row' => []])</template>
                 </div>
 
                 <!-- Reference -->
@@ -130,4 +156,42 @@
         </form>
     </div>
 </div>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const rows = document.getElementById('coa-rows');
+    const add = document.getElementById('add-coa');
+    let nextIndex = Math.max(-1, ...Array.from(rows.querySelectorAll('select'), select => Number(select.name.match(/\[(\d+)\]/)[1]))) + 1;
+    function updateTotal() {
+        const totalCents = Array.from(rows.querySelectorAll('.coa-amount')).reduce((total, input) => {
+            const amount = Number(input.value);
+            return total + (Number.isFinite(amount) && amount > 0 ? Math.round(amount * 100) : 0);
+        }, 0);
+        document.getElementById('nominal').value = (totalCents / 100).toLocaleString('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+    rows.addEventListener('input', updateTotal);
+    function updateButtons() {
+        const buttons = rows.querySelectorAll('.remove-coa');
+        buttons.forEach(button => {
+            button.disabled = buttons.length <= 1;
+            button.classList.toggle('opacity-40', button.disabled);
+        });
+        add.disabled = buttons.length >= 100;
+        updateTotal();
+    }
+    add.addEventListener('click', () => {
+        if (rows.children.length >= 100) return;
+        const html = document.getElementById('coa-row-template').innerHTML.replaceAll('__INDEX__', String(nextIndex++));
+        rows.insertAdjacentHTML('beforeend', html);
+        updateButtons();
+        rows.lastElementChild.querySelector('select').focus();
+    });
+    rows.addEventListener('click', event => {
+        const button = event.target.closest('.remove-coa');
+        if (!button || rows.children.length <= 1) return;
+        button.closest('.coa-row').remove();
+        updateButtons();
+    });
+    updateButtons();
+});
+</script>
 @endsection

@@ -496,6 +496,22 @@ class PembayaranPranotaBpjsTest extends TestCase
         }
     }
 
+    public function test_non_employee_incentive_accounts_do_not_resolve_to_crew_salary(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '5501.001', 'nama_akun' => 'Biaya Gaji ABK', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '5101.001', 'nama_akun' => 'Biaya Insentif Supir Truck Jakarta', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+        ]);
+        $resolver = new \App\Services\BpjsJournalAccount;
+        foreach (['NON KARY-UMKM', 'NON KARY-UMKM KIS', 'NON KARY-PBM'] as $type) {
+            $this->assertEquals(4, $resolver->resolve($type)->id);
+        }
+        $this->assertEquals(3, $resolver->resolve('CREW')->id);
+
+        DB::table('akun_coa')->where('id', 4)->update(['nama_akun' => 'Biaya Gaji ABK']);
+        $this->assertNull($resolver->resolve('NON KARY-UMKM'));
+    }
+
     public function test_multiple_automatic_accounts_share_one_payment_bank_and_roll_back_together(): void
     {
         $pranota = $this->pranota('draft', 300);
