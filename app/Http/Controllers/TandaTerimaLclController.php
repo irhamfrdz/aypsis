@@ -1584,6 +1584,13 @@ class TandaTerimaLclController extends Controller
                     ->values(),
                 'items' => $items, // Add the actual pivot items
                 'prospek' => $prospek, // Pass the whole prospek object
+                'is_legacy_shipped' => $items->isNotEmpty() && $items->every(function ($item) {
+                    $date = $item->assigned_at ?? $item->created_at;
+
+                    return $date !== null
+                        && \Carbon\Carbon::parse($date)->gte('2025-01-01 00:00:00')
+                        && \Carbon\Carbon::parse($date)->lt('2026-07-01 00:00:00');
+                }),
             ];
         });
 
@@ -1642,7 +1649,10 @@ class TandaTerimaLclController extends Controller
         // Get active ships list
         $kapals = \App\Models\MasterKapal::aktif()->orderBy('nama_kapal')->get();
 
+        $exportLocations = MasterTujuanKirim::orderBy('nama_tujuan')->get(['id', 'nama_tujuan']);
+
         return view('tanda-terima-lcl.stuffing', compact(
+            'exportLocations',
             'batchPage',
             'groupedByContainer',
             'sealedBatchesByContainer',
@@ -1653,6 +1663,19 @@ class TandaTerimaLclController extends Controller
             'gudangs',
             'kapals'
         ));
+    }
+
+    public function exportStuffing(Request $request)
+    {
+        $filters = $request->validate([
+            'seal_status' => ['nullable', 'in:sealed,unsealed'],
+            'location_id' => ['nullable', 'integer', 'exists:master_tujuan_kirim,id'],
+        ]);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(
+            new \App\Exports\StuffingLclExport($filters['seal_status'] ?? '', isset($filters['location_id']) ? (int) $filters['location_id'] : null),
+            'stuffing-lcl-'.now()->format('Ymd-His').'.xlsx'
+        );
     }
 
     public function unstuffedForStuffing(Request $request)

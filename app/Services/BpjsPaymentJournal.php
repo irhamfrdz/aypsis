@@ -38,7 +38,7 @@ class BpjsPaymentJournal
                 if ($cost > 0) {
                     $source = Coa::findOrFail($group['credit_id']);
                     $number = match (substr($source->nomor_akun, 0, 4)) {
-                        '6101' => '6101.006',
+                        '5101', '6101' => '6101.006',
                         '6201' => '6201.006',
                         default => null,
                     };

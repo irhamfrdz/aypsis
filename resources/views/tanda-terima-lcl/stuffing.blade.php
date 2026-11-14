@@ -36,6 +36,7 @@
                     <p class="text-xs text-gray-600 mt-1">Proses memasukkan tanda terima LCL ke dalam kontainer</p>
                 </div>
                 <div class="flex items-center gap-4">
+                    <button type="button" onclick="document.getElementById('exportStuffingDialog').showModal()" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 text-sm">Export Excel</button>
                     <div class="text-center">
                         <div class="text-lg font-semibold text-blue-600">{{ $stats['total_containers'] ?? 0 }}</div>
                         <div class="text-gray-500 text-xs">Total Kontainer</div>
@@ -234,7 +235,8 @@
                                 $firstPivot = $container['items']->first();
                                 $hasSealed = $firstPivot && $firstPivot->nomor_seal;
                                 $prospek = $container['prospek'] ?? null;
-                                $isShipped = $prospek && $prospek->status == 'sudah_muat';
+                                $isLegacyShipped = $container['is_legacy_shipped'] ?? false;
+                                $isShipped = ($prospek && $prospek->status == 'sudah_muat') || $isLegacyShipped;
                                 $isActive = $prospek && $prospek->status == 'aktif';
                                 $isSealedNoProspek = $hasSealed && !$prospek;
                             @endphp
@@ -249,9 +251,9 @@
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                             </svg>
-                                            Sudah Naik Kapal
+                                            Sudah Naik Kapal{{ $isLegacyShipped ? ' (Data Lama)' : '' }}
                                         </div>
-                                        @if($prospek->nama_kapal)
+                                        @if($prospek?->nama_kapal)
                                             <div class="text-xs text-green-500 mt-0.5">{{ $prospek->nama_kapal }}</div>
                                         @endif
                                     @elseif($isActive)
@@ -462,6 +464,34 @@
 </div>
 
 <!-- Stuffing Modal - Add New Stuffing -->
+<dialog id="exportStuffingDialog" aria-labelledby="exportStuffingTitle" class="w-full max-w-md rounded-xl p-6 shadow-xl backdrop:bg-black/50">
+    <form method="GET" action="{{ route('tanda-terima-lcl.stuffing.export') }}" class="space-y-4">
+        <h2 id="exportStuffingTitle" class="text-lg font-semibold">Export Excel Stuffing LCL</h2>
+        <p class="text-sm text-gray-500">Ekspor seluruh data sesuai pilihan, termasuk halaman lainnya. Satu baris per tanda terima dalam batch kontainer.</p>
+        <div>
+            <label for="export-seal-status" class="block text-sm font-medium mb-1">Status Seal</label>
+            <select id="export-seal-status" name="seal_status" class="w-full rounded-md border border-gray-300 px-3 py-2">
+                <option value="">Semua Status</option>
+                <option value="sealed" @selected(request('seal_status') === 'sealed')>Sudah Diseal</option>
+                <option value="unsealed" @selected(request('seal_status') === 'unsealed')>Belum Diseal</option>
+            </select>
+        </div>
+        <div>
+            <label for="export-location" class="block text-sm font-medium mb-1">Lokasi Tujuan Pengiriman</label>
+            <select id="export-location" name="location_id" class="w-full rounded-md border border-gray-300 px-3 py-2">
+                <option value="">Semua Lokasi</option>
+                @foreach($exportLocations as $exportLocation)
+                    <option value="{{ $exportLocation->id }}">{{ $exportLocation->nama_tujuan }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="flex justify-end gap-3">
+            <button type="button" onclick="document.getElementById('exportStuffingDialog').close()" class="rounded-lg border px-4 py-2 text-sm">Batal</button>
+            <button type="submit" class="rounded-lg bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700">Unduh Excel</button>
+        </div>
+    </form>
+</dialog>
+
 <div id="stuffingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full z-50">
     <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
         <div class="mt-3">

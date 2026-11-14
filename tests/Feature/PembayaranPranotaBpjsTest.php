@@ -191,6 +191,23 @@ class PembayaranPranotaBpjsTest extends TestCase
         $service->allocations([$group], collect([9 => $detail]));
     }
 
+    public function test_jakarta_driver_incentive_splits_bpjs_cost_and_debt(): void
+    {
+        DB::table('akun_coa')->insert([
+            ['id' => 3, 'nomor_akun' => '5101.001', 'nama_akun' => 'Biaya Insentif Supir Truck Jakarta', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 4, 'nomor_akun' => '6101.006', 'nama_akun' => 'Biaya BPJS Jakarta', 'tipe_akun' => 'Biaya', 'saldo' => 0],
+            ['id' => 5, 'nomor_akun' => '2103.002', 'nama_akun' => 'Hutang BPJS', 'tipe_akun' => 'Hutang', 'saldo' => 0],
+        ]);
+        $detail = (new \App\Models\PranotaBpjsDetail)->newFromBuilder([
+            'snapshot_bpjs' => json_encode(['karyawan' => ['tipe_bp_jamsostek' => 'NON KARY-UMKM']]),
+            'rincian_bpjs' => json_encode(['noncrew_jkk_tunjangan' => 10050, 'noncrew_jht_biaya' => 27000, 'noncrew_jht_hutang' => 77600]),
+        ]);
+        $group = ['credit_id' => 3, 'parts' => [['pranota_bpjs_detail_id' => 9, 'komponen' => 'jamsostek', 'subtotal' => 114650]]];
+        $allocations = (new \App\Services\BpjsPaymentJournal)->allocations([$group], collect([9 => $detail]));
+        $this->assertEquals([3 => 10050, 4 => 27000, 5 => 77600], $allocations);
+        $this->assertEquals(114650, array_sum($allocations));
+    }
+
     private function pranota(string $status = 'draft', float $total = 123456.78): PranotaBpjsHeader
     {
         return PranotaBpjsHeader::create([

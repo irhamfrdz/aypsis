@@ -5548,6 +5548,10 @@ Route::middleware([
             ->name('tanda-terima-lcl.stuffing')
             ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
 
+        Route::get('tanda-terima-lcl/stuffing/export', [\App\Http\Controllers\TandaTerimaLclController::class, 'exportStuffing'])
+            ->name('tanda-terima-lcl.stuffing.export')
+            ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
         Route::get('tanda-terima-lcl/stuffing/unstuffed', [\App\Http\Controllers\TandaTerimaLclController::class, 'unstuffedForStuffing'])
             ->name('tanda-terima-lcl.stuffing.unstuffed')
             ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
