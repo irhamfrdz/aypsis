@@ -1512,7 +1512,7 @@ class TandaTerimaLclController extends Controller
             ->orderByRaw('MAX(id) DESC')
             ->paginate(20)->withQueryString();
 
-        $batchRows = $batchPage->count() === 0 ? collect() : TandaTerimaLclKontainerPivot::with(['tandaTerima.items'])
+        $batchRows = $batchPage->count() === 0 ? collect() : TandaTerimaLclKontainerPivot::with(['tandaTerima.items', 'tandaTerima.tujuanPengiriman'])
             ->where(function ($query) use ($batchPage) {
                 foreach ($batchPage as $batch) {
                     $query->orWhere(function ($match) use ($batch) {
@@ -1578,6 +1578,10 @@ class TandaTerimaLclController extends Controller
                 'total_berat' => $items->sum(function ($item) {
                     return $item->tandaTerima ? $item->tandaTerima->items->sum('tonase') : 0;
                 }),
+                'lokasi' => $items->pluck('tandaTerima.tujuanPengiriman.nama_tujuan')
+                    ->filter(fn ($nama) => filled($nama))
+                    ->unique()
+                    ->values(),
                 'items' => $items, // Add the actual pivot items
                 'prospek' => $prospek, // Pass the whole prospek object
             ];

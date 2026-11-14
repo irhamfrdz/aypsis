@@ -219,6 +219,7 @@
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size / Tipe</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total LCL</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Volume Total</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Berat Total</th>
@@ -279,6 +280,13 @@
                                             <span class="text-gray-500">/ {{ $container['tipe_kontainer'] }}</span>
                                         @endif
                                     </div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    @forelse($container['lokasi'] as $lokasi)
+                                        <span class="mb-1 inline-block rounded bg-teal-50 px-2 py-1 text-xs font-medium text-teal-800">{{ $lokasi }}</span>
+                                    @empty
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endforelse
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -437,7 +445,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                                <td colspan="10" class="px-6 py-8 text-center text-gray-500">
                                     <svg class="mx-auto h-12 w-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
                                     </svg>
