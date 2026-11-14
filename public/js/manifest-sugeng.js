@@ -22,6 +22,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             table.querySelectorAll('tbody tr').forEach(row => {
                 const rowHeight = Number(settings.rowHeights?.[`${row.dataset.itemId}-${row.dataset.kind}-${row.dataset.line}`]) || height;
                 row.style.height = `${rowHeight}px`;
+                [...row.cells].forEach(cell => { cell.style.height = `${rowHeight}px`; });
                 row.querySelectorAll('.sheet-cell-content').forEach(content => { content.style.maxHeight = `${Math.max(12, rowHeight - 12)}px`; });
             });
             widthInput.value = parseInt(columns[columnNames.indexOf(columnSelect.value)].style.width, 10);

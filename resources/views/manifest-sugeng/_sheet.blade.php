@@ -4,6 +4,7 @@
     .sugeng-sheet-resize:hover { background: #818cf8; }
     .sugeng-sheet { border-collapse: collapse; table-layout: fixed; background: white; color: #000; font: 12px Arial, sans-serif; }
     .sugeng-sheet th, .sugeng-sheet td { border: 1px solid #222; padding: 5px 6px; vertical-align: top; white-space: pre-line; overflow-wrap: anywhere; }
+    .sugeng-sheet tbody th, .sugeng-sheet tbody td { box-sizing: border-box; }
     .sugeng-sheet thead th { text-align: center; vertical-align: middle; font-size: 11px; font-weight: bold; background: white; }
     .sugeng-sheet .sheet-title td { border: 0; padding: 4px 8px; }
     .sugeng-sheet .sheet-company { font: bold 22px 'Book Antiqua', Georgia, serif; }
@@ -28,9 +29,11 @@
     .sugeng-sheet td:focus-within .sheet-cell-content { overflow: auto; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
     .sugeng-sheet .sheet-size-heading { position: relative; height: 24px; padding: 2px; background: #f3f4f6; color: #374151; font-size: 10px; user-select: none; }
-    .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; }
+    .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; touch-action: none; }
     .sugeng-sheet tbody .sheet-row-number { position: sticky; }
-    .sugeng-sheet .sheet-row-resize { position: absolute; bottom: -4px; left: 0; z-index: 3; width: 100%; height: 8px; cursor: row-resize; }
+    .sugeng-sheet .sheet-row-resize { position: absolute; bottom: -5px; left: 0; z-index: 4; display: block; width: 100%; height: 12px; cursor: row-resize; touch-action: none; }
+    .sugeng-sheet .sheet-row-resize::after { content: ''; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 3px; border-radius: 2px; background: #818cf8; }
+    .sugeng-sheet .sheet-row-resize:hover::after { height: 5px; background: #4f46e5; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr.sheet-incomplete td, .sugeng-sheet tbody tr.sheet-incomplete .sheet-row-number { background: #fef3c7; }
     .sugeng-sheet tbody tr.sheet-incomplete[data-selected="true"] td { background: #dbeafe; }
