@@ -28,6 +28,14 @@ class StuffingLclExportTest extends TestCase
             $table->integer('tanda_terima_lcl_id');
             $table->string('nomor_seal')->nullable();
             $table->timestamp('assigned_at')->nullable();
+            $table->timestamp('created_at')->nullable();
+            $table->string('nomor_kontainer')->default('TEST');
+        });
+        Schema::create('prospek', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_kontainer');
+            $table->string('no_seal')->nullable();
+            $table->string('status');
         });
         DB::table('tanda_terimas_lcl')->insert([
             ['id' => 1, 'tujuan_pengiriman_id' => 10, 'nomor_tanda_terima' => '001'],
@@ -42,6 +50,15 @@ class StuffingLclExportTest extends TestCase
         $this->assertEquals([1], (new StuffingLclExport('sealed', 10))->query()->reorder()->pluck('id')->all());
         $this->assertEquals([2, 4], (new StuffingLclExport('unsealed'))->query()->reorder()->pluck('id')->all());
         $this->assertSame(4, (new StuffingLclExport)->query()->count());
+        DB::table('tanda_terima_lcl_kontainer_pivot')->insert([
+            ['id' => 5, 'tanda_terima_lcl_id' => 1, 'nomor_seal' => null, 'nomor_kontainer' => 'SHIPPED', 'assigned_at' => '2026-11-01 00:00:00'],
+            ['id' => 6, 'tanda_terima_lcl_id' => 1, 'nomor_seal' => null, 'nomor_kontainer' => 'OLD', 'assigned_at' => '2026-06-30 23:59:59'],
+            ['id' => 7, 'tanda_terima_lcl_id' => 1, 'nomor_seal' => null, 'nomor_kontainer' => 'NEW', 'assigned_at' => '2026-07-01 00:00:00'],
+        ]);
+        DB::table('prospek')->insert(['nomor_kontainer' => 'SHIPPED', 'no_seal' => null, 'status' => 'sudah_muat']);
+        // An old sealed voyage must not hide a new unsealed batch reusing the container.
+        DB::table('prospek')->insert(['nomor_kontainer' => 'NEW', 'no_seal' => 'OLD-SEAL', 'status' => 'sudah_muat']);
+        $this->assertEquals([2, 4, 7], (new StuffingLclExport('unsealed'))->query()->reorder()->orderBy('id')->pluck('id')->all());
 
         // Verify the actual XLSX writer preserves leading zeros and treats formulas as text.
         $export = new class extends StuffingLclExport implements \Maatwebsite\Excel\Concerns\FromCollection {

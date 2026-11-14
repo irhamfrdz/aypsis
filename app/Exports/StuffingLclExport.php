@@ -23,7 +23,27 @@ class StuffingLclExport extends DefaultValueBinder implements FromQuery, WithMap
         return TandaTerimaLclKontainerPivot::query()
             ->with(['tandaTerima.items', 'tandaTerima.tujuanPengiriman'])
             ->when($this->sealStatus === 'sealed', fn ($query) => $query->whereNotNull('nomor_seal')->where('nomor_seal', '<>', ''))
-            ->when($this->sealStatus === 'unsealed', fn ($query) => $query->where(fn ($q) => $q->whereNull('nomor_seal')->orWhere('nomor_seal', '')))
+            ->when($this->sealStatus === 'unsealed', function ($query) {
+                $table = 'tanda_terima_lcl_kontainer_pivot';
+                $query->where(fn ($q) => $q->whereNull('nomor_seal')->orWhere('nomor_seal', ''))
+                    ->whereNotExists(function ($q) use ($table) {
+                        $q->selectRaw('1')->from('prospek')
+                            ->whereColumn('prospek.nomor_kontainer', $table.'.nomor_kontainer')
+                            ->whereRaw("COALESCE(prospek.no_seal, '') = COALESCE({$table}.nomor_seal, '')")
+                            ->where('prospek.status', 'sudah_muat');
+                    })
+                    // A legacy batch is shipped only when all of its rows are in the historical period.
+                    ->whereExists(function ($q) use ($table) {
+                        $q->selectRaw('1')->from($table.' as batch')
+                            ->whereColumn('batch.nomor_kontainer', $table.'.nomor_kontainer')
+                            ->whereRaw("COALESCE(batch.nomor_seal, '') = COALESCE({$table}.nomor_seal, '')")
+                            ->where(function ($dates) {
+                                $dates->whereRaw('COALESCE(batch.assigned_at, batch.created_at) IS NULL')
+                                    ->orWhereRaw('COALESCE(batch.assigned_at, batch.created_at) < ?', ['2025-01-01 00:00:00'])
+                                    ->orWhereRaw('COALESCE(batch.assigned_at, batch.created_at) >= ?', ['2026-07-01 00:00:00']);
+                            });
+                    });
+            })
             ->when($this->locationId, fn ($query) => $query->whereHas('tandaTerima', fn ($q) => $q->where('tujuan_pengiriman_id', $this->locationId)))
             ->orderByDesc('assigned_at')->orderByDesc('id');
     }
