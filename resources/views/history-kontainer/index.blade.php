@@ -91,62 +91,75 @@
     @if($hasSelection)
     <!-- Table Section -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex flex-wrap items-center justify-between gap-2 border-b border-gray-100 px-5 py-4">
+            <div>
+                <h2 class="text-base font-bold text-gray-900">Riwayat {{ request('nomor_kontainer') }}</h2>
+                <p class="text-xs text-gray-500">{{ $histories->total() }} pergerakan ditemukan</p>
+            </div>
+            @if(request('start_date') || request('end_date'))
+                <span class="rounded-full bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700">{{ request('start_date') ?: 'Awal' }} – {{ request('end_date') ?: 'Sekarang' }}</span>
+            @endif
+        </div>
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="w-full table-fixed divide-y divide-gray-200" style="min-width: {{ auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete') ? '1510px' : '1220px' }}">
+                <colgroup>
+                    <col style="width: 125px"><col style="width: 155px"><col style="width: 195px"><col style="width: 195px"><col style="width: 350px"><col style="width: 170px">
+                    @if(auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete'))<col style="width: 320px">@endif
+                </colgroup>
                 <thead>
-                    <tr class="bg-gray-50/50">
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Waktu</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Data Kontainer</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Dari</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Ke</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Detail Keterangan</th>
-                        <th scope="col" class="px-6 py-4 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Oleh</th>
+                    <tr class="bg-slate-50">
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Waktu</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Kontainer</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Dari</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Ke</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Keterangan</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Oleh</th>
                         @if(auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete'))
-                        <th scope="col" class="px-6 py-4 text-center text-xs font-bold text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th scope="col" class="px-4 py-3 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Aksi</th>
                         @endif
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-100">
                     @forelse($histories as $history)
-                        <tr class="hover:bg-blue-50/30 transition-colors group">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                        <tr class="hover:bg-blue-50/40 transition-colors group align-top">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-semibold text-gray-900">{{ $history->tanggal_kegiatan->format('d M Y') }}</div>
                                 <div class="text-xs text-gray-400 font-medium">{{ $history->created_at->format('H:i:s') }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="text-sm font-bold text-blue-600 group-hover:text-blue-700 tracking-wider">
                                     {{ $history->nomor_kontainer }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-4">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-8 w-8 bg-orange-50 rounded-lg flex items-center justify-center text-orange-500 mr-3">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 15l-3-3m0 0l3-3m-3 3h8M3 12a9 9 0 1118 0 9 9 0 01-18 0z" />
                                         </svg>
                                     </div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900">{{ $history->asal_gudang_nama ?? '-' }}</div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold leading-5 text-gray-900 break-words">{{ $history->asal_gudang_nama ?? '-' }}</div>
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-4 py-4">
                                 <div class="flex items-center">
                                     <div class="flex-shrink-0 h-8 w-8 bg-green-50 rounded-lg flex items-center justify-center text-green-500 mr-3">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
                                         </svg>
                                     </div>
-                                    <div>
-                                        <div class="text-sm font-semibold text-gray-900">{{ $history->gudang->nama_gudang ?? '-' }}</div>
+                                    <div class="min-w-0">
+                                        <div class="text-sm font-semibold leading-5 text-gray-900 break-words">{{ $history->gudang->nama_gudang ?? '-' }}</div>
                                         @if($history->gudang && $history->gudang->lokasi)
                                             <div class="text-[10px] text-gray-400 font-bold uppercase tracking-wide mt-0.5">{{ $history->gudang->lokasi }}</div>
                                         @endif
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <p class="text-sm text-gray-600 line-clamp-2 max-w-xs break-words italic">
+                            <td class="px-4 py-4">
+                                <p class="text-sm leading-5 text-gray-700 whitespace-normal break-words">
                                     @php
                                         $keterangan = $history->keterangan ?? '-';
                                         $isObMuat = strcasecmp(trim($history->gudang->nama_gudang ?? ''), 'ON BOARD') === 0;
@@ -164,31 +177,32 @@
                                     </p>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="h-7 w-7 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-bold mr-2">
+                            <td class="px-4 py-4">
+                                <div class="flex items-start gap-2">
+                                    <div class="h-7 w-7 shrink-0 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-[10px] font-bold">
                                         {{ strtoupper(substr($history->creator->name ?? 'S', 0, 1)) }}
                                     </div>
-                                    <span class="text-xs font-medium text-gray-500">{{ $history->creator->name ?? 'System' }}</span>
+                                    <span class="text-xs font-medium leading-5 text-gray-600 break-words">{{ $history->creator->name ?? 'System' }}</span>
                                 </div>
                             </td>
                             @if(auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete'))
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-4 py-4">
+                                <div class="flex items-center gap-2">
                                 @can('master-kontainer-update')
-                                <form action="{{ route('history-kontainer.update-tanggal', $history->id) }}" method="POST" class="inline-flex items-center gap-2 mr-2">
+                                <form action="{{ route('history-kontainer.update-tanggal', $history->id) }}" method="POST" class="flex items-center gap-2">
                                     @csrf
                                     @method('PATCH')
                                     <label for="tanggal-kegiatan-{{ $history->id }}" class="sr-only">Tanggal kegiatan {{ $history->nomor_kontainer }}</label>
                                     <input type="date" id="tanggal-kegiatan-{{ $history->id }}" name="tanggal_kegiatan"
                                         value="{{ $history->tanggal_kegiatan->format('Y-m-d') }}" required
-                                        class="rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500">
+                                        class="w-36 rounded-lg border border-gray-300 px-2 py-1.5 text-sm text-gray-700 focus:border-blue-500 focus:ring-blue-500">
                                     <button type="submit" class="rounded-lg bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700" title="Simpan tanggal">Simpan</button>
                                 </form>
                                 @endcan
                                 @can('master-kontainer-delete')
                                 <form action="{{ route('history-kontainer.destroy', $history->id) }}" method="POST" 
                                     onsubmit="return confirm('Apakah Anda yakin ingin menghapus history ini? Jika ini adalah history terbaru, posisi kontainer akan dikembalikan ke lokasi sebelumnya.')"
-                                    class="inline-block">
+                                    class="shrink-0">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" 
@@ -200,12 +214,13 @@
                                     </button>
                                 </form>
                                 @endcan
+                                </div>
                             </td>
                             @endif
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-12 text-center">
+                            <td colspan="{{ auth()->user()->can('master-kontainer-update') || auth()->user()->can('master-kontainer-delete') ? 7 : 6 }}" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-200 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
@@ -241,16 +256,6 @@
     #nomor_kontainer + .select2-container .select2-selection__rendered { line-height: 40px; padding-left: 16px; }
     #nomor_kontainer + .select2-container .select2-selection__arrow { height: 40px; right: 10px; }
     .history-container-dropdown .select2-results__options { max-height: 250px !important; }
-    /* Custom table hover effect */
-    .group:hover td {
-        border-color: transparent !important;
-    }
-    
-    /* Smooth transition for pagination */
-    .pagination {
-        display: flex;
-        gap: 0.25rem;
-    }
 </style>
 @push('scripts')
 <script>
