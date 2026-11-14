@@ -67,7 +67,7 @@
 
     @can('master-kartu-bensin-batam-edit')
     <div id="topup-modal" class="{{ $errors->any() ? '' : 'hidden' }} fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="topup-modal-title">
-        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+        <div class="max-h-[90vh] w-full max-w-md overflow-y-auto rounded-xl bg-white p-6 shadow-xl">
             <div class="mb-5 flex items-center justify-between">
                 <h2 id="topup-modal-title" class="text-lg font-bold text-gray-800">Top Up Saldo</h2>
                 <button type="button" data-close-topup class="text-gray-500 hover:text-gray-800" aria-label="Tutup formulir top up"><i class="fas fa-times"></i></button>
@@ -80,6 +80,11 @@
                     @error('tanggal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
+                    <label for="topup-nomor-pranota" class="mb-1 block text-sm font-medium text-gray-700">Nomor Pranota <span class="text-red-500">*</span></label>
+                    <input type="text" id="topup-nomor-pranota" name="nomor_pranota" value="{{ old('nomor_pranota') }}" maxlength="40" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nomor pranota">
+                    @error('nomor_pranota')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
+                </div>
+                <div>
                     <label for="topup-nominal" class="mb-1 block text-sm font-medium text-gray-700">Nominal (Rp) <span class="text-red-500">*</span></label>
                     <input type="number" id="topup-nominal" name="nominal" value="{{ old('nominal') }}" min="1" step="1" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nominal top up">
                     @error('nominal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
@@ -87,7 +92,7 @@
                 <div>
                     <label for="topup-biaya-admin" class="mb-1 block text-sm font-medium text-gray-700">Biaya Admin (Rp) <span class="text-red-500">*</span></label>
                     <input type="number" id="topup-biaya-admin" name="biaya_admin" value="{{ old('biaya_admin', 0) }}" min="0" step="0.01" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
-                    <p class="mt-1 text-xs text-gray-500">Biaya admin menambah total pranota, bukan saldo kartu. Nomor pranota dibuat otomatis.</p>
+                    <p class="mt-1 text-xs text-gray-500">Biaya admin menambah total pranota, bukan saldo kartu.</p>
                     @error('biaya_admin')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
