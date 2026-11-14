@@ -28,7 +28,7 @@
             <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
-                    <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th class="p-4">Bayar</th><th class="p-4">Tipe</th><th class="p-4 text-right">Tunjangan</th><th class="p-4 text-right">Biaya</th><th class="p-4 text-right">Hutang</th><th class="p-4 text-right">Sisa Tagihan</th></tr></thead>
+                    <thead class="bg-gray-50 text-xs uppercase tracking-wide text-gray-500"><tr><th class="p-4"><label class="inline-flex items-center gap-2 cursor-pointer"><input id="select-all-types" type="checkbox" aria-label="Pilih semua tipe pada group BPJS ini"><span>Pilih semua</span></label></th><th class="p-4">Tipe</th><th class="p-4 text-right">Tunjangan</th><th class="p-4 text-right">Biaya</th><th class="p-4 text-right">Hutang</th><th class="p-4 text-right">Sisa Tagihan</th></tr></thead>
                     <tbody class="divide-y">
                         @foreach($groups as $group)
                             <tr data-payment-group="{{ $group['selection_key'] }}" hidden>

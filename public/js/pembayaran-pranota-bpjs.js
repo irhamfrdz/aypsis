@@ -2,6 +2,7 @@ document.addEventListener('DOMContentLoaded', function () {
     const boxes = Array.from(document.querySelectorAll('input[name="group_keys[]"]'));
     const employees = Array.from(document.querySelectorAll('input[name="employee_keys[]"]'));
     const selectAll = document.getElementById('select-all-employees');
+    const selectAllTypes = document.getElementById('select-all-types');
     const button = document.getElementById('save-payment');
     const output = document.getElementById('payment-total');
     const credit = document.getElementById('bank_coa_id');
@@ -33,6 +34,11 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
     function updateTotal() {
+        const availableTypes = boxes.filter(box => !box.disabled);
+        const checkedTypes = availableTypes.filter(box => box.checked);
+        selectAllTypes.disabled = availableTypes.length === 0;
+        selectAllTypes.checked = availableTypes.length > 0 && checkedTypes.length === availableTypes.length;
+        selectAllTypes.indeterminate = checkedTypes.length > 0 && checkedTypes.length < availableTypes.length;
         const selectedTypes = boxes.filter(box => box.checked);
         const selectedKeys = new Set(selectedTypes.map(box => box.value));
         employees.forEach(box => {
@@ -106,6 +112,10 @@ document.addEventListener('DOMContentLoaded', function () {
         button.disabled = selected.length === 0 || missing;
     }
     boxes.forEach(box => box.addEventListener('change', updateTotal));
+    selectAllTypes.addEventListener('change', () => {
+        boxes.filter(box => !box.disabled).forEach(box => { box.checked = selectAllTypes.checked; });
+        updateTotal();
+    });
     employees.forEach(box => box.addEventListener('change', updateTotal));
     branchFilter.addEventListener('change', updateTotal);
     nameSearch.addEventListener('input', updateTotal);
