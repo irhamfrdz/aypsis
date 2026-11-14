@@ -6,6 +6,7 @@ use App\Models\GpsDailyDistance;
 use App\Models\TagihanOb;
 use App\Services\RitSuratJalanService;
 use App\Services\VehicleAmprahanUsageService;
+use App\Services\VehiclePaymentUsageService;
 use App\Services\VehicleTireReplacementService;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -125,6 +126,9 @@ class DashboardPerjalananKendaraanController extends Controller
                 $amprahanUsages = app(VehicleAmprahanUsageService::class)->forVehicles(
                     $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai
                 );
+                $vehiclePayments = app(VehiclePaymentUsageService::class)->forVehicles(
+                    $vehicleStats->pluck('mobil')->filter(), $tanggalDari, $tanggalSampai
+                );
                 $tireReplacements = app(VehicleTireReplacementService::class)->summarize(
                     $vehicleStats->pluck('mobil_id')->all(), $tanggalDari, $tanggalSampai
                 );
@@ -216,6 +220,8 @@ class DashboardPerjalananKendaraanController extends Controller
                         ->unique();
                     $row->ob_count = $driverNames->sum(fn ($name) => $obCounts->get($name, 0));
                     $row->amprahan_usages = $amprahanUsages->get($row->mobil_id, collect());
+                    $row->vehicle_payments = $vehiclePayments->get($row->mobil_id, collect());
+                    $row->vehicle_expense_count = $row->amprahan_usages->count() + $row->vehicle_payments->count();
                     $tires = $tireReplacements->get($row->mobil_id, ['replacement_count' => 0, 'tire_count' => 0]);
                     $row->tire_replacement_count = $tires['replacement_count'];
                     $row->tire_count = $tires['tire_count'];
@@ -248,18 +254,18 @@ class DashboardPerjalananKendaraanController extends Controller
                 'idle_seconds' => ['label' => 'Durasi idle', 'unit' => 'jam', 'direction' => 'asc', 'better' => 'lower'],
                 'rit_count' => ['label' => 'Jumlah rit', 'unit' => 'rit', 'direction' => 'desc', 'better' => 'higher'],
                 'tire_replacement_count' => ['label' => 'Pergantian ban & velg', 'unit' => 'kali', 'direction' => 'asc', 'better' => 'lower'],
-                'usage_count' => ['label' => 'Pemakaian barang / servis', 'unit' => 'kali', 'direction' => 'asc', 'better' => 'lower'],
+                'usage_count' => ['label' => 'Barang / pembayaran kendaraan', 'unit' => 'kali', 'direction' => 'asc', 'better' => 'lower'],
             ];
 
             foreach ($rankingMetrics as $key => $metric) {
                 $rankings->put($key, $vehicleStats
-                    ->sortBy(fn ($row) => (float) ($key === 'usage_count' ? $row->amprahan_usages->count() : $row->{$key}), SORT_REGULAR, $metric['direction'] === 'desc')
+                    ->sortBy(fn ($row) => (float) ($key === 'usage_count' ? $row->vehicle_expense_count : $row->{$key}), SORT_REGULAR, $metric['direction'] === 'desc')
                     ->values()
                     ->map(fn ($row, $index) => [
                         'rank' => $index + 1,
                         'vehicle' => $row->mobil?->nomor_polisi ?: 'Kendaraan #'.$row->mobil_id,
                         'value' => (float) match ($key) {
-                            'usage_count' => $row->amprahan_usages->count(),
+                            'usage_count' => $row->vehicle_expense_count,
                             'idle_seconds' => ((float) $row->idle_seconds) / 3600,
                             default => $row->{$key},
                         },

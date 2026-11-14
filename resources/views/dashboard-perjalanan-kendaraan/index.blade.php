@@ -359,13 +359,13 @@
                                     <div class="rounded-xl bg-amber-50 px-3 py-3"><dt class="text-xs text-amber-800"><i class="fas fa-clock mr-1.5 text-slate-400" aria-hidden="true"></i>Durasi idle</dt><dd class="mt-1 font-bold text-amber-900">{{ $row->days_with_idle_data > 0 ? intdiv($idleSeconds, 3600).' jam '.intdiv($idleSeconds % 3600, 60).' menit' : 'Belum tersedia' }}</dd>@if($row->days_with_idle_data > 0 && $row->days_with_idle_data < $row->days_with_data)<p class="mt-1 text-xs text-amber-700">{{ $row->days_with_idle_data }}/{{ $row->days_with_data }} hari</p>@endif</div>
                                     <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-exchange-alt mr-1.5 text-slate-400" aria-hidden="true"></i>Rit</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->rit_count, 0, ',', '.') }}</dd></div>
                                     <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-circle mr-1.5 text-slate-400" aria-hidden="true"></i>Pergantian Ban &amp; Velg</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->tire_replacement_count, 0, ',', '.') }} kali</dd><p class="text-xs text-slate-500">{{ number_format($row->tire_count, 0, ',', '.') }} unit</p></div>
-                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-tools mr-1.5 text-slate-400" aria-hidden="true"></i>Barang / servis</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->amprahan_usages->count(), 0, ',', '.') }} kali</dd></div>
+                                    <div class="rounded-xl bg-slate-50 px-3 py-3"><dt class="text-xs text-slate-500"><i class="fas fa-tools mr-1.5 text-slate-400" aria-hidden="true"></i>Barang / biaya kendaraan</dt><dd class="mt-1 font-bold text-slate-900">{{ number_format($row->vehicle_expense_count, 0, ',', '.') }} kali</dd></div>
                                 </dl>
                             </div>
 
                             <details class="group border-t border-slate-100 bg-slate-50/50">
                                 <summary class="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-500 sm:px-6 [&::-webkit-details-marker]:hidden">
-                                    <span><i class="fas fa-clipboard-list mr-1.5 text-slate-400" aria-hidden="true"></i>Detail rit, ban &amp; velg, dan barang / servis</span>
+                                    <span><i class="fas fa-clipboard-list mr-1.5 text-slate-400" aria-hidden="true"></i>Detail rit, ban &amp; velg, barang, dan pembayaran kendaraan</span>
                                     <i class="fas fa-chevron-down text-xs transition-transform group-open:rotate-180" aria-hidden="true"></i>
                                 </summary>
                                 <div class="space-y-7 border-t border-slate-100 px-5 py-5 sm:px-6">
@@ -406,13 +406,31 @@
                                             </div>
                                         @endif
                                     </section>
+                                    <section aria-label="Pembayaran kendaraan" class="border-t border-slate-200 pt-6">
+                                        <div class="mb-3 flex flex-wrap items-center gap-2"><h5 class="font-bold text-slate-900"><i class="fas fa-receipt mr-1.5 text-slate-400" aria-hidden="true"></i>Pembayaran kendaraan</h5><span class="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-800">{{ number_format($row->vehicle_payments->count(), 0, ',', '.') }} kali</span></div>
+                                        @if($row->vehicle_payments->isEmpty())
+                                            <p class="rounded-xl bg-white px-4 py-4 text-sm text-slate-500">Tidak ada pembayaran kendaraan pada periode ini.</p>
+                                        @else
+                                            <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                                                @foreach($row->vehicle_payments as $payment)
+                                                    <div class="min-w-0 rounded-xl border border-slate-200 bg-white p-4">
+                                                        <div class="flex flex-wrap items-start justify-between gap-2"><p class="break-all font-bold text-slate-900">{{ $payment['nomor'] ?: '-' }}</p><span class="text-xs font-semibold text-blue-700">{{ $payment['tanggal']->format('d/m/Y') }}</span></div>
+                                                        <p class="mt-1 text-xs font-medium text-slate-600">{{ $payment['jenis'] }}</p>
+                                                        @if($payment['biaya'] !== null)<p class="mt-3 font-bold text-slate-900">Rp {{ number_format((float) $payment['biaya'], 0, ',', '.') }}</p>@endif
+                                                        @if($payment['memo'])<p class="mt-2 break-words text-xs text-slate-600">{{ $payment['memo'] }}</p>@endif
+                                                        @if($payment['keterangan'])<p class="mt-2 break-words text-xs text-slate-500">{{ $payment['keterangan'] }}</p>@endif
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @endif
+                                    </section>
                                 </div>
                             </details>
                         </article>
                     @endforeach
                 </div>
                 <p class="text-xs leading-relaxed text-slate-500">Idle berarti mesin menyala saat kendaraan berhenti. Hanya jeda antartitik GPS maksimal 30 menit yang dihitung. Data idle lama mungkin belum tersedia jika riwayat GPS telah dihapus.</p>
-                <p class="text-xs leading-relaxed text-slate-500">Pergantian Ban &amp; Velg mencakup Ban, Ban Dalam, Ban Perut, Ring Velg, dan Velg berdasarkan riwayat pemakaian. Jumlah kali menunjukkan banyaknya transaksi; jumlah unit mengikuti kuantitas barang. Pemakaian dihitung berdasarkan kendaraan dan periode tanggal, termasuk jika penerimanya berbeda dari supir saat ini.</p>
+                <p class="text-xs leading-relaxed text-slate-500">Pergantian Ban &amp; Velg mencakup Ban, Ban Dalam, Ban Perut, Ring Velg, dan Velg berdasarkan riwayat pemakaian. Jumlah kali menunjukkan banyaknya transaksi; jumlah unit mengikuti kuantitas barang. Barang dan pembayaran kendaraan dihitung berdasarkan kendaraan dan periode tanggal, termasuk jika penerimanya berbeda dari supir saat ini.</p>
             </section>
 
             </div>
