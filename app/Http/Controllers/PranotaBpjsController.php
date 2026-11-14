@@ -204,6 +204,7 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
+                    $detail = \App\Services\BpjsEmployeeDebt::apply($detail);
                     $identity = $detail['tipe_karyawan'].'_'.$detail['karyawan_id'];
                     if (in_array($identity, $existing ?? [], true)) {
                         continue;
@@ -446,6 +447,7 @@ class PranotaBpjsController extends Controller
 
             if ($request->has('details')) {
                 foreach ($request->details as $detail) {
+                    $detail = \App\Services\BpjsEmployeeDebt::apply($detail);
                     $bpjsKes = $this->parseIndonesianNumber($detail['bpjs_kesehatan'] ?? 0);
                     $bpjsKetInput = $this->parseIndonesianNumber($detail['bpjs_ketenagakerjaan'] ?? 0);
                     $jknTotal = $bpjsKes + $bpjsKetInput;

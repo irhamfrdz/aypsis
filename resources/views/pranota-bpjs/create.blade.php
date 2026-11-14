@@ -484,6 +484,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     const amountFormatter = new Intl.NumberFormat('id-ID', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     let isRefreshing = false;
     const pendingUpdate = BpjsPerformance.scheduler(() => applyFilter());
+    container.addEventListener('bpjs-components-changed', () => pendingUpdate.schedule());
     const pendingSearch = BpjsPerformance.scheduler(() => applyFilter(), 150);
 
     function formatNumber(num) {

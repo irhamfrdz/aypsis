@@ -56,6 +56,32 @@
     const rowStates = new WeakMap();
     const pendingTotals = new WeakMap();
 
+    function syncEmployeeDebt(row, target, parseAmount, formatNumber, restore = false) {
+        const selectors = ['.input-jht-hutang', '.input-jkk-hutang', '.input-noncrew-jht-hutang', '.input-jp-hutang'];
+        const inputs = selectors.map(selector => row.querySelector(selector));
+        row.employeeDebtBeforeManual ??= inputs.map(input => parseAmount(input?.value || '0'));
+        if (restore) {
+            inputs.forEach((input, index) => { if (input) input.value = formatNumber(row.employeeDebtBeforeManual[index]); });
+            delete row.employeeDebtBeforeManual;
+        } else {
+            const values = inputs.map(input => Math.max(0, Math.round(parseAmount(input?.value || '0') * 100)));
+            const total = values.reduce((sum, value) => sum + value, 0);
+            let active = values.map((value, index) => value ? index : -1).filter(index => index >= 0);
+            if (!active.length) {
+                const group = String(row.dataset.groupJamsostek || '').toUpperCase().replace(/[\s_-]+/g, '');
+                active = [group.includes('PPU') ? 0 : (group === 'BPUCREW' ? 1 : 2)];
+            }
+            let remaining = Math.max(0, Math.round(target * 100));
+            const cents = remaining;
+            inputs.forEach((input, index) => {
+                const amount = !active.includes(index) ? 0 : (index === active.at(-1) ? remaining : Math.min(remaining, Math.round(cents * values[index] / total)));
+                if (input) input.value = formatNumber(amount / 100);
+                remaining -= amount;
+            });
+        }
+        row.dispatchEvent(new Event('bpjs-components-changed', { bubbles: true }));
+    }
+
     function scheduleTotals(container, parseAmount, formatNumber) {
         if (!pendingTotals.has(container)) pendingTotals.set(container,
             root.BpjsPerformance.scheduler(() => update(container, parseAmount, formatNumber)));
@@ -159,8 +185,9 @@
                     cell.replaceChildren(editor);
                     input.addEventListener('input', () => {
                         const value = input.value.trim();
-                        if (value === '') delete row.allowanceOverrides[key];
+                        if (value === '' && key !== 'kary_jht') delete row.allowanceOverrides[key];
                         else row.allowanceOverrides[key] = parseAmount(value);
+                        if (key === 'kary_jht' && parseAmount(value) >= 0) syncEmployeeDebt(row, parseAmount(value), parseAmount, formatNumber);
                         input.setCustomValidity(parseAmount(value) < 0 ? 'Nominal tidak boleh negatif.' : '');
                         rowStates.delete(row);
                         updateRow(row, container, parseAmount, formatNumber);
@@ -173,6 +200,7 @@
                         input.value = formatNumber(row.allowanceOverrides[key] ?? Number(input.dataset.automaticAmount));
                     });
                     reset.addEventListener('click', () => {
+                        if (key === 'kary_jht' && row.employeeDebtBeforeManual) syncEmployeeDebt(row, 0, parseAmount, formatNumber, true);
                         delete row.allowanceOverrides[key];
                         input.setCustomValidity('');
                         rowStates.delete(row);
@@ -223,6 +251,6 @@
         root.BpjsJournal?.renderFromRows(container);
     }
 
-    root.BpjsAllowances = { calculate, effective, update, updateRow,
+    root.BpjsAllowances = { calculate, effective, update, updateRow, syncEmployeeDebt,
         flush: container => pendingTotals.get(container)?.flush() };
 })(globalThis);

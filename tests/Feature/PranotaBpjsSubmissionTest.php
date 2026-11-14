@@ -12,6 +12,51 @@ use Tests\TestCase;
 
 class PranotaBpjsSubmissionTest extends TestCase
 {
+    public function test_editing_bpjs_components_updates_saved_grand_total(): void
+    {
+        $this->createPranotaSchema();
+        $detail = [
+            'karyawan_id' => 1, 'tipe_karyawan' => \App\Models\Karyawan::class,
+            'snapshot_karyawan' => ['unique_id' => 'Karyawan_1', 'nama_lengkap' => 'Uji Edit'],
+            'ringkasan_bpjs' => array_fill_keys(['ppu', 'bpu', 'jkn', 'kary_jht', 'kary_jkn', 'pt', 'non_kary'], 0),
+            'bpjs_kesehatan' => 100, 'jht_biaya' => 50,
+        ];
+        $payload = ['tanggal_pranota' => '2026-11-14', 'periode_bulan' => 11, 'periode_tahun' => 2026,
+            'snapshot_rumus_json' => '[]', 'details_json' => json_encode([$detail])];
+        $controller = new PranotaBpjsController;
+        $controller->store(Request::create('/', 'POST', $payload));
+        $header = PranotaBpjsHeader::firstOrFail();
+        $this->assertSame('150.00', $header->grand_total);
+        $detail['bpjs_kesehatan'] = 200.25;
+        $detail['jht_biaya'] = 70.50;
+        $payload['details_json'] = json_encode([$detail]);
+        $controller->update(Request::create('/', 'PUT', $payload), $header);
+        $this->assertFalse(session()->has('error'), (string) session('error'));
+        $header->refresh();
+        $this->assertSame('270.75', $header->grand_total);
+        $this->assertSame('200.25', $header->total_bpjs_kesehatan);
+        $this->assertSame('70.50', $header->total_bpjs_ketenagakerjaan);
+        $this->assertSame('270.75', $header->details()->firstOrFail()->total);
+        $detail['jht_hutang'] = 20.50;
+        $detail['jkk_hutang'] = 10.25;
+        $detail['jp_hutang'] = 4.25;
+        $payload['details_json'] = json_encode([$detail]);
+        $controller->update(Request::create('/', 'PUT', $payload), $header);
+        $this->assertSame('305.75', $header->fresh()->grand_total);
+        $detail['allowance_kary_jht'] = 0;
+        $payload['details_json'] = json_encode([$detail]);
+        foreach (range(1, 2) as $attempt) {
+            $controller->update(Request::create('/', 'PUT', $payload), $header);
+            $this->assertFalse(session()->has('error'), (string) session('error'));
+            $this->assertSame('270.75', $header->fresh()->grand_total);
+            $saved = $header->details()->firstOrFail();
+            $this->assertSame('0.00', $saved->jht_hutang);
+            $this->assertSame('0.00', $saved->jp_hutang);
+            $this->assertEquals(0, $saved->rincian_bpjs['jkk_hutang']);
+            $this->assertEquals(0, (new \App\Services\BpjsJournalAmounts)->forDetail($saved)[2]);
+        }
+    }
+
     public function test_partial_edit_preserves_paid_detail_and_allows_unpaid_component_changes(): void
     {
         $this->createPranotaSchema();
@@ -56,7 +101,7 @@ class PranotaBpjsSubmissionTest extends TestCase
                     'nama_lengkap' => 'Nama Saat Simpan', 'nik' => 'NIK-LAMA', 'group_jkn' => 'JKN-KIS',
                     'group_bp_jamsostek' => 'PPU', 'tipe_jkn' => 'KANTOR', 'tipe_bp_jamsostek' => 'KARYAWAN',
                     'dpp_jkn' => 5729880, 'dpp_bp_jamsostek' => 4450000.50],
-                'ringkasan_bpjs' => ['ppu' => 12345.67, 'bpu' => 0, 'jkn' => 200000.50, 'kary_jht' => 123.45,
+                'ringkasan_bpjs' => ['ppu' => 12345.67, 'bpu' => 0, 'jkn' => 200000.50, 'kary_jht' => 41000,
                     'kary_jkn' => 0, 'pt' => 234.56, 'non_kary' => 0],
                 'karyawan_id' => $id, 'tipe_karyawan' => 'App\\Models\\Karyawan',
                 'bpjs_kesehatan' => 229195.20, 'bpjs_ketenagakerjaan' => 57298.80,
@@ -66,7 +111,7 @@ class PranotaBpjsSubmissionTest extends TestCase
                 'noncrew_jht_biaya' => 6000, 'noncrew_jht_hutang' => 7000,
                 'noncrew_jkk_tunjangan' => 8000, 'noncrew_jkm_tunjangan' => 9000,
                 'jp_biaya' => 10000, 'jp_hutang' => 11000,
-                'no_voucher' => 'VC-001/2026', 'allowance_kary_jht' => 123.45, 'allowance_kary_jkn' => 0, 'allowance_pt' => 234.56, 'allowance_non_kary' => 0,
+                'no_voucher' => 'VC-001/2026', 'allowance_kary_jht' => 41000, 'allowance_kary_jkn' => 0, 'allowance_pt' => 234.56, 'allowance_non_kary' => 0,
                 'allowance_ppu' => 12345.67, 'allowance_bpu' => 0, 'allowance_jkn' => 200000.50,
             ];
         }
@@ -90,7 +135,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertSame('229195.20', $header->details()->firstOrFail()->bpjs_kesehatan);
             $this->assertSame('57298.80', $header->details()->firstOrFail()->bpjs_ketenagakerjaan);
             $this->assertSame('VC-001/2026', $header->details()->firstOrFail()->no_voucher);
-            $this->assertSame(123.45, $header->details()->firstOrFail()->tunjangan_manual['kary_jht']);
+            $this->assertEquals(41000, $header->details()->firstOrFail()->tunjangan_manual['kary_jht']);
             $this->assertSame(0, $header->details()->firstOrFail()->tunjangan_manual['kary_jkn']);
             $breakdown = $header->details()->firstOrFail()->rincian_bpjs;
             $this->assertSame(12345.67, $header->details()->firstOrFail()->tunjangan_manual['ppu']);
@@ -98,7 +143,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertSame(4000.0, (float) $breakdown['bpu_jkk_tunjangan']);
             $this->assertSame(8000.0, (float) $breakdown['noncrew_jkk_tunjangan']);
             $this->assertSame(100000.8, (float) $breakdown['jht_biaya']);
-            $expected = array_sum(array_diff_key($details[0], array_flip(['snapshot_karyawan', 'ringkasan_bpjs', 'karyawan_id', 'tipe_karyawan', 'allowance_ppu', 'allowance_bpu', 'allowance_jkn', 'no_voucher', 'allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary']))) * 264;
+            $expected = array_sum(array_diff_key(\App\Services\BpjsEmployeeDebt::apply($details[0]), array_flip(['snapshot_karyawan', 'ringkasan_bpjs', 'karyawan_id', 'tipe_karyawan', 'allowance_ppu', 'allowance_bpu', 'allowance_jkn', 'no_voucher', 'allowance_kary_jht', 'allowance_kary_jkn', 'allowance_pt', 'allowance_non_kary']))) * 264;
             $this->assertEqualsWithDelta($expected, (float) $header->grand_total, 0.01);
             $this->assertEqualsWithDelta($expected, $header->details()->sum('total'), 0.01);
             $header->load('details');
@@ -118,7 +163,7 @@ class PranotaBpjsSubmissionTest extends TestCase
             $this->assertStringNotContainsString('Master Sudah Berubah', $html);
             $this->assertEquals(4, $header->snapshot_rumus[0]['nilai']);
             foreach (['PPU JHT 3.7%', 'BPU JHT (Kary)', 'JHT 2% (Hutang)', 'PPU JP 1%', '100.000,80', '12.345,67', '200.000,50', 'Beban KARY. JKN 1%', 'Beban NON KARY. JKN &amp; BPJS', 'VC-001/2026', '123,45', 'TOTAL JKN', 'TOTAL PPU', '286.494,00', '144.000,80', 'TOTAL BPU-CREW', 'TOTAL NON BPU-CREW', '12.000,00', '30.000,00', 'DPP JKN', 'DPP BP Jamsostek', '5.729.880,00', '4.450.000,50', 'BP Jamsostek: PPU', 'KARYAWAN'] as $label) {
-                $this->assertStringContainsString($label, $html);
+                $this->assertStringContainsString($label === '123,45' ? '41.000,00' : $label, $html);
             }
             $header->details->first()->rincian_bpjs = null;
             $legacyHtml = \Illuminate\Support\Facades\Blade::render($template, ['pranota_bpj' => $header, 'paidJournal' => null]);
