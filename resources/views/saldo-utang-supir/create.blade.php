@@ -2,6 +2,23 @@
 
 @section('title', 'Tambah Transaksi Utang Karyawan - AYPSIS')
 
+@push('styles')
+<style>
+.employee-picker .select2-container { width: 100% !important; }
+.employee-picker .select2-container--default .select2-selection--single {
+    min-height: 42px; height: auto; padding: 8px 12px;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px;
+    font-size: 12px;
+}
+.employee-picker .select2-container--default .select2-selection--single .select2-selection__rendered { padding-left: 0; line-height: 24px; color: #111827; }
+.employee-picker .select2-container--default .select2-selection--single .select2-selection__arrow { top: 8px; right: 8px; }
+.employee-picker .select2-container--open .select2-selection--single,
+.employee-picker .select2-container--focus .select2-selection--single { border-color: #6366f1; }
+.employee-search-dropdown { border-color: #e5e7eb; font-size: 12px; }
+.employee-search-dropdown .select2-search__field { border: 1px solid #e5e7eb !important; border-radius: 8px; padding: 8px !important; }
+</style>
+@endpush
+
 @section('content')
 <div class="container mx-auto px-4 py-8 max-w-2xl">
     <!-- Back Button & Title -->
@@ -37,7 +54,7 @@
             
             <div class="space-y-6">
                 <!-- Employee Selector -->
-                <div>
+                <div class="employee-picker">
                     <label for="karyawan_id" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Pilih Karyawan</label>
                     <select name="karyawan_id" id="karyawan_id" class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('karyawan_id') border-rose-300 @enderror">
                         <option value="">-- Pilih Karyawan --</option>
@@ -158,6 +175,27 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        const employee = jQuery('#karyawan_id');
+        employee.select2({
+            width: '100%',
+            placeholder: '-- Pilih Karyawan --',
+            minimumResultsForSearch: 0,
+            dropdownCssClass: 'employee-search-dropdown',
+            language: {
+                noResults: () => 'Karyawan tidak ditemukan',
+                searching: () => 'Mencari karyawan...'
+            }
+        });
+        employee.on('select2:open', () => {
+            const search = document.querySelector('.employee-search-dropdown .select2-search__field');
+            if (search) {
+                search.placeholder = 'Cari nama atau NIK karyawan...';
+                search.setAttribute('aria-label', 'Cari nama atau NIK karyawan');
+                search.focus();
+            }
+        });
+    }
     const rows = document.getElementById('coa-rows');
     const add = document.getElementById('add-coa');
     let nextIndex = Math.max(-1, ...Array.from(rows.querySelectorAll('select'), select => Number(select.name.match(/\[(\d+)\]/)[1]))) + 1;
