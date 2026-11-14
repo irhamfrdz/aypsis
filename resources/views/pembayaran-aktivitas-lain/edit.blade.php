@@ -144,10 +144,10 @@
                     @enderror
                 </div>
 
-                <!-- Lokasi untuk pembayaran kendaraan -->
-                <div id="lokasi_kendaraan_field" class="{{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                <!-- Lokasi pembayaran -->
+                <div id="lokasi_kendaraan_field">
                     <label class="block text-sm font-medium text-gray-700 mb-2">Lokasi <span class="text-red-500">*</span></label>
-                    <select name="lokasi" id="lokasi_kendaraan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('lokasi') border-red-500 @enderror" {{ old('jenis_aktivitas', $pembayaranAktivitasLain->jenis_aktivitas) === 'Pembayaran Kendaraan' ? 'required' : '' }}>
+                    <select name="lokasi" id="lokasi_kendaraan_select" required class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('lokasi') border-red-500 @enderror">
                         <option value="">Pilih Lokasi</option>
                         <option value="jakarta" {{ old('lokasi', $pembayaranAktivitasLain->lokasi) === 'jakarta' ? 'selected' : '' }}>Jakarta</option>
                         <option value="batam" {{ old('lokasi', $pembayaranAktivitasLain->lokasi) === 'batam' ? 'selected' : '' }}>Batam</option>
@@ -865,9 +865,6 @@ function initializeSelect2() {
                 });
             }, 100);
         } else {
-            lokasiField.classList.add('hidden');
-            lokasiSelect.required = false;
-            lokasiSelect.value = '';
             pphField.classList.add('hidden');
             pphSelect.required = false;
             pphSelect.value = '';
@@ -1462,6 +1459,7 @@ function initializeSelect2() {
         const requiredFields = [
             { id: 'tanggal', name: 'Tanggal' },
             { id: 'jenis_aktivitas', name: 'Jenis Aktivitas' },
+            { id: 'lokasi_kendaraan_select', name: 'Lokasi' },
             { id: 'penerima_input', name: 'Penerima' }
         ];
 
@@ -1477,7 +1475,6 @@ function initializeSelect2() {
         }
 
         if (document.getElementById('jenis_aktivitas').value === 'Pembayaran Kendaraan') {
-            requiredFields.push({ id: 'lokasi_kendaraan_select', name: 'Lokasi' });
             requiredFields.push({ id: 'pph_kendaraan_select', name: 'PPh' });
             if (Number(document.getElementById('pph_kendaraan_select').value) > 0) {
                 requiredFields.push({ id: 'akun_pph_select', name: 'Akun PPh' });

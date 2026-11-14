@@ -408,7 +408,7 @@ class PembayaranAktivitasLainController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
-            'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
+            'lokasi' => 'required|in:jakarta,batam',
             'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
             'pph_manual' => 'nullable|boolean',
             'pph_nominal' => 'required_if:pph_manual,1|nullable|integer|min:0|lte:jumlah',
@@ -443,9 +443,6 @@ class PembayaranAktivitasLainController extends Controller
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
 
-        $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
-            ? $validated['lokasi']
-            : null;
         $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['pph_persen']
             : null;
@@ -958,7 +955,7 @@ class PembayaranAktivitasLainController extends Controller
             'nomor_accurate' => 'nullable|string|max:255',
             'tanggal' => 'required|date',
             'jenis_aktivitas' => 'required|string|max:255',
-            'lokasi' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:jakarta,batam',
+            'lokasi' => 'required|in:jakarta,batam',
             'pph_persen' => 'required_if:jenis_aktivitas,Pembayaran Kendaraan|nullable|in:0,2,2.5',
             'pph_manual' => 'nullable|boolean',
             'pph_nominal' => 'required_if:pph_manual,1|nullable|integer|min:0|lte:jumlah',
@@ -993,9 +990,6 @@ class PembayaranAktivitasLainController extends Controller
             'akun_pph_id' => [Rule::requiredIf($request->input('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) $request->input('pph_persen') > 0), 'nullable', 'exists:akun_coa,id', 'different:akun_coa_id', 'different:akun_bank_id'],
         ]);
 
-        $validated['lokasi'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
-            ? $validated['lokasi']
-            : null;
         $validated['pph_persen'] = $validated['jenis_aktivitas'] === 'Pembayaran Kendaraan'
             ? $validated['pph_persen']
             : null;
