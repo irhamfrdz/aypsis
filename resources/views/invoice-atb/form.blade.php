@@ -105,7 +105,10 @@
 document.addEventListener('DOMContentLoaded', () => {
     const items = document.getElementById('items');
     const total = document.getElementById('estimated-total');
-    let nextIndex = {{ count($rows) ? max(array_keys($rows)) + 1 : 0 }};
+    let nextIndex = [...items.querySelectorAll('input[name^="items["]')].reduce((maxIndex, input) => {
+        const match = input.name.match(/^items\[(\d+)\]/);
+        return match ? Math.max(maxIndex, Number(match[1])) : maxIndex;
+    }, -1) + 1;
     const updateTotal = () => {
         let amount = 0;
         items.querySelectorAll('.item-row').forEach(row => {
