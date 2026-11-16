@@ -4799,7 +4799,7 @@
                             <tr class="submodule-row" data-parent="approval">
                                 <td class="submodule">
                                     <span class="module-icon">📦</span>
-                                    Approval Permintaan Amprahan
+                                    <span class="permission-label">Approval Permintaan Amprahan</span>
                                 </td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
@@ -5278,6 +5278,8 @@
                 if (!searchInput) return;
 
                 function getTextElement(row) {
+                    const permissionLabel = row.querySelector('.permission-label');
+                    if (permissionLabel) return permissionLabel;
                     // Try to find div.text-sm first (new style submodule/row)
                     const divText = row.querySelector('td:first-child div.text-sm') || row.querySelector('.submodule div.text-sm');
                     if (divText && divText.textContent.trim() !== '') return divText;
