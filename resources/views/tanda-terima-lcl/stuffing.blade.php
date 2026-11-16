@@ -1087,15 +1087,36 @@ async function loadUnstuffedPage(url = unstuffedUrl) {
     const rows = document.getElementById('unstuffedRows');
     rows.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center">Memuat LCL...</td></tr>';
     try {
-        const response = await fetch(url, { headers: { 'Accept': 'application/json' } });
-        if (!response.ok) throw new Error('Gagal memuat daftar LCL');
+        const response = await fetch(url, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            credentials: 'same-origin'
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new Error(errorData.message || `Permintaan gagal (HTTP ${response.status}).`);
+        }
+        if (!(response.headers.get('content-type') || '').includes('application/json')) {
+            throw new Error('Sesi login berakhir. Muat ulang halaman dan coba lagi.');
+        }
         const data = await response.json();
+        if (typeof data.rows !== 'string' || typeof data.pagination !== 'string') {
+            throw new Error('Format data LCL tidak valid.');
+        }
         rows.innerHTML = data.rows;
         document.getElementById('unstuffedPagination').innerHTML = data.pagination;
         rows.querySelectorAll('.unstuffed-checkbox').forEach(box => box.checked = selectedUnstuffedIds.has(box.value));
         document.getElementById('selectAllUnstuffed').checked = false;
     } catch (error) {
-        rows.innerHTML = '<tr><td colspan="7" class="px-4 py-8 text-center text-red-600">Daftar LCL gagal dimuat. Coba cari kembali.</td></tr>';
+        rows.innerHTML = '';
+        const cell = document.createElement('td');
+        cell.colSpan = 7;
+        cell.className = 'px-4 py-8 text-center text-red-600';
+        cell.textContent = `Daftar LCL gagal dimuat: ${error.message}`;
+        const row = document.createElement('tr');
+        row.appendChild(cell);
+        rows.appendChild(row);
+        document.getElementById('unstuffedPagination').innerHTML = '';
+        console.error('Gagal memuat LCL untuk stuffing:', error);
     }
 }
 
