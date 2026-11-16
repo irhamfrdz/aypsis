@@ -430,6 +430,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     const voyage = document.getElementById('manifest-finish-voyage');
     const help = document.getElementById('manifest-finish-help');
     let requestNumber = 0;
+    let lastRequestedShip = null;
 
     if (window.jQuery?.fn?.select2 && ship && voyage) {
         const $dialog = window.jQuery(dialog);
@@ -457,15 +458,18 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
         window.setTimeout(() => window.jQuery?.(ship).select2?.('open'), 80);
     });
     document.getElementById('manifest-finish-cancel')?.addEventListener('click', () => dialog?.close());
-    ship?.addEventListener('change', async () => {
+    const loadVoyages = async () => {
+        const selectedShip = ship.value;
+        if (selectedShip === lastRequestedShip) return;
+        lastRequestedShip = selectedShip;
         const currentRequest = ++requestNumber;
-        voyage.replaceChildren(new Option(ship.value ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
+        voyage.replaceChildren(new Option(selectedShip ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
         voyage.disabled = true;
         window.jQuery?.(voyage).trigger('change.select2');
-        if (!ship.value) return;
+        if (!selectedShip) return;
         help.textContent = 'Memuat daftar voyage...';
         try {
-            const response = await fetch(`${dialog.dataset.voyagesUrl}/${encodeURIComponent(ship.value)}`, {
+            const response = await fetch(`${dialog.dataset.voyagesUrl}/${encodeURIComponent(selectedShip)}`, {
                 credentials: 'same-origin', headers: { Accept: 'application/json' },
             });
             if (!response.ok) throw new Error('Daftar voyage gagal dimuat.');
@@ -482,7 +486,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
             voyage.replaceChildren(new Option('Gagal memuat voyage', ''));
             help.textContent = error.message;
         }
-    });
+    };
+    ship?.addEventListener('change', loadVoyages);
+    window.jQuery?.(ship).on('select2:select select2:clear', loadVoyages);
     form?.addEventListener('submit', event => {
         form.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
         const table = document.querySelector('.sugeng-sheet');
