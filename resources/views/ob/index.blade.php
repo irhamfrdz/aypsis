@@ -2552,11 +2552,14 @@ function prosesTLBongkar(blId, noVoyage = '') {
         .find(input => input.dataset.type === 'bl' && input.dataset.id === String(blId));
     const tujuan = (keInput?.value || '').trim().toUpperCase();
     const gudang = document.getElementById('tlBongkarGudang');
-    const gudangDefault = String(noVoyage).toUpperCase().includes('JP')
-        ? 'GUDANG PELABUHAN TANJUNG PINANG'
-        : tujuan;
-    gudang.value = Array.from(gudang.options)
-        .find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === gudangDefault)?.value || '';
+    const options = Array.from(gudang.options);
+    const pilihan = String(noVoyage).toUpperCase().includes('JP')
+        ? options.find(option => {
+            const nama = (option.dataset.namaGudang || '').toUpperCase();
+            return nama.includes('PELABUHAN') && nama.includes('PINANG');
+        })
+        : options.find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === tujuan);
+    gudang.value = pilihan?.value || '';
     document.getElementById('tlBongkarError').classList.add('hidden');
     document.getElementById('tlBongkarModal').classList.remove('hidden');
 }
