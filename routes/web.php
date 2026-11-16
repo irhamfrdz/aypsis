@@ -365,6 +365,7 @@ Route::middleware([
     Route::get('pranota-bpjs/{pranota_bpj}/update-data', [PranotaBpjsController::class, 'refreshData'])->name('pranota-bpjs.refresh-data');
     Route::post('pranota-bpjs/{pranota_bpj}/update-data', [PranotaBpjsController::class, 'storeRefresh'])->name('pranota-bpjs.store-refresh');
     Route::get('pranota-bpjs/{pranota_bpj}/export-excel', [PranotaBpjsController::class, 'exportExcel'])->name('pranota-bpjs.export-excel');
+    Route::get('pranota-bpjs-perubahan-karyawan', [PranotaBpjsController::class, 'employeeChanges'])->name('pranota-bpjs.employee-changes');
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
     Route::get('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/print', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'print'])->name('pembayaran-pranota-bpjs.print')->middleware('can:pembayaran-pranota-bpjs-view');
     Route::post('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/sync-coa', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'syncCoa'])->name('pembayaran-pranota-bpjs.sync-coa')->middleware('can:pembayaran-pranota-bpjs-create');

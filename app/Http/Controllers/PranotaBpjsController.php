@@ -21,6 +21,35 @@ class PranotaBpjsController extends Controller
         $this->middleware('permission:pranota-bpjs-create')->only(['create', 'store']);
         $this->middleware('permission:pranota-bpjs-update')->only(['edit', 'update', 'refreshData', 'storeRefresh']);
         $this->middleware('permission:pranota-bpjs-delete')->only(['destroy']);
+        $this->middleware('permission:pranota-bpjs-view')->only(['employeeChanges']);
+    }
+
+    public function employeeChanges(Request $request)
+    {
+        $period = $request->validate([
+            'bulan' => 'required|integer|between:1,12',
+            'tahun' => 'required|integer|between:2000,9999',
+        ]);
+        $start = \Carbon\Carbon::createFromDate($period['tahun'], $period['bulan'], 1)->startOfDay();
+        $end = $start->copy()->addMonth();
+        $logs = \App\Models\AuditLog::query()
+            ->where('auditable_type', Karyawan::class)->where('action', 'updated')
+            ->where('created_at', '>=', $start)->where('created_at', '<', $end)
+            ->get()->filter(fn ($log) => empty($log->old_values['tanggal_berhenti']) && ! empty($log->new_values['tanggal_berhenti']))
+            ->keyBy('auditable_id');
+        $columns = ['id', 'nik', 'nama_lengkap', 'created_at', 'tanggal_berhenti', 'jkn',
+            'no_ketenagakerjaan', 'status_jkn', 'status_bp_jamsostek', 'tipe_jkn',
+            'tipe_bp_jamsostek', 'group_jkn', 'group_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs'];
+        $new = Karyawan::query()->where('created_at', '>=', $start)->where('created_at', '<', $end)
+            ->orderBy('nama_lengkap')->get($columns);
+        $stopped = Karyawan::query()->whereNotNull('tanggal_berhenti')
+            ->where(function ($query) use ($logs, $start, $end) {
+                $query->whereIn('id', $logs->keys())
+                    ->orWhere(fn ($q) => $q->where('tanggal_berhenti', '>=', $start->toDateString())
+                        ->where('tanggal_berhenti', '<', $end->toDateString()));
+            })->orderBy('nama_lengkap')->get($columns);
+
+        return response()->json(['baru' => $new, 'berhenti' => $stopped])->header('Cache-Control', 'no-store');
     }
 
     public function index(Request $request)

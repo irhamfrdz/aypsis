@@ -137,6 +137,8 @@
             </div>
         </div>
 
+        @include('pranota-bpjs.partials.employee-changes')
+
         {{-- ── Summary Cards ────────────────────────────────────────────────── --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mt-6">
             <div class="bg-white rounded-xl p-4 border border-gray-200/80 shadow-2xs flex items-center gap-3.5">
