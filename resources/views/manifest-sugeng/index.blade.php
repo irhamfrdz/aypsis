@@ -8,6 +8,7 @@
     <div class="flex flex-wrap items-center justify-between gap-4">
         <div><h1 class="text-2xl font-bold text-gray-900">Manifest Sugeng</h1><p class="text-sm text-gray-600">Klik nomor baris untuk memilih; Shift untuk rentang, Ctrl untuk beberapa baris. Ctrl+C menyalin, Delete mengeluarkan baris terpilih dari Manifest Sugeng tanpa menghapus tanda terima sumber, dan data Excel dapat ditempel mulai dari sel yang dipilih.</p></div>
         <div class="flex flex-wrap gap-2">
+            @can('manifest-sugeng-manage')<button id="manifest-assign-open" type="button" hidden class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Masukan ke dalam kapal (<span id="manifest-assign-selected-count">0</span>)</button>@endcan
             @can('manifest-sugeng-manage')<button id="manifest-finish-open" type="button" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Selesaikan pekerjaan</button>@endcan
             @if(request('nama_kapal') && request('no_voyage'))<a href="{{ route('manifest-sugeng.export', ['nama_kapal' => request('nama_kapal'), 'no_voyage' => request('no_voyage')]) }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Export Excel Manifest & Perincian</a>@endif
         </div>
@@ -31,7 +32,7 @@
             @csrf
             <div class="flex items-start gap-3 border-b border-gray-100 bg-slate-50 px-6 py-5">
                 <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700"><i class="fas fa-ship" aria-hidden="true"></i></span>
-                <div><h2 class="text-lg font-bold text-gray-900">Selesaikan pekerjaan Manifest</h2>
+                <div><h2 id="manifest-finish-title" class="text-lg font-bold text-gray-900">Selesaikan pekerjaan Manifest</h2>
                 <p id="manifest-finish-count" class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage tujuan untuk data pada halaman ini.</p></div>
                 <button type="button" class="ml-auto rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-700" aria-label="Tutup" onclick="document.getElementById('manifest-finish-dialog').close()"><i class="fas fa-times" aria-hidden="true"></i></button>
             </div>

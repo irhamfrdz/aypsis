@@ -143,7 +143,7 @@ const initializeManifestSugengSheet = table => {
         .forEach(row => row.classList.remove('sheet-dragging', 'sheet-drop-before', 'sheet-drop-after'));
     table.addEventListener('dragstart', event => {
         const header = event.target.closest('tbody .sheet-row-number[draggable="true"]');
-        if (!header || event.target.closest('.sheet-row-resize') || movingRow) { event.preventDefault(); return; }
+        if (!header || event.target.closest('.sheet-row-resize, .sugeng-assign-checkbox') || movingRow) { event.preventDefault(); return; }
         draggingId = header.parentElement.dataset.itemId;
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', draggingId);
@@ -196,6 +196,7 @@ const initializeManifestSugengSheet = table => {
             if (!freshRoot) throw new Error('Posisi tersimpan, tetapi tampilan tabel gagal diperbarui.');
             sheetRoot.replaceWith(freshRoot);
             initializeManifestSugengSheet(freshRoot.querySelector('.sugeng-sheet'));
+            document.dispatchEvent(new Event('manifest-sugeng-selection-change'));
             const freshScrollArea = freshRoot.querySelector('.sugeng-sheet-scroll');
             freshScrollArea.scrollTop = scrollTop;
             freshScrollArea.scrollLeft = scrollLeft;
@@ -353,6 +354,7 @@ const initializeManifestSugengSheet = table => {
         }));
     });
     table.addEventListener('click', event => {
+        if (event.target.closest('.sugeng-assign-checkbox')) return;
         const header = event.target.closest('tbody .sheet-row-number');
         if (header) {
             header.focus();
@@ -425,6 +427,20 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     const ship = document.getElementById('manifest-finish-ship');
     const voyage = document.getElementById('manifest-finish-voyage');
     const help = document.getElementById('manifest-finish-help');
+    const title = document.getElementById('manifest-finish-title');
+    const assignButton = document.getElementById('manifest-assign-open');
+    const selectedIds = () => [...new Set(Array.from(document.querySelectorAll('.sugeng-assign-checkbox:checked')).map(input => input.value))];
+    const updateAssignButton = () => {
+        const count = selectedIds().length;
+        if (assignButton) assignButton.hidden = count === 0;
+        const countLabel = document.getElementById('manifest-assign-selected-count');
+        if (countLabel) countLabel.textContent = count;
+    };
+    document.addEventListener('change', event => {
+        if (event.target.matches('.sugeng-assign-checkbox')) updateAssignButton();
+    });
+    document.addEventListener('manifest-sugeng-selection-change', updateAssignButton);
+    updateAssignButton();
     let requestNumber = 0;
     let lastRequestedShip = null;
 
@@ -447,9 +463,23 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     }
 
     document.getElementById('manifest-finish-open')?.addEventListener('click', () => {
+        dialog.dataset.assignmentMode = 'all';
+        if (title) title.textContent = 'Selesaikan pekerjaan Manifest';
         const visibleIds = new Set(Array.from(document.querySelectorAll('.sugeng-sheet tbody tr[data-item-id]')).map(row => row.dataset.itemId));
         const count = document.getElementById('manifest-finish-count');
         if (count) count.textContent = `${visibleIds.size} data manifest pada halaman ini akan ditugaskan.`;
+        help.textContent = 'Hanya data yang tampil pada halaman tabel ini yang akan ditugaskan.';
+        dialog?.showModal();
+        window.setTimeout(() => window.jQuery?.(ship).select2?.('open'), 80);
+    });
+    assignButton?.addEventListener('click', () => {
+        const ids = selectedIds();
+        if (!ids.length) return;
+        dialog.dataset.assignmentMode = 'selected';
+        if (title) title.textContent = 'Masukan ke dalam kapal';
+        const count = document.getElementById('manifest-finish-count');
+        if (count) count.textContent = `${ids.length} data manifest terpilih akan ditugaskan.`;
+        help.textContent = 'Hanya data yang dicentang yang akan dipindahkan ke kapal dan voyage ini.';
         dialog?.showModal();
         window.setTimeout(() => window.jQuery?.(ship).select2?.('open'), 80);
     });
@@ -488,10 +518,12 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     form?.addEventListener('submit', event => {
         form.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
         const table = document.querySelector('.sugeng-sheet');
-        const ids = [...new Set(Array.from(table?.querySelectorAll('tbody tr[data-item-id]') || []).map(row => row.dataset.itemId))];
+        const ids = dialog?.dataset.assignmentMode === 'selected'
+            ? selectedIds()
+            : [...new Set(Array.from(table?.querySelectorAll('tbody tr[data-item-id]') || []).map(row => row.dataset.itemId))];
         if (!ids.length) {
             event.preventDefault();
-            alert('Tidak ada data manifest pada halaman ini.');
+            alert('Pilih data manifest yang akan dimasukan ke dalam kapal.');
             return;
         }
         ids.forEach(id => {
