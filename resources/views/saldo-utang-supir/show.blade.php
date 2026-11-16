@@ -48,6 +48,7 @@
                         <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Jenis Transaksi</th>
                         <th class="px-6 py-4 text-right text-[10px] font-black text-gray-400 uppercase tracking-widest">Nominal</th>
                         <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Keterangan</th>
+                        <th class="px-6 py-4 text-[10px] font-black text-gray-400 uppercase tracking-widest">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
@@ -92,10 +93,15 @@
                                     </div>
                                 @endforeach
                             </td>
+                            <td class="px-6 py-4">
+                                <a href="{{ route('saldo-utang-karyawan.print', ['karyawan' => $karyawan->id, 'transaksi' => $item->id]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 whitespace-nowrap rounded-lg bg-indigo-50 px-3 py-2 text-xs font-semibold text-indigo-700 hover:bg-indigo-100" aria-label="Cetak pranota {{ $item->referensi }}">
+                                    <i class="fas fa-print" aria-hidden="true"></i>Cetak Pranota
+                                </a>
+                            </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="px-6 py-12 text-center">
+                            <td colspan="6" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <div class="w-12 h-12 bg-gray-50 rounded-full flex items-center justify-center border border-gray-100 mb-3">
                                         <i class="fas fa-file-invoice text-gray-400"></i>

@@ -93,6 +93,23 @@ class SaldoUtangCoaTest extends TestCase
         $this->assertSame(0, RiwayatUtangKaryawan::count());
     }
 
+    public function test_print_pranota_contains_saved_transaction_and_coa_details(): void
+    {
+        $controller = new SaldoUtangSupirController;
+        $controller->store(Request::create('/', 'POST', $this->payload()));
+        $entry = RiwayatUtangKaryawan::firstOrFail();
+        $html = $controller->print(\App\Models\Karyawan::findOrFail(1), $entry->id)->render();
+        foreach (['Pranota Utang Karyawan', 'Karyawan Uji', 'Bank Uji', 'Piutang Karyawan', 'Memo pertama',
+            '150.000,00', 'size: A4 portrait', 'window.print()'] as $text) {
+            $this->assertStringContainsString($text, $html);
+        }
+        $this->assertStringNotContainsString('Saldo Utang Saat Ini', $html);
+        // The print route must not permit printing another employee's transaction under this employee.
+        $entry->update(['karyawan_id' => 2]);
+        $this->expectException(\Illuminate\Database\Eloquent\ModelNotFoundException::class);
+        $controller->print(\App\Models\Karyawan::findOrFail(1), $entry->id);
+    }
+
     public function test_create_form_lists_bank_accounts_and_renders_dynamic_coa_rows(): void
     {
         $data = (new SaldoUtangSupirController)->create()->getData();

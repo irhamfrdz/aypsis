@@ -5145,6 +5145,8 @@ Route::middleware([
             ->middleware('can:pranota-uang-rit-view');
 
         // Saldo Utang Karyawan Management routes
+        Route::get('saldo-utang-karyawan/{karyawan}/transaksi/{transaksi}/print', [\App\Http\Controllers\SaldoUtangSupirController::class, 'print'])
+            ->name('saldo-utang-karyawan.print');
         Route::get('saldo-utang-karyawan/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'showImportForm'])
             ->name('saldo-utang-karyawan.import');
         Route::post('saldo-utang-karyawan/import', [\App\Http\Controllers\SaldoUtangSupirController::class, 'importProcess'])

@@ -127,6 +127,14 @@ class SaldoUtangSupirController extends Controller
         return view('saldo-utang-supir.show', compact('karyawan', 'riwayat'));
     }
 
+    public function print(Karyawan $karyawan, $transaksi)
+    {
+        $item = RiwayatUtangKaryawan::with('bankCoa')
+            ->where('karyawan_id', $karyawan->id)->findOrFail($transaksi);
+
+        return view('saldo-utang-supir.print', compact('karyawan', 'item'));
+    }
+
     /**
      * Show import CSV form.
      */
