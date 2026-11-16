@@ -49,6 +49,34 @@
 
     <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <thead class="bg-indigo-50 text-left text-xs font-semibold uppercase text-indigo-900">
+                <tr><th class="px-4 py-3">Kapal</th><th class="px-4 py-3 text-right">Item</th><th class="px-4 py-3 text-right">Trip</th><th class="px-4 py-3 text-right">Subtotal</th><th class="px-4 py-3 text-right">PPh</th><th class="px-4 py-3 text-right">Penyesuaian</th><th class="px-4 py-3 text-right">Total biaya agen</th></tr>
+            </thead>
+            <tbody class="divide-y divide-gray-100">
+                @forelse($groups as $group)
+                    <tr>
+                        <td class="px-4 py-3 font-semibold text-gray-900">{{ $group['kapal'] }}</td>
+                        <td class="px-4 py-3 text-right">{{ $group['rows']->count() }}</td>
+                        <td class="px-4 py-3 text-right font-semibold text-indigo-700">{{ $group['trip_count'] }}</td>
+                        <td class="px-4 py-3 text-right">Rp {{ number_format($group['subtotal'], 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-right">Rp {{ number_format($group['pph'], 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-right">Rp {{ number_format($group['adjustment'], 0, ',', '.') }}</td>
+                        <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group['grand_total'], 0, ',', '.') }}</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Tidak ada biaya agen untuk pilihan ini.</td></tr>
+                @endforelse
+            </tbody>
+        </table>
+    </div>
+
+    <p class="text-xs text-gray-500">Trip dihitung dari nomor voyage unik pada rincian terfilter. Pasangan JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
+
+    @foreach($groups as $group)
+    <section>
+    <h2 class="mb-3 text-lg font-semibold text-gray-900">{{ $group['kapal'] }} <span class="text-sm font-normal text-gray-500">· {{ $group['trip_count'] }} trip · {{ $group['rows']->count() }} item</span></h2>
+    <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
+        <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50 text-left text-xs font-semibold uppercase tracking-wide text-gray-600">
                 <tr>
                     <th class="whitespace-nowrap px-4 py-3">Tanggal</th>
@@ -66,7 +94,7 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
-                @forelse($rows as $row)
+                @foreach($group['rows'] as $row)
                     <tr class="hover:bg-gray-50">
                         <td class="whitespace-nowrap px-4 py-3 text-gray-700">{{ \Carbon\Carbon::parse($row->tanggal_invoice_vendor ?: $row->tanggal_biaya_kapal)->format('d/m/Y') }}</td>
                         <td class="whitespace-nowrap px-4 py-3"><a href="{{ route('biaya-kapal.show', $row->biaya_kapal_id) }}" class="font-medium text-indigo-700 hover:underline">{{ $row->nomor_invoice ?: '-' }}</a>@if($row->nomor_referensi)<div class="text-xs text-gray-500">{{ $row->nomor_referensi }}</div>@endif</td>
@@ -81,11 +109,11 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->adjustment, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold text-gray-900">Rp {{ number_format($row->grand_total, 0, ',', '.') }}</td>
                     </tr>
-                @empty
-                    <tr><td colspan="12" class="px-4 py-12 text-center text-gray-500">Tidak ada biaya agen untuk pilihan ini.</td></tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
+    </section>
+    @endforeach
 </div>
 @endsection

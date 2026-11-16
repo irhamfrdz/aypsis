@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Report;
 
 use App\Exports\BiayaAgenReportExport;
 use App\Http\Controllers\Controller;
+use App\Services\BiayaAgenTripCounter;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -124,6 +125,20 @@ class BiayaAgenController extends Controller
             'grand_total' => $rows->sum('grand_total'),
         ];
 
-        return compact('rows', 'summary', 'validated');
+        $tripCounter = new BiayaAgenTripCounter;
+        $groups = $rows->groupBy(fn ($row) => mb_strtolower(trim((string) $row->kapal)) ?: '__tanpa_kapal__')
+            ->map(function ($shipRows) use ($tripCounter) {
+                return [
+                    'kapal' => trim((string) $shipRows->first()->kapal) ?: 'Tanpa kapal',
+                    'rows' => $shipRows,
+                    'trip_count' => $tripCounter->count($shipRows),
+                    'subtotal' => $shipRows->sum('sub_total'),
+                    'pph' => $shipRows->sum('pph'),
+                    'adjustment' => $shipRows->sum('adjustment'),
+                    'grand_total' => $shipRows->sum('grand_total'),
+                ];
+            })->sortBy('kapal', SORT_NATURAL | SORT_FLAG_CASE)->values();
+
+        return compact('rows', 'groups', 'summary', 'validated');
     }
 }

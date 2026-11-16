@@ -21,13 +21,17 @@ class BiayaAgenReportExport implements FromView, ShouldAutoSize, WithStyles
 
     public function styles(Worksheet $sheet)
     {
-        $lastRow = $this->data['rows']->count() + 6;
+        $groupCount = $this->data['groups']->count();
+        $detailHeader = 6 + $groupCount;
+        $lastRow = $detailHeader + $groupCount + $this->data['rows']->count() + 1;
         $sheet->getStyle('A1:P1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A5:P5')->getFont()->setBold(true);
+        $sheet->getStyle('A5:G5')->getFont()->setBold(true);
+        $sheet->getStyle('A'.$detailHeader.':P'.$detailHeader)->getFont()->setBold(true);
         $sheet->getStyle('A'.$lastRow.':P'.$lastRow)->getFont()->setBold(true);
-        $sheet->getStyle('J6:J'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
-        $sheet->getStyle('K6:P'.$lastRow)->getNumberFormat()->setFormatCode('#,##0;[Red](#,##0)');
-        $sheet->freezePane('A6');
+        $sheet->getStyle('D6:G'.(5 + $groupCount))->getNumberFormat()->setFormatCode('#,##0;[Red](#,##0)');
+        $sheet->getStyle('J'.($detailHeader + 1).':J'.$lastRow)->getNumberFormat()->setFormatCode('#,##0.00');
+        $sheet->getStyle('K'.($detailHeader + 1).':P'.$lastRow)->getNumberFormat()->setFormatCode('#,##0;[Red](#,##0)');
+        $sheet->freezePane('A'.($detailHeader + 1));
 
         return [];
     }

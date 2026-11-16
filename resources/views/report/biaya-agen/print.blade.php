@@ -59,6 +59,16 @@
             <tr><td class="label">Jumlah Item</td><td class="separator">:</td><td>{{ $rows->count() }}</td></tr>
         </table>
 
+        <table class="items" style="margin-bottom:12px">
+            <thead><tr><th>Kapal</th><th>Item</th><th>Trip</th><th>Subtotal</th><th>PPh</th><th>Penyesuaian</th><th>Total biaya agen</th></tr></thead>
+            <tbody>
+                @foreach($groups as $group)
+                    <tr><td>{{ $group['kapal'] }}</td><td class="right">{{ $group['rows']->count() }}</td><td class="right">{{ $group['trip_count'] }}</td><td class="right">{{ number_format($group['subtotal'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['pph'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['adjustment'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['grand_total'], 0, ',', '.') }}</td></tr>
+                @endforeach
+            </tbody>
+        </table>
+        <p class="small">Trip dihitung dari voyage unik dalam rincian terfilter; JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
+
         <table class="items">
             <thead><tr>
                 <th style="width:3%">No.</th><th style="width:7%">Tanggal</th><th style="width:11%">Invoice / Referensi</th>
@@ -67,7 +77,9 @@
                 <th style="width:9%">Subtotal</th><th style="width:7%">PPh</th><th style="width:8%">Penyesuaian</th><th style="width:8%">Total</th>
             </tr></thead>
             <tbody>
-                @forelse($rows as $row)
+                @foreach($groups as $group)
+                    <tr><th colspan="12" style="text-align:left">{{ $group['kapal'] }} — {{ $group['trip_count'] }} trip, {{ $group['rows']->count() }} item</th></tr>
+                @foreach($group['rows'] as $row)
                     <tr>
                         <td class="center">{{ $loop->iteration }}</td>
                         <td class="center">{{ \Carbon\Carbon::parse($row->tanggal_invoice_vendor ?: $row->tanggal_biaya_kapal)->format('d/m/Y') }}</td>
@@ -82,9 +94,8 @@
                         <td class="right">{{ number_format($row->adjustment, 0, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->grand_total, 0, ',', '.') }}</td>
                     </tr>
-                @empty
-                    <tr><td colspan="12" class="center">Tidak ada biaya agen untuk pilihan ini.</td></tr>
-                @endforelse
+                @endforeach
+                @endforeach
             </tbody>
             <tfoot>
                 <tr><th colspan="8" class="right">TOTAL BIAYA AGEN (Rp)</th><th class="right">{{ number_format($summary['subtotal'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['pph'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['adjustment'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['grand_total'], 0, ',', '.') }}</th></tr>
