@@ -7704,8 +7704,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('manifest-sugeng/rows/mark', [\App\Http\Controllers\ManifestSugengController::class, 'markRows'])
         ->name('manifest-sugeng.rows.mark')
         ->middleware('can:manifest-sugeng-manage');
-    Route::patch('manifest-sugeng/rows/swap', [\App\Http\Controllers\ManifestSugengController::class, 'swapRows'])
-        ->name('manifest-sugeng.rows.swap')
+    Route::patch('manifest-sugeng/rows/move', [\App\Http\Controllers\ManifestSugengController::class, 'moveRows'])
+        ->name('manifest-sugeng.rows.move')
         ->middleware('can:manifest-sugeng-manage');
     Route::delete('approval-tanda-terima-2/{sourceType}/export-bulk', [\App\Http\Controllers\ApprovalTandaTerimaDuaController::class, 'clearExportBulk'])
         ->name('approval-tanda-terima-2.clear-export-bulk')

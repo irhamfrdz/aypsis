@@ -165,11 +165,12 @@ class ManifestSugengController extends Controller
         return response()->json(['mark' => $data['mark']]);
     }
 
-    public function swapRows(Request $request): JsonResponse
+    public function moveRows(Request $request): JsonResponse
     {
         $data = $request->validate([
             'source_id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
-            'direction' => ['required', Rule::in(['up', 'down'])],
+            'target_id' => ['required', 'integer', 'different:source_id', 'exists:manifest_sugengs,id'],
+            'position' => ['required', Rule::in(['before', 'after'])],
         ]);
 
         DB::transaction(function () use ($data): void {
@@ -182,11 +183,13 @@ class ManifestSugengController extends Controller
                 ->lockForUpdate()->get();
 
             $sourceIndex = $items->search(fn ($item) => $item->id === $source->id);
-            $targetIndex = $sourceIndex + ($data['direction'] === 'up' ? -1 : 1);
-            abort_if($sourceIndex === false || ! $items->has($targetIndex), 422, 'Tidak ada data lain di arah tersebut dalam voyage ini.');
+            $targetIndex = $items->search(fn ($item) => $item->id === $data['target_id']);
+            abort_if($sourceIndex === false || $targetIndex === false, 422, 'Baris hanya dapat dipindahkan dalam kapal dan voyage yang sama.');
 
             $ordered = $items->all();
-            [$ordered[$sourceIndex], $ordered[$targetIndex]] = [$ordered[$targetIndex], $ordered[$sourceIndex]];
+            $moving = array_splice($ordered, $sourceIndex, 1)[0];
+            $targetIndex = collect($ordered)->search(fn ($item) => $item->id === $data['target_id']);
+            array_splice($ordered, $targetIndex + ($data['position'] === 'after' ? 1 : 0), 0, [$moving]);
             foreach ($ordered as $position => $item) {
                 if ($item->sort_order !== $position + 1) {
                     $item->sort_order = $position + 1;
