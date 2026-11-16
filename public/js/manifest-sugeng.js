@@ -137,6 +137,38 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         }
     };
     const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
+    const markControls = table.closest('.sugeng-sheet-scroll')?.parentElement?.querySelector('.sugeng-mark-controls');
+    markControls?.addEventListener('click', async event => {
+        const button = event.target.closest('button[data-mark]');
+        if (!button || !table.dataset.markUrl || button.disabled) return;
+        const selection = selectedRows().filter(row => row.dataset.kind === 'detail');
+        if (!selection.length) {
+            alert('Pilih nomor baris barang yang ingin ditandai.');
+            return;
+        }
+        const buttons = markControls.querySelectorAll('button[data-mark]');
+        buttons.forEach(control => { control.disabled = true; });
+        try {
+            const response = await fetch(table.dataset.markUrl, {
+                method: 'PATCH', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': table.dataset.csrf, Accept: 'application/json' },
+                body: JSON.stringify({
+                    rows: selection.map(row => ({ id: Number(row.dataset.itemId), line: Number(row.dataset.line) })),
+                    mark: button.dataset.mark,
+                }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Tanda warna gagal disimpan.');
+            selection.forEach(row => {
+                if (result.mark) row.dataset.mark = result.mark;
+                else delete row.dataset.mark;
+            });
+        } catch (error) {
+            alert(error.message || 'Tanda warna gagal disimpan.');
+        } finally {
+            buttons.forEach(control => { control.disabled = false; });
+        }
+    });
     const selectRows = (indices, keep = false) => {
         if (!keep) rows.forEach(row => delete row.dataset.selected);
         indices.forEach(index => { if (rows[index]) rows[index].dataset.selected = 'true'; });

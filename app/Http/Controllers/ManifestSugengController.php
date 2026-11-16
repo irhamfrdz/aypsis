@@ -151,6 +151,32 @@ class ManifestSugengController extends Controller
         return response()->json(['value' => $value]);
     }
 
+    public function markRows(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'rows' => ['required', 'array', 'min:1', 'max:500'],
+            'rows.*.id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
+            'rows.*.line' => ['required', 'integer', 'min:0', 'max:1000'],
+            'mark' => ['present', Rule::in(['', 'ungu', 'biru', 'merah'])],
+        ]);
+
+        DB::transaction(function () use ($data): void {
+            foreach ($data['rows'] as $row) {
+                $item = ManifestSugeng::query()->lockForUpdate()->findOrFail($row['id']);
+                $values = $item->sheet_values ?? [];
+                if ($data['mark'] === '') {
+                    unset($values['row_marks'][$row['line']]);
+                } else {
+                    $values['row_marks'][$row['line']] = $data['mark'];
+                }
+                $item->sheet_values = $values;
+                $item->save();
+            }
+        });
+
+        return response()->json(['mark' => $data['mark']]);
+    }
+
     public function clearRows(Request $request): JsonResponse
     {
         $data = $request->validate([

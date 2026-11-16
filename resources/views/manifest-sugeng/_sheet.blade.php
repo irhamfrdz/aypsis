@@ -39,7 +39,19 @@
     .sugeng-sheet tbody tr.sheet-incomplete[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
     .sugeng-sheet tbody tr[data-selected="true"] td:focus { background: #eef2ff; }
+    .sugeng-sheet tbody tr[data-mark="ungu"] .sheet-row-number { box-shadow: inset 8px 0 #9333ea; }
+    .sugeng-sheet tbody tr[data-mark="biru"] .sheet-row-number { box-shadow: inset 8px 0 #2563eb; }
+    .sugeng-sheet tbody tr[data-mark="merah"] .sheet-row-number { box-shadow: inset 8px 0 #dc2626; }
 </style>
+@can('manifest-sugeng-manage')
+<div class="sugeng-mark-controls mb-2 flex flex-wrap items-center gap-2 rounded border border-gray-300 bg-white p-2 text-sm" aria-label="Tandai baris manifest">
+    <span class="text-gray-700">Pilih nomor baris, lalu tandai:</span>
+    <button type="button" data-mark="ungu" class="rounded bg-purple-600 px-3 py-1 font-semibold text-white">Ungu</button>
+    <button type="button" data-mark="biru" class="rounded bg-blue-600 px-3 py-1 font-semibold text-white">Biru</button>
+    <button type="button" data-mark="merah" class="rounded bg-red-600 px-3 py-1 font-semibold text-white">Merah</button>
+    <button type="button" data-mark="" class="rounded border border-gray-300 px-3 py-1">Hapus tanda</button>
+</div>
+@endcan
 <div class="sugeng-formula-bar mb-2 flex items-start gap-2 rounded border border-gray-300 bg-gray-100 p-2" aria-label="Isi sel terpilih">
     <output class="sugeng-cell-address mt-1 w-16 shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm" aria-label="Alamat sel">—</output>
     <span class="mt-1 text-lg italic text-gray-500" aria-hidden="true">fx</span>
@@ -70,7 +82,7 @@
         $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
-    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}">
+    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" @endcan>
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
             <tr class="sheet-size-headings"><th class="sheet-size-heading">#</th>@foreach($columns as $column)<th class="sheet-size-heading">{{ $column }}<span class="sheet-column-resize" data-column="{{ $column }}" title="Tarik untuk mengatur lebar kolom"></span></th>@endforeach</tr>
@@ -144,7 +156,7 @@
                             !$isLcl && $line === 0 ? $containerDescription : '',
                         ];
                     @endphp
-                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @class(['sheet-incomplete' => $item->belum_selesai])><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span>@if($line === 0)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif @class(['sheet-incomplete' => $item->belum_selesai])><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span>@if($line === 0)
                         @can('manifest-sugeng-manage')<form method="POST" action="{{ route('manifest-sugeng.set-incomplete', $item) }}" onclick="event.stopPropagation()" class="mt-1">@csrf @method('PUT')<input type="hidden" name="belum_selesai" value="{{ $item->belum_selesai ? '0' : '1' }}"><button type="submit" class="rounded px-1 text-xs {{ $item->belum_selesai ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-600' }}" title="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}" aria-label="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}"><i class="fas fa-highlighter" aria-hidden="true"></i></button></form>
                         @elsecan('manifest-sugeng-view')
                             @if($item->belum_selesai)<span class="block text-xs text-amber-800" title="Belum selesai">●</span>@endif
