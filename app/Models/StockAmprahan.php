@@ -9,6 +9,7 @@ class StockAmprahan extends Model
     use \Illuminate\Database\Eloquent\Factories\HasFactory;
 
     protected $fillable = [
+        'purchase_order_item_id',
         'nomor_bukti',
         'tanggal_beli',
         'type_amprahan',
@@ -31,7 +32,7 @@ class StockAmprahan extends Model
     ];
 
     protected $casts = [
-        'jumlah' => 'decimal:2',
+        'jumlah' => 'decimal:3',
         'harga_satuan' => 'decimal:2',
         'adjustment' => 'decimal:2',
         'tanggal_beli' => 'date',

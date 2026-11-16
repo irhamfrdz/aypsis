@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PermohonanAmprahan;
 use App\Models\PurchaseOrder;
 use App\Services\PurchaseOrderAssetService;
+use App\Services\PurchaseOrderStockService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -87,7 +88,13 @@ class PurchaseOrderController extends Controller
             if (! $order->nomor_po) {
                 $order->update(['nomor_po' => sprintf('PO-%s-%06d', $order->tanggal_po->format('Ym'), $order->id)]);
             }
-            $order->items()->createMany($items);
+            $createdItems = $order->items()->createMany($items);
+            if ($permohonanAmprahan) {
+                $stockService = new PurchaseOrderStockService;
+                foreach ($createdItems as $item) {
+                    $stockService->sync($item);
+                }
+            }
 
             if ($permohonanAmprahan && $permohonanAmprahan->status === 'pending') {
                 $fullyApproved = true;
@@ -148,9 +155,20 @@ class PurchaseOrderController extends Controller
             if ($purchaseOrder->permohonan_amprahan_id) {
                 $existingItems = $purchaseOrder->items()->get()->keyBy('urutan');
                 $assetService = new PurchaseOrderAssetService;
+                $stockService = new PurchaseOrderStockService;
                 foreach ($items as $itemData) {
                     $item = $existingItems->pull($itemData['urutan']);
                     if ($item) {
+                        $stock = \App\Models\StockAmprahan::where('purchase_order_item_id', $item->id)->first();
+                        if ($stock?->usages()->exists() && (
+                            (float) $item->kuantitas !== (float) $itemData['kuantitas']
+                            || $item->deskripsi !== $itemData['deskripsi']
+                            || $itemData['masuk_asset']
+                        )) {
+                            throw ValidationException::withMessages([
+                                'items' => 'Stok dari PO ini sudah dipakai. Barang, kuantitas, dan pilihan aset tidak dapat diubah.',
+                            ]);
+                        }
                         $item->update($itemData);
                     } else {
                         $item = $purchaseOrder->items()->create($itemData);
@@ -158,9 +176,11 @@ class PurchaseOrderController extends Controller
                     if (! $item->masuk_asset) {
                         $assetService->remove($item);
                     }
+                    $stockService->sync($item);
                 }
                 foreach ($existingItems as $item) {
                     $assetService->remove($item);
+                    $stockService->remove($item);
                     $item->delete();
                 }
             } else {
@@ -178,8 +198,10 @@ class PurchaseOrderController extends Controller
         DB::transaction(function () use ($purchaseOrder) {
             $permohonanAmprahan = $purchaseOrder->permohonanAmprahan()->lockForUpdate()->first();
             $assetService = new PurchaseOrderAssetService;
+            $stockService = new PurchaseOrderStockService;
             foreach ($purchaseOrder->items as $item) {
                 $assetService->remove($item);
+                $stockService->remove($item);
             }
             $purchaseOrder->delete();
 
