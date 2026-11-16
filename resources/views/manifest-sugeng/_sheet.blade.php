@@ -1,4 +1,5 @@
 <style>
+    .sugeng-mark-controls { position: sticky; top: 0; z-index: 30; box-shadow: 0 4px 12px rgb(15 23 42 / 12%); }
     .sugeng-sheet-scroll { position: relative; overflow: auto; height: 75vh; background: #e5e7eb; padding: 16px; }
     .sugeng-sheet-resize { height: 10px; margin-top: -5px; position: relative; z-index: 5; cursor: ns-resize; background: #d1d5db; border-radius: 0 0 6px 6px; }
     .sugeng-sheet-resize:hover { background: #818cf8; }
