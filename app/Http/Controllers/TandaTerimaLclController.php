@@ -1680,7 +1680,8 @@ class TandaTerimaLclController extends Controller
 
     public function unstuffedForStuffing(Request $request)
     {
-        $search = trim((string) $request->validate(['search' => ['nullable', 'string', 'max:100']])['search'] ?? '');
+        $validated = $request->validate(['search' => ['nullable', 'string', 'max:100']]);
+        $search = trim((string) ($validated['search'] ?? ''));
         $rows = TandaTerimaLcl::with('items')
             ->doesntHave('kontainerPivot')
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
