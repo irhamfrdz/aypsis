@@ -70,7 +70,7 @@
         </table>
     </div>
 
-    <p class="text-xs text-gray-500">Trip dihitung dari nomor voyage unik pada rincian terfilter. Pasangan JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
+    <p class="text-xs text-gray-500">Trip dihitung dari Manifest berdasarkan kapal dan tanggal berangkat dalam periode terpilih (fallback: tanggal mulai berlayar, lalu tanggal muat). Pasangan JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
 
     @foreach($groups as $group)
     <section>

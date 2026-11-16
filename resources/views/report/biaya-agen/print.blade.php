@@ -67,7 +67,7 @@
                 @endforeach
             </tbody>
         </table>
-        <p class="small">Trip dihitung dari voyage unik dalam rincian terfilter; JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
+        <p class="small">Trip dari Manifest dalam periode terpilih; JB/BJ dan JP/PJ dengan nomor yang sama dihitung satu trip.</p>
 
         <table class="items">
             <thead><tr>

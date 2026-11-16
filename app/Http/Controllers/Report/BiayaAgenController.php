@@ -127,17 +127,41 @@ class BiayaAgenController extends Controller
 
         $tripCounter = new BiayaAgenTripCounter;
         $groups = $rows->groupBy(fn ($row) => mb_strtolower(trim((string) $row->kapal)) ?: '__tanpa_kapal__')
-            ->map(function ($shipRows) use ($tripCounter) {
+            ->map(function ($shipRows) {
                 return [
                     'kapal' => trim((string) $shipRows->first()->kapal) ?: 'Tanpa kapal',
                     'rows' => $shipRows,
-                    'trip_count' => $tripCounter->count($shipRows),
+                    'trip_count' => 0,
                     'subtotal' => $shipRows->sum('sub_total'),
                     'pph' => $shipRows->sum('pph'),
                     'adjustment' => $shipRows->sum('adjustment'),
                     'grand_total' => $shipRows->sum('grand_total'),
                 ];
             })->sortBy('kapal', SORT_NATURAL | SORT_FLAG_CASE)->values();
+
+        $shipKey = fn ($name) => preg_replace('/[^A-Z0-9]/', '', mb_strtoupper(trim((string) $name)));
+        $shipKeys = $groups->pluck('kapal')->map($shipKey)->filter()->unique()->values()->all();
+        if ($shipKeys !== []) {
+            $manifestQuery = DB::table('manifests')
+                ->select('nama_kapal', 'no_voyage as voyage')
+                ->whereNotNull('no_voyage')
+                ->whereRaw("TRIM(no_voyage) <> ''")
+                ->whereIn(DB::raw("UPPER(REPLACE(REPLACE(TRIM(nama_kapal), '.', ''), ' ', ''))"), $shipKeys)
+                ->distinct();
+
+            if (in_array($validated['mode'], ['tanggal', 'gabungan'], true)) {
+                $manifestQuery->whereBetween(DB::raw('COALESCE(tanggal_berangkat, tanggal_mulai_berlayar, tanggal_muat)'), [
+                    $validated['start_date'], $validated['end_date'],
+                ]);
+            }
+
+            $manifestVoyages = $manifestQuery->get()->groupBy(fn ($row) => $shipKey($row->nama_kapal));
+            $groups = $groups->map(function ($group) use ($shipKey, $manifestVoyages, $tripCounter) {
+                $group['trip_count'] = $tripCounter->count($manifestVoyages->get($shipKey($group['kapal']), collect()));
+
+                return $group;
+            });
+        }
 
         return compact('rows', 'groups', 'summary', 'validated');
     }
