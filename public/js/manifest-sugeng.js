@@ -434,7 +434,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     document.getElementById('manifest-view-cancel')?.addEventListener('click', () => dialog.close());
     if (dialog.dataset.autoOpen === '1') dialog.showModal();
     let requestNumber = 0;
-    ship.addEventListener('change', async () => {
+    const loadViewVoyages = async () => {
         const currentRequest = ++requestNumber;
         voyage.replaceChildren(new Option(ship.value ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
         voyage.disabled = true;
@@ -455,7 +455,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
             if (currentRequest !== requestNumber) return;
             voyage.replaceChildren(new Option(error.message, ''));
         }
-    });
+    };
+    ship.addEventListener('change', loadViewVoyages);
+    window.jQuery?.(ship).on('select2:select select2:clear', loadViewVoyages);
 })();
 
 (() => {

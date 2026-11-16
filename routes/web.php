@@ -7695,6 +7695,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('manifest-sugeng', [\App\Http\Controllers\ManifestSugengController::class, 'index'])
         ->name('manifest-sugeng.index')
         ->middleware('can:manifest-sugeng-view');
+    Route::get('manifest-sugeng/voyages/{namaKapal}', [\App\Http\Controllers\ManifestSugengController::class, 'voyages'])
+        ->name('manifest-sugeng.voyages')
+        ->middleware('can:manifest-sugeng-view');
     Route::post('manifest-sugeng/assign-voyage', [\App\Http\Controllers\ManifestSugengController::class, 'assignVoyage'])
         ->name('manifest-sugeng.assign-voyage')
         ->middleware('can:manifest-sugeng-manage');

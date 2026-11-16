@@ -17,11 +17,11 @@
     @if(session('success'))<div class="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
     @error('nomor_bl')<div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</div>@enderror
     <style>#manifest-view-dialog .select2-container { width: 100% !important; } #manifest-view-dialog .select2-container--default .select2-selection--single { height: 42px; border: 1px solid #d1d5db; border-radius: .5rem; } #manifest-view-dialog .select2-container--default .select2-selection__rendered { line-height: 40px; } #manifest-view-dialog .select2-container--default .select2-selection__arrow { height: 40px; }</style>
-    <dialog id="manifest-view-dialog" data-auto-open="{{ $hasViewChoice ? '0' : '1' }}" data-voyages-url="{{ url('/api/manifests/voyages') }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/60">
+    <dialog id="manifest-view-dialog" data-auto-open="{{ $hasViewChoice ? '0' : '1' }}" data-voyages-url="{{ url('/manifest-sugeng/voyages') }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/60">
         <div class="border-b border-gray-100 px-6 py-5"><h2 class="text-lg font-bold text-gray-900">Pilih data Manifest Sugeng</h2><p class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage, atau lihat data yang belum ditugaskan.</p></div>
         <form method="GET" action="{{ route('manifest-sugeng.index') }}" class="space-y-4 px-6 py-5">
             <label class="block text-sm font-semibold text-gray-700">Nama kapal
-                <select id="manifest-view-ship" name="nama_kapal" required class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">-- Pilih kapal --</option>@foreach($ships as $ship)<option value="{{ $ship }}" @selected(request('nama_kapal') === $ship)>{{ $ship }}</option>@endforeach</select>
+                <select id="manifest-view-ship" name="nama_kapal" required class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">-- Pilih kapal --</option>@foreach($viewShips as $ship)<option value="{{ $ship }}" @selected(request('nama_kapal') === $ship)>{{ $ship }}</option>@endforeach</select>
             </label>
             <label class="block text-sm font-semibold text-gray-700">No. voyage
                 <select id="manifest-view-voyage" name="no_voyage" required @disabled(!request('nama_kapal')) class="mt-2 w-full rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">-- Pilih voyage --</option>@foreach($voyages as $voyage)<option value="{{ $voyage }}" @selected(request('no_voyage') === $voyage)>{{ $voyage }}</option>@endforeach</select>

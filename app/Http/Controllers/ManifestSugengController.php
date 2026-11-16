@@ -62,8 +62,19 @@ class ManifestSugengController extends Controller
         $voyages = ManifestSugeng::query()->whereNotNull('no_voyage')
             ->when($filters['nama_kapal'] ?? null, fn ($query, $ship) => $query->where('nama_kapal', $ship))
             ->distinct()->orderBy('no_voyage')->pluck('no_voyage');
+        $viewShips = ManifestSugeng::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')
+            ->whereNotNull('no_voyage')->where('no_voyage', '!=', '')
+            ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
 
-        return view('manifest-sugeng.index', compact('items', 'ships', 'voyages', 'hasViewChoice', 'showUnassigned'));
+        return view('manifest-sugeng.index', compact('items', 'ships', 'voyages', 'viewShips', 'hasViewChoice', 'showUnassigned'));
+    }
+
+    public function voyages(string $namaKapal): JsonResponse
+    {
+        return response()->json(['voyages' => ManifestSugeng::query()
+            ->where('nama_kapal', $namaKapal)
+            ->whereNotNull('no_voyage')->where('no_voyage', '!=', '')
+            ->distinct()->orderBy('no_voyage')->pluck('no_voyage')]);
     }
 
     public function show(ManifestSugeng $manifestSugeng): View
