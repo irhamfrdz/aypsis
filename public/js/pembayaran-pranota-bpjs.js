@@ -124,22 +124,24 @@ document.addEventListener('DOMContentLoaded', function () {
         updateTotal();
     });
     if (groupSelect) {
-        const restored = boxes.find(box => box.checked);
-        if (restored) groupSelect.value = restored.dataset.selectionKey;
+        const restored = new Set(boxes.filter(box => box.checked).map(box => box.dataset.selectionKey));
+        Array.from(groupSelect.options).forEach(option => {
+            if (restored.has(option.value)) option.selected = true;
+        });
         const changeGroup = (restore = false) => {
             if (!restore) {
                 branchFilter.value = '';
                 nameSearch.value = '';
             }
-            const key = groupSelect.value;
-            details.hidden = !key;
+            const keys = new Set(Array.from(groupSelect.selectedOptions).map(option => option.value));
+            details.hidden = keys.size === 0;
             document.querySelectorAll('[data-payment-group]').forEach(row => {
-                row.hidden = row.dataset.paymentGroup !== key;
+                row.hidden = !keys.has(row.dataset.paymentGroup);
             });
             boxes.forEach(box => {
-                const matches = box.dataset.selectionKey === key;
+                const matches = keys.has(box.dataset.selectionKey);
                 box.disabled = !matches;
-                box.checked = matches && restore && box.checked;
+                if (!matches) box.checked = false;
             });
             updateTotal();
         };

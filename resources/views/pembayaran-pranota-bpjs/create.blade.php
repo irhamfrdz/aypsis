@@ -14,12 +14,12 @@
         <div class="bg-white border border-gray-200 rounded-2xl p-5 sm:p-6 shadow-sm">
             <div class="flex items-start gap-3 mb-5"><span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-indigo-50 text-sm font-bold text-indigo-700">1</span><div><h2 class="font-semibold text-gray-900">Pilih Group BPJS</h2><p class="text-sm text-gray-500 mt-1">Pranota <span class="font-medium text-gray-700">{{ $pranota->nomor_pranota }}</span> · Group dengan tagihan yang belum dibayar.</p></div></div>
             <label for="payment-group" class="block text-sm font-medium mb-2">Group BPJS *</label>
-            <select id="payment-group" name="bpjs_group" required class="w-full max-w-xl rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500">
-                <option value="">Pilih Group BPJS</option>
+            <select id="payment-group" name="bpjs_groups[]" multiple size="5" required aria-describedby="payment-group-help" class="w-full max-w-xl rounded-lg border border-gray-300 bg-white px-3 py-2.5 text-sm text-gray-900 focus:border-indigo-500 focus:ring-indigo-500">
                 @foreach(collect($groups)->unique('selection_key') as $group)
-                    <option value="{{ $group['selection_key'] }}">{{ $group['group'] }} — {{ $group['komponen'] === 'jkn' ? 'JKN' : 'BP Jamsostek' }}</option>
+                    <option value="{{ $group['selection_key'] }}" @selected(in_array($group['selection_key'], old('bpjs_groups', old('bpjs_group') ? [old('bpjs_group')] : [])))>{{ $group['group'] }} — {{ $group['komponen'] === 'jkn' ? 'JKN' : 'BP Jamsostek' }}</option>
                 @endforeach
             </select>
+            <p id="payment-group-help" class="mt-2 text-xs text-gray-500">Dapat memilih lebih dari satu group. Tahan Ctrl (Windows) atau Command (Mac) sambil klik untuk menambah atau menghapus pilihan.</p>
             @if(empty($groups))<p class="mt-3 text-sm text-gray-500">Tidak ada tagihan yang dapat dibayar dari pranota ini.</p>@endif
         </div>
         <div id="payment-details" hidden class="space-y-6">
@@ -33,7 +33,7 @@
                         @foreach($groups as $group)
                             <tr data-payment-group="{{ $group['selection_key'] }}" hidden>
                                 <td class="p-4"><input type="checkbox" name="group_keys[]" value="{{ $group['key'] }}" data-selection-key="{{ $group['selection_key'] }}" data-amount="{{ $group['amount'] }}" data-credit-id="{{ $group['credit_id'] }}" data-credit-label="{{ $group['credit_label'] }}" aria-label="Bayar {{ $group['group'] }} {{ $group['tipe'] }} {{ $group['cabang_bpjs'] }}" @checked(in_array($group['key'], old('group_keys', [])))></td>
-                                <td class="p-4 font-medium">{{ $group['tipe'] }}</td><td colspan="3" class="p-4 text-right text-gray-500">Rincian tampil per karyawan</td><td class="p-4 text-right whitespace-nowrap">Rp {{ number_format($group['amount'], 2, ',', '.') }}</td>
+                                <td class="p-4 font-medium">{{ $group['tipe'] }}<span class="block text-xs font-normal text-gray-500">{{ $group['group'] }} · {{ $group['komponen'] === 'jkn' ? 'JKN' : 'BP Jamsostek' }}</span></td><td colspan="3" class="p-4 text-right text-gray-500">Rincian tampil per karyawan</td><td class="p-4 text-right whitespace-nowrap">Rp {{ number_format($group['amount'], 2, ',', '.') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

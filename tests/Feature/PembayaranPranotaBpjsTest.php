@@ -34,6 +34,7 @@ class PembayaranPranotaBpjsTest extends TestCase
         (require database_path('migrations/2026_11_03_100000_create_pembayaran_pranota_bpjs_tables.php'))->up();
         (require database_path('migrations/2026_11_03_110000_allow_split_bpjs_payments.php'))->up();
         (require database_path('migrations/2026_11_05_130000_add_bank_allocations_to_pembayaran_pranota_bpjs.php'))->up();
+        (require database_path('migrations/2026_11_09_140000_add_journal_amounts_to_bpjs_payment_parts.php'))->up();
         (require database_path('migrations/2026_11_10_180000_add_journal_allocations_to_bpjs_payments.php'))->up();
         (require database_path('migrations/2025_09_30_141213_create_nomor_terakhir_table.php'))->up();
         Schema::create('akun_coa', function (Blueprint $table) {
@@ -488,6 +489,44 @@ class PembayaranPranotaBpjsTest extends TestCase
             $this->assertArrayHasKey('employee_keys', $e->errors());
         }
         $this->assertSame(1, PembayaranPranotaBpjs::count());
+    }
+
+    public function test_selected_employees_from_multiple_groups_can_share_one_payment(): void
+    {
+        $pranota = $this->pranota('draft', 600);
+        foreach ([['GROUP A', 100], ['GROUP B', 200], ['GROUP B', 300]] as [$name, $amount]) {
+            DB::table('pranota_bpjs_details')->insert([
+                'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => 1,
+                'snapshot_bpjs' => json_encode(['karyawan' => ['group_jkn' => $name, 'tipe_jkn' => 'LAPANGAN']]),
+                'bpjs_kesehatan' => $amount, 'total' => $amount,
+            ]);
+        }
+        DB::table('akun_coa')->insert(['id' => 4, 'nomor_akun' => '6201.002', 'nama_akun' => 'Biaya Upah Harian Batam', 'tipe_akun' => 'Biaya', 'saldo' => 0]);
+        $groups = array_values((new \App\Services\BpjsPaymentParts)->groups($pranota));
+        $payload = [
+            'pranota_ids' => [$pranota->id], 'tanggal_pembayaran' => '2026-11-03', 'akun_coa_id' => 1,
+            'select_employees' => 1, 'bpjs_groups' => array_column($groups, 'selection_key'),
+            'group_keys' => array_column($groups, 'key'),
+            'employee_keys' => [$groups[0]['employees'][0]['key'], $groups[1]['employees'][0]['key']],
+        ];
+        try {
+            $this->pay(array_replace($payload, ['bpjs_groups' => [$groups[0]['selection_key']]]));
+            $this->fail('Employees outside the selected groups must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('group_keys', $e->errors());
+        }
+        $this->assertSame(0, PembayaranPranotaBpjs::count());
+        $this->pay($payload);
+        $payment = PembayaranPranotaBpjs::firstOrFail();
+        $this->assertSame('300.00', $payment->total_pembayaran);
+        $this->assertSame(2, DB::table('pembayaran_pranota_bpjs_parts')->count());
+        $this->assertSame('partial', $pranota->fresh()->status);
+        $remaining = array_values((new \App\Services\BpjsPaymentParts)->groups($pranota->fresh()));
+        $this->assertCount(1, $remaining);
+        $this->assertSame(300.0, $remaining[0]['amount']);
+        $this->assertEquals(300, DB::table('coa_transactions')->sum('debit'));
+        $this->assertEquals(300, DB::table('coa_transactions')->sum('kredit'));
+        $this->assertEquals(999700, Coa::find(1)->saldo);
     }
 
     public function test_journal_account_mapping_and_selection_validation(): void

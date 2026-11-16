@@ -47,9 +47,11 @@ class PembayaranPranotaBpjsController extends Controller
     {
         $data = $request->validate([
             'pranota_ids' => ['required', 'array', 'min:1'],
-            'group_keys' => ['required_with:select_employees,employee_keys,bpjs_group', 'array', 'min:1'],
+            'group_keys' => ['required_with:select_employees,employee_keys,bpjs_group,bpjs_groups', 'array', 'min:1'],
             'group_keys.*' => ['required', 'string', 'distinct'],
             'bpjs_group' => ['sometimes', 'required', 'string'],
+            'bpjs_groups' => ['sometimes', 'required', 'array', 'min:1'],
+            'bpjs_groups.*' => ['required', 'string', 'distinct'],
             'select_employees' => ['sometimes', 'in:1'],
             'employee_keys' => ['required_if:select_employees,1', 'array', 'min:1'],
             'employee_keys.*' => ['required', 'string', 'distinct', 'regex:/^[1-9][0-9]*:(jkn|jamsostek)$/'],
@@ -86,6 +88,9 @@ class PembayaranPranotaBpjsController extends Controller
                             throw ValidationException::withMessages(['group_keys' => 'Tipe sudah dibayar atau tidak tersedia. Muat ulang halaman.']);
                         }
                         if (isset($data['bpjs_group']) && collect($selected)->contains(fn ($group) => $group['selection_key'] !== $data['bpjs_group'])) {
+                            throw ValidationException::withMessages(['group_keys' => 'Karyawan harus berasal dari Group BPJS yang dipilih.']);
+                        }
+                        if (isset($data['bpjs_groups']) && collect($selected)->contains(fn ($group) => ! in_array($group['selection_key'], $data['bpjs_groups'], true))) {
                             throw ValidationException::withMessages(['group_keys' => 'Karyawan harus berasal dari Group BPJS yang dipilih.']);
                         }
                         if (isset($data['employee_keys'])) {
