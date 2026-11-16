@@ -106,6 +106,7 @@
             @forelse($items as $item)
                 @php
                     $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
+                    $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
                     $containerKey = implode('|', [$item->nama_kapal, $item->no_voyage, strtoupper(trim((string) $item->nomor_kontainer))]);
                     $containerType = strtoupper($item->tipe_kontainer ?? $item->source_type ?? '');
                     $containerDescription = trim('Container'.($item->size_kontainer ? ' '.$item->size_kontainer.' feet' : '').($containerType ? ' / '.$containerType : ''));
@@ -138,9 +139,9 @@
                             $line === 0 ? $item->nomor_bl : '', implode("\n", $hsCodes),
                             !$isLcl && $line === 0 ? $item->nomor_kontainer : '',
                             !$isLcl && $line === 0 ? $item->no_seal : '',
-                            !$isLcl && $line === 0 ? 1 : '',
-                            !$isLcl && $line === 0 ? 'Unit' : '',
-                            !$isLcl && $line === 0 ? $containerDescription.' stc :' : '',
+                            $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : (!$isLcl && $line === 0 ? 1 : ''),
+                            $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : (!$isLcl && $line === 0 ? 'Unit' : ''),
+                            $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription.' stc :' : ''),
                             data_get($good, 'jumlah'), data_get($good, 'satuan'), data_get($good, 'nama_barang'),
                             data_get($detail, 'jumlah'), data_get($detail, 'satuan'), data_get($detail, 'nama_barang'),
                             data_get($good, 'tonase'), data_get($good, 'meter_kubik'),
@@ -149,9 +150,9 @@
                             $shipper?->notify_party_consignee, $shipper?->alamat_notify_party_consignee, $shipper?->npwp_notify_party_consignee,
                             $shipper?->delivery_address_contact_person, $shipper?->document_ppftz_03, $shipper?->condition,
                             $item->nomor_tanda_terima, $item->tanggal_tanda_terima?->format('d/m/Y'),
-                            !$isLcl && $line === 0 ? 1 : '',
-                            !$isLcl && $line === 0 ? 'Unit' : '',
-                            !$isLcl && $line === 0 ? $containerDescription : '',
+                            $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : (!$isLcl && $line === 0 ? 1 : ''),
+                            $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : (!$isLcl && $line === 0 ? 'Unit' : ''),
+                            $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription : ''),
                         ];
                     @endphp
                     <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)

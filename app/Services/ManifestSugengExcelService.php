@@ -55,6 +55,7 @@ class ManifestSugengExcelService
         foreach ($items as $item) {
             $container = trim((string) $item->nomor_kontainer);
             $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
+            $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
             if ($isLcl && $container !== '' && strtoupper($container) !== $lastContainer) {
                 $sheet->setCellValue('D'.$row, $container);
                 $sheet->setCellValue('E'.$row, $item->no_seal);
@@ -86,9 +87,9 @@ class ManifestSugengExcelService
                     'C' => implode("\n", (array) (data_get($good, 'hs_codes') ?: (data_get($good, 'hs_code') ? [data_get($good, 'hs_code')] : []))),
                     'D' => ! $isLcl && $line === 0 ? $container : null,
                     'E' => ! $isLcl && $line === 0 ? $item->no_seal : null,
-                    'F' => ! $isLcl && $line === 0 ? 1 : null,
-                    'G' => ! $isLcl && $line === 0 ? 'Unit' : null,
-                    'H' => ! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer).' stc :' : null,
+                    'F' => $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
+                    'G' => $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
+                    'H' => $isCargo ? null : (! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer).' stc :' : null),
                     'I' => data_get($good, 'jumlah'), 'J' => data_get($good, 'satuan'), 'K' => data_get($good, 'nama_barang'),
                     'L' => data_get($detail, 'jumlah'), 'M' => data_get($detail, 'satuan'), 'N' => data_get($detail, 'nama_barang'),
                     'O' => data_get($good, 'tonase'), 'P' => data_get($good, 'meter_kubik'),
@@ -100,9 +101,9 @@ class ManifestSugengExcelService
                     'AA' => $shipper?->document_ppftz_03, 'AB' => $shipper?->condition,
                     'AC' => $item->nomor_tanda_terima,
                     'AD' => $item->tanggal_tanda_terima?->format('d/m/Y'),
-                    'AE' => ! $isLcl && $line === 0 ? 1 : null,
-                    'AF' => ! $isLcl && $line === 0 ? 'Unit' : null,
-                    'AG' => ! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer) : null,
+                    'AE' => $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
+                    'AF' => $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
+                    'AG' => $isCargo ? null : (! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer) : null),
                 ];
                 $values = array_replace($values, $item->sheet_values['details'][$line] ?? []);
                 foreach ($values as $column => $value) {
