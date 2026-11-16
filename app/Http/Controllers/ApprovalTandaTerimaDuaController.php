@@ -71,11 +71,13 @@ class ApprovalTandaTerimaDuaController extends Controller
             'status' => 'nullable|in:belum,sudah,belum_lengkap',
             'destination' => 'nullable|in:jakarta,batam,tanjung-pinang',
             'manifest_status' => 'nullable|in:belum,sudah,semua',
+            'sugeng_status' => 'nullable|in:belum,sudah,semua',
             'voyage' => 'nullable|string|max:255',
         ]);
         $type = $filters['type'] ?? 'fcl';
         $destination = $filters['destination'] ?? 'batam';
         $manifestStatus = $filters['manifest_status'] ?? 'belum';
+        $sugengStatus = $filters['sugeng_status'] ?? 'semua';
         $query = self::SOURCES[$type]::query();
 
         // Old receipts that should not enter the Approval Tanda Terima 2 queue.
@@ -91,6 +93,15 @@ class ApprovalTandaTerimaDuaController extends Controller
         });
 
         $sourceTable = $query->getModel()->getTable();
+        if ($sugengStatus !== 'semua') {
+            $sugengMatch = fn ($sugengQuery) => $sugengQuery->selectRaw('1')
+                ->from('manifest_sugengs')
+                ->where('manifest_sugengs.source_type', $type)
+                ->whereColumn('manifest_sugengs.source_id', "{$sourceTable}.id");
+            $sugengStatus === 'sudah'
+                ? $query->whereExists($sugengMatch)
+                : $query->whereNotExists($sugengMatch);
+        }
         $numberColumns = match ($type) {
             'fcl' => ['no_surat_jalan', 'nomor_tanda_terima'],
             'ttsj' => ['no_tanda_terima', 'nomor_tanda_terima'],
@@ -316,6 +327,7 @@ class ApprovalTandaTerimaDuaController extends Controller
             'type' => $type,
             'destination' => $destination,
             'manifestStatus' => $manifestStatus,
+            'sugengStatus' => $sugengStatus,
             'items' => $items,
             'containerQuantityTotal' => $containerQuantityTotal,
             'goodsOverrides' => $goodsOverrides,

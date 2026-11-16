@@ -148,7 +148,7 @@
                 </div>
                 <p class="mt-2 text-xs text-gray-500">Pisahkan beberapa kata kunci dengan koma. Pilihan export tetap tersimpan saat Anda mencari lagi atau pindah halaman pada jenis tanda terima yang sama.</p>
             </div>
-            <div class="grid gap-4 sm:grid-cols-2 {{ $manifestStatus === 'sudah' ? 'lg:grid-cols-5' : 'lg:grid-cols-4' }}">
+            <div class="grid gap-4 sm:grid-cols-2 {{ $manifestStatus === 'sudah' ? 'lg:grid-cols-6' : 'lg:grid-cols-5' }}">
                 <div>
                     <label for="type" class="mb-2 block text-sm font-semibold text-gray-700">Jenis tanda terima</label>
                     <select id="type" name="type" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
@@ -180,6 +180,14 @@
                         <option value="belum" @selected($manifestStatus === 'belum')>Belum Naik ke Kapal</option>
                         <option value="sudah" @selected($manifestStatus === 'sudah')>Sudah Naik ke Kapal</option>
                         <option value="semua" @selected($manifestStatus === 'semua')>Semua</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="sugeng_status" class="mb-2 block text-sm font-semibold text-gray-700">Status Manifest Sugeng</label>
+                    <select id="sugeng_status" name="sugeng_status" class="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                        <option value="semua" @selected($sugengStatus === 'semua')>Semua</option>
+                        <option value="belum" @selected($sugengStatus === 'belum')>Belum dimasukkan</option>
+                        <option value="sudah" @selected($sugengStatus === 'sudah')>Sudah dimasukkan</option>
                     </select>
                 </div>
             </div>
