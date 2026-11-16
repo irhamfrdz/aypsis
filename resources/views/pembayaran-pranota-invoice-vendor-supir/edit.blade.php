@@ -15,7 +15,7 @@
             <label class="text-sm">Nomor pembayaran<input value="{{ $pembayaran->nomor_pembayaran }}" disabled class="mt-1 w-full rounded border-gray-300 bg-gray-100"></label>
             <label class="text-sm">Tanggal kas<input type="date" name="tanggal_pembayaran" required value="{{ old('tanggal_pembayaran', $pembayaran->tanggal_pembayaran?->format('Y-m-d')) }}" class="mt-1 w-full rounded border-gray-300"></label>
             <label class="text-sm">No. Accurate<input name="nomor_accurate" value="{{ old('nomor_accurate', $pembayaran->nomor_accurate) }}" class="mt-1 w-full rounded border-gray-300"></label>
-            <label class="text-sm">Bank<select name="bank" required class="mt-1 w-full rounded border-gray-300">@foreach($akunCoa as $akun)<option value="{{ $akun->nama_akun }}" @selected(old('bank', $pembayaran->bank) === $akun->nama_akun)>{{ $akun->nama_akun }}</option>@endforeach</select></label>
+            <label class="text-sm">Akun kas/bank<select name="bank" required class="mt-1 w-full rounded border-gray-300">@foreach($akunCoa as $akun)<option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? $akun->nomor_akun ?? '' }}" @selected(old('bank', $pembayaran->bank) === $akun->nama_akun)>{{ $akun->nama_akun }}</option>@endforeach</select></label>
             <label class="text-sm">Jenis transaksi<select name="metode_pembayaran" required class="mt-1 w-full rounded border-gray-300"><option value="debit" @selected(old('metode_pembayaran', $pembayaran->metode_pembayaran)==='debit')>Debit</option><option value="kredit" @selected(old('metode_pembayaran', $pembayaran->metode_pembayaran)==='kredit')>Kredit</option></select></label>
         </section>
         <section class="rounded border p-4">
@@ -51,9 +51,70 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
     const rows = document.getElementById('expenseAccountRows');
+    const initializeAccountSearch = (scope = document) => {
+        scope.querySelectorAll('select[name="bank"], select[name^="akun_biaya"]').forEach(select => {
+            if (select.dataset.searchReady) return;
+            select.dataset.searchReady = 'true';
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative mt-1';
+            select.parentNode.insertBefore(wrapper, select);
+            wrapper.appendChild(select);
+            select.classList.add('hidden');
+            const wasRequired = select.required;
+            select.required = false;
+            const search = document.createElement('input');
+            search.type = 'text';
+            search.autocomplete = 'off';
+            search.placeholder = 'Cari nama atau kode akun...';
+            search.className = 'w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500';
+            search.required = wasRequired;
+            const dropdown = document.createElement('div');
+            dropdown.className = 'absolute z-30 mt-1 hidden max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg';
+            wrapper.insertBefore(search, select);
+            wrapper.appendChild(dropdown);
+            const options = [...select.options].filter(option => option.value);
+            const selected = options.find(option => option.value === select.value);
+            if (selected) search.value = selected.textContent.trim();
+            const render = () => {
+                const term = search.value.trim().toLocaleLowerCase('id');
+                const matches = options.filter(option => `${option.textContent} ${option.dataset.kode || ''}`.toLocaleLowerCase('id').includes(term));
+                dropdown.replaceChildren();
+                if (!matches.length) {
+                    const empty = document.createElement('div');
+                    empty.className = 'px-3 py-2 text-sm text-gray-500';
+                    empty.textContent = 'Akun tidak ditemukan';
+                    dropdown.appendChild(empty);
+                } else matches.forEach(option => {
+                    const item = document.createElement('button');
+                    item.type = 'button';
+                    item.className = 'block w-full px-3 py-2 text-left text-sm hover:bg-indigo-50';
+                    item.textContent = option.dataset.kode && !option.textContent.includes(option.dataset.kode)
+                        ? `${option.dataset.kode} - ${option.textContent.trim()}` : option.textContent.trim();
+                    item.addEventListener('click', () => {
+                        select.value = option.value;
+                        search.value = option.textContent.trim();
+                        dropdown.classList.add('hidden');
+                        select.dispatchEvent(new Event('change', { bubbles: true }));
+                    });
+                    dropdown.appendChild(item);
+                });
+                dropdown.classList.remove('hidden');
+            };
+            search.addEventListener('focus', render);
+            search.addEventListener('input', () => {
+                select.value = '';
+                render();
+            });
+            document.addEventListener('click', event => {
+                if (!wrapper.contains(event.target)) dropdown.classList.add('hidden');
+            });
+        });
+    };
+    initializeAccountSearch();
     document.getElementById('addExpenseAccount').addEventListener('click', () => {
         const html = document.getElementById('expenseAccountTemplate').innerHTML.replaceAll('__INDEX__', Date.now());
         rows.insertAdjacentHTML('beforeend', html);
+        initializeAccountSearch(rows.lastElementChild);
     });
     rows.addEventListener('click', event => {
         if (event.target.closest('.remove-expense-account')) {
