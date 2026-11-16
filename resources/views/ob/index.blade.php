@@ -19,6 +19,69 @@
 
 @push('styles')
 <style>
+    /* Keep every OB field visible without horizontal scrolling. */
+    .ob-responsive-table,
+    .ob-responsive-table thead,
+    .ob-responsive-table tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .ob-responsive-table thead tr {
+        display: block;
+        padding: .75rem 1rem 0;
+    }
+
+    .ob-responsive-table thead th { display: none; }
+    .ob-responsive-table thead th:first-child { display: block; text-align: left; }
+    .ob-responsive-table thead th:first-child::after {
+        content: ' Pilih semua';
+        color: #475569;
+        font-size: .75rem;
+        text-transform: none;
+    }
+
+    .ob-responsive-table tbody tr {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .75rem 1rem;
+        margin: .75rem;
+        padding: 1rem;
+        border: 1px solid #e2e8f0;
+        border-radius: .75rem;
+    }
+
+    .ob-responsive-table tbody td {
+        display: block;
+        min-width: 0;
+        max-width: none;
+        padding: 0;
+        white-space: normal;
+        overflow-wrap: anywhere;
+        overflow: visible;
+        text-overflow: clip;
+    }
+
+    .ob-responsive-table tbody td:not([colspan])::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .25rem;
+        color: #64748b;
+        font-size: .65rem;
+        font-weight: 700;
+        line-height: 1.2;
+        text-transform: uppercase;
+    }
+
+    .ob-responsive-table tbody td[colspan] { grid-column: 1 / -1; }
+    .ob-responsive-table tbody td input:not([type='checkbox']),
+    .ob-responsive-table tbody td select { min-width: 0; max-width: 100%; }
+    .ob-responsive-table tbody td .select2-container { width: 100% !important; max-width: 100%; }
+
+    @media (min-width: 1280px) {
+        .ob-responsive-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    }
+
     /* Custom Searchable Dropdown Styles */
     #supir_options_container {
         scrollbar-width: thin;
@@ -614,9 +677,9 @@
     
     {{-- Desktop Table View (hidden on mobile) --}}
     <div class="hidden md:block bg-white rounded-lg shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
+        <div class="min-w-0">
             @if(isset($bls))
-            <table class="min-w-full table-auto text-xs">
+            <table class="ob-responsive-table w-full text-xs">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
@@ -848,7 +911,7 @@
                 </tbody>
             </table>
             @else
-            <table class="min-w-full table-auto text-xs">
+            <table class="ob-responsive-table w-full text-xs">
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">
@@ -1103,6 +1166,16 @@
     </div>
 
     {{-- Pagination (visible on both mobile and desktop) --}}
+    <script>
+        document.querySelectorAll('.ob-responsive-table').forEach(table => {
+            const labels = Array.from(table.querySelectorAll('thead th'), header => header.textContent.trim());
+            table.querySelectorAll('tbody tr').forEach(row => {
+                Array.from(row.cells).forEach((cell, index) => {
+                    if (!cell.hasAttribute('colspan')) cell.dataset.label = labels[index] || '';
+                });
+            });
+        });
+    </script>
     <div class="mt-4">
         @if(isset($bls))
             @include('components.modern-pagination', ['paginator' => $bls])
