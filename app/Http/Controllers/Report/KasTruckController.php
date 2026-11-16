@@ -118,6 +118,7 @@ class KasTruckController extends Controller
             $rincianAkunStockMap = [];
             $rincianAkunUangJalanMap = [];
             $rincianAkunOngkosTrukMap = [];
+            $rincianAkunVendorSupirMap = [];
             $rincianAkunObMap = [];
             $rincianAkunPranotaObMap = [];
             $rincianAkunPalMap = [];
@@ -339,6 +340,25 @@ class KasTruckController extends Controller
                 }
             }
 
+            if (! empty($referensiList) && Schema::hasTable('pembayaran_pranota_vendor_supir_coa_items')) {
+                $rincianAkunVendorSupir = DB::table('pembayaran_pranota_vendor_supir_coa_items as rincian')
+                    ->join('pembayaran_pranota_vendor_supirs as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_id')
+                    ->join('akun_coa as akun', 'akun.id', '=', 'rincian.akun_coa_id')
+                    ->whereIn('pembayaran.nomor_pembayaran', $referensiList)
+                    ->orderBy('rincian.id')
+                    ->get(['pembayaran.nomor_pembayaran', 'pembayaran.metode_pembayaran', 'akun.nama_akun', 'akun.nomor_akun', 'rincian.nominal', 'rincian.memo']);
+
+                foreach ($rincianAkunVendorSupir as $rincian) {
+                    $rincianAkunVendorSupirMap[$rincian->nomor_pembayaran][] = [
+                        'nama_akun' => $rincian->nama_akun,
+                        'nomor_akun' => $rincian->nomor_akun,
+                        'nominal' => $rincian->nominal,
+                        'memo' => $rincian->memo,
+                        'debit_kredit' => strtolower($rincian->metode_pembayaran) === 'debit' ? 'kredit' : 'debit',
+                    ];
+                }
+            }
+
             if (! empty($referensiList) && Schema::hasTable('pembayaran_ob_akun_items')) {
                 $rincianAkunOb = DB::table('pembayaran_ob_akun_items as rincian')
                     ->join('pembayaran_obs as pembayaran', 'pembayaran.id', '=', 'rincian.pembayaran_ob_id')
@@ -443,6 +463,8 @@ class KasTruckController extends Controller
                     $t->rincian_akun_pembayaran = $rincianAkunUangJalanMap[$t->nomor_referensi];
                 } elseif ($t->jenis_transaksi === 'Pembayaran Pranota Ongkos Truk' && ! empty($rincianAkunOngkosTrukMap[$t->nomor_referensi])) {
                     $t->rincian_akun_pembayaran = $rincianAkunOngkosTrukMap[$t->nomor_referensi];
+                } elseif ($t->jenis_transaksi === 'Pembayaran Pranota Invoice Vendor' && ! empty($rincianAkunVendorSupirMap[$t->nomor_referensi])) {
+                    $t->rincian_akun_pembayaran = $rincianAkunVendorSupirMap[$t->nomor_referensi];
                 } elseif ($t->jenis_transaksi === 'Pembayaran Pranota OB' && ! empty($rincianAkunPranotaObMap[$t->nomor_referensi])) {
                     $t->rincian_akun_pembayaran = $rincianAkunPranotaObMap[$t->nomor_referensi];
                 } elseif (! empty($rincianAkunObMap[$t->nomor_referensi])) {
