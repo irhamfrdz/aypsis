@@ -110,7 +110,7 @@
                             <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
                                 <div class="relative">
-                                    <input type="text" id="bankSearch" placeholder="Cari bank..." 
+                                    <input type="text" id="bankSearch" placeholder="Cari nama atau kode akun..."
                                         class="mt-1 block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors pr-8"
                                         autocomplete="off">
                                     <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -317,7 +317,8 @@
         const noBankResults = document.getElementById('noBankResults');
 
         if (bankSearch && bankSelect && bankDropdown && bankOptions) {
-            const banks = Array.from(bankSelect.options).slice(1); 
+            const banks = Array.from(bankSelect.options).slice(1);
+            const accountSearchText = option => `${option.text} ${option.dataset.kode || ''}`.toLocaleLowerCase('id');
             
             function renderBankOptions(filteredBanks) {
                 bankOptions.innerHTML = '';
@@ -332,7 +333,8 @@
                     filteredBanks.forEach(option => {
                         const div = document.createElement('div');
                         div.className = 'px-3 py-2 text-sm hover:bg-indigo-50 cursor-pointer transition-colors';
-                        div.textContent = option.text;
+                        const code = option.dataset.kode;
+                        div.textContent = code ? `${code} - ${option.text}` : option.text;
                         div.dataset.value = option.value;
                         
                         div.addEventListener('click', function() {
@@ -348,15 +350,15 @@
             }
 
             bankSearch.addEventListener('focus', function() {
-                const searchTerm = this.value.toLowerCase();
-                const filtered = banks.filter(option => option.text.toLowerCase().includes(searchTerm));
+                const searchTerm = this.value.trim().toLocaleLowerCase('id');
+                const filtered = banks.filter(option => accountSearchText(option).includes(searchTerm));
                 renderBankOptions(filtered);
                 bankDropdown.classList.remove('hidden');
             });
 
             bankSearch.addEventListener('input', function() {
-                const searchTerm = this.value.toLowerCase();
-                const filtered = banks.filter(option => option.text.toLowerCase().includes(searchTerm));
+                const searchTerm = this.value.trim().toLocaleLowerCase('id');
+                const filtered = banks.filter(option => accountSearchText(option).includes(searchTerm));
                 renderBankOptions(filtered);
                 bankDropdown.classList.remove('hidden');
                 
@@ -374,7 +376,9 @@
             if (bankSelect.value) {
                 const selectedOption = bankSelect.options[bankSelect.selectedIndex];
                 if (selectedOption) {
-                    bankSearch.value = selectedOption.text;
+                    bankSearch.value = selectedOption.dataset.kode
+                        ? `${selectedOption.dataset.kode} - ${selectedOption.text}`
+                        : selectedOption.text;
                 }
             }
         }
