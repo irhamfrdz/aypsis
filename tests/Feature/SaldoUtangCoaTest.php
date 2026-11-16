@@ -22,6 +22,8 @@ class SaldoUtangCoaTest extends TestCase
             $table->id();
             $table->string('nama_lengkap');
             $table->string('nik')->nullable();
+            $table->string('nama_bank')->nullable();
+            $table->string('akun_bank')->nullable();
             $table->softDeletes();
         });
         Schema::create('akun_coa', function (Blueprint $table) {
@@ -35,7 +37,7 @@ class SaldoUtangCoaTest extends TestCase
         Schema::rename('riwayat_utang_supirs', 'riwayat_utang_karyawans');
         (require database_path('migrations/2026_11_14_100000_add_coa_details_to_riwayat_utang_karyawans.php'))->up();
         (require database_path('migrations/2026_11_16_120000_add_employee_bank_to_riwayat_utang_karyawans.php'))->up();
-        DB::table('karyawans')->insert(['id' => 1, 'nama_lengkap' => 'Karyawan Uji', 'nik' => '001']);
+        DB::table('karyawans')->insert(['id' => 1, 'nama_lengkap' => 'Karyawan Uji', 'nik' => '001', 'nama_bank' => 'Bank Master', 'akun_bank' => '00012345']);
         DB::table('akun_coa')->insert([
             ['id' => 1, 'nomor_akun' => '1001', 'nama_akun' => 'Bank Uji', 'tipe_akun' => 'Kas/Bank'],
             ['id' => 2, 'nomor_akun' => '1101', 'nama_akun' => 'Piutang Karyawan', 'tipe_akun' => 'Aset'],
@@ -124,5 +126,7 @@ class SaldoUtangCoaTest extends TestCase
         foreach (['bank_coa_id', 'rincian_coa[0][coa_id]', 'rincian_coa[0][nominal]', 'rincian_coa[0][memo]', 'Grand Total (Rupiah)', 'coa-row-template', 'Tambah Akun', 'Piutang Karyawan'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
+        $this->assertStringContainsString('data-nama-bank="Bank Master"', $html);
+        $this->assertStringContainsString('data-no-rekening="00012345"', $html);
     }
 }

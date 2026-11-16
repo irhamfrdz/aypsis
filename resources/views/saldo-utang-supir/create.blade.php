@@ -70,7 +70,7 @@
                     <select name="karyawan_id" id="karyawan_id" class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('karyawan_id') border-rose-300 @enderror">
                         <option value="">-- Pilih Karyawan --</option>
                         @foreach($karyawans as $karyawan)
-                            <option value="{{ $karyawan->id }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
+                            <option value="{{ $karyawan->id }}" data-nama-bank="{{ $karyawan->nama_bank ?? '' }}" data-no-rekening="{{ $karyawan->akun_bank ?? '' }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
                                 {{ strtoupper($karyawan->nama_lengkap) }} ({{ $karyawan->nik ?? 'TANPA NIK' }})
                             </option>
                         @endforeach
@@ -199,6 +199,19 @@
 </div>
 <script>
 document.addEventListener('DOMContentLoaded', () => {
+    const employeeSelect = document.getElementById('karyawan_id');
+    function fillEmployeeBank() {
+        const selected = employeeSelect.selectedOptions[0];
+        document.getElementById('nama_bank_karyawan').value = selected?.dataset.namaBank || '';
+        document.getElementById('no_rekening_karyawan').value = selected?.dataset.noRekening || '';
+    }
+    // Preserve submitted bank details when the form returns after validation errors.
+    if (!@json(session()->hasOldInput('nama_bank_karyawan') || session()->hasOldInput('no_rekening_karyawan'))) fillEmployeeBank();
+    if (typeof jQuery !== 'undefined') {
+        jQuery(employeeSelect).on('change.employeeBank', fillEmployeeBank);
+    } else {
+        employeeSelect.addEventListener('change', fillEmployeeBank);
+    }
     if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
         const employee = jQuery('#karyawan_id');
         employee.select2({
