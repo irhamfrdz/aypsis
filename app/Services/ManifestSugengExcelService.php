@@ -56,6 +56,8 @@ class ManifestSugengExcelService
             $container = trim((string) $item->nomor_kontainer);
             $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
             $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
+            $fclDescription = trim('Container'.($item->size_kontainer ? ' '.$item->size_kontainer.' feet' : ''));
+            $containerType = strtoupper(trim((string) $item->tipe_kontainer));
             if ($isLcl && $container !== '' && strtoupper($container) !== $lastContainer) {
                 $sheet->setCellValue('D'.$row, $container);
                 $sheet->setCellValue('E'.$row, $item->no_seal);
@@ -89,7 +91,7 @@ class ManifestSugengExcelService
                     'E' => ! $isLcl && $line === 0 ? $item->no_seal : null,
                     'F' => $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
                     'G' => $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
-                    'H' => $isCargo ? null : (! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer).' stc :' : null),
+                    'H' => $isCargo ? null : (! $isLcl && $line === 0 ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)).' stc :' : null),
                     'I' => data_get($good, 'jumlah'), 'J' => data_get($good, 'satuan'), 'K' => data_get($good, 'nama_barang'),
                     'L' => data_get($detail, 'jumlah'), 'M' => data_get($detail, 'satuan'), 'N' => data_get($detail, 'nama_barang'),
                     'O' => data_get($good, 'tonase'), 'P' => data_get($good, 'meter_kubik'),
@@ -103,7 +105,7 @@ class ManifestSugengExcelService
                     'AD' => $item->tanggal_tanda_terima?->format('d/m/Y'),
                     'AE' => $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
                     'AF' => $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
-                    'AG' => $isCargo ? null : (! $isLcl && $line === 0 ? trim($item->tipe_kontainer.' '.$item->size_kontainer) : null),
+                    'AG' => $isCargo ? null : (! $isLcl && $line === 0 ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)) : null),
                 ];
                 $values = array_replace($values, $item->sheet_values['details'][$line] ?? []);
                 foreach ($values as $column => $value) {
