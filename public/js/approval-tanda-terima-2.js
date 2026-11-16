@@ -234,6 +234,8 @@
     const manifestSugengVoyage = document.getElementById('approval-manifest-sugeng-voyage');
     const manifestSugengVoyageHelp = document.getElementById('approval-manifest-sugeng-voyage-help');
     let voyageRequest = 0;
+    manifestSugengOpen?.addEventListener('click', () => manifestSugengDialog?.showModal());
+    if (manifestSugengDialog?.dataset.openOnError === 'true') manifestSugengDialog.showModal();
     async function loadManifestSugengVoyages(selectedVoyage = '') {
         if (!manifestSugengShip || !manifestSugengVoyage || !manifestSugengDialog) return;
         const ship = manifestSugengShip.value;

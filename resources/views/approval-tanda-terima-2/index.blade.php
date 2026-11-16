@@ -285,7 +285,7 @@
                     @can('manifest-sugeng-manage')
                     <form id="approval-manifest-sugeng-form" method="POST" action="{{ route('approval-tanda-terima-2.manifest-sugeng', ['sourceType' => $type]) }}" class="hidden">
                         @csrf
-                        <button id="approval-manifest-sugeng-open" type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
+                        <button id="approval-manifest-sugeng-open" type="button" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-2 text-xs font-semibold text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-50" disabled>
                             <i class="fas fa-ship" aria-hidden="true"></i><span>Kirim ke Manifest Sugeng (0)</span>
                         </button>
                         <dialog id="approval-manifest-sugeng-dialog" aria-labelledby="approval-manifest-sugeng-title" data-voyages-url="{{ url('/api/manifests/voyages') }}" data-selected-voyage="{{ old('no_voyage') }}" data-open-on-error="{{ $errors->has('nama_kapal') || $errors->has('no_voyage') ? 'true' : 'false' }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/50">
