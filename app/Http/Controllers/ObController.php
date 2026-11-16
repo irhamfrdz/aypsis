@@ -2648,12 +2648,15 @@ class ObController extends Controller
     {
         $user = Auth::user();
 
-        try {
-            $request->validate([
-                'bl_id' => 'required|integer|exists:bls,id',
-            ]);
+        $validated = $request->validate([
+            'bl_id' => 'required|integer|exists:bls,id',
+            'ke_gudang_id' => 'required|integer|exists:gudangs,id',
+            'tanggal_ob' => 'required|date',
+        ]);
+        $gudangTujuan = Gudang::findOrFail($validated['ke_gudang_id']);
 
-            $bl = Bl::findOrFail($request->bl_id);
+        try {
+            $bl = Bl::findOrFail($validated['bl_id']);
 
             // Check if already processed
             if ($bl->sudah_ob) {
@@ -2677,20 +2680,15 @@ class ObController extends Controller
             $bl->sudah_ob = true;
             $bl->sudah_tl = true;
             $bl->supir_id = null;
-            $bl->tanggal_ob = now();
+            $bl->tanggal_ob = $validated['tanggal_ob'];
+            $bl->ke = $gudangTujuan->nama_gudang;
             $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
             $bl->save();
 
             // Record to history and update container gudangs_id
             try {
                 if ($bl->nomor_kontainer) {
-                    $targetGudangId = null;
-                    if ($bl->ke) {
-                        $gudang = \App\Models\Gudang::where('nama_gudang', $bl->ke)->first();
-                        if ($gudang) {
-                            $targetGudangId = $gudang->id;
-                        }
-                    }
+                    $targetGudangId = $gudangTujuan->id;
 
                     if ($targetGudangId) {
                         StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
@@ -2705,7 +2703,7 @@ class ObController extends Controller
                         'nomor_kontainer' => $bl->nomor_kontainer,
                         'tipe_kontainer' => $typeKontainer,
                         'jenis_kegiatan' => 'Masuk',
-                        'tanggal_kegiatan' => now(),
+                        'tanggal_kegiatan' => $validated['tanggal_ob'],
                         'gudang_id' => $targetGudangId,
                         'keterangan' => 'OB TL Bongkar (Tanda Langsung) dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
                         'created_by' => $user->id,
@@ -2721,7 +2719,7 @@ class ObController extends Controller
                     $prospek = Prospek::find($bl->prospek_id);
                     if ($prospek && $prospek->status !== Prospek::STATUS_SUDAH_MUAT) {
                         $prospek->status = Prospek::STATUS_SUDAH_MUAT;
-                        $prospek->tanggal_muat = now();
+                        $prospek->tanggal_muat = $validated['tanggal_ob'];
                         $prospek->updated_by = Auth::id() ?? $prospek->updated_by;
                         $prospek->save();
                     }

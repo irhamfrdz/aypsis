@@ -1166,6 +1166,37 @@
     </div>
 </div>
 
+<!-- Modal TL Bongkar -->
+<div id="tlBongkarModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-gray-900/60 px-4">
+    <div class="w-full max-w-md rounded-xl bg-white shadow-xl" role="dialog" aria-modal="true" aria-labelledby="tlBongkarTitle">
+        <div class="flex items-center justify-between border-b px-5 py-4">
+            <h3 id="tlBongkarTitle" class="text-base font-semibold text-gray-900">Proses TL Bongkar</h3>
+            <button type="button" onclick="closeTLBongkarModal()" class="text-gray-400 hover:text-gray-700" aria-label="Tutup modal">&times;</button>
+        </div>
+        <form id="tlBongkarForm" class="space-y-4 p-5">
+            <input type="hidden" id="tlBongkarBlId">
+            <div>
+                <label for="tlBongkarGudang" class="mb-1 block text-sm font-medium text-gray-700">Gudang tujuan <span class="text-red-500">*</span></label>
+                <select id="tlBongkarGudang" required class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Pilih gudang tujuan</option>
+                    @foreach($gudangs as $gudang)
+                        <option value="{{ $gudang->id }}" data-nama-gudang="{{ $gudang->nama_gudang }}">{{ $gudang->nama_gudang }} {{ $gudang->lokasi ? '('.$gudang->lokasi.')' : '' }}</option>
+                    @endforeach
+                </select>
+            </div>
+            <div>
+                <label for="tlBongkarTanggal" class="mb-1 block text-sm font-medium text-gray-700">Tanggal OB <span class="text-red-500">*</span></label>
+                <input id="tlBongkarTanggal" type="date" required value="{{ now()->format('Y-m-d') }}" class="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <p id="tlBongkarError" class="hidden text-sm text-red-600"></p>
+            <div class="flex justify-end gap-2 border-t pt-4">
+                <button type="button" onclick="closeTLBongkarModal()" class="rounded-md border border-gray-300 px-4 py-2 text-sm text-gray-700">Batal</button>
+                <button id="tlBongkarSubmit" type="submit" class="rounded-md bg-purple-600 px-4 py-2 text-sm font-medium text-white hover:bg-purple-700">Proses TL</button>
+            </div>
+        </form>
+    </div>
+</div>
+
 <!-- Modal Pilih Supir -->
 <div id="supirModal" class="hidden fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
     <div class="relative top-10 mx-auto p-3 md:p-4 border w-[90%] md:w-80 shadow-lg rounded-md bg-white">
@@ -2515,45 +2546,60 @@ function prosesTL(naikKapalId) {
 
 // Function to process TL Bongkar (Tanda Langsung) - Langsung dibongkar tanpa supir
 function prosesTLBongkar(blId) {
-    if (!confirm('Proses TL Bongkar (Tanda Langsung)?\n\nKontainer akan langsung dibongkar dan ditandai sebagai OB tanpa supir.\n\nProses ini akan:\n- Menandai BL sebagai sudah OB\n- Ditandai TL untuk audit trail\n- TIDAK membuat record BL baru')) {
-        return;
-    }
-    
-    // Send AJAX request langsung tanpa modal
-    fetch('/ob/process-tl-bongkar', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
-            'Accept': 'application/json'
-        },
-        body: JSON.stringify({
-            bl_id: blId
-        })
-    })
-    .then(async response => {
-        const isJson = response.headers.get('content-type')?.includes('application/json');
-        const data = isJson ? await response.json() : null;
-        
+    document.getElementById('tlBongkarBlId').value = blId;
+    document.getElementById('tlBongkarTanggal').value = @json(now()->format('Y-m-d'));
+    const keInput = Array.from(document.querySelectorAll('.editable-ke'))
+        .find(input => input.dataset.type === 'bl' && input.dataset.id === String(blId));
+    const tujuan = (keInput?.value || '').trim().toUpperCase();
+    const gudang = document.getElementById('tlBongkarGudang');
+    gudang.value = Array.from(gudang.options)
+        .find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === tujuan)?.value || '';
+    document.getElementById('tlBongkarError').classList.add('hidden');
+    document.getElementById('tlBongkarModal').classList.remove('hidden');
+}
+
+function closeTLBongkarModal() {
+    document.getElementById('tlBongkarModal').classList.add('hidden');
+}
+
+document.getElementById('tlBongkarForm').addEventListener('submit', async function (event) {
+    event.preventDefault();
+    const button = document.getElementById('tlBongkarSubmit');
+    const error = document.getElementById('tlBongkarError');
+    button.disabled = true;
+    error.classList.add('hidden');
+    try {
+        const response = await fetch('/ob/process-tl-bongkar', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                bl_id: document.getElementById('tlBongkarBlId').value,
+                ke_gudang_id: document.getElementById('tlBongkarGudang').value,
+                tanggal_ob: document.getElementById('tlBongkarTanggal').value
+            })
+        });
+        const data = await response.json();
         if (!response.ok) {
-            const errorMsg = data?.message || await response.text() || `HTTP error! status: ${response.status}`;
-            throw new Error(errorMsg);
+            throw new Error(data?.message || `HTTP error! status: ${response.status}`);
         }
-        return data;
-    })
-    .then(data => {
-        if (data && data.success) {
+        if (data?.success) {
+            closeTLBongkarModal();
             showNotification(data.message || 'Proses TL Bongkar berhasil! Kontainer sudah ditandai sebagai OB', 'success');
             setTimeout(() => window.location.reload(), 1500);
         } else {
-            showNotification(data?.message || 'Gagal memproses TL Bongkar', 'error');
+            throw new Error(data?.message || 'Gagal memproses TL Bongkar');
         }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        showNotification('Terjadi kesalahan saat memproses TL Bongkar: ' + error.message, 'error');
-    });
-}
+    } catch (err) {
+        error.textContent = err.message;
+        error.classList.remove('hidden');
+    } finally {
+        button.disabled = false;
+    }
+});
 
 // Manual clear TL action (for BL or NaikKapal)
 function clearTL(type, id) {
