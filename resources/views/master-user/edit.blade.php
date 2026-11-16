@@ -5001,6 +5001,21 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Invoice ATB --}}
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <span class="module-icon">🚜</span>
+                                    Invoice ATB
+                                </td>
+                                <td><input type="checkbox" name="permissions[invoice-atb][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-atb']['view']) && $userMatrixPermissions['invoice-atb']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-atb][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-atb']['create']) && $userMatrixPermissions['invoice-atb']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-atb][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-atb']['update']) && $userMatrixPermissions['invoice-atb']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[invoice-atb][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['invoice-atb']['delete']) && $userMatrixPermissions['invoice-atb']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="aktivitas-lainnya">
                                 <td class="submodule">
                                     <span class="module-icon">💰</span>

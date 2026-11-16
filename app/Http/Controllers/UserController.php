@@ -377,6 +377,15 @@ class UserController extends Controller
                 continue;
             }
 
+            if (str_starts_with($permissionName, 'invoice-atb-')) {
+                $action = substr($permissionName, strlen('invoice-atb-'));
+                if (in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                    $matrixPermissions['invoice-atb'][$action] = true;
+                }
+
+                continue;
+            }
+
             if (strpos($permissionName, 'master-pricelist-biaya-storage-pelindo-') === 0) {
                 $module = 'master-pricelist-biaya-storage-pelindo';
                 $action = str_replace('master-pricelist-biaya-storage-pelindo-', '', $permissionName);
@@ -4195,6 +4204,15 @@ class UserController extends Controller
                                 $permissionIds[] = $permission->id;
                                 $found = true;
                             }
+                        }
+                    }
+
+                    // Invoice ATB uses direct dash-separated permission names.
+                    if ($module === 'invoice-atb' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                        $permission = Permission::where('name', 'invoice-atb-'.$action)->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                            $found = true;
                         }
                     }
 
