@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\GpsDailyDistance;
-use App\Models\TagihanOb;
+use App\Services\VehicleObCountService;
 use App\Services\RitSuratJalanService;
 use App\Services\VehicleAmprahanUsageService;
 use App\Services\VehiclePaymentUsageService;
@@ -202,23 +202,12 @@ class DashboardPerjalananKendaraanController extends Controller
                     }
                 }
 
-                // One tagihan row represents one OB, even when it records two containers.
-                $obCounts = TagihanOb::query()
-                    ->whereDate('tanggal_ob', '>=', $tanggalDari)
-                    ->whereDate('tanggal_ob', '<=', $tanggalSampai)
-                    ->select('nama_supir')
-                    ->selectRaw('COUNT(*) as ob_count')
-                    ->groupBy('nama_supir')
-                    ->get()
-                    ->groupBy(fn ($entry) => mb_strtoupper(preg_replace('/\s+/', ' ', trim((string) $entry->nama_supir))))
-                    ->map(fn ($entries) => (int) $entries->sum('ob_count'));
+                $obCounts = app(VehicleObCountService::class)->forVehicles(
+                    $vehicleStats->pluck('mobil'), $tanggalDari, $tanggalSampai
+                );
 
                 foreach ($vehicleStats as $row) {
-                    $driverNames = collect([$row->mobil?->karyawan?->nama_lengkap, $row->mobil?->karyawan?->nama_panggilan])
-                        ->filter()
-                        ->map(fn ($name) => mb_strtoupper(preg_replace('/\s+/', ' ', trim($name))))
-                        ->unique();
-                    $row->ob_count = $driverNames->sum(fn ($name) => $obCounts->get($name, 0));
+                    $row->ob_count = $obCounts->get($row->mobil_id, 0);
                     $row->amprahan_usages = $amprahanUsages->get($row->mobil_id, collect());
                     $row->vehicle_payments = $vehiclePayments->get($row->mobil_id, collect());
                     $row->vehicle_expense_count = $row->amprahan_usages->count() + $row->vehicle_payments->count();

@@ -301,7 +301,7 @@
                                             @if($rankEntry)<span class="mr-1.5 inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-indigo-50 px-1.5 text-xs font-bold text-indigo-700">{{ $rankEntry['rank'] }}</span><span class="font-semibold">{{ number_format($rankEntry['value'], in_array($ranking['unit'], ['km', 'jam'], true) ? 2 : 0, ',', '.') }}</span><span class="text-slate-500"> {{ $ranking['unit'] }}</span>@else—@endif
                                         </td>
                                     @endforeach
-                                    <td class="whitespace-nowrap px-4 py-3 text-slate-400" aria-label="Data OB belum tersedia">—</td>
+                                    <td class="whitespace-nowrap px-4 py-3 text-slate-700"><span class="font-semibold">{{ number_format($row->ob_count ?? 0, 0, ',', '.') }}</span><span class="text-slate-500"> OB</span></td>
                                 </tr>
                                 <tr class="bg-indigo-50/40">
                                     <td colspan="{{ 5 + $rankings->count() }}" class="px-4 pb-3 pt-0">
