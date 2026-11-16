@@ -6782,6 +6782,18 @@ Route::prefix('invoice-kas-pinang')->name('invoice-kas-pinang.')->middleware('au
     Route::get('/{invoiceKasPinang}/print', [$controller, 'print'])->name('print')->middleware('can:invoice-kas-pinang-view');
 });
 
+// Invoice ATB routes
+Route::prefix('invoice-atb')->name('invoice-atb.')->middleware('auth')->group(function () {
+    $controller = \App\Http\Controllers\InvoiceAtbController::class;
+    Route::get('/', [$controller, 'index'])->name('index')->middleware('can:invoice-atb-view');
+    Route::get('/create', [$controller, 'create'])->name('create')->middleware('can:invoice-atb-create');
+    Route::post('/', [$controller, 'store'])->name('store')->middleware('can:invoice-atb-create');
+    Route::get('/{invoiceAtb}/edit', [$controller, 'edit'])->name('edit')->middleware('can:invoice-atb-update');
+    Route::put('/{invoiceAtb}', [$controller, 'update'])->name('update')->middleware('can:invoice-atb-update');
+    Route::delete('/{invoiceAtb}', [$controller, 'destroy'])->name('destroy')->middleware('can:invoice-atb-delete');
+    Route::get('/{invoiceAtb}/print', [$controller, 'print'])->name('print')->middleware('can:invoice-atb-view');
+});
+
 // Invoice Aktivitas Lain routes
 Route::prefix('invoice-aktivitas-lain')->name('invoice-aktivitas-lain.')->middleware(['auth'])->group(function () {
     Route::get('/', [App\Http\Controllers\InvoiceAktivitasLainController::class, 'index'])->name('index')

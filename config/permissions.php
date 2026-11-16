@@ -41,6 +41,17 @@ return [
                 'invoice-kas-pinang-delete' => 'Hapus Invoice Kas Pinang',
             ],
         ],
+        'invoice-atb' => [
+            'name' => 'Invoice ATB',
+            'description' => 'Pembuatan dan pencatatan Invoice Alat Berat',
+            'required' => true,
+            'sub_modules' => [
+                'invoice-atb-view' => 'Lihat dan cetak Invoice ATB',
+                'invoice-atb-create' => 'Buat Invoice ATB',
+                'invoice-atb-update' => 'Ubah Invoice ATB',
+                'invoice-atb-delete' => 'Hapus Invoice ATB',
+            ],
+        ],
         'surat-jalan-bongkaran-tanjung-pinang' => [
             'name' => 'Surat Jalan Bongkaran Tanjung Pinang',
             'description' => 'Kelola surat jalan bongkaran Tanjung Pinang',
