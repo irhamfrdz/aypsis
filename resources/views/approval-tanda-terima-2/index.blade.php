@@ -291,11 +291,11 @@
                         <dialog id="approval-manifest-sugeng-dialog" aria-labelledby="approval-manifest-sugeng-title" data-voyages-url="{{ url('/api/manifests/voyages') }}" data-selected-voyage="{{ old('no_voyage') }}" data-open-on-error="{{ $errors->has('nama_kapal') || $errors->has('no_voyage') ? 'true' : 'false' }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/50">
                             <div class="border-b border-gray-100 px-6 py-4">
                                 <h3 id="approval-manifest-sugeng-title" class="text-lg font-bold text-gray-900">Kirim ke Manifest Sugeng</h3>
-                                <p class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage untuk tanda terima yang dicentang.</p>
+                                <p class="mt-1 text-sm text-gray-600">Data dapat dimasukkan ke tabel Manifest sekarang. Kapal dan voyage bisa diisi nanti.</p>
                             </div>
                             <div class="space-y-5 px-6 py-5">
                                 <div>
-                                    <label for="approval-manifest-sugeng-kapal" class="mb-2 block text-sm font-semibold text-gray-700">Nama kapal <span class="text-red-600">*</span></label>
+                                    <label for="approval-manifest-sugeng-kapal" class="mb-2 block text-sm font-semibold text-gray-700">Nama kapal <span class="text-gray-400">(opsional)</span></label>
                                     <select id="approval-manifest-sugeng-kapal" name="nama_kapal" class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200">
                                         <option value="">-- Pilih Kapal --</option>
                                         @foreach($kapals as $kapal)<option value="{{ $kapal }}" @selected(old('nama_kapal') === $kapal)>{{ $kapal }}</option>@endforeach
@@ -303,7 +303,7 @@
                                     @error('nama_kapal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                                 </div>
                                 <div>
-                                    <label for="approval-manifest-sugeng-voyage" class="mb-2 block text-sm font-semibold text-gray-700">No. voyage <span class="text-red-600">*</span></label>
+                                    <label for="approval-manifest-sugeng-voyage" class="mb-2 block text-sm font-semibold text-gray-700">No. voyage <span class="text-gray-400">(opsional)</span></label>
                                     <select id="approval-manifest-sugeng-voyage" name="no_voyage" disabled class="block w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-sm text-gray-900 shadow-sm focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200 disabled:bg-gray-100 disabled:text-gray-500">
                                         <option value="">-- Pilih Kapal Terlebih Dahulu --</option>
                                     </select>
@@ -313,7 +313,8 @@
                             </div>
                             <div class="flex justify-end gap-2 border-t border-gray-100 px-6 py-4">
                                 <button id="approval-manifest-sugeng-cancel" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
-                                <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Kirim Pilihan</button>
+                                <button type="submit" name="defer_assignment" value="1" class="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">Masukkan tanpa kapal/voyage</button>
+                                <button type="submit" name="defer_assignment" value="0" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Masukkan dengan kapal/voyage</button>
                             </div>
                         </dialog>
                     </form>

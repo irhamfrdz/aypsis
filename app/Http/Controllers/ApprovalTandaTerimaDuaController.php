@@ -578,7 +578,13 @@ class ApprovalTandaTerimaDuaController extends Controller
         $validated = $request->validate([
             'ids' => ['required', 'array', 'min:1', 'max:300'],
             'ids.*' => ['required', 'integer', 'min:1', 'distinct'],
+            'defer_assignment' => ['required', 'boolean'],
+            'nama_kapal' => ['nullable', 'required_if:defer_assignment,0', 'string', 'max:255'],
+            'no_voyage' => ['nullable', 'required_if:defer_assignment,0', 'string', 'max:255'],
         ]);
+        if (! $validated['defer_assignment'] && (blank($validated['nama_kapal'] ?? null) || blank($validated['no_voyage'] ?? null))) {
+            throw ValidationException::withMessages(['no_voyage' => 'Pilih kapal dan voyage, atau simpan dulu tanpa keduanya.']);
+        }
         $ids = array_map('intval', $validated['ids']);
         $receipts = self::SOURCES[$sourceType]::query()
             ->when($sourceType === 'lcl', fn ($query) => $query->with(['tujuanPengiriman', 'kontainerPivot']))
@@ -596,7 +602,9 @@ class ApprovalTandaTerimaDuaController extends Controller
                     ['source_type' => $sourceType, 'source_id' => $id],
                     function (bool $exists) use ($sourceType, $receipt, $goods, $id, $now, $validated) {
                         return [
-                            ...($exists ? [] : ['nama_kapal' => null, 'no_voyage' => null]),
+                            ...($validated['defer_assignment']
+                                ? ($exists ? [] : ['nama_kapal' => null, 'no_voyage' => null])
+                                : ['nama_kapal' => $validated['nama_kapal'], 'no_voyage' => $validated['no_voyage']]),
                             'no_seal' => $sourceType === 'lcl' ? null : $receipt->no_seal,
                             'tipe_kontainer' => $sourceType === 'lcl' ? 'LCL' : $receipt->tipe_kontainer,
                             'size_kontainer' => $sourceType === 'fcl' ? $receipt->size : ($sourceType === 'lcl' ? $receipt->ukuran : ($receipt->size_kontainer ?: $receipt->ukuran)),
