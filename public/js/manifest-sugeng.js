@@ -1,4 +1,4 @@
-document.querySelectorAll('.sugeng-sheet').forEach(table => {
+const initializeManifestSugengSheet = table => {
     const sizeControls = table.closest('.sugeng-sheet-scroll')?.previousElementSibling;
     if (sizeControls?.classList.contains('sugeng-size-controls')) {
         const columns = [...table.querySelectorAll('colgroup col')].slice(1);
@@ -179,7 +179,28 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Posisi data gagal disimpan.');
-            window.location.reload();
+            const sheetRoot = table.closest('.sugeng-sheet-root');
+            const scrollArea = table.closest('.sugeng-sheet-scroll');
+            const scrollTop = scrollArea.scrollTop;
+            const scrollLeft = scrollArea.scrollLeft;
+            const pageX = window.scrollX;
+            const pageY = window.scrollY;
+            const pageResponse = await fetch(window.location.href, {
+                credentials: 'same-origin',
+                cache: 'no-store',
+                headers: { Accept: 'text/html' },
+            });
+            if (!pageResponse.ok) throw new Error('Posisi tersimpan, tetapi tampilan tabel gagal diperbarui.');
+            const page = new DOMParser().parseFromString(await pageResponse.text(), 'text/html');
+            const freshRoot = page.querySelector('.sugeng-sheet-root');
+            if (!freshRoot) throw new Error('Posisi tersimpan, tetapi tampilan tabel gagal diperbarui.');
+            sheetRoot.replaceWith(freshRoot);
+            initializeManifestSugengSheet(freshRoot.querySelector('.sugeng-sheet'));
+            const freshScrollArea = freshRoot.querySelector('.sugeng-sheet-scroll');
+            freshScrollArea.scrollTop = scrollTop;
+            freshScrollArea.scrollLeft = scrollLeft;
+            freshRoot.querySelector(`tbody tr[data-item-id="${sourceId}"]`)?.setAttribute('data-selected', 'true');
+            window.scrollTo(pageX, pageY);
         } catch (error) {
             alert(error.message || 'Posisi data gagal disimpan.');
             movingRow = false;
@@ -398,4 +419,6 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
             selectRows(rows.map((_, index) => index));
         }
     });
-});
+};
+
+document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet);

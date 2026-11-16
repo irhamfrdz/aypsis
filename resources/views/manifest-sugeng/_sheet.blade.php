@@ -46,6 +46,7 @@
     .sugeng-sheet tbody tr.sheet-drop-before > * { border-top: 3px solid #4f46e5; }
     .sugeng-sheet tbody tr.sheet-drop-after > * { border-bottom: 3px solid #4f46e5; }
 </style>
+<div class="sugeng-sheet-root">
 @can('manifest-sugeng-manage')
 <div class="sugeng-mark-controls mb-2 flex flex-wrap items-center gap-2 rounded border border-gray-300 bg-white p-2 text-sm" aria-label="Tandai baris manifest">
     <span class="text-gray-700">Pilih nomor baris, lalu tandai:</span>
@@ -177,3 +178,4 @@
     </table>
 </div>
 <div class="sugeng-sheet-resize" title="Tarik untuk mengatur tinggi area tabel" aria-hidden="true"></div>
+</div>
