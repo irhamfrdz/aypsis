@@ -35,8 +35,6 @@
     .sugeng-sheet .sheet-row-resize::after { content: ''; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 3px; border-radius: 2px; background: #818cf8; }
     .sugeng-sheet .sheet-row-resize:hover::after { height: 5px; background: #4f46e5; }
     .sugeng-sheet tbody tr[data-selected="true"] td { background: #dbeafe; }
-    .sugeng-sheet tbody tr.sheet-incomplete td, .sugeng-sheet tbody tr.sheet-incomplete .sheet-row-number { background: #fef3c7; }
-    .sugeng-sheet tbody tr.sheet-incomplete[data-selected="true"] td { background: #dbeafe; }
     .sugeng-sheet tbody tr[data-selected="true"] .sheet-row-number { background: #4f46e5; color: white; }
     .sugeng-sheet tbody tr[data-selected="true"] td:focus { background: #eef2ff; }
     .sugeng-sheet tbody tr[data-mark="ungu"] .sheet-row-number { box-shadow: inset 8px 0 #9333ea; }
@@ -156,12 +154,7 @@
                             !$isLcl && $line === 0 ? $containerDescription : '',
                         ];
                     @endphp
-                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif @class(['sheet-incomplete' => $item->belum_selesai])><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span>@if($line === 0)
-                        @can('manifest-sugeng-manage')<form method="POST" action="{{ route('manifest-sugeng.set-incomplete', $item) }}" onclick="event.stopPropagation()" class="mt-1">@csrf @method('PUT')<input type="hidden" name="belum_selesai" value="{{ $item->belum_selesai ? '0' : '1' }}"><button type="submit" class="rounded px-1 text-xs {{ $item->belum_selesai ? 'bg-amber-500 text-white' : 'bg-gray-200 text-gray-600' }}" title="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}" aria-label="{{ $item->belum_selesai ? 'Batalkan tanda belum selesai' : 'Tandai belum selesai' }}"><i class="fas fa-highlighter" aria-hidden="true"></i></button></form>
-                        @elsecan('manifest-sugeng-view')
-                            @if($item->belum_selesai)<span class="block text-xs text-amber-800" title="Belum selesai">●</span>@endif
-                        @endcan
-                    @endif</th>@foreach($cells as $value)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div></td>
                     @endforeach</tr>
