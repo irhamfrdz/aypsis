@@ -501,20 +501,9 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
         });
     }
 
-    document.getElementById('manifest-finish-open')?.addEventListener('click', () => {
-        dialog.dataset.assignmentMode = 'all';
-        if (title) title.textContent = 'Selesaikan pekerjaan Manifest';
-        const visibleIds = new Set(Array.from(document.querySelectorAll('.sugeng-sheet tbody tr[data-item-id]')).map(row => row.dataset.itemId));
-        const count = document.getElementById('manifest-finish-count');
-        if (count) count.textContent = `${visibleIds.size} data manifest pada halaman ini akan ditugaskan.`;
-        help.textContent = 'Hanya data yang tampil pada halaman tabel ini yang akan ditugaskan.';
-        dialog?.showModal();
-        window.setTimeout(() => window.jQuery?.(ship).select2?.('open'), 80);
-    });
     assignButton?.addEventListener('click', () => {
         const ids = selectedIds();
         if (!ids.length) return;
-        dialog.dataset.assignmentMode = 'selected';
         if (title) title.textContent = 'Masukan ke dalam kapal';
         const count = document.getElementById('manifest-finish-count');
         if (count) count.textContent = `${ids.length} data manifest terpilih akan ditugaskan.`;
@@ -556,10 +545,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     window.jQuery?.(ship).on('select2:select select2:clear', loadVoyages);
     form?.addEventListener('submit', event => {
         form.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
-        const table = document.querySelector('.sugeng-sheet');
-        const ids = dialog?.dataset.assignmentMode === 'selected'
-            ? selectedIds()
-            : [...new Set(Array.from(table?.querySelectorAll('tbody tr[data-item-id]') || []).map(row => row.dataset.itemId))];
+        const ids = selectedIds();
         if (!ids.length) {
             event.preventDefault();
             alert('Pilih data manifest yang akan dimasukan ke dalam kapal.');
