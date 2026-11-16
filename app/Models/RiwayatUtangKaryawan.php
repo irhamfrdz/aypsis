@@ -19,6 +19,8 @@ class RiwayatUtangKaryawan extends Model
         'referensi',
         'keterangan',
         'bank_coa_id',
+        'nama_bank_karyawan',
+        'no_rekening_karyawan',
         'rincian_coa',
     ];
 

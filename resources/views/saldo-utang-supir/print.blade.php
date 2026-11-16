@@ -47,6 +47,8 @@
             <div><span class="label">Tanggal Transaksi</span><div class="value">{{ $item->tanggal->format('d/m/Y') }}</div></div>
             <div><span class="label">Referensi / Judul</span><div class="value">{{ $item->referensi ?: '—' }}</div></div>
             <div style="grid-column: span 2"><span class="label">Akun Bank / Kas</span><div class="value">{{ $item->bankCoa ? $item->bankCoa->nomor_akun.' — '.$item->bankCoa->nama_akun : '—' }}</div></div>
+            <div><span class="label">Nama Bank Karyawan</span><div class="value">{{ $item->nama_bank_karyawan ?: '—' }}</div></div>
+            <div><span class="label">No. Rekening Karyawan</span><div class="value">{{ $item->no_rekening_karyawan ?: '—' }}</div></div>
         </div>
         <table aria-label="Rincian akun pranota">
             <thead><tr><th style="width: 8%">No.</th><th style="width: 40%">Akun COA</th><th style="width: 27%">Memo</th><th class="number" style="width: 25%">Nominal (Rp)</th></tr></thead>

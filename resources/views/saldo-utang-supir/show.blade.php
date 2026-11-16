@@ -80,6 +80,9 @@
                             </td>
                             <td class="px-6 py-4 text-xs text-gray-400">
                                 {{ $item->keterangan ?? '-' }}
+                                @if($item->nama_bank_karyawan || $item->no_rekening_karyawan)
+                                    <div class="mt-2 text-gray-600"><strong>Bank Karyawan:</strong> {{ $item->nama_bank_karyawan ?: '-' }}<br><strong>No. Rekening:</strong> {{ $item->no_rekening_karyawan ?: '-' }}</div>
+                                @endif
                                 @if($item->bankCoa)
                                     <div class="mt-2 text-gray-600"><strong>Bank / Kas:</strong> {{ $item->bankCoa->nomor_akun }} — {{ $item->bankCoa->nama_akun }}</div>
                                 @endif

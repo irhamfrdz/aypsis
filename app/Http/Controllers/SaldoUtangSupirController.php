@@ -56,6 +56,8 @@ class SaldoUtangSupirController extends Controller
             'tipe' => 'required|in:penambahan,pengurangan',
             'referensi' => 'required|string|max:255',
             'keterangan' => 'nullable|string',
+            'nama_bank_karyawan' => 'nullable|required_with:no_rekening_karyawan|string|max:255',
+            'no_rekening_karyawan' => 'nullable|required_with:nama_bank_karyawan|string|max:100',
             'bank_coa_id' => ['required', 'integer', \Illuminate\Validation\Rule::exists('akun_coa', 'id')->where(fn ($q) => $q->where(fn ($bank) => $bank->where('tipe_akun', 'like', '%kas%')->orWhere('tipe_akun', 'like', '%bank%')))],
             'rincian_coa' => 'required|array|min:1|max:100',
             'rincian_coa.*.coa_id' => 'required|integer|exists:akun_coa,id',
@@ -97,6 +99,8 @@ class SaldoUtangSupirController extends Controller
                 'referensi' => $request->referensi,
                 'keterangan' => $request->keterangan,
                 'bank_coa_id' => $request->bank_coa_id,
+                'nama_bank_karyawan' => $request->nama_bank_karyawan,
+                'no_rekening_karyawan' => $request->no_rekening_karyawan,
                 'rincian_coa' => $rincianCoa,
             ]);
 

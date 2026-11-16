@@ -34,6 +34,7 @@ class SaldoUtangCoaTest extends TestCase
         Schema::rename('saldo_utang_supirs', 'saldo_utang_karyawans');
         Schema::rename('riwayat_utang_supirs', 'riwayat_utang_karyawans');
         (require database_path('migrations/2026_11_14_100000_add_coa_details_to_riwayat_utang_karyawans.php'))->up();
+        (require database_path('migrations/2026_11_16_120000_add_employee_bank_to_riwayat_utang_karyawans.php'))->up();
         DB::table('karyawans')->insert(['id' => 1, 'nama_lengkap' => 'Karyawan Uji', 'nik' => '001']);
         DB::table('akun_coa')->insert([
             ['id' => 1, 'nomor_akun' => '1001', 'nama_akun' => 'Bank Uji', 'tipe_akun' => 'Kas/Bank'],
@@ -46,6 +47,7 @@ class SaldoUtangCoaTest extends TestCase
     {
         return ['karyawan_id' => 1, 'tanggal' => '2026-11-14', 'tipe' => 'penambahan',
             'nominal' => 999, 'referensi' => 'Kasbon', 'bank_coa_id' => 1,
+            'nama_bank_karyawan' => 'BCA Karyawan', 'no_rekening_karyawan' => '0012345678',
             'rincian_coa' => [2 => ['coa_id' => 2, 'nominal' => 100000.25, 'memo' => 'Memo pertama'], 5 => ['coa_id' => 3, 'nominal' => 49999.75, 'memo' => 'Memo kedua']]];
     }
 
@@ -56,6 +58,8 @@ class SaldoUtangCoaTest extends TestCase
         $this->assertFalse(session()->has('error'), (string) session('error'));
         $entry = RiwayatUtangKaryawan::firstOrFail();
         $this->assertEquals(1, $entry->bank_coa_id);
+        $this->assertSame('BCA Karyawan', $entry->nama_bank_karyawan);
+        $this->assertSame('0012345678', $entry->no_rekening_karyawan);
         $this->assertSame('Bank Uji', $entry->bankCoa->nama_akun);
         $this->assertSame(['Memo pertama', 'Memo kedua'], array_column($entry->rincian_coa, 'memo'));
         $this->assertSame([2, 3], array_column($entry->rincian_coa, 'coa_id'));
@@ -64,7 +68,7 @@ class SaldoUtangCoaTest extends TestCase
         $this->assertEquals(150000, SaldoUtangKaryawan::firstOrFail()->saldo);
         $source = str_replace("@extends('layouts.app')", '', file_get_contents(resource_path('views/saldo-utang-supir/show.blade.php')));
         $html = Blade::render($source."\n@yield('content')", $controller->show(1)->getData());
-        foreach (['Bank Uji', 'Piutang Karyawan', 'Memo pertama', 'Memo kedua'] as $text) {
+        foreach (['Bank Uji', 'Piutang Karyawan', 'Memo pertama', 'Memo kedua', 'BCA Karyawan', '0012345678'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
         $payload = $this->payload();
@@ -78,7 +82,7 @@ class SaldoUtangCoaTest extends TestCase
 
     public function test_invalid_bank_or_account_and_missing_rows_do_not_change_balance(): void
     {
-        foreach ([['bank_coa_id' => 2], ['rincian_coa' => []], ['rincian_coa' => [['coa_id' => 999, 'nominal' => 1]]], ['rincian_coa' => [['coa_id' => 2, 'nominal' => 1, 'memo' => str_repeat('x', 1001)]]],
+        foreach ([['nama_bank_karyawan' => null], ['no_rekening_karyawan' => null], ['bank_coa_id' => 2], ['rincian_coa' => []], ['rincian_coa' => [['coa_id' => 999, 'nominal' => 1]]], ['rincian_coa' => [['coa_id' => 2, 'nominal' => 1, 'memo' => str_repeat('x', 1001)]]],
             ['rincian_coa' => [['coa_id' => 2]]], ['rincian_coa' => [['coa_id' => 2, 'nominal' => 0]]],
             ['rincian_coa' => [['coa_id' => 2, 'nominal' => -1]]], ['rincian_coa' => [['coa_id' => 2, 'nominal' => '1.234']]],
             ['rincian_coa' => [['coa_id' => 2, 'nominal' => 9999999999999], ['coa_id' => 3, 'nominal' => 2]]]] as $invalid) {
@@ -100,7 +104,7 @@ class SaldoUtangCoaTest extends TestCase
         $entry = RiwayatUtangKaryawan::firstOrFail();
         $html = $controller->print(\App\Models\Karyawan::findOrFail(1), $entry->id)->render();
         foreach (['Pranota Utang Karyawan', 'Karyawan Uji', 'Bank Uji', 'Piutang Karyawan', 'Memo pertama',
-            '150.000,00', 'size: A4 portrait', 'window.print()'] as $text) {
+            '150.000,00', 'BCA Karyawan', '0012345678', 'size: A4 portrait', 'window.print()'] as $text) {
             $this->assertStringContainsString($text, $html);
         }
         $this->assertStringNotContainsString('Saldo Utang Saat Ini', $html);

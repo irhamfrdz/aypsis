@@ -147,6 +147,19 @@
                     <template id="coa-row-template">@include('saldo-utang-supir.partials.coa-row', ['index' => '__INDEX__', 'row' => []])</template>
                 </div>
 
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="nama_bank_karyawan" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Nama Bank Karyawan</label>
+                        <input type="text" id="nama_bank_karyawan" name="nama_bank_karyawan" value="{{ old('nama_bank_karyawan') }}" maxlength="255" placeholder="Contoh: BCA, BRI, Mandiri" class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('nama_bank_karyawan') border-rose-300 @enderror">
+                        @error('nama_bank_karyawan')<span class="text-rose-500 text-[10px] font-bold mt-1 block">{{ $message }}</span>@enderror
+                    </div>
+                    <div>
+                        <label for="no_rekening_karyawan" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">No. Rekening Karyawan</label>
+                        <input type="text" inputmode="numeric" id="no_rekening_karyawan" name="no_rekening_karyawan" value="{{ old('no_rekening_karyawan') }}" maxlength="100" placeholder="Masukkan nomor rekening" class="block w-full text-xs bg-gray-50 border border-gray-200 rounded-xl py-2.5 px-3 focus:ring-indigo-500 focus:border-indigo-500 @error('no_rekening_karyawan') border-rose-300 @enderror">
+                        @error('no_rekening_karyawan')<span class="text-rose-500 text-[10px] font-bold mt-1 block">{{ $message }}</span>@enderror
+                    </div>
+                </div>
+
                 <!-- Reference -->
                 <div>
                     <label for="referensi" class="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2">Referensi / Judul</label>
