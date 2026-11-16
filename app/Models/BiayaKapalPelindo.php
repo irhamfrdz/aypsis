@@ -15,6 +15,8 @@ class BiayaKapalPelindo extends Model
             'lpg' => 'LPG',
             'besi_beton' => 'Besi Beton',
             'alat_berat' => 'Alat Berat',
+            'chasis_alat_berat' => 'Chasis Alat Berat',
+            'mobil_headtruck' => 'Mobil Headtruck',
         ];
 
         return ($this->ukuran ? $this->ukuran.'ft ' : '')
