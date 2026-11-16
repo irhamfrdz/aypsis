@@ -69,13 +69,21 @@ document.addEventListener('DOMContentLoaded', () => {
             search.className = 'w-full rounded border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500';
             search.required = wasRequired;
             const dropdown = document.createElement('div');
-            dropdown.className = 'absolute z-30 mt-1 hidden max-h-60 w-full overflow-auto rounded-md border border-gray-200 bg-white shadow-lg';
+            dropdown.className = 'fixed z-[100] hidden max-h-60 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg';
             wrapper.insertBefore(search, select);
-            wrapper.appendChild(dropdown);
+            document.body.appendChild(dropdown);
+            const positionDropdown = () => {
+                const rect = search.getBoundingClientRect();
+                dropdown.style.left = `${rect.left}px`;
+                dropdown.style.top = `${rect.bottom + 4}px`;
+                dropdown.style.width = `${rect.width}px`;
+                dropdown.style.maxHeight = `${Math.max(120, window.innerHeight - rect.bottom - 12)}px`;
+            };
             const options = [...select.options].filter(option => option.value);
             const selected = options.find(option => option.value === select.value);
             if (selected) search.value = selected.textContent.trim();
             const render = () => {
+                positionDropdown();
                 const term = search.value.trim().toLocaleLowerCase('id');
                 const matches = options.filter(option => `${option.textContent} ${option.dataset.kode || ''}`.toLocaleLowerCase('id').includes(term));
                 dropdown.replaceChildren();
@@ -106,7 +114,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 render();
             });
             document.addEventListener('click', event => {
-                if (!wrapper.contains(event.target)) dropdown.classList.add('hidden');
+                if (!wrapper.contains(event.target) && !dropdown.contains(event.target)) dropdown.classList.add('hidden');
+            });
+            window.addEventListener('scroll', () => {
+                if (!dropdown.classList.contains('hidden')) positionDropdown();
+            }, true);
+            window.addEventListener('resize', () => {
+                if (!dropdown.classList.contains('hidden')) positionDropdown();
             });
         });
     };
