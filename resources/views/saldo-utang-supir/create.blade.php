@@ -16,6 +16,17 @@
 .employee-picker .select2-container--focus .select2-selection--single { border-color: #6366f1; }
 .employee-search-dropdown { border-color: #e5e7eb; font-size: 12px; }
 .employee-search-dropdown .select2-search__field { border: 1px solid #e5e7eb !important; border-radius: 8px; padding: 8px !important; }
+.account-picker .select2-container { width: 100% !important; min-width: 0; }
+.account-picker .select2-container--default .select2-selection--single {
+    min-height: 42px; height: auto; padding: 8px 12px;
+    background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; font-size: 12px;
+}
+.account-picker .select2-selection--single .select2-selection__rendered { padding-left: 0; padding-right: 20px; line-height: 24px; color: #111827; }
+.account-picker .select2-container--default .select2-selection--single .select2-selection__arrow { top: 8px; right: 8px; }
+.account-picker .select2-container--open .select2-selection--single,
+.account-picker .select2-container--focus .select2-selection--single { border-color: #6366f1; }
+.account-search-dropdown { border-color: #e5e7eb; font-size: 12px; }
+.account-search-dropdown .select2-search__field { border: 1px solid #e5e7eb !important; border-radius: 8px; padding: 8px !important; }
 </style>
 @endpush
 
@@ -49,7 +60,7 @@
         </div>
     @endif
     <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden p-8">
-        <form action="{{ route('saldo-utang-karyawan.store') }}" method="POST">
+        <form action="{{ route('saldo-utang-karyawan.store') }}" method="POST" class="account-picker">
             @csrf
             
             <div class="space-y-6">
@@ -198,6 +209,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const rows = document.getElementById('coa-rows');
     const add = document.getElementById('add-coa');
+    function initAccountSearch(select) {
+        if (typeof jQuery === 'undefined' || !jQuery.fn.select2 || jQuery(select).hasClass('select2-hidden-accessible')) return;
+        const account = jQuery(select);
+        account.select2({
+            width: '100%',
+            placeholder: select.options[0].text,
+            minimumResultsForSearch: 0,
+            dropdownCssClass: 'account-search-dropdown',
+            language: {
+                noResults: () => 'Akun tidak ditemukan',
+                searching: () => 'Mencari akun...'
+            }
+        });
+        account.on('select2:open', () => {
+            const search = document.querySelector('.account-search-dropdown .select2-search__field');
+            if (search) {
+                search.placeholder = 'Cari nomor atau nama akun...';
+                search.setAttribute('aria-label', 'Cari nomor atau nama akun');
+                search.focus();
+            }
+        });
+    }
+    initAccountSearch(document.getElementById('bank_coa_id'));
+    rows.querySelectorAll('select').forEach(initAccountSearch);
     let nextIndex = Math.max(-1, ...Array.from(rows.querySelectorAll('select'), select => Number(select.name.match(/\[(\d+)\]/)[1]))) + 1;
     function updateTotal() {
         const totalCents = Array.from(rows.querySelectorAll('.coa-amount')).reduce((total, input) => {
@@ -221,12 +256,23 @@ document.addEventListener('DOMContentLoaded', () => {
         const html = document.getElementById('coa-row-template').innerHTML.replaceAll('__INDEX__', String(nextIndex++));
         rows.insertAdjacentHTML('beforeend', html);
         updateButtons();
-        rows.lastElementChild.querySelector('select').focus();
+        const select = rows.lastElementChild.querySelector('select');
+        initAccountSearch(select);
+        if (typeof jQuery !== 'undefined' && jQuery(select).hasClass('select2-hidden-accessible')) {
+            jQuery(select).select2('open');
+        } else {
+            select.focus();
+        }
     });
     rows.addEventListener('click', event => {
         const button = event.target.closest('.remove-coa');
         if (!button || rows.children.length <= 1) return;
-        button.closest('.coa-row').remove();
+        const row = button.closest('.coa-row');
+        const select = row.querySelector('select');
+        if (typeof jQuery !== 'undefined' && jQuery(select).hasClass('select2-hidden-accessible')) {
+            jQuery(select).off('select2:open').select2('destroy');
+        }
+        row.remove();
         updateButtons();
     });
     updateButtons();
