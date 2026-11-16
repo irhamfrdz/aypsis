@@ -500,7 +500,7 @@
                                 <i class="fas fa-check mr-1"></i>Tandai OB
                             </button>
                             @if(!$isTL)
-                            <button type="button" onclick="prosesTLBongkar({{ $bl->id }})"
+                            <button type="button" data-voyage="{{ $bl->no_voyage }}" onclick="prosesTLBongkar({{ $bl->id }}, this.dataset.voyage)"
                                    class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1.5 rounded text-xs font-medium">
                                 <i class="fas fa-exchange-alt mr-1"></i>TL
                             </button>
@@ -849,7 +849,7 @@
                                         <i class="fas fa-check"></i>
                                     </button>
                                     @if(!$bl->sudah_tl)
-                                    <button type="button" onclick="prosesTLBongkar({{ $bl->id }})"
+                                    <button type="button" data-voyage="{{ $bl->no_voyage }}" onclick="prosesTLBongkar({{ $bl->id }}, this.dataset.voyage)"
                                            class="text-purple-600 hover:text-purple-900 transition duration-150"
                                            title="Transfer Loading (TL) - Langsung Dibongkar">
                                         <i class="fas fa-exchange-alt"></i> TL
@@ -2545,15 +2545,18 @@ function prosesTL(naikKapalId) {
 }
 
 // Function to process TL Bongkar (Tanda Langsung) - Langsung dibongkar tanpa supir
-function prosesTLBongkar(blId) {
+function prosesTLBongkar(blId, noVoyage = '') {
     document.getElementById('tlBongkarBlId').value = blId;
     document.getElementById('tlBongkarTanggal').value = @json(now()->format('Y-m-d'));
     const keInput = Array.from(document.querySelectorAll('.editable-ke'))
         .find(input => input.dataset.type === 'bl' && input.dataset.id === String(blId));
     const tujuan = (keInput?.value || '').trim().toUpperCase();
     const gudang = document.getElementById('tlBongkarGudang');
+    const gudangDefault = String(noVoyage).toUpperCase().includes('JP')
+        ? 'GUDANG PELABUHAN TANJUNG PINANG'
+        : tujuan;
     gudang.value = Array.from(gudang.options)
-        .find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === tujuan)?.value || '';
+        .find(option => (option.dataset.namaGudang || '').trim().toUpperCase() === gudangDefault)?.value || '';
     document.getElementById('tlBongkarError').classList.add('hidden');
     document.getElementById('tlBongkarModal').classList.remove('hidden');
 }
