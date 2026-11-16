@@ -431,12 +431,37 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
     const help = document.getElementById('manifest-finish-help');
     let requestNumber = 0;
 
-    document.getElementById('manifest-finish-open')?.addEventListener('click', () => dialog?.showModal());
+    if (window.jQuery?.fn?.select2 && ship && voyage) {
+        const $dialog = window.jQuery(dialog);
+        window.jQuery(ship).select2({
+            width: '100%',
+            placeholder: ship.dataset.placeholder,
+            allowClear: true,
+            dropdownParent: $dialog,
+            minimumResultsForSearch: 0,
+        });
+        window.jQuery(voyage).select2({
+            width: '100%',
+            placeholder: voyage.dataset.placeholder,
+            allowClear: true,
+            dropdownParent: $dialog,
+            minimumResultsForSearch: 0,
+        });
+    }
+
+    document.getElementById('manifest-finish-open')?.addEventListener('click', () => {
+        const visibleIds = new Set(Array.from(document.querySelectorAll('.sugeng-sheet tbody tr[data-item-id]')).map(row => row.dataset.itemId));
+        const count = document.getElementById('manifest-finish-count');
+        if (count) count.textContent = `${visibleIds.size} data manifest pada halaman ini akan ditugaskan.`;
+        dialog?.showModal();
+        window.setTimeout(() => window.jQuery?.(ship).select2?.('open'), 80);
+    });
     document.getElementById('manifest-finish-cancel')?.addEventListener('click', () => dialog?.close());
     ship?.addEventListener('change', async () => {
         const currentRequest = ++requestNumber;
         voyage.replaceChildren(new Option(ship.value ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
         voyage.disabled = true;
+        window.jQuery?.(voyage).trigger('change.select2');
         if (!ship.value) return;
         help.textContent = 'Memuat daftar voyage...';
         try {
@@ -450,6 +475,7 @@ document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet
             voyage.replaceChildren(new Option('-- Pilih voyage --', ''));
             voyages.forEach(value => voyage.add(new Option(value, value)));
             voyage.disabled = voyages.length === 0;
+            window.jQuery?.(voyage).val(null).trigger('change.select2');
             help.textContent = voyages.length ? `${voyages.length} voyage tersedia.` : 'Tidak ada voyage untuk kapal ini.';
         } catch (error) {
             if (currentRequest !== requestNumber) return;

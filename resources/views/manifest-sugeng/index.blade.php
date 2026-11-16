@@ -15,26 +15,39 @@
     @if(session('success'))<div class="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
     @error('nomor_bl')<div class="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">{{ $message }}</div>@enderror
     @can('manifest-sugeng-manage')
-    <dialog id="manifest-finish-dialog" data-voyages-url="{{ url('/api/manifests/voyages') }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl backdrop:bg-slate-900/50">
+    <style>
+        #manifest-finish-dialog { width: min(34rem, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem); margin: auto; overflow: visible; border-radius: 1rem; }
+        #manifest-finish-dialog::backdrop { background: rgb(15 23 42 / 55%); backdrop-filter: blur(3px); }
+        #manifest-finish-dialog .select2-container { width: 100% !important; }
+        #manifest-finish-dialog .select2-container--default .select2-selection--single { height: 44px; border: 1px solid #d1d5db; border-radius: .75rem; }
+        #manifest-finish-dialog .select2-container--default .select2-selection--single .select2-selection__rendered { line-height: 42px; padding-left: 12px; color: #111827; }
+        #manifest-finish-dialog .select2-container--default .select2-selection--single .select2-selection__arrow { height: 42px; right: 8px; }
+        #manifest-finish-dialog .select2-dropdown { border-color: #c7d2fe; border-radius: .75rem; overflow: hidden; }
+        #manifest-finish-dialog .select2-search--dropdown { padding: 8px; }
+        #manifest-finish-dialog .select2-search--dropdown .select2-search__field { border: 1px solid #d1d5db; border-radius: .5rem; padding: 7px 10px; outline-color: #6366f1; }
+    </style>
+    <dialog id="manifest-finish-dialog" data-voyages-url="{{ url('/api/manifests/voyages') }}" class="w-[calc(100%-2rem)] max-w-lg rounded-2xl border border-gray-200 bg-white p-0 shadow-2xl">
         <form id="manifest-finish-form" method="POST" action="{{ route('manifest-sugeng.assign-voyage') }}">
             @csrf
-            <div class="border-b border-gray-100 px-6 py-4">
-                <h2 class="text-lg font-bold text-gray-900">Selesaikan pekerjaan Manifest</h2>
-                <p id="manifest-finish-count" class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage untuk semua data pada halaman tabel ini.</p>
+            <div class="flex items-start gap-3 border-b border-gray-100 bg-slate-50 px-6 py-5">
+                <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-indigo-100 text-indigo-700"><i class="fas fa-ship" aria-hidden="true"></i></span>
+                <div><h2 class="text-lg font-bold text-gray-900">Selesaikan pekerjaan Manifest</h2>
+                <p id="manifest-finish-count" class="mt-1 text-sm text-gray-600">Pilih kapal dan voyage tujuan untuk data pada halaman ini.</p></div>
+                <button type="button" class="ml-auto rounded-lg p-2 text-gray-400 hover:bg-gray-200 hover:text-gray-700" aria-label="Tutup" onclick="document.getElementById('manifest-finish-dialog').close()"><i class="fas fa-times" aria-hidden="true"></i></button>
             </div>
-            <div class="space-y-4 px-6 py-5">
+            <div class="space-y-5 px-6 py-6">
                 <label class="block text-sm font-semibold text-gray-700">Nama kapal
-                    <select id="manifest-finish-ship" name="nama_kapal" required class="mt-1 block w-full rounded-xl border-gray-300 text-sm">
+                    <select id="manifest-finish-ship" name="nama_kapal" required data-placeholder="Cari atau pilih kapal" class="mt-2 block w-full text-sm">
                         <option value="">-- Pilih kapal --</option>
                         @foreach($ships as $ship)<option value="{{ $ship }}">{{ $ship }}</option>@endforeach
                     </select>
                 </label>
                 <label class="block text-sm font-semibold text-gray-700">No. voyage
-                    <select id="manifest-finish-voyage" name="no_voyage" required disabled class="mt-1 block w-full rounded-xl border-gray-300 text-sm disabled:bg-gray-100">
+                    <select id="manifest-finish-voyage" name="no_voyage" required disabled data-placeholder="Pilih kapal terlebih dahulu" class="mt-2 block w-full text-sm">
                         <option value="">-- Pilih kapal terlebih dahulu --</option>
                     </select>
                 </label>
-                <p id="manifest-finish-help" class="text-xs text-gray-500">Hanya data pada halaman tabel yang sedang dibuka yang akan ditugaskan.</p>
+                <p id="manifest-finish-help" class="rounded-lg bg-blue-50 px-3 py-2 text-xs text-blue-800">Hanya data yang tampil pada halaman tabel ini yang akan ditugaskan.</p>
             </div>
             <div class="flex justify-end gap-2 border-t border-gray-100 px-6 py-4">
                 <button id="manifest-finish-cancel" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700">Batal</button>
