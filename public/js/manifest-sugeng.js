@@ -422,6 +422,43 @@ const initializeManifestSugengSheet = table => {
 document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet);
 
 (() => {
+    const dialog = document.getElementById('manifest-view-dialog');
+    const ship = document.getElementById('manifest-view-ship');
+    const voyage = document.getElementById('manifest-view-voyage');
+    if (!dialog || !ship || !voyage) return;
+    if (window.jQuery?.fn?.select2) {
+        window.jQuery(ship).select2({ width: '100%', dropdownParent: window.jQuery(dialog), placeholder: 'Cari kapal' });
+        window.jQuery(voyage).select2({ width: '100%', dropdownParent: window.jQuery(dialog), placeholder: 'Cari voyage' });
+    }
+    document.getElementById('manifest-view-open')?.addEventListener('click', () => dialog.showModal());
+    document.getElementById('manifest-view-cancel')?.addEventListener('click', () => dialog.close());
+    if (dialog.dataset.autoOpen === '1') dialog.showModal();
+    let requestNumber = 0;
+    ship.addEventListener('change', async () => {
+        const currentRequest = ++requestNumber;
+        voyage.replaceChildren(new Option(ship.value ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
+        voyage.disabled = true;
+        window.jQuery?.(voyage).trigger('change.select2');
+        if (!ship.value) return;
+        try {
+            const response = await fetch(`${dialog.dataset.voyagesUrl}/${encodeURIComponent(ship.value)}`, {
+                credentials: 'same-origin', headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error('Voyage gagal dimuat.');
+            const data = await response.json();
+            if (currentRequest !== requestNumber) return;
+            voyage.replaceChildren(new Option('-- Pilih voyage --', ''));
+            (data.voyages || []).forEach(value => voyage.add(new Option(value, value)));
+            voyage.disabled = !data.voyages?.length;
+            window.jQuery?.(voyage).trigger('change.select2');
+        } catch (error) {
+            if (currentRequest !== requestNumber) return;
+            voyage.replaceChildren(new Option(error.message, ''));
+        }
+    });
+})();
+
+(() => {
     const dialog = document.getElementById('manifest-finish-dialog');
     const form = document.getElementById('manifest-finish-form');
     const ship = document.getElementById('manifest-finish-ship');

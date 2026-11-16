@@ -24,13 +24,21 @@ class ManifestSugengController extends Controller
             'search' => 'nullable|string|max:255',
             'nama_kapal' => 'nullable|string|max:255',
             'no_voyage' => 'nullable|string|max:255',
+            'assignment' => 'nullable|in:unassigned',
         ]);
+
+        $showUnassigned = ($filters['assignment'] ?? null) === 'unassigned';
+        $hasViewChoice = $showUnassigned || (filled($filters['nama_kapal'] ?? null) && filled($filters['no_voyage'] ?? null));
 
         $items = ManifestSugeng::query()
             ->with('shipperJb')
             ->when($filters['type'] ?? null, fn ($query, $type) => $query->where('source_type', $type))
             ->when($filters['nama_kapal'] ?? null, fn ($query, $ship) => $query->where('nama_kapal', $ship))
             ->when($filters['no_voyage'] ?? null, fn ($query, $voyage) => $query->where('no_voyage', $voyage))
+            ->when($showUnassigned, fn ($query) => $query
+                ->where(fn ($query) => $query->whereNull('nama_kapal')->orWhere('nama_kapal', ''))
+                ->where(fn ($query) => $query->whereNull('no_voyage')->orWhere('no_voyage', '')))
+            ->when(! $hasViewChoice, fn ($query) => $query->whereRaw('1 = 0'))
             ->when(trim($filters['search'] ?? '') !== '', function ($query) use ($filters) {
                 $search = trim($filters['search']);
                 $query->where(fn ($query) => $query
@@ -55,7 +63,7 @@ class ManifestSugengController extends Controller
             ->when($filters['nama_kapal'] ?? null, fn ($query, $ship) => $query->where('nama_kapal', $ship))
             ->distinct()->orderBy('no_voyage')->pluck('no_voyage');
 
-        return view('manifest-sugeng.index', compact('items', 'ships', 'voyages'));
+        return view('manifest-sugeng.index', compact('items', 'ships', 'voyages', 'hasViewChoice', 'showUnassigned'));
     }
 
     public function show(ManifestSugeng $manifestSugeng): View
