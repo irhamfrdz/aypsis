@@ -7702,8 +7702,8 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::patch('manifest-sugeng/{manifestSugeng}/cell', [\App\Http\Controllers\ManifestSugengController::class, 'updateCell'])
         ->name('manifest-sugeng.cell.update')
         ->middleware('can:manifest-sugeng-manage');
-    Route::patch('manifest-sugeng/rows/clear', [\App\Http\Controllers\ManifestSugengController::class, 'clearRows'])
-        ->name('manifest-sugeng.rows.clear')
+    Route::delete('manifest-sugeng/rows/remove', [\App\Http\Controllers\ManifestSugengController::class, 'removeRows'])
+        ->name('manifest-sugeng.rows.remove')
         ->middleware('can:manifest-sugeng-manage');
     Route::patch('manifest-sugeng/rows/mark', [\App\Http\Controllers\ManifestSugengController::class, 'markRows'])
         ->name('manifest-sugeng.rows.mark')

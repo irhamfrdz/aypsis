@@ -385,32 +385,28 @@ const initializeManifestSugengSheet = table => {
             rows.forEach(row => delete row.dataset.selected);
             return;
         }
-        if ((event.key === 'Delete' || event.key === 'Backspace') && !event.ctrlKey && !event.metaKey) {
+        if (event.key === 'Delete' && !event.ctrlKey && !event.metaKey) {
             const selection = selectedRows();
             if (selection.length) {
                 event.preventDefault();
-                if (table.dataset.clearing === 'true') return;
-                const payload = selection.map(row => ({
-                    id: Number(row.dataset.itemId), kind: row.dataset.kind, line: Number(row.dataset.line),
-                }));
-                table.dataset.clearing = 'true';
-                fetch(table.dataset.clearUrl, {
-                    method: 'PATCH',
+                if (table.dataset.removing === 'true') return;
+                const ids = [...new Set(selection.map(row => Number(row.dataset.itemId)).filter(Number.isInteger))];
+                if (!ids.length) return;
+                if (!window.confirm(`Keluarkan ${ids.length} data terpilih dari Manifest Sugeng? Data tanda terima sumber tidak akan dihapus.`)) return;
+                table.dataset.removing = 'true';
+                fetch(table.dataset.removeUrl, {
+                    method: 'DELETE',
                     credentials: 'same-origin',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': table.dataset.csrf, Accept: 'application/json' },
-                    body: JSON.stringify({ rows: payload }),
+                    body: JSON.stringify({ ids }),
                 }).then(async response => {
                     const result = await response.json();
-                    if (!response.ok) throw new Error(result.message || 'Baris gagal dikosongkan.');
-                    selection.forEach(row => Array.from(row.cells).slice(1).forEach(cell => {
-                        const content = cell.querySelector('.sheet-cell-content');
-                        if (content) content.textContent = '';
-                        else cell.textContent = '';
-                        updateDocumentColor(cell);
-                        saved.set(cell, '');
-                    }));
-                }).catch(error => alert(error.message || 'Baris gagal dikosongkan.'))
-                    .finally(() => { delete table.dataset.clearing; });
+                    if (!response.ok) throw new Error(result.message || 'Data gagal dikeluarkan dari Manifest Sugeng.');
+                    window.location.reload();
+                }).catch(error => {
+                    alert(error.message || 'Data gagal dikeluarkan dari Manifest Sugeng.');
+                    delete table.dataset.removing;
+                });
                 return;
             }
         }

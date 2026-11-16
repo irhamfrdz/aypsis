@@ -263,49 +263,16 @@ class ManifestSugengController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function clearRows(Request $request): JsonResponse
+    public function removeRows(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'rows' => ['required', 'array', 'min:1', 'max:500'],
-            'rows.*.id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
-            'rows.*.kind' => ['required', Rule::in(['container', 'detail'])],
-            'rows.*.line' => ['required', 'integer', 'min:0', 'max:1000'],
+            'ids' => ['required', 'array', 'min:1', 'max:500'],
+            'ids.*' => ['required', 'integer', 'distinct', 'exists:manifest_sugengs,id'],
         ]);
-        $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
-        $emptyCells = array_fill_keys($columns, '');
 
-        DB::transaction(function () use ($data, $emptyCells): void {
-            foreach ($data['rows'] as $row) {
-                $item = ManifestSugeng::query()->findOrFail($row['id']);
-                if ($row['kind'] === 'container') {
-                    abort_if(blank($item->nomor_kontainer), 422);
-                    $items = ManifestSugeng::query()
-                        ->where('nama_kapal', $item->nama_kapal)
-                        ->where('no_voyage', $item->no_voyage)
-                        ->where('nomor_kontainer', $item->nomor_kontainer)
-                        ->where(function ($query): void {
-                            $query->where('source_type', 'lcl')->orWhere('tipe_kontainer', 'like', '%LCL%');
-                        })->lockForUpdate()->get();
-                } else {
-                    $items = ManifestSugeng::query()->whereKey($item->id)->lockForUpdate()->get();
-                }
-                foreach ($items as $target) {
-                    $sheetValues = $target->sheet_values ?? [];
-                    if ($row['kind'] === 'container') {
-                        $sheetValues['container'] = $emptyCells;
-                    } else {
-                        $sheetValues['details'][$row['line']] = $emptyCells;
-                        if ($row['line'] === 0) {
-                            $target->nomor_bl = null;
-                        }
-                    }
-                    $target->sheet_values = $sheetValues;
-                    $target->save();
-                }
-            }
-        });
+        $removed = ManifestSugeng::query()->whereIn('id', $data['ids'])->delete();
 
-        return response()->json(['cleared' => count($data['rows'])]);
+        return response()->json(['removed' => $removed]);
     }
 
     public function export(Request $request, ManifestSugengExcelService $excel): BinaryFileResponse

@@ -91,7 +91,7 @@
         $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
-    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" data-move-url="{{ route('manifest-sugeng.rows.move') }}" @endcan>
+    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-remove-url="{{ route('manifest-sugeng.rows.remove') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" data-move-url="{{ route('manifest-sugeng.rows.move') }}" @endcan>
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
             <tr class="sheet-size-headings"><th class="sheet-size-heading">#</th>@foreach($columns as $column)<th class="sheet-size-heading">{{ $column }}<span class="sheet-column-resize" data-column="{{ $column }}" title="Tarik untuk mengatur lebar kolom"></span></th>@endforeach</tr>
