@@ -2,8 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ApprovalTandaTerimaDuaShipperOverride;
 use App\Models\Manifest;
 use App\Models\ManifestShipperDetail;
+use App\Models\ManifestSugeng;
 use App\Models\Prospek;
 use App\Services\ManifestExcelService;
 use App\Services\WaBroadcastRecipientService;
@@ -162,7 +164,18 @@ class ManifestController extends Controller
 
         $waTemplates = \App\Models\WaTemplate::where('is_active', true)->get();
 
-        return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage', 'waTemplates'));
+        $sugengSources = ManifestSugeng::query()->where('no_voyage', $noVoyage)
+            ->whereIn('nomor_tanda_terima', $manifests->pluck('nomor_tanda_terima')->filter()->unique())
+            ->get()->keyBy('nomor_tanda_terima');
+        $sugengSourcesByFclReceipt = ManifestSugeng::query()->where('source_type', 'fcl')->where('no_voyage', $noVoyage)
+            ->whereIn('source_id', $manifests->pluck('prospek.tanda_terima_id')->filter()->unique())
+            ->get()->keyBy('source_id');
+        $shipperOverrides = ApprovalTandaTerimaDuaShipperOverride::query()
+            ->where('context', 'main')
+            ->whereIn('source_id', $sugengSources->pluck('source_id')->merge($sugengSourcesByFclReceipt->pluck('source_id'))->unique())
+            ->get()->keyBy(fn ($override) => $override->source_type.'|'.$override->source_id);
+
+        return view('manifests.index', compact('manifests', 'namaKapal', 'noVoyage', 'waTemplates', 'sugengSources', 'sugengSourcesByFclReceipt', 'shipperOverrides'));
     }
 
     /**

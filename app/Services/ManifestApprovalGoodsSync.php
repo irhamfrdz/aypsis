@@ -102,7 +102,7 @@ class ManifestApprovalGoodsSync
         }
     }
 
-    private function fields(ApprovalTandaTerimaDuaGoods $override): array
+    public function fields(ApprovalTandaTerimaDuaGoods $override): array
     {
         $good = data_get($override->manifest_goods, '0');
         $fields = [];

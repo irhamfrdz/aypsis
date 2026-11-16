@@ -4,8 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\ManifestSugeng;
 use App\Services\ManifestSugengExcelService;
-use Illuminate\Http\RedirectResponse;
+use App\Services\ManifestSugengSyncService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -67,7 +68,7 @@ class ManifestSugengController extends Controller
             ->with('success', 'Data Manifest Sugeng berhasil dihapus.');
     }
 
-    public function update(Request $request, ManifestSugeng $manifestSugeng): RedirectResponse
+    public function update(Request $request, ManifestSugeng $manifestSugeng, ManifestSugengSyncService $sync): RedirectResponse
     {
         $data = $request->validate([
             'nama_kapal' => 'required|string|max:255',
@@ -78,18 +79,38 @@ class ManifestSugengController extends Controller
             'tipe_kontainer' => 'nullable|string|max:255',
             'size_kontainer' => 'nullable|string|max:255',
         ]);
-        $manifestSugeng->update($data);
+        DB::transaction(function () use ($manifestSugeng, $data, $sync): void {
+            $sync->syncHeaderFields($manifestSugeng, $data);
+            $sheetValues = $manifestSugeng->sheet_values ?? [];
+            foreach (['nomor_bl' => 'B', 'nomor_kontainer' => 'D', 'no_seal' => 'E'] as $field => $column) {
+                $sheetValues['details'][0][$column] = $data[$field] ?? '';
+                if ($manifestSugeng->source_type === 'lcl' && in_array($column, ['D', 'E'], true)) {
+                    $sheetValues['container'][$column] = $data[$field] ?? '';
+                }
+            }
+            $manifestSugeng->fill($data);
+            $manifestSugeng->sheet_values = $sheetValues;
+            $manifestSugeng->save();
+        });
 
         return back()->with('success', 'Manifest Sugeng berhasil diperbarui.');
     }
 
-    public function updateNomorBl(Request $request, ManifestSugeng $manifestSugeng): RedirectResponse|JsonResponse
+    public function updateNomorBl(Request $request, ManifestSugeng $manifestSugeng, ManifestSugengSyncService $sync): RedirectResponse|JsonResponse
     {
         $data = $request->validate([
             'nomor_bl' => 'nullable|string|max:255',
         ]);
 
-        $manifestSugeng->update(['nomor_bl' => trim($data['nomor_bl'] ?? '') ?: null]);
+        DB::transaction(function () use ($manifestSugeng, $data, $sync): void {
+            $value = trim($data['nomor_bl'] ?? '');
+            $sync->syncCell($manifestSugeng, 'detail', 0, 'B', $value);
+            $sheetValues = $manifestSugeng->sheet_values ?? [];
+            $sheetValues['details'][0]['B'] = $value;
+            $manifestSugeng->nomor_bl = $value ?: null;
+            $manifestSugeng->sheet_values = $sheetValues;
+            $manifestSugeng->save();
+        });
 
         if ($request->expectsJson()) {
             return response()->json(['nomor_bl' => $manifestSugeng->nomor_bl]);
@@ -98,7 +119,7 @@ class ManifestSugengController extends Controller
         return back()->with('success', 'Nomor BL Manifest Sugeng berhasil disimpan.');
     }
 
-    public function updateCell(Request $request, ManifestSugeng $manifestSugeng): JsonResponse
+    public function updateCell(Request $request, ManifestSugeng $manifestSugeng, ManifestSugengSyncService $sync): JsonResponse
     {
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
         $data = $request->validate([
@@ -109,7 +130,7 @@ class ManifestSugengController extends Controller
         ]);
         $value = $data['value'] ?? '';
 
-        DB::transaction(function () use ($manifestSugeng, $data, $value): void {
+        DB::transaction(function () use ($manifestSugeng, $data, $value, $sync): void {
             $query = ManifestSugeng::query()->whereKey($manifestSugeng->id);
             if ($data['kind'] === 'container') {
                 abort_if(blank($manifestSugeng->nomor_kontainer), 422);
@@ -133,6 +154,7 @@ class ManifestSugengController extends Controller
                 }
                 $item->sheet_values = $sheetValues;
                 $item->save();
+                $sync->syncCell($item, $data['kind'], $data['line'], $data['column'], $value);
             }
         });
 

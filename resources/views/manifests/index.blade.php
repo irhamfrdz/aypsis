@@ -259,12 +259,15 @@
                         @forelse($manifests as $index => $manifest)
                         @php
                             $approvalShipper = $manifest->shipperJb;
-                            $displayPengirim = $approvalShipper?->shipper ?? $manifest->pengirim;
-                            $displayAlamatPengirim = $approvalShipper?->alamat_shipper ?? $manifest->alamat_pengirim;
-                            $displayPenerima = $approvalShipper?->consignee ?? $manifest->penerima;
-                            $displayAlamatPenerima = $approvalShipper?->alamat_consignee ?? $manifest->alamat_penerima;
-                            $displayNotifyParty = $approvalShipper?->notify_party_consignee ?? $manifest->notify_party;
-                            $displayAlamatNotifyParty = $approvalShipper?->alamat_notify_party_consignee ?? $manifest->alamat_notify_party;
+                            $sugengSource = $sugengSources->get($manifest->nomor_tanda_terima)
+                                ?? $sugengSourcesByFclReceipt->get($manifest->prospek?->tanda_terima_id);
+                            $recordShipper = $sugengSource ? ($shipperOverrides->get($sugengSource->source_type.'|'.$sugengSource->source_id)?->fields ?? []) : [];
+                            $displayPengirim = array_key_exists('shipper', $recordShipper) ? $recordShipper['shipper'] : ($approvalShipper?->shipper ?? $manifest->pengirim);
+                            $displayAlamatPengirim = array_key_exists('alamat_shipper', $recordShipper) ? $recordShipper['alamat_shipper'] : ($approvalShipper?->alamat_shipper ?? $manifest->alamat_pengirim);
+                            $displayPenerima = array_key_exists('consignee', $recordShipper) ? $recordShipper['consignee'] : ($approvalShipper?->consignee ?? $manifest->penerima);
+                            $displayAlamatPenerima = array_key_exists('alamat_consignee', $recordShipper) ? $recordShipper['alamat_consignee'] : ($approvalShipper?->alamat_consignee ?? $manifest->alamat_penerima);
+                            $displayNotifyParty = array_key_exists('notify_party_consignee', $recordShipper) ? $recordShipper['notify_party_consignee'] : ($approvalShipper?->notify_party_consignee ?? $manifest->notify_party);
+                            $displayAlamatNotifyParty = array_key_exists('alamat_notify_party_consignee', $recordShipper) ? $recordShipper['alamat_notify_party_consignee'] : ($approvalShipper?->alamat_notify_party_consignee ?? $manifest->alamat_notify_party);
                         @endphp
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-3">
