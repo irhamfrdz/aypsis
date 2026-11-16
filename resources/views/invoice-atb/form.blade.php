@@ -74,12 +74,8 @@
             <h2 class="text-lg font-semibold">Rincian Invoice</h2>
             <button id="add-item" type="button" class="rounded border border-pink-600 px-3 py-2 text-sm text-pink-700 hover:bg-pink-50">Tambah Rincian</button>
         </div>
-        @php
-            $rows = old('items', $editing ? $invoice->items->map(fn ($item) => $item->only(['uraian', 'jumlah', 'satuan', 'harga_satuan']))->toArray() : []);
-            if (empty($rows)) $rows = [['uraian' => '', 'jumlah' => 1, 'satuan' => '', 'harga_satuan' => '']];
-        @endphp
         <div id="items" class="mt-3 space-y-3">
-            @foreach($rows as $index => $row)
+            @foreach(old('items') ?: ($editing && $invoice->items->isNotEmpty() ? $invoice->items->map(fn ($item) => $item->only(['uraian', 'jumlah', 'satuan', 'harga_satuan']))->toArray() : [['uraian' => '', 'jumlah' => 1, 'satuan' => '', 'harga_satuan' => '']]) as $index => $row)
                 <div class="item-row grid gap-3 rounded border bg-gray-50 p-3 md:grid-cols-12">
                     <div class="md:col-span-5"><label class="block text-xs font-medium">Uraian *</label><input name="items[{{ $index }}][uraian]" value="{{ $row['uraian'] ?? '' }}" required maxlength="255" class="w-full rounded border-gray-300 text-sm"></div>
                     <div class="md:col-span-2"><label class="block text-xs font-medium">Jumlah *</label><input name="items[{{ $index }}][jumlah]" value="{{ $row['jumlah'] ?? 1 }}" type="number" min="0.01" step="0.01" required class="w-full rounded border-gray-300 text-sm"></div>
