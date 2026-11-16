@@ -19,67 +19,58 @@
 
 @push('styles')
 <style>
-    /* Keep every OB field visible without horizontal scrolling. */
-    .ob-responsive-table,
-    .ob-responsive-table thead,
-    .ob-responsive-table tbody {
-        display: block;
+    /* Fit the OB table to the available width while retaining its rows and columns. */
+    .ob-responsive-table {
         width: 100%;
+        table-layout: fixed;
+        border-collapse: collapse;
     }
 
-    .ob-responsive-table thead tr {
-        display: block;
-        padding: .75rem 1rem 0;
-    }
-
-    .ob-responsive-table thead th { display: none; }
-    .ob-responsive-table thead th:first-child { display: block; text-align: left; }
-    .ob-responsive-table thead th:first-child::after {
-        content: ' Pilih semua';
-        color: #475569;
-        font-size: .75rem;
-        text-transform: none;
-    }
-
-    .ob-responsive-table tbody tr {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: .75rem 1rem;
-        margin: .75rem;
-        padding: 1rem;
-        border: 1px solid #e2e8f0;
-        border-radius: .75rem;
-    }
-
-    .ob-responsive-table tbody td {
-        display: block;
+    .ob-responsive-table th,
+    .ob-responsive-table td {
         min-width: 0;
-        max-width: none;
-        padding: 0;
+        padding: .25rem .2rem;
         white-space: normal;
         overflow-wrap: anywhere;
+        word-break: break-word;
+        vertical-align: top;
+    }
+
+    .ob-responsive-table th {
+        font-size: .6rem;
+        line-height: 1.2;
+    }
+
+    .ob-responsive-table th:first-child,
+    .ob-responsive-table td:first-child { width: 2.5%; }
+    .ob-responsive-table th:nth-child(2),
+    .ob-responsive-table td:nth-child(2) { width: 2.5%; }
+    .ob-responsive-table th:nth-last-child(2),
+    .ob-responsive-table td:nth-last-child(2) { width: 9%; }
+    .ob-responsive-table th:last-child,
+    .ob-responsive-table td:last-child { width: 9%; }
+
+    .ob-responsive-table td.max-w-xs {
+        max-width: none;
         overflow: visible;
         text-overflow: clip;
     }
 
-    .ob-responsive-table tbody td:not([colspan])::before {
-        content: attr(data-label);
-        display: block;
-        margin-bottom: .25rem;
-        color: #64748b;
-        font-size: .65rem;
-        font-weight: 700;
-        line-height: 1.2;
-        text-transform: uppercase;
+    .ob-responsive-table td input:not([type='checkbox']),
+    .ob-responsive-table td select {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
     }
 
-    .ob-responsive-table tbody td[colspan] { grid-column: 1 / -1; }
-    .ob-responsive-table tbody td input:not([type='checkbox']),
-    .ob-responsive-table tbody td select { min-width: 0; max-width: 100%; }
-    .ob-responsive-table tbody td .select2-container { width: 100% !important; max-width: 100%; }
+    .ob-responsive-table td .select2-container {
+        width: 100% !important;
+        max-width: 100%;
+    }
 
-    @media (min-width: 1280px) {
-        .ob-responsive-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .ob-responsive-table td:last-child > div {
+        flex-wrap: wrap;
+        gap: .35rem;
     }
 
     /* Custom Searchable Dropdown Styles */
@@ -170,7 +161,7 @@
 @endpush
 
 @section('content')
-<div class="container mx-auto px-4 py-6">
+<div class="w-full max-w-none px-2 lg:px-3 py-6">
     {{-- Header --}}
     <div class="bg-white rounded-lg shadow-sm p-3 md:p-6 mb-4 md:mb-6">
         <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -1166,16 +1157,6 @@
     </div>
 
     {{-- Pagination (visible on both mobile and desktop) --}}
-    <script>
-        document.querySelectorAll('.ob-responsive-table').forEach(table => {
-            const labels = Array.from(table.querySelectorAll('thead th'), header => header.textContent.trim());
-            table.querySelectorAll('tbody tr').forEach(row => {
-                Array.from(row.cells).forEach((cell, index) => {
-                    if (!cell.hasAttribute('colspan')) cell.dataset.label = labels[index] || '';
-                });
-            });
-        });
-    </script>
     <div class="mt-4">
         @if(isset($bls))
             @include('components.modern-pagination', ['paginator' => $bls])
