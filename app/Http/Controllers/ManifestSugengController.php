@@ -38,8 +38,8 @@ class ManifestSugengController extends Controller
             })
             ->orderBy('nama_kapal')
             ->orderBy('no_voyage')
-            ->orderByRaw("CASE WHEN source_type = 'lcl' OR UPPER(COALESCE(tipe_kontainer, '')) LIKE '%LCL%' THEN 0 ELSE 1 END")
-            ->orderBy('nomor_kontainer')
+            ->orderByRaw('CASE WHEN sort_order IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('sort_order')
             ->orderBy('id')
             ->paginate(25)
             ->withQueryString();
@@ -165,6 +165,39 @@ class ManifestSugengController extends Controller
         return response()->json(['mark' => $data['mark']]);
     }
 
+    public function swapRows(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'source_id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
+            'direction' => ['required', Rule::in(['up', 'down'])],
+        ]);
+
+        DB::transaction(function () use ($data): void {
+            $source = ManifestSugeng::query()->findOrFail($data['source_id']);
+            $items = ManifestSugeng::query()
+                ->where('nama_kapal', $source->nama_kapal)
+                ->where('no_voyage', $source->no_voyage)
+                ->orderByRaw('CASE WHEN sort_order IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('sort_order')->orderBy('id')
+                ->lockForUpdate()->get();
+
+            $sourceIndex = $items->search(fn ($item) => $item->id === $source->id);
+            $targetIndex = $sourceIndex + ($data['direction'] === 'up' ? -1 : 1);
+            abort_if($sourceIndex === false || ! $items->has($targetIndex), 422, 'Tidak ada data lain di arah tersebut dalam voyage ini.');
+
+            $ordered = $items->all();
+            [$ordered[$sourceIndex], $ordered[$targetIndex]] = [$ordered[$targetIndex], $ordered[$sourceIndex]];
+            foreach ($ordered as $position => $item) {
+                if ($item->sort_order !== $position + 1) {
+                    $item->sort_order = $position + 1;
+                    $item->save();
+                }
+            }
+        });
+
+        return response()->json(['success' => true]);
+    }
+
     public function clearRows(Request $request): JsonResponse
     {
         $data = $request->validate([
@@ -219,8 +252,8 @@ class ManifestSugengController extends Controller
         $items = ManifestSugeng::query()->with('shipperJb')
             ->where('nama_kapal', $filters['nama_kapal'])
             ->where('no_voyage', $filters['no_voyage'])
-            ->orderByRaw("CASE WHEN source_type = 'lcl' OR UPPER(COALESCE(tipe_kontainer, '')) LIKE '%LCL%' THEN 0 ELSE 1 END")
-            ->orderBy('nomor_kontainer')->orderBy('id')->get();
+            ->orderByRaw('CASE WHEN sort_order IS NULL THEN 1 ELSE 0 END')
+            ->orderBy('sort_order')->orderBy('id')->get();
         abort_if($items->isEmpty(), 404);
         $path = $excel->create($items);
         $filename = 'Manifest_Sugeng_'.preg_replace('/[^A-Za-z0-9_-]+/', '_', $filters['nama_kapal'].'_'.$filters['no_voyage']).'.xlsx';

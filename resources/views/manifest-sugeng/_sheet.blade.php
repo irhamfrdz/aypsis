@@ -50,6 +50,14 @@
     <button type="button" data-mark="" class="rounded border border-gray-300 px-3 py-1">Hapus tanda</button>
 </div>
 @endcan
+@can('manifest-sugeng-manage')
+<div class="sugeng-order-controls mb-2 flex flex-wrap items-center gap-2 rounded border border-gray-300 bg-white p-2 text-sm" aria-label="Pindahkan data manifest">
+    <span class="text-gray-700">Pilih nomor baris, lalu pindahkan data:</span>
+    <button type="button" data-direction="up" class="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">↑ Ke atas</button>
+    <button type="button" data-direction="down" class="rounded border border-gray-300 px-3 py-1 hover:bg-gray-100">↓ Ke bawah</button>
+    <span class="text-gray-500">Semua baris barang pada data terpilih ikut berpindah.</span>
+</div>
+@endcan
 <div class="sugeng-formula-bar mb-2 flex items-start gap-2 rounded border border-gray-300 bg-gray-100 p-2" aria-label="Isi sel terpilih">
     <output class="sugeng-cell-address mt-1 w-16 shrink-0 rounded border border-gray-300 bg-white px-2 py-1 text-sm" aria-label="Alamat sel">—</output>
     <span class="mt-1 text-lg italic text-gray-500" aria-hidden="true">fx</span>
@@ -80,7 +88,7 @@
         $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
     @endphp
-    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" @endcan>
+    <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-clear-url="{{ route('manifest-sugeng.rows.clear') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" data-swap-url="{{ route('manifest-sugeng.rows.swap') }}" @endcan>
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
         <thead>
             <tr class="sheet-size-headings"><th class="sheet-size-heading">#</th>@foreach($columns as $column)<th class="sheet-size-heading">{{ $column }}<span class="sheet-column-resize" data-column="{{ $column }}" title="Tarik untuk mengatur lebar kolom"></span></th>@endforeach</tr>

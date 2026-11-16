@@ -137,6 +137,31 @@ document.querySelectorAll('.sugeng-sheet').forEach(table => {
         }
     };
     const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
+    const orderControls = table.closest('.sugeng-sheet-scroll')?.parentElement?.querySelector('.sugeng-order-controls');
+    orderControls?.addEventListener('click', async event => {
+        const button = event.target.closest('button[data-direction]');
+        if (!button || !table.dataset.swapUrl || button.disabled) return;
+        const ids = [...new Set(selectedRows().map(row => row.dataset.itemId))];
+        if (ids.length !== 1 || !ids[0]) {
+            alert('Pilih satu data manifest melalui nomor barisnya.');
+            return;
+        }
+        const buttons = orderControls.querySelectorAll('button[data-direction]');
+        buttons.forEach(control => { control.disabled = true; });
+        try {
+            const response = await fetch(table.dataset.swapUrl, {
+                method: 'PATCH', credentials: 'same-origin',
+                headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': table.dataset.csrf, Accept: 'application/json' },
+                body: JSON.stringify({ source_id: Number(ids[0]), direction: button.dataset.direction }),
+            });
+            const result = await response.json();
+            if (!response.ok) throw new Error(result.message || 'Posisi data gagal disimpan.');
+            window.location.reload();
+        } catch (error) {
+            alert(error.message || 'Posisi data gagal disimpan.');
+            buttons.forEach(control => { control.disabled = false; });
+        }
+    });
     const markControls = table.closest('.sugeng-sheet-scroll')?.parentElement?.querySelector('.sugeng-mark-controls');
     markControls?.addEventListener('click', async event => {
         const button = event.target.closest('button[data-mark]');
