@@ -308,7 +308,9 @@ class ManifestSugengSyncService
         }
 
         return Manifest::query()
-            ->when(filled($item->no_voyage), fn ($query) => $query->where('no_voyage', $item->no_voyage))
+            ->when(filled($item->no_voyage),
+                fn ($query) => $query->where('no_voyage', $item->no_voyage),
+                fn ($query) => $query->where(fn ($voyage) => $voyage->whereNull('no_voyage')->orWhere('no_voyage', '')))
             ->where(function ($query) use ($item, $receipt, $number) {
                 if (filled($number)) {
                     $query->where('nomor_tanda_terima', $number);

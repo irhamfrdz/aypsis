@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\ManifestSugeng;
+use App\Models\Manifest;
+use App\Models\NaikKapal;
 use App\Services\ManifestSugengExcelService;
 use App\Services\ManifestSugengSyncService;
 use Illuminate\Http\JsonResponse;
@@ -45,7 +47,10 @@ class ManifestSugengController extends Controller
             ->paginate(25)
             ->withQueryString();
 
-        $ships = ManifestSugeng::query()->whereNotNull('nama_kapal')->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
+        $ships = Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal')
+            ->merge(NaikKapal::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal'))
+            ->merge(ManifestSugeng::query()->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal'))
+            ->unique()->sort()->values();
         $voyages = ManifestSugeng::query()->whereNotNull('no_voyage')
             ->when($filters['nama_kapal'] ?? null, fn ($query, $ship) => $query->where('nama_kapal', $ship))
             ->distinct()->orderBy('no_voyage')->pluck('no_voyage');
@@ -58,6 +63,41 @@ class ManifestSugengController extends Controller
         $manifestSugeng->load(['shipperJb', 'sender']);
 
         return view('manifest-sugeng.show', compact('manifestSugeng'));
+    }
+
+    public function assignVoyage(Request $request, ManifestSugengSyncService $sync): RedirectResponse
+    {
+        $data = $request->validate([
+            'ids' => ['required', 'array', 'min:1', 'max:100'],
+            'ids.*' => ['required', 'integer', 'distinct', 'exists:manifest_sugengs,id'],
+            'nama_kapal' => ['required', 'string', 'max:255'],
+            'no_voyage' => ['required', 'string', 'max:255'],
+        ]);
+
+        DB::transaction(function () use ($data, $sync): void {
+            $items = ManifestSugeng::query()->whereIn('id', $data['ids'])->lockForUpdate()->get()->keyBy('id');
+            $position = (int) (ManifestSugeng::query()
+                ->where('nama_kapal', $data['nama_kapal'])
+                ->where('no_voyage', $data['no_voyage'])
+                ->whereNotIn('id', $data['ids'])
+                ->max('sort_order') ?? 0);
+            foreach ($data['ids'] as $id) {
+                $item = $items->get($id);
+                if (! $item) continue;
+                $sync->syncHeaderFields($item, [
+                    'nama_kapal' => $data['nama_kapal'],
+                    'no_voyage' => $data['no_voyage'],
+                ]);
+                $item->update([
+                    'nama_kapal' => $data['nama_kapal'],
+                    'no_voyage' => $data['no_voyage'],
+                    'sort_order' => ++$position,
+                ]);
+            }
+        });
+
+        return redirect()->route('manifest-sugeng.index', $request->query())
+            ->with('success', count($data['ids']).' data manifest berhasil ditugaskan ke '.$data['nama_kapal'].' / '.$data['no_voyage'].'.');
     }
 
     public function destroy(ManifestSugeng $manifestSugeng): RedirectResponse

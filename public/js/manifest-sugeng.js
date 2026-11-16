@@ -422,3 +422,56 @@ const initializeManifestSugengSheet = table => {
 };
 
 document.querySelectorAll('.sugeng-sheet').forEach(initializeManifestSugengSheet);
+
+(() => {
+    const dialog = document.getElementById('manifest-finish-dialog');
+    const form = document.getElementById('manifest-finish-form');
+    const ship = document.getElementById('manifest-finish-ship');
+    const voyage = document.getElementById('manifest-finish-voyage');
+    const help = document.getElementById('manifest-finish-help');
+    let requestNumber = 0;
+
+    document.getElementById('manifest-finish-open')?.addEventListener('click', () => dialog?.showModal());
+    document.getElementById('manifest-finish-cancel')?.addEventListener('click', () => dialog?.close());
+    ship?.addEventListener('change', async () => {
+        const currentRequest = ++requestNumber;
+        voyage.replaceChildren(new Option(ship.value ? 'Memuat voyage...' : '-- Pilih kapal terlebih dahulu --', ''));
+        voyage.disabled = true;
+        if (!ship.value) return;
+        help.textContent = 'Memuat daftar voyage...';
+        try {
+            const response = await fetch(`${dialog.dataset.voyagesUrl}/${encodeURIComponent(ship.value)}`, {
+                credentials: 'same-origin', headers: { Accept: 'application/json' },
+            });
+            if (!response.ok) throw new Error('Daftar voyage gagal dimuat.');
+            const data = await response.json();
+            if (currentRequest !== requestNumber) return;
+            const voyages = Array.isArray(data.voyages) ? data.voyages : [];
+            voyage.replaceChildren(new Option('-- Pilih voyage --', ''));
+            voyages.forEach(value => voyage.add(new Option(value, value)));
+            voyage.disabled = voyages.length === 0;
+            help.textContent = voyages.length ? `${voyages.length} voyage tersedia.` : 'Tidak ada voyage untuk kapal ini.';
+        } catch (error) {
+            if (currentRequest !== requestNumber) return;
+            voyage.replaceChildren(new Option('Gagal memuat voyage', ''));
+            help.textContent = error.message;
+        }
+    });
+    form?.addEventListener('submit', event => {
+        form.querySelectorAll('input[name="ids[]"]').forEach(input => input.remove());
+        const table = document.querySelector('.sugeng-sheet');
+        const ids = [...new Set(Array.from(table?.querySelectorAll('tbody tr[data-item-id]') || []).map(row => row.dataset.itemId))];
+        if (!ids.length) {
+            event.preventDefault();
+            alert('Tidak ada data manifest pada halaman ini.');
+            return;
+        }
+        ids.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'ids[]';
+            input.value = id;
+            form.append(input);
+        });
+    });
+})();
