@@ -4,6 +4,8 @@ namespace Tests\Feature;
 
 use App\Exports\ReportUangJalanExport;
 use App\Http\Controllers\ReportUangJalanController;
+use App\Models\SuratJalan;
+use App\Models\UangJalan;
 use Carbon\Carbon;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -67,6 +69,40 @@ class ReportUangJalanRefundTest extends TestCase
         $exportRefund = collect($export->array())->first(fn ($row) => ($row[3] ?? null) === 'BTJ26 0900044');
         $this->assertEquals(-600000, $exportRefund[11]);
         $this->assertEquals(-600000, $exportRefund[18]);
+    }
+
+    public function test_addition_export_includes_recipient_and_matching_driver_nik(): void
+    {
+        $driver = new \stdClass;
+        $driver->nik = '123456';
+        $sj = new SuratJalan;
+        $sj->supir = 'Budi';
+        $sj->setRelation('supirKaryawan', $driver);
+
+        $uj = new UangJalan;
+        $uj->id = 10;
+        $uj->tanggal_uang_jalan = Carbon::parse('2026-09-04');
+        $uj->nomor_uang_jalan = 'UJ-10';
+        $uj->setRelation('suratJalan', $sj);
+        $uj->setRelation('suratJalanBongkaran', null);
+        $uj->setRelation('pranotaUangJalan', collect());
+        $uj->setRelation('createdBy', null);
+
+        $adjustment = (object) [
+            'jenis_penyesuaian' => 'penambahan',
+            'penerima' => 'Budi',
+            'grand_total' => 100000,
+            'total' => 100000,
+            'jumlah' => 100000,
+            'tanggal_invoice' => Carbon::parse('2026-09-04'),
+            'nomor_invoice' => 'ADJ-10',
+            'nomor' => 'ADJ-10',
+        ];
+        $export = new ReportUangJalanExport(collect([$uj]), Carbon::parse('2026-09-01'), Carbon::parse('2026-09-30'), collect([10 => collect([$adjustment])]));
+        $addition = $export->array()[1];
+
+        $this->assertSame('Budi', $addition[8]);
+        $this->assertSame('123456', $addition[9]);
     }
 
     public function test_accurate_search_and_existing_negative_refund_keep_the_correct_sign(): void

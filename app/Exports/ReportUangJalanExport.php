@@ -108,6 +108,9 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
                     $adjLabel = $isPembatalan ? 'Pengembalian Uang Jalan (Pembatalan SJ)' : ucfirst($adj->jenis_penyesuaian ?? 'Adjustment');
 
                     $displayNominal = $isPenambahan ? $adjNominal : -$adjNominal;
+                    $adjPenerima = trim((string) ($adj->penerima ?? ''));
+                    $adjNamaPenerima = $adjPenerima !== '' ? $adjPenerima : $supir;
+                    $adjNik = $adjNamaPenerima === $supir ? $nik : '-';
 
                     $rows[] = [
                         '',  // No
@@ -118,8 +121,8 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
                         '', // Tipe
                         '', // Nama Barang
                         '', // Tujuan Ambil
-                        '', // Supir
-                        '', // NIK
+                        $isPenambahan ? $adjNamaPenerima : '', // Nama penerima penambahan
+                        $isPenambahan ? $adjNik : '', // NIK penerima jika sesuai supir surat jalan
                         '', // Plat Nomor
                         '', // Uang Jalan
                         '', // Mel
