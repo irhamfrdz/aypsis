@@ -123,7 +123,9 @@
                     $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
                     $containerKey = implode('|', [$item->nama_kapal, $item->no_voyage, strtoupper(trim((string) $item->nomor_kontainer))]);
                     $containerType = strtoupper($item->tipe_kontainer ?? $item->source_type ?? '');
-                    $containerDescription = trim('Container'.($item->size_kontainer ? ' '.$item->size_kontainer.' feet' : '').($containerType && $containerType !== 'FCL' ? ' / '.$containerType : ''));
+                    $containerDescription = $isLcl
+                        ? 'Container 20 feet'
+                        : trim('Container'.($item->size_kontainer ? ' '.$item->size_kontainer.' feet' : '').($containerType && $containerType !== 'FCL' ? ' / '.$containerType : ''));
                     $containerCells = array_fill(0, 32, '');
                     $containerCells[2] = $item->nomor_kontainer;
                     $containerCells[3] = $item->no_seal;
