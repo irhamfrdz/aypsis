@@ -640,7 +640,11 @@ class ApprovalTandaTerimaDuaController extends Controller
             }
         });
 
-        return redirect()->route('manifest-sugeng.index')
+        $manifestFilters = $validated['defer_assignment']
+            ? ['assignment' => 'unassigned']
+            : ['nama_kapal' => $validated['nama_kapal'], 'no_voyage' => $validated['no_voyage']];
+
+        return redirect()->route('manifest-sugeng.index', $manifestFilters)
             ->with('success', count($ids).' tanda terima berhasil dikirim ke Manifest Sugeng.');
     }
 
