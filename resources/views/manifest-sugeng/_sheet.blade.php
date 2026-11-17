@@ -92,6 +92,14 @@
     @php
         $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
         $columns = array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']);
+        $lclPartyGroups = [];
+        foreach ($items as $groupItem) {
+            if ($groupItem->source_type !== 'lcl' && ! str_contains(strtoupper((string) $groupItem->tipe_kontainer), 'LCL')) continue;
+            $groupContainer = implode('|', [$groupItem->nama_kapal, $groupItem->no_voyage, strtoupper(trim((string) $groupItem->nomor_kontainer))]);
+            $groupShipper = $groupItem->shipperJb?->shipper ?: $groupItem->pengirim;
+            $groupConsignee = $groupItem->shipperJb?->consignee;
+            $lclPartyGroups[$groupContainer][mb_strtolower(trim((string) $groupShipper)).'|'.mb_strtolower(trim((string) $groupConsignee))] = true;
+        }
     @endphp
     <table class="sugeng-sheet" style="width: {{ array_sum($widths) + 44 }}px" data-csrf="{{ csrf_token() }}" data-remove-url="{{ route('manifest-sugeng.rows.remove') }}" @can('manifest-sugeng-manage') data-mark-url="{{ route('manifest-sugeng.rows.mark') }}" data-move-url="{{ route('manifest-sugeng.rows.move') }}" @endcan>
         <colgroup><col style="width: 44px">@foreach($widths as $width)<col style="width: {{ $width }}px">@endforeach</colgroup>
@@ -116,12 +124,15 @@
         <tbody>
             @php $sheetRow = 1; @endphp
             @php $lastContainer = null; @endphp
+            @php $lastLclPartyKey = null; @endphp
             @forelse($items as $item)
                 @php
                     $assignmentCheckboxRendered = false;
                     $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
                     $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
                     $containerKey = implode('|', [$item->nama_kapal, $item->no_voyage, strtoupper(trim((string) $item->nomor_kontainer))]);
+                    $isNewContainer = $lastContainer !== $containerKey;
+                    $mergeLclLayout = $isLcl && count($lclPartyGroups[$containerKey] ?? []) === 1;
                     $containerType = strtoupper($item->tipe_kontainer ?? $item->source_type ?? '');
                     $containerDescription = $isLcl
                         ? 'Container 20 feet'
@@ -139,7 +150,7 @@
                     $details = collect($item->perincian_barang ?? []);
                     $shipper = $item->shipperJb;
                 @endphp
-                @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
+                @if($isLcl && ! $mergeLclLayout && $item->nomor_kontainer && $isNewContainer)
                     <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">@can('manifest-sugeng-manage')<input type="checkbox" class="sugeng-assign-checkbox" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal" draggable="false">@php $assignmentCheckboxRendered = true; @endphp @endcan{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'container.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div></td>
@@ -150,25 +161,32 @@
                     @php
                         $good = $manifestGoods->get($line, []);
                         $detail = $details->get($line, []);
+                        $partyKey = implode('|', [
+                            strtoupper(trim((string) $item->nomor_kontainer)),
+                            mb_strtolower(trim((string) ($shipper?->shipper ?: $item->pengirim))),
+                            mb_strtolower(trim((string) $shipper?->consignee)),
+                        ]);
+                        $showParty = ! $isLcl || ($line === 0 && $partyKey !== $lastLclPartyKey);
+                        if ($isLcl && $line === 0) $lastLclPartyKey = $partyKey;
                         $hsCodes = (array) (data_get($good, 'hs_codes') ?: (data_get($good, 'hs_code') ? [data_get($good, 'hs_code')] : []));
                         $cells = [
                             $line === 0 ? $item->nomor_bl : '', implode("\n", $hsCodes),
-                            !$isLcl && $line === 0 ? $item->nomor_kontainer : '',
-                            !$isLcl && $line === 0 ? $item->no_seal : '',
-                            $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : (!$isLcl && $line === 0 ? 1 : ''),
-                            $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : (!$isLcl && $line === 0 ? 'Unit' : ''),
-                            $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription.' stc :' : ''),
+                            $line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? $item->nomor_kontainer : '',
+                            $line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? $item->no_seal : '',
+                            $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? 1 : ''),
+                            $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? 'Unit' : ''),
+                            $isCargo ? '' : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? $containerDescription.' stc :' : ''),
                             data_get($good, 'jumlah'), data_get($good, 'satuan'), data_get($good, 'nama_barang'),
                             data_get($detail, 'jumlah'), data_get($detail, 'satuan'), data_get($detail, 'nama_barang'),
                             data_get($good, 'tonase'), data_get($good, 'meter_kubik'),
-                            $shipper?->shipper ?: $item->pengirim, $shipper?->alamat_shipper, $shipper?->npwp_shipper,
-                            $shipper?->consignee, $shipper?->alamat_consignee, $shipper?->npwp_consignee,
-                            $shipper?->notify_party_consignee, $shipper?->alamat_notify_party_consignee, $shipper?->npwp_notify_party_consignee,
-                            $shipper?->delivery_address_contact_person, $shipper?->document_ppftz_03, $shipper?->condition,
+                            $showParty ? ($shipper?->shipper ?: $item->pengirim) : '', $showParty ? $shipper?->alamat_shipper : '', $showParty ? $shipper?->npwp_shipper : '',
+                            $showParty ? $shipper?->consignee : '', $showParty ? $shipper?->alamat_consignee : '', $showParty ? $shipper?->npwp_consignee : '',
+                            $showParty ? $shipper?->notify_party_consignee : '', $showParty ? $shipper?->alamat_notify_party_consignee : '', $showParty ? $shipper?->npwp_notify_party_consignee : '',
+                            $showParty ? $shipper?->delivery_address_contact_person : '', $showParty ? $shipper?->document_ppftz_03 : '', $showParty ? $shipper?->condition : '',
                             $item->nomor_tanda_terima, $item->tanggal_tanda_terima?->format('d/m/Y'),
-                            $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : (!$isLcl && $line === 0 ? 1 : ''),
-                            $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : (!$isLcl && $line === 0 ? 'Unit' : ''),
-                            $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription : ''),
+                            $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? 1 : ''),
+                            $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? 'Unit' : ''),
+                            $isCargo ? '' : ($line === 0 && (!$isLcl || ($mergeLclLayout && $isNewContainer)) ? $containerDescription : ''),
                         ];
                     @endphp
                     <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">@can('manifest-sugeng-manage')@if(!$assignmentCheckboxRendered)<input type="checkbox" class="sugeng-assign-checkbox" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal" draggable="false">@php $assignmentCheckboxRendered = true; @endphp @endif @endcan{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)

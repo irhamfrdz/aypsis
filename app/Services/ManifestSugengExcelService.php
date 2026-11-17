@@ -52,13 +52,27 @@ class ManifestSugengExcelService
 
         $row = 8;
         $lastContainer = null;
+        $lastLclPartyKey = null;
+        $lclPartyGroups = [];
+        foreach ($items as $groupItem) {
+            if ($groupItem->source_type !== 'lcl' && ! str_contains(strtoupper((string) $groupItem->tipe_kontainer), 'LCL')) {
+                continue;
+            }
+            $groupContainer = implode('|', [$groupItem->nama_kapal, $groupItem->no_voyage, strtoupper(trim((string) $groupItem->nomor_kontainer))]);
+            $groupShipper = $groupItem->shipperJb?->shipper ?: $groupItem->pengirim;
+            $groupConsignee = $groupItem->shipperJb?->consignee;
+            $lclPartyGroups[$groupContainer][mb_strtolower(trim((string) $groupShipper)).'|'.mb_strtolower(trim((string) $groupConsignee))] = true;
+        }
         foreach ($items as $item) {
             $container = trim((string) $item->nomor_kontainer);
             $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
             $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
+            $containerKey = implode('|', [$item->nama_kapal, $item->no_voyage, strtoupper($container)]);
+            $isNewContainer = strtoupper($container) !== $lastContainer;
+            $mergeLclLayout = $isLcl && count($lclPartyGroups[$containerKey] ?? []) === 1;
             $fclDescription = trim('Container'.($item->size_kontainer ? ' '.$item->size_kontainer.' feet' : ''));
             $containerType = strtoupper(trim((string) $item->tipe_kontainer));
-            if ($isLcl && $container !== '' && strtoupper($container) !== $lastContainer) {
+            if ($isLcl && ! $mergeLclLayout && $container !== '' && $isNewContainer) {
                 $sheet->setCellValue('D'.$row, $container);
                 $sheet->setCellValue('E'.$row, $item->no_seal);
                 $sheet->setCellValue('F'.$row, 1);
@@ -84,28 +98,37 @@ class ManifestSugengExcelService
                 $good = $manifestGoods->get($line, []);
                 $detail = $details->get($line, []);
                 $shipper = $item->shipperJb;
+                $partyKey = implode('|', [
+                    strtoupper($container),
+                    mb_strtolower(trim((string) ($shipper?->shipper ?: $item->pengirim))),
+                    mb_strtolower(trim((string) $shipper?->consignee)),
+                ]);
+                $showParty = ! $isLcl || ($line === 0 && $partyKey !== $lastLclPartyKey);
+                if ($isLcl && $line === 0) {
+                    $lastLclPartyKey = $partyKey;
+                }
                 $values = [
                     'B' => $line === 0 ? $item->nomor_bl : null,
                     'C' => implode("\n", (array) (data_get($good, 'hs_codes') ?: (data_get($good, 'hs_code') ? [data_get($good, 'hs_code')] : []))),
-                    'D' => ! $isLcl && $line === 0 ? $container : null,
-                    'E' => ! $isLcl && $line === 0 ? $item->no_seal : null,
-                    'F' => $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
-                    'G' => $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
-                    'H' => $isCargo ? null : (! $isLcl && $line === 0 ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)).' stc :' : null),
+                    'D' => $line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? $container : null,
+                    'E' => $line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? $item->no_seal : null,
+                    'F' => $isCargo ? (data_get($good, 'jumlah') ?? data_get($detail, 'jumlah')) : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? 1 : null),
+                    'G' => $isCargo ? (data_get($good, 'satuan') ?? data_get($detail, 'satuan')) : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? 'Unit' : null),
+                    'H' => $isCargo ? null : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)).' stc :' : null),
                     'I' => data_get($good, 'jumlah'), 'J' => data_get($good, 'satuan'), 'K' => data_get($good, 'nama_barang'),
                     'L' => data_get($detail, 'jumlah'), 'M' => data_get($detail, 'satuan'), 'N' => data_get($detail, 'nama_barang'),
                     'O' => data_get($good, 'tonase'), 'P' => data_get($good, 'meter_kubik'),
-                    'Q' => $shipper?->shipper ?: $item->pengirim,
-                    'R' => $shipper?->alamat_shipper, 'S' => $shipper?->npwp_shipper,
-                    'T' => $shipper?->consignee, 'U' => $shipper?->alamat_consignee, 'V' => $shipper?->npwp_consignee,
-                    'W' => $shipper?->notify_party_consignee, 'X' => $shipper?->alamat_notify_party_consignee,
-                    'Y' => $shipper?->npwp_notify_party_consignee, 'Z' => $shipper?->delivery_address_contact_person,
-                    'AA' => $shipper?->document_ppftz_03, 'AB' => $shipper?->condition,
+                    'Q' => $showParty ? ($shipper?->shipper ?: $item->pengirim) : null,
+                    'R' => $showParty ? $shipper?->alamat_shipper : null, 'S' => $showParty ? $shipper?->npwp_shipper : null,
+                    'T' => $showParty ? $shipper?->consignee : null, 'U' => $showParty ? $shipper?->alamat_consignee : null, 'V' => $showParty ? $shipper?->npwp_consignee : null,
+                    'W' => $showParty ? $shipper?->notify_party_consignee : null, 'X' => $showParty ? $shipper?->alamat_notify_party_consignee : null,
+                    'Y' => $showParty ? $shipper?->npwp_notify_party_consignee : null, 'Z' => $showParty ? $shipper?->delivery_address_contact_person : null,
+                    'AA' => $showParty ? $shipper?->document_ppftz_03 : null, 'AB' => $showParty ? $shipper?->condition : null,
                     'AC' => $item->nomor_tanda_terima,
                     'AD' => $item->tanggal_tanda_terima?->format('d/m/Y'),
-                    'AE' => $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : (! $isLcl && $line === 0 ? 1 : null),
-                    'AF' => $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : (! $isLcl && $line === 0 ? 'Unit' : null),
-                    'AG' => $isCargo ? null : (! $isLcl && $line === 0 ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)) : null),
+                    'AE' => $isCargo ? (data_get($detail, 'jumlah') ?? data_get($good, 'jumlah')) : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? 1 : null),
+                    'AF' => $isCargo ? (data_get($detail, 'satuan') ?? data_get($good, 'satuan')) : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? 'Unit' : null),
+                    'AG' => $isCargo ? null : ($line === 0 && (! $isLcl || ($mergeLclLayout && $isNewContainer)) ? ($containerType === 'FCL' ? $fclDescription : trim($item->tipe_kontainer.' '.$item->size_kontainer)) : null),
                 ];
                 $values = array_replace($values, $item->sheet_values['details'][$line] ?? []);
                 foreach ($values as $column => $value) {
