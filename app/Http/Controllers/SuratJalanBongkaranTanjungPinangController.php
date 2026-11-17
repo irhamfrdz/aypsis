@@ -3,46 +3,97 @@
 namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBongkaranTanjungPinang;
+use App\Models\Manifest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 
 class SuratJalanBongkaranTanjungPinangController extends Controller
 {
-    public function index(Request $request)
+    public function selectShip(Request $request)
     {
-        $search = trim((string) $request->query('search', ''));
-        $query = SuratJalanBongkaranTanjungPinang::query()
-            ->when($search !== '', function ($query) use ($search) {
-                $query->where(function ($query) use ($search) {
-                    $query->where('nomor_surat_jalan', 'like', "%{$search}%")
-                        ->orWhere('no_bl', 'like', "%{$search}%")
-                        ->orWhere('no_kontainer', 'like', "%{$search}%")
-                        ->orWhere('supir', 'like', "%{$search}%");
-                });
-            })
-            ->when($request->filled('nama_kapal'), fn ($query) => $query->where('nama_kapal', $request->string('nama_kapal')->toString()))
-            ->when($request->filled('no_voyage'), fn ($query) => $query->where('no_voyage', $request->string('no_voyage')->toString()));
+        $kapals = Manifest::query()->whereNotNull('nama_kapal')->where('nama_kapal', '<>', '')
+            ->select('nama_kapal')->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
+        $voyages = collect();
+        if ($request->filled('nama_kapal')) {
+            $voyages = Manifest::query()->where('nama_kapal', $request->string('nama_kapal')->toString())
+                ->whereNotNull('no_voyage')->where('no_voyage', '<>', '')
+                ->select('no_voyage')->distinct()->orderByDesc('no_voyage')->pluck('no_voyage');
+        }
 
-        $stats = [
-            'total' => (clone $query)->count(),
-            'kontainer' => (clone $query)->whereNotNull('no_kontainer')->where('no_kontainer', '<>', '')->count(),
-            'voyage' => (clone $query)->whereNotNull('no_voyage')->distinct()->count('no_voyage'),
-        ];
-        $kapals = SuratJalanBongkaranTanjungPinang::query()->whereNotNull('nama_kapal')->where('nama_kapal', '<>', '')
-            ->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
-        $voyages = SuratJalanBongkaranTanjungPinang::query()->when($request->filled('nama_kapal'), fn ($query) => $query->where('nama_kapal', $request->string('nama_kapal')->toString()))
-            ->whereNotNull('no_voyage')->where('no_voyage', '<>', '')->distinct()->orderByDesc('no_voyage')->pluck('no_voyage');
-        $suratJalans = $query->orderByDesc('tanggal_surat_jalan')->orderByDesc('id')->paginate(25)
-            ->withQueryString();
-
-        return view('surat-jalan-bongkaran-tanjung-pinang.index', compact('suratJalans', 'search', 'stats', 'kapals', 'voyages'));
+        return view('surat-jalan-bongkaran-tanjung-pinang.select-ship', compact('kapals', 'voyages'));
     }
 
-    public function create()
+    public function getVoyages(Request $request)
     {
+        $request->validate(['nama_kapal' => ['required', 'string', 'max:255']]);
+        $voyages = Manifest::query()->where('nama_kapal', $request->string('nama_kapal')->toString())
+            ->whereNotNull('no_voyage')->where('no_voyage', '<>', '')
+            ->select('no_voyage')->distinct()->orderByDesc('no_voyage')->pluck('no_voyage');
+
+        return response()->json(['success' => true, 'voyages' => $voyages]);
+    }
+
+    public function index(Request $request)
+    {
+        $request->validate([
+            'nama_kapal' => ['required', 'string', 'max:255'],
+            'no_voyage' => ['required', 'string', 'max:255'],
+            'mode' => ['nullable', 'in:manifest,surat_jalan'],
+        ]);
+        $selectedKapal = $request->string('nama_kapal')->toString();
+        $selectedVoyage = $request->string('no_voyage')->toString();
+        $search = trim((string) $request->query('search', ''));
+        $mode = $request->query('mode', 'manifest');
+        $manifestQuery = Manifest::query()->where('nama_kapal', $selectedKapal)->where('no_voyage', $selectedVoyage)
+            ->with('suratJalanBongkaranTanjungPinang')
+            ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
+                $q->where('nomor_bl', 'like', "%{$search}%")
+                    ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                    ->orWhere('no_seal', 'like', "%{$search}%")
+                    ->orWhere('nama_barang', 'like', "%{$search}%")
+                    ->orWhere('penerima', 'like', "%{$search}%");
+            }));
+        $stats = [
+            'manifest' => (clone $manifestQuery)->count(),
+            'sudah_sj' => (clone $manifestQuery)->whereHas('suratJalanBongkaranTanjungPinang')->count(),
+            'belum_sj' => (clone $manifestQuery)->whereDoesntHave('suratJalanBongkaranTanjungPinang')->count(),
+        ];
+
+        $manifests = $mode === 'manifest'
+            ? $manifestQuery->orderBy('nomor_urut')->paginate(25)->withQueryString()
+            : collect();
+        $suratJalans = $mode === 'surat_jalan'
+            ? SuratJalanBongkaranTanjungPinang::query()->where('nama_kapal', $selectedKapal)->where('no_voyage', $selectedVoyage)
+                ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
+                    $q->where('nomor_surat_jalan', 'like', "%{$search}%")->orWhere('no_bl', 'like', "%{$search}%")
+                        ->orWhere('no_kontainer', 'like', "%{$search}%")->orWhere('supir', 'like', "%{$search}%");
+                }))->orderByDesc('tanggal_surat_jalan')->orderByDesc('id')->paginate(25)->withQueryString()
+            : collect();
+
+        return view('surat-jalan-bongkaran-tanjung-pinang.index', compact('manifests', 'suratJalans', 'search', 'stats', 'selectedKapal', 'selectedVoyage', 'mode'));
+    }
+
+    public function create(Request $request)
+    {
+        $manifest = $request->filled('manifest_id') ? Manifest::findOrFail($request->integer('manifest_id')) : null;
+        $suratJalan = new SuratJalanBongkaranTanjungPinang([
+            'manifest_id' => $manifest?->id,
+            'nama_kapal' => $manifest?->nama_kapal ?? $request->query('nama_kapal'),
+            'no_voyage' => $manifest?->no_voyage ?? $request->query('no_voyage'),
+            'no_bl' => $manifest?->nomor_bl,
+            'pengirim' => $manifest?->pengirim,
+            'penerima' => $manifest?->penerima,
+            'jenis_barang' => $manifest?->nama_barang,
+            'no_kontainer' => $manifest?->nomor_kontainer,
+            'no_seal' => $manifest?->no_seal,
+            'size' => $manifest?->size_kontainer,
+            'tipe_kontainer' => $manifest?->tipe_kontainer,
+            'term' => $manifest?->term,
+        ]);
+
         return view('surat-jalan-bongkaran-tanjung-pinang.form', [
-            'suratJalan' => new SuratJalanBongkaranTanjungPinang,
+            'suratJalan' => $suratJalan,
         ]);
     }
 
@@ -53,7 +104,7 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
         $data['input_date'] = now();
         SuratJalanBongkaranTanjungPinang::create($data);
 
-        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.index')
+        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.list', $this->selection($data))
             ->with('success', 'Surat jalan bongkaran Tanjung Pinang berhasil dibuat.');
     }
 
@@ -70,15 +121,16 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
         $data = $this->validated($request, $suratJalan);
         $suratJalan->update($data);
 
-        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.index')
+        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.list', $this->selection($data))
             ->with('success', 'Surat jalan bongkaran Tanjung Pinang berhasil diperbarui.');
     }
 
-    public function destroy(int $id)
+    public function destroy(Request $request, int $id)
     {
-        $this->find($id)->delete();
+        $suratJalan = $this->find($id);
+        $suratJalan->delete();
 
-        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.index')
+        return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.list', $this->selection($request->all() + $suratJalan->toArray()))
             ->with('success', 'Surat jalan bongkaran Tanjung Pinang berhasil dihapus.');
     }
 
@@ -98,13 +150,22 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
         return SuratJalanBongkaranTanjungPinang::findOrFail($id);
     }
 
+    private function selection(array $data): array
+    {
+        return array_filter([
+            'nama_kapal' => $data['nama_kapal'] ?? null,
+            'no_voyage' => $data['no_voyage'] ?? null,
+        ], fn ($value) => filled($value));
+    }
+
     private function validated(Request $request, ?SuratJalanBongkaranTanjungPinang $suratJalan = null): array
     {
         return $request->validate([
             'nomor_surat_jalan' => ['required', 'string', 'max:255', Rule::unique('surat_jalan_bongkaran_tanjung_pinangs')->ignore($suratJalan?->id)],
             'tanggal_surat_jalan' => ['required', 'date'],
-            'nama_kapal' => ['nullable', 'string', 'max:255'],
-            'no_voyage' => ['nullable', 'string', 'max:255'],
+            'manifest_id' => ['nullable', 'integer', 'exists:manifests,id'],
+            'nama_kapal' => ['required', 'string', 'max:255'],
+            'no_voyage' => ['required', 'string', 'max:255'],
             'no_bl' => ['nullable', 'string', 'max:255'],
             'pengirim' => ['nullable', 'string', 'max:255'],
             'penerima' => ['nullable', 'string', 'max:255'],

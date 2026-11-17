@@ -4829,7 +4829,9 @@ Route::middleware([
 
         Route::prefix('surat-jalan-bongkaran-tanjung-pinang')->name('surat-jalan-bongkaran-tanjung-pinang.')->group(function () {
             $controller = \App\Http\Controllers\SuratJalanBongkaranTanjungPinangController::class;
-            Route::get('/', [$controller, 'index'])->name('index')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
+            Route::get('/', [$controller, 'selectShip'])->name('index')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
+            Route::get('/get-voyages', [$controller, 'getVoyages'])->name('get-voyages')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
+            Route::get('/list', [$controller, 'index'])->name('list')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
             Route::get('/create', [$controller, 'create'])->name('create')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
             Route::post('/', [$controller, 'store'])->name('store')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
             Route::get('/{id}/edit', [$controller, 'edit'])->name('edit')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-update');

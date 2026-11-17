@@ -148,6 +148,11 @@ class Manifest extends Model
         return $this->hasOne(SuratJalanBongkaranBatam::class, 'manifest_id');
     }
 
+    public function suratJalanBongkaranTanjungPinang()
+    {
+        return $this->hasOne(SuratJalanBongkaranTanjungPinang::class, 'manifest_id');
+    }
+
     public function stowagePlan()
     {
         return $this->hasOne(StowagePlan::class, 'manifest_id');

@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('no_voyage')->nullable();
             $table->string('no_bl')->nullable();
             $table->unsignedBigInteger('bl_id')->nullable()->index();
+            $table->unsignedBigInteger('manifest_id')->nullable()->index();
             $table->string('pengirim')->nullable();
             $table->string('penerima')->nullable();
             $table->text('jenis_barang')->nullable();
@@ -42,7 +43,7 @@ return new class extends Migration
         // Keep existing Tanjung Pinang records while separating future data from the shared table.
         if (Schema::hasTable('surat_jalan_bongkarans')) {
             $columns = [
-                'id', 'tanggal_surat_jalan', 'nomor_surat_jalan', 'nama_kapal', 'kapal_id', 'no_voyage', 'no_bl', 'bl_id',
+                'id', 'tanggal_surat_jalan', 'nomor_surat_jalan', 'nama_kapal', 'kapal_id', 'no_voyage', 'no_bl', 'bl_id', 'manifest_id',
                 'pengirim', 'penerima', 'jenis_barang', 'tujuan_pengambilan', 'tujuan_pengiriman', 'supir', 'no_plat',
                 'kenek', 'no_kontainer', 'no_seal', 'size', 'tipe_kontainer', 'term', 'aktifitas', 'input_by', 'input_date',
                 'created_at', 'updated_at',
