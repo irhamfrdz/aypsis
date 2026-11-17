@@ -64,7 +64,12 @@
                                 </span>
                             </td>
                             <td class="whitespace-nowrap px-5 py-4 text-right font-semibold text-slate-900">Rp {{ number_format((float) $order->total, 2, ',', '.') }}</td>
-                            <td class="whitespace-nowrap px-5 py-4 text-right"><a href="{{ route('purchase-orders.show', $order) }}" class="text-sm font-semibold text-blue-700 hover:underline">Detail</a></td>
+                            <td class="whitespace-nowrap px-5 py-4 text-right">
+                                <a href="{{ route('purchase-orders.show', $order) }}" class="text-sm font-semibold text-blue-700 hover:underline">Detail</a>
+                                @can('purchase-order-update')
+                                    <a href="{{ route('purchase-orders.edit', $order) }}" class="ml-3 text-sm font-semibold text-amber-700 hover:underline">Edit</a>
+                                @endcan
+                            </td>
                         </tr>
                     @empty
                         <tr><td colspan="6" class="px-5 py-12 text-center text-sm text-slate-500">Belum ada Purchase Order.</td></tr>
