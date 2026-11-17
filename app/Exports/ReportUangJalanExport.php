@@ -63,6 +63,15 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
             $supir = $relatedSJ->supir ?? '-';
             $plat = $relatedSJ->no_plat ?? '-';
             $nik = $relatedSJ->supirKaryawan->nik ?? '-';
+            if ($plat === '-' || trim((string) $plat) === '') {
+                $plat = $relatedSJ->supirKaryawan->plat ?? '-';
+                if (! $plat || $plat === '-') {
+                    $plateCandidates = ($karyawansByName[$normalize($supir)] ?? collect())->unique('nik')->filter(fn ($karyawan) => filled($karyawan->plat));
+                    if ($plateCandidates->count() === 1) {
+                        $plat = $plateCandidates->first()->plat;
+                    }
+                }
+            }
             if ($nik === '-') {
                 $candidates = ($karyawansByName[$normalize($supir)] ?? collect())->unique('nik');
                 if ($candidates->count() > 1) {
