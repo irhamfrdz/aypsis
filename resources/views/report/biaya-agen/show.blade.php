@@ -29,15 +29,17 @@
         </div>
     </div>
 
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="grid gap-4 sm:grid-cols-2 {{ $validated['gunakan_pph'] === '1' ? 'lg:grid-cols-4' : 'lg:grid-cols-3' }}">
         <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Subtotal</p>
             <p class="mt-2 text-xl font-bold text-gray-900">Rp {{ number_format($summary['subtotal'], 0, ',', '.') }}</p>
         </div>
+        @if($validated['gunakan_pph'] === '1')
         <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-gray-500">PPh</p>
             <p class="mt-2 text-xl font-bold text-gray-900">Rp {{ number_format($summary['pph'], 0, ',', '.') }}</p>
         </div>
+        @endif
         <div class="rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
             <p class="text-xs font-medium uppercase tracking-wide text-gray-500">Penyesuaian</p>
             <p class="mt-2 text-xl font-bold text-gray-900">Rp {{ number_format($summary['adjustment'], 0, ',', '.') }}</p>
@@ -51,7 +53,7 @@
     <div class="overflow-x-auto rounded-xl border border-gray-200 bg-white shadow-sm">
         <table class="min-w-full divide-y divide-gray-200 text-sm">
             <thead class="bg-indigo-50 text-left text-xs font-semibold uppercase text-indigo-900">
-                <tr><th class="px-4 py-3">Kapal</th><th class="px-4 py-3 text-right">Item</th><th class="px-4 py-3 text-right">Trip</th><th class="px-4 py-3 text-right">Subtotal</th><th class="px-4 py-3 text-right">PPh</th><th class="px-4 py-3 text-right">Penyesuaian</th><th class="px-4 py-3 text-right">Total biaya agen</th></tr>
+                <tr><th class="px-4 py-3">Kapal</th><th class="px-4 py-3 text-right">Item</th><th class="px-4 py-3 text-right">Trip</th><th class="px-4 py-3 text-right">Subtotal</th>@if($validated['gunakan_pph'] === '1')<th class="px-4 py-3 text-right">PPh</th>@endif<th class="px-4 py-3 text-right">Penyesuaian</th><th class="px-4 py-3 text-right">Total biaya agen</th></tr>
             </thead>
             <tbody class="divide-y divide-gray-100">
                 @forelse($groups as $group)
@@ -60,12 +62,12 @@
                         <td class="px-4 py-3 text-right">{{ $group['rows']->count() }}</td>
                         <td class="px-4 py-3 text-right font-semibold text-indigo-700">{{ $group['trip_count'] }}</td>
                         <td class="px-4 py-3 text-right">Rp {{ number_format($group['subtotal'], 0, ',', '.') }}</td>
-                        <td class="px-4 py-3 text-right">Rp {{ number_format($group['pph'], 0, ',', '.') }}</td>
+                        @if($validated['gunakan_pph'] === '1')<td class="px-4 py-3 text-right">Rp {{ number_format($group['pph'], 0, ',', '.') }}</td>@endif
                         <td class="px-4 py-3 text-right">Rp {{ number_format($group['adjustment'], 0, ',', '.') }}</td>
                         <td class="px-4 py-3 text-right font-semibold">Rp {{ number_format($group['grand_total'], 0, ',', '.') }}</td>
                     </tr>
                 @empty
-                    <tr><td colspan="7" class="px-4 py-8 text-center text-gray-500">Tidak ada biaya agen untuk pilihan ini.</td></tr>
+                    <tr><td colspan="{{ $validated['gunakan_pph'] === '1' ? 7 : 6 }}" class="px-4 py-8 text-center text-gray-500">Tidak ada biaya agen untuk pilihan ini.</td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -89,7 +91,7 @@
                     <th class="whitespace-nowrap px-4 py-3 text-right">Harga</th>
                     <th class="whitespace-nowrap px-4 py-3 text-right">Jasa air</th>
                     <th class="whitespace-nowrap px-4 py-3 text-right">Subtotal</th>
-                    <th class="whitespace-nowrap px-4 py-3 text-right">PPh</th>
+                    @if($validated['gunakan_pph'] === '1')<th class="whitespace-nowrap px-4 py-3 text-right">PPh</th>@endif
                     <th class="whitespace-nowrap px-4 py-3 text-right">Penyesuaian</th>
                     <th class="whitespace-nowrap px-4 py-3 text-right">Total</th>
                 </tr>
@@ -106,7 +108,7 @@
                         <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->harga, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->jasa_air, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->sub_total, 0, ',', '.') }}</td>
-                        <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->pph, 0, ',', '.') }}</td>
+                        @if($validated['gunakan_pph'] === '1')<td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->pph, 0, ',', '.') }}</td>@endif
                         <td class="whitespace-nowrap px-4 py-3 text-right text-gray-700">Rp {{ number_format($row->adjustment, 0, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-4 py-3 text-right font-semibold text-gray-900">Rp {{ number_format($row->grand_total, 0, ',', '.') }}</td>
                     </tr>

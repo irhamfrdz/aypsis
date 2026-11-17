@@ -61,10 +61,10 @@
         </table>
 
         <table class="items" style="margin-bottom:12px">
-            <thead><tr><th>Kapal</th><th>Item</th><th>Trip</th><th>Subtotal</th><th>PPh</th><th>Penyesuaian</th><th>Total biaya agen</th></tr></thead>
+            <thead><tr><th>Kapal</th><th>Item</th><th>Trip</th><th>Subtotal</th>@if($validated['gunakan_pph'] === '1')<th>PPh</th>@endif<th>Penyesuaian</th><th>Total biaya agen</th></tr></thead>
             <tbody>
                 @foreach($groups as $group)
-                    <tr><td>{{ $group['kapal'] }}</td><td class="right">{{ $group['rows']->count() }}</td><td class="right">{{ $group['trip_count'] }}</td><td class="right">{{ number_format($group['subtotal'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['pph'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['adjustment'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['grand_total'], 0, ',', '.') }}</td></tr>
+                    <tr><td>{{ $group['kapal'] }}</td><td class="right">{{ $group['rows']->count() }}</td><td class="right">{{ $group['trip_count'] }}</td><td class="right">{{ number_format($group['subtotal'], 0, ',', '.') }}</td>@if($validated['gunakan_pph'] === '1')<td class="right">{{ number_format($group['pph'], 0, ',', '.') }}</td>@endif<td class="right">{{ number_format($group['adjustment'], 0, ',', '.') }}</td><td class="right">{{ number_format($group['grand_total'], 0, ',', '.') }}</td></tr>
                 @endforeach
             </tbody>
         </table>
@@ -75,11 +75,11 @@
                 <th style="width:3%">No.</th><th style="width:7%">Tanggal</th><th style="width:11%">Invoice / Referensi</th>
                 <th style="width:11%">Kapal / Voyage</th><th style="width:12%">Vendor / Lokasi</th>
                 <th style="width:6%">Qty</th><th style="width:9%">Harga</th><th style="width:9%">Jasa Air</th>
-                <th style="width:9%">Subtotal</th><th style="width:7%">PPh</th><th style="width:8%">Penyesuaian</th><th style="width:8%">Total</th>
+                <th style="width:9%">Subtotal</th>@if($validated['gunakan_pph'] === '1')<th style="width:7%">PPh</th>@endif<th style="width:8%">Penyesuaian</th><th style="width:8%">Total</th>
             </tr></thead>
             <tbody>
                 @foreach($groups as $group)
-                    <tr><th colspan="12" style="text-align:left">{{ $group['kapal'] }} — {{ $group['trip_count'] }} trip, {{ $group['rows']->count() }} item</th></tr>
+                    <tr><th colspan="{{ $validated['gunakan_pph'] === '1' ? 12 : 11 }}" style="text-align:left">{{ $group['kapal'] }} — {{ $group['trip_count'] }} trip, {{ $group['rows']->count() }} item</th></tr>
                 @foreach($group['rows'] as $row)
                     <tr>
                         <td class="center">{{ $loop->iteration }}</td>
@@ -91,7 +91,7 @@
                         <td class="right">{{ number_format($row->harga, 0, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->jasa_air, 0, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->sub_total, 0, ',', '.') }}</td>
-                        <td class="right">{{ number_format($row->pph, 0, ',', '.') }}</td>
+                        @if($validated['gunakan_pph'] === '1')<td class="right">{{ number_format($row->pph, 0, ',', '.') }}</td>@endif
                         <td class="right">{{ number_format($row->adjustment, 0, ',', '.') }}</td>
                         <td class="right">{{ number_format($row->grand_total, 0, ',', '.') }}</td>
                     </tr>
@@ -99,7 +99,7 @@
                 @endforeach
             </tbody>
             <tfoot>
-                <tr><th colspan="8" class="right">TOTAL BIAYA AGEN (Rp)</th><th class="right">{{ number_format($summary['subtotal'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['pph'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['adjustment'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['grand_total'], 0, ',', '.') }}</th></tr>
+                <tr><th colspan="8" class="right">TOTAL BIAYA AGEN (Rp)</th><th class="right">{{ number_format($summary['subtotal'], 0, ',', '.') }}</th>@if($validated['gunakan_pph'] === '1')<th class="right">{{ number_format($summary['pph'], 0, ',', '.') }}</th>@endif<th class="right">{{ number_format($summary['adjustment'], 0, ',', '.') }}</th><th class="right">{{ number_format($summary['grand_total'], 0, ',', '.') }}</th></tr>
             </tfoot>
         </table>
     </main>
