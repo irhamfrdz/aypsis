@@ -3,27 +3,8 @@
 @section('title', $purchaseOrder->nomor_po . ' - AYPSIS')
 @section('page_title', 'Detail Purchase Order')
 
-@push('styles')
-<style>
-    @media print {
-        @page { size: A4 portrait; margin: 15mm; }
-        body { height: auto !important; background: white !important; }
-        body > header, #sidebar, #sidebar-overlay { display: none !important; }
-        body > div.flex, #page-content { overflow: visible !important; }
-        #page-content { margin-left: 0 !important; }
-        #page-content > div { padding: 0 !important; }
-        .po-screen { display: none !important; }
-        .po-print { display: block !important; color: #111; font: 12pt 'Times New Roman', serif; }
-        .po-print table { width: 100%; border-collapse: collapse; }
-        .po-print th, .po-print td { border: 1px solid #333; padding: 7px; vertical-align: top; }
-        .po-print thead { display: table-header-group; }
-        .po-print tr { break-inside: avoid; }
-    }
-</style>
-@endpush
-
 @section('content')
-<div class="po-screen mx-auto max-w-5xl space-y-6 pb-8">
+<div class="mx-auto max-w-5xl space-y-6 pb-8">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <a href="{{ route('purchase-orders.index') }}" class="text-sm font-semibold text-blue-700 hover:underline">&larr; Daftar Purchase Order</a>
@@ -31,8 +12,8 @@
             @if($purchaseOrder->nomor_referensi)<p class="mt-1 text-sm text-slate-600">Nomor Referensi: {{ $purchaseOrder->nomor_referensi }}</p>@endif
             <p class="mt-1 text-sm text-slate-500">Tanggal PO {{ $purchaseOrder->tanggal_po->format('d/m/Y') }}</p>
         </div>
-        <div class="flex flex-wrap gap-2 print:hidden">
-            <button type="button" onclick="window.print()" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"><i class="fas fa-print mr-2"></i>Cetak</button>
+        <div class="flex flex-wrap gap-2">
+            <a href="{{ route('purchase-orders.print', $purchaseOrder) }}" target="_blank" rel="noopener" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"><i class="fas fa-print mr-2"></i>Cetak</a>
             @can('purchase-order-update')
                 <a href="{{ route('purchase-orders.edit', $purchaseOrder) }}" class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Ubah</a>
             @endcan
@@ -97,41 +78,5 @@
             </div>
         @endif
     </div>
-</div>
-<div class="po-print hidden">
-    <header style="text-align:center;border-bottom:2px solid #111;padding-bottom:12px">
-        <div style="font-size:11pt">Jasa Expedisi &amp; Angkutan</div>
-        <div style="font-size:19pt;font-weight:bold">PT. ALEXINDO YAKINPRIMA</div>
-        <div style="font-size:10pt">Jl. Pluit Raya No. 8 Blok B No. 12 Jakarta 14440</div>
-        <div style="font-size:10pt">(021) 6606231 - 6614175 - 6614176 &nbsp; Fax. (021) 6619907</div>
-    </header>
-    <h2 style="text-align:center;font-size:17pt;margin:22px 0 2px">PURCHASE ORDER</h2>
-    <div style="text-align:center;font-weight:bold">{{ $purchaseOrder->nomor_referensi ?: $purchaseOrder->nomor_po }}</div>
-    <div style="margin-top:30px">
-        <div>Jakarta, {{ $purchaseOrder->tanggal_po->translatedFormat('d F Y') }}</div>
-        <div>Nomor : {{ $purchaseOrder->nomor_po }}</div>
-    </div>
-    <div style="margin-top:28px">
-        <div>Kepada Yth,</div>
-        <div style="font-weight:bold">{{ $purchaseOrder->vendor }}</div>
-        @if($purchaseOrder->alamat_vendor)<div style="white-space:pre-line">{{ $purchaseOrder->alamat_vendor }}</div>@endif
-    </div>
-    <p style="margin-top:28px">Dengan Hormat,</p>
-    <p>Mohon dapat disediakan dan dikirim kepada kami sebagai berikut:</p>
-    <table>
-        <thead><tr><th>KETERANGAN</th><th style="width:100px">KUANTITAS</th><th style="width:120px">HARGA</th><th style="width:120px">JUMLAH</th></tr></thead>
-        <tbody>
-            @foreach($purchaseOrder->items as $item)
-                <tr><td>{{ $item->deskripsi }}</td><td>{{ number_format((float) $item->kuantitas, 3, ',', '.') }} {{ $item->satuan }}</td><td style="text-align:right">{{ number_format((float) $item->harga_satuan, 2, ',', '.') }}</td><td style="text-align:right">{{ number_format((float) $item->jumlah, 2, ',', '.') }}</td></tr>
-            @endforeach
-            @if((float) $purchaseOrder->diskon > 0)<tr><td colspan="3" style="text-align:right">DISKON</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->diskon, 2, ',', '.') }}</td></tr>@endif
-            <tr><td colspan="3" style="text-align:right">PPN</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->pajak, 2, ',', '.') }}</td></tr>
-            <tr><td colspan="3" style="text-align:right;font-weight:bold">TOTAL</td><td style="text-align:right;font-weight:bold">{{ number_format((float) $purchaseOrder->total, 2, ',', '.') }}</td></tr>
-        </tbody>
-    </table>
-    <p style="margin-top:12px;font-style:italic">{{ ucfirst(trim(\App\Helpers\Terbilang::make((int) round((float) $purchaseOrder->total)))) }} rupiah</p>
-    @if($purchaseOrder->catatan)<p style="white-space:pre-line;margin-top:24px">Note:<br>{{ $purchaseOrder->catatan }}</p>@endif
-    <p style="margin-top:30px">Demikianlah purchase order ini kami sampaikan sekian dan terima kasih.</p>
-    <div style="margin:45px 10px 0 auto;width:180px;text-align:center">Hormat kami,<br><br><br><br><br>(____________________)</div>
 </div>
 @endsection

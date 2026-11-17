@@ -129,6 +129,13 @@ class PurchaseOrderController extends Controller
         return view('purchase-orders.show', compact('purchaseOrder'));
     }
 
+    public function print(PurchaseOrder $purchaseOrder): View
+    {
+        $purchaseOrder->load('items');
+
+        return view('purchase-orders.print', compact('purchaseOrder'));
+    }
+
     public function edit(PurchaseOrder $purchaseOrder): View
     {
         $purchaseOrder->load(['items', 'permohonanAmprahan']);

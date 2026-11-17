@@ -281,6 +281,8 @@ Route::middleware([
         ->name('purchase-orders.store')->middleware('can:purchase-order-create');
     Route::get('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'show'])
         ->name('purchase-orders.show')->middleware('can:purchase-order-view');
+    Route::get('purchase-orders/{purchaseOrder}/print', [\App\Http\Controllers\PurchaseOrderController::class, 'print'])
+        ->name('purchase-orders.print')->middleware('can:purchase-order-view');
     Route::get('purchase-orders/{purchaseOrder}/edit', [\App\Http\Controllers\PurchaseOrderController::class, 'edit'])
         ->name('purchase-orders.edit')->middleware('can:purchase-order-update');
     Route::put('purchase-orders/{purchaseOrder}', [\App\Http\Controllers\PurchaseOrderController::class, 'update'])
