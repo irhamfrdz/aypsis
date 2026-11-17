@@ -28,7 +28,7 @@
                         @foreach(['jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'tonase' => 'text', 'ukuran' => 'text', 'meter_kubik' => 'text'] as $field => $inputType)
                             <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                 @if($field === 'nama_barang')
-                                    <textarea name="{{ $rowName }}[{{ $field }}]" rows="2" @if($manifestGoods->isNotEmpty()) required @endif class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($good, $field) }}</textarea>
+                                    <textarea name="{{ $rowName }}[{{ $field }}]" rows="2" autocomplete="off" @if($manifestGoods->isNotEmpty()) required @endif class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($good, $field) }}</textarea>
                                 @else
                                     <input type="{{ $inputType }}" name="{{ $rowName }}[{{ $field }}]"
                                         value="{{ data_get($good, $field) }}"

@@ -60,7 +60,7 @@
                                     @foreach(['jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'ukuran' => 'text'] as $field => $inputType)
                                         <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                             @if($field === 'nama_barang')
-                                                <textarea name="goods[{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($perincian, $field) }}</textarea>
+                                                <textarea name="goods[{{ $field }}]" rows="2" autocomplete="off" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ data_get($perincian, $field) }}</textarea>
                                             @else
                                                 <input type="{{ $inputType }}" name="goods[{{ $field }}]" value="{{ data_get($perincian, $field) }}" @if($inputType === 'number') min="0" step="1" @endif class="w-28 rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">
                                             @endif

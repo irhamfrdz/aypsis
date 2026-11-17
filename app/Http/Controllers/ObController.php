@@ -848,8 +848,11 @@ class ObController extends Controller
             $naikKapal->save();
             Log::info('Updated naik_kapal OB status');
 
-            // Update gudangs_id in stock_kontainers and kontainers
-            try {
+            // History and location must succeed before the OB transaction is committed.
+            if (! $naikKapal->nomor_kontainer) {
+                throw new \RuntimeException('Nomor kontainer kosong, history OB Muat tidak dapat dibuat.');
+            }
+            {
                 if ($naikKapal->nomor_kontainer) {
                     $targetGudangId = $request->ke_gudang_id;
 
@@ -864,14 +867,14 @@ class ObController extends Controller
                     Log::info("Updated gudangs_id to ID: $targetGudangId for container: ".$naikKapal->nomor_kontainer);
 
                     // Update 'ke' field in naik_kapal for record keeping
-                    $gudang = Gudang::find($targetGudangId);
+                    $gudang = Gudang::findOrFail($targetGudangId);
                     if ($gudang) {
                         $naikKapal->ke = $gudang->nama_gudang;
                         $naikKapal->save();
 
                         // Record history
                         $typeKontainer = Kontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
-                        HistoryKontainer::create([
+                        $history = HistoryKontainer::create([
                             'nomor_kontainer' => $naikKapal->nomor_kontainer,
                             'tipe_kontainer' => $typeKontainer,
                             'jenis_kegiatan' => 'Masuk',
@@ -880,10 +883,11 @@ class ObController extends Controller
                             'keterangan' => 'Masuk via OB Muat ke Kapal: '.($naikKapal->nama_kapal ?? '-').'. Voyage: '.($naikKapal->no_voyage ?? '-'),
                             'created_by' => Auth::id(),
                         ]);
+                        if (! $history->exists) {
+                            throw new \RuntimeException('History OB Muat gagal disimpan.');
+                        }
                     }
                 }
-            } catch (\Exception $e) {
-                Log::warning('Failed to update gudangs_id or history: '.$e->getMessage());
             }
 
             // Also clear TL flag on related BLs (if any)
@@ -3855,7 +3859,10 @@ class ObController extends Controller
                             }
                             $naikKapal->save();
 
-                            // Update gudang jika ada nomor kontainer
+                            // OB requires a destination and a matching container history.
+                            if (! $naikKapal->nomor_kontainer || ! $gudang) {
+                                throw new \RuntimeException('Nomor kontainer atau gudang OB Muat tidak tersedia.');
+                            }
                             if ($naikKapal->nomor_kontainer && $gudang) {
                                 StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
                                     ->update(['gudangs_id' => $keGudangId]);
@@ -3875,7 +3882,7 @@ class ObController extends Controller
                                         'created_by' => Auth::id(),
                                     ]);
                                 } catch (\Exception $he) {
-                                    \Log::warning('Bulk OB Update: history insert failed: '.$he->getMessage());
+                                    throw $he;
                                 }
                             }
 
@@ -3927,7 +3934,10 @@ class ObController extends Controller
                             }
                             $naikKapal->save();
 
-                            // Update gudang jika ada nomor kontainer
+                            // OB requires a destination and a matching container history.
+                            if (! $naikKapal->nomor_kontainer || ! $gudang) {
+                                throw new \RuntimeException('Nomor kontainer atau gudang OB Muat tidak tersedia.');
+                            }
                             if ($naikKapal->nomor_kontainer && $gudang) {
                                 StockKontainer::where('nomor_seri_gabungan', $naikKapal->nomor_kontainer)
                                     ->update(['gudangs_id' => $keGudangId]);
@@ -3947,7 +3957,7 @@ class ObController extends Controller
                                         'created_by' => Auth::id(),
                                     ]);
                                 } catch (\Exception $he) {
-                                    \Log::warning('Bulk OB: history insert failed: '.$he->getMessage());
+                                    throw $he;
                                 }
                             }
 

@@ -525,7 +525,7 @@
                                                             @foreach(['jumlah' => 'number', 'satuan' => 'text', 'nama_barang' => 'text', 'ukuran' => 'text'] as $field => $inputType)
                                                                 <td class="px-2 py-2" data-field="{{ $field }}" @if($field === 'ukuran') hidden @endif>
                                                                     @if($field === 'nama_barang')
-                                                                        <textarea name="goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ is_scalar($good) ? $good : data_get($good, $field) }}</textarea>
+                                                                        <textarea name="goods[{{ $loop->parent->index }}][{{ $field }}]" rows="2" autocomplete="off" required class="w-full rounded-lg border-gray-300 text-sm focus:border-indigo-500 focus:ring-indigo-500">{{ is_scalar($good) ? $good : data_get($good, $field) }}</textarea>
                                                                     @else
                                                                         <input type="{{ $inputType }}" name="goods[{{ $loop->parent->index }}][{{ $field }}]"
                                                                             value="{{ data_get($good, $field) }}"
@@ -697,7 +697,7 @@
                                 <div class="ttsj-goods-field" data-field="{{ $field }}" @if($field === 'ukuran') data-ttsj-size-field="{{ $prefix }}" @if(!str_contains(strtolower((string) old($prefix.'.0.nama_barang')), 'keramik') && blank(old($prefix.'.0.ukuran'))) hidden @endif @endif>
                                     <label for="approval-ttsj-{{ $prefix }}-{{ $field }}">{{ $label }} {{ $field === 'ukuran' ? '' : '*' }}</label>
                                     @if($field === 'nama_barang')
-                                        <textarea id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" rows="2" placeholder="Contoh: Mesin industri" required>{{ old($prefix.'.0.'.$field) }}</textarea>
+                                        <textarea id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" rows="2" autocomplete="off" placeholder="Contoh: Mesin industri" required>{{ old($prefix.'.0.'.$field) }}</textarea>
                                     @else
                                         <input id="approval-ttsj-{{ $prefix }}-{{ $field }}" name="{{ $prefix }}[0][{{ $field }}]" value="{{ old($prefix.'.0.'.$field, $field === 'jumlah' ? 1 : ($field === 'satuan' ? 'unit' : '')) }}" {{ $field === 'ukuran' ? '' : 'required' }} @if($field === 'jumlah') type="number" min="1" @elseif($field === 'satuan') placeholder="Contoh: Unit, koli, karton" @endif>
                                     @endif
