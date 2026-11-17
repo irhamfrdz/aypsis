@@ -180,6 +180,11 @@
                 </div>
             </div>
             <div class="flex flex-wrap gap-2">
+                @if(request('kegiatan') === 'bongkar' && $namaKapal && $noVoyage && str_contains(strtoupper(trim($noVoyage)), 'JP'))
+                    <button type="button" onclick="prosesTLBongkarVoyage()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                        <i class="fas fa-exchange-alt mr-1"></i>TL Semua Voyage
+                    </button>
+                @endif
                 <button onclick="window.location.reload()" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-2 rounded-md text-xs md:text-sm">
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
@@ -2546,6 +2551,8 @@ function prosesTL(naikKapalId) {
 
 // Function to process TL Bongkar (Tanda Langsung) - Langsung dibongkar tanpa supir
 function prosesTLBongkar(blId, noVoyage = '') {
+    document.getElementById('tlBongkarModal').dataset.bulk = '0';
+    document.getElementById('tlBongkarTitle').textContent = 'Proses TL Bongkar';
     document.getElementById('tlBongkarBlId').value = blId;
     document.getElementById('tlBongkarTanggal').value = @json(now()->format('Y-m-d'));
     const keInput = Array.from(document.querySelectorAll('.editable-ke'))
@@ -2564,6 +2571,21 @@ function prosesTLBongkar(blId, noVoyage = '') {
     document.getElementById('tlBongkarModal').classList.remove('hidden');
 }
 
+function prosesTLBongkarVoyage() {
+    const modal = document.getElementById('tlBongkarModal');
+    modal.dataset.bulk = '1';
+    document.getElementById('tlBongkarTitle').textContent = 'TL Semua Isi Voyage {{ $noVoyage }}';
+    document.getElementById('tlBongkarTanggal').value = @json(now()->format('Y-m-d'));
+    const gudang = document.getElementById('tlBongkarGudang');
+    const pilihan = Array.from(gudang.options).find(option => {
+        const nama = (option.dataset.namaGudang || '').toUpperCase();
+        return nama.includes('PELABUHAN') && nama.includes('PINANG');
+    });
+    gudang.value = pilihan?.value || '';
+    document.getElementById('tlBongkarError').classList.add('hidden');
+    modal.classList.remove('hidden');
+}
+
 function closeTLBongkarModal() {
     document.getElementById('tlBongkarModal').classList.add('hidden');
 }
@@ -2575,7 +2597,8 @@ document.getElementById('tlBongkarForm').addEventListener('submit', async functi
     button.disabled = true;
     error.classList.add('hidden');
     try {
-        const response = await fetch('/ob/process-tl-bongkar', {
+        const isBulk = document.getElementById('tlBongkarModal').dataset.bulk === '1';
+        const response = await fetch(isBulk ? @json(route('ob.process-tl-bongkar-voyage')) : @json(route('ob.process-tl-bongkar')), {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -2583,7 +2606,7 @@ document.getElementById('tlBongkarForm').addEventListener('submit', async functi
                 'Accept': 'application/json'
             },
             body: JSON.stringify({
-                bl_id: document.getElementById('tlBongkarBlId').value,
+                ...(isBulk ? { nama_kapal: @json($namaKapal), no_voyage: @json($noVoyage) } : { bl_id: document.getElementById('tlBongkarBlId').value }),
                 ke_gudang_id: document.getElementById('tlBongkarGudang').value,
                 tanggal_ob: document.getElementById('tlBongkarTanggal').value
             })

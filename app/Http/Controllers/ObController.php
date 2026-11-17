@@ -2644,6 +2644,45 @@ class ObController extends Controller
      * Process TL Bongkar (Tanda Langsung) - Only mark BL as OB without creating new records
      * Untuk kegiatan bongkar, TL hanya menandai sudah OB tanpa membuat record BL baru
      */
+    public function processTLBongkarVoyage(Request $request)
+    {
+        $validated = $request->validate([
+            'nama_kapal' => 'required|string',
+            'no_voyage' => 'required|string',
+            'ke_gudang_id' => 'required|integer|exists:gudangs,id',
+            'tanggal_ob' => 'required|date',
+        ]);
+        if (! str_contains(strtoupper(trim($validated['no_voyage'])), 'JP')) {
+            return response()->json(['success' => false, 'message' => 'TL semua hanya untuk voyage JP.'], 422);
+        }
+
+        $bls = Bl::where('nama_kapal', $validated['nama_kapal'])
+            ->where('no_voyage', $validated['no_voyage'])->get();
+        $processed = 0;
+        $failed = [];
+        foreach ($bls as $bl) {
+            if ($bl->sudah_ob || $bl->sudah_tl) {
+                continue;
+            }
+            $itemRequest = Request::create('/ob/process-tl-bongkar', 'POST', [
+                'bl_id' => $bl->id,
+                'ke_gudang_id' => $validated['ke_gudang_id'],
+                'tanggal_ob' => $validated['tanggal_ob'],
+            ]);
+            $result = $this->processTLBongkar($itemRequest)->getData();
+            if ($result->success ?? false) {
+                $processed++;
+            } else {
+                $failed[] = $bl->nomor_kontainer ?: (string) $bl->id;
+            }
+        }
+
+        return response()->json([
+            'success' => $failed === [],
+            'message' => $processed.' kontainer berhasil TL'.($failed ? '; gagal: '.implode(', ', $failed) : '.'),
+        ], $failed ? 500 : 200);
+    }
+
     public function processTLBongkar(Request $request)
     {
         $user = Auth::user();
