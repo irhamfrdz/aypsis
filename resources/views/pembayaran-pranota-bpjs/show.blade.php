@@ -60,6 +60,31 @@
         <tr><td class="p-4">@can('pranota-bpjs-view')<a class="text-blue-600" href="{{ route('pranota-bpjs.show', $pranota) }}">{{ $pranota->nomor_pranota }}</a>@else{{ $pranota->nomor_pranota }}@endcan</td><td class="p-4">{{ sprintf('%02d', $pranota->periode_bulan) }}/{{ $pranota->periode_tahun }}</td><td class="p-4 text-right">Rp {{ number_format($pranota->pivot->subtotal, 2, ',', '.') }}</td></tr>
         @endforeach
     </tbody><tfoot class="bg-green-50 font-bold"><tr><td colspan="2" class="p-4">Total Pembayaran</td><td class="p-4 text-right">Rp {{ number_format($payment->total_pembayaran, 2, ',', '.') }}</td></tr></tfoot></table></div>
+    <section id="karyawan-dibayar" class="scroll-mt-6 bg-white border rounded-xl overflow-hidden" aria-labelledby="karyawan-dibayar-heading">
+        <div class="p-4 border-b">
+            <h2 id="karyawan-dibayar-heading" class="font-semibold">Karyawan yang Dibayarkan ({{ $paidEmployees->count() }})</h2>
+            <p class="mt-1 text-sm text-gray-500">Rincian karyawan dan komponen BPJS pada pembayaran {{ $payment->nomor_pembayaran }}.</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-gray-50"><tr><th class="p-4">NIK</th><th class="p-4">Nama Karyawan</th><th class="p-4">Nomor Pranota / Periode</th><th class="p-4">Komponen / Tipe</th><th class="p-4 text-right">Nominal Dibayar</th></tr></thead>
+                <tbody class="divide-y">
+                    @forelse($paidEmployees as $row)
+                        <tr>
+                            <td class="p-4">{{ $row['employee']?->nik ?? '-' }}</td>
+                            <td class="p-4 font-medium">{{ $row['employee']?->nama_lengkap ?? 'Data karyawan tidak tersedia' }}</td>
+                            <td class="p-4">{{ $row['pranota']?->nomor_pranota ?? '-' }}@if($row['pranota'])<span class="block text-xs text-gray-500">{{ sprintf('%02d', $row['pranota']->periode_bulan) }}/{{ $row['pranota']->periode_tahun }}</span>@endif</td>
+                            <td class="p-4">@foreach($row['parts'] as $employeePart)<div>{{ $employeePart->komponen === 'jkn' ? 'JKN' : ($employeePart->komponen === 'jamsostek' ? 'BP Jamsostek' : $employeePart->komponen) }} / {{ $employeePart->tipe }}: Rp {{ number_format($employeePart->subtotal, 2, ',', '.') }}</div>@endforeach</td>
+                            <td class="p-4 text-right whitespace-nowrap font-semibold">Rp {{ number_format($row['total'], 2, ',', '.') }}</td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="5" class="p-6 text-center text-gray-500">Rincian karyawan belum tersedia untuk pembayaran ini.</td></tr>
+                    @endforelse
+                </tbody>
+                @if($paidEmployees->isNotEmpty())<tfoot class="bg-green-50 font-semibold"><tr><td colspan="4" class="p-4">Total Rincian Karyawan</td><td class="p-4 text-right whitespace-nowrap">Rp {{ number_format($paidEmployees->sum('total'), 2, ',', '.') }}</td></tr></tfoot>@endif
+            </table>
+        </div>
+    </section>
     @if($parts->isNotEmpty())
     <div class="bg-white border rounded-xl overflow-x-auto">
         <h2 class="p-4 font-semibold border-b">Rincian Tipe yang Dibayar</h2>

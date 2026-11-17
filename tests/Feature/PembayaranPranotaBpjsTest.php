@@ -52,6 +52,33 @@ class PembayaranPranotaBpjsTest extends TestCase
         ]);
     }
 
+    public function test_employee_list_only_contains_parts_of_selected_payment(): void
+    {
+        $pranota = $this->pranota('partial', 100);
+        $payments = collect(['SELECTED', 'OTHER'])->map(fn ($number) => PembayaranPranotaBpjs::create([
+            'nomor_pembayaran' => $number, 'tanggal_pembayaran' => '2026-11-01',
+            'bank_coa_id' => 2, 'akun_coa_id' => 1, 'total_pembayaran' => 50,
+        ]));
+        foreach ($payments as $index => $payment) {
+            $payment->pranotas()->attach($pranota->id, ['subtotal' => 50]);
+            $detailId = DB::table('pranota_bpjs_details')->insertGetId([
+                'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => $index + 1,
+                'snapshot_bpjs' => json_encode(['karyawan' => ['nik' => 'EMP-'.$index, 'nama_lengkap' => 'Karyawan '.$index]]),
+            ]);
+            DB::table('pembayaran_pranota_bpjs_parts')->insert([
+                'pembayaran_pranota_bpjs_id' => $payment->id, 'pranota_bpjs_detail_id' => $detailId,
+                'pranota_bpjs_header_id' => $pranota->id,
+                'komponen' => 'jkn', 'tipe' => 'KANTOR', 'subtotal' => 50,
+            ]);
+            $payment->setRelation('createdBy', null);
+        }
+        $view = (new PembayaranPranotaBpjsController(new CoaTransactionService))->show($payments->first());
+        $rows = $view->getData()['paidEmployees'];
+        $this->assertCount(1, $rows);
+        $this->assertSame('EMP-0', $rows->first()['employee']->nik);
+        $this->assertEquals(50, $rows->sum('total'));
+    }
+
     public function test_sync_coa_repairs_missing_and_wrong_journals_without_duplicate_balances(): void
     {
         $payment = PembayaranPranotaBpjs::create([

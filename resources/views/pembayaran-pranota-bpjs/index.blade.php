@@ -166,6 +166,7 @@
                     <td data-label="Nomor Pranota"><a class="bpjs-link" href="{{ route('pranota-bpjs.show', $pranota) }}">{{ $pranota->nomor_pranota }}</a></td>
                     <td data-label="Nominal Pembayaran" class="bpjs-money font-semibold text-emerald-700">Rp {{ number_format($payment->pivot->subtotal, 2, ',', '.') }}</td>
                     <td class="bpjs-row-action" data-label="Aksi"><div class="flex flex-wrap items-center gap-2">
+                        <a class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}#karyawan-dibayar" aria-label="Lihat karyawan pembayaran {{ $payment->nomor_pembayaran }}"><i class="fa-solid fa-users" aria-hidden="true"></i>Lihat Karyawan</a>
                         <a target="_blank" rel="noopener" aria-label="Cetak {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', $payment) }}"><i class="fa-solid fa-print" aria-hidden="true"></i>Cetak</a>
                         <a target="_blank" rel="noopener" aria-label="Print Permohonan Transfer {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', [$payment, 'dokumen' => 'permohonan-transfer']) }}"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i>Print Permohonan Transfer</a>
                         @can('pembayaran-pranota-bpjs-create')

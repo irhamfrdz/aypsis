@@ -305,7 +305,23 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function show(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
+        $employeeParts = DB::table('pembayaran_pranota_bpjs_parts')
+            ->where('pembayaran_pranota_bpjs_id', $pembayaran_pranota_bpj->id)->get();
+        $details = \App\Models\PranotaBpjsDetail::with(['karyawan', 'header'])
+            ->whereIn('id', $employeeParts->pluck('pranota_bpjs_detail_id'))->get()->keyBy('id');
+        $paidEmployees = $employeeParts->groupBy('pranota_bpjs_detail_id')->map(function ($parts, $detailId) use ($details) {
+            $detail = $details->get($detailId);
+
+            return [
+                'employee' => $detail?->karyawan_pranota,
+                'pranota' => $detail?->header,
+                'parts' => $parts,
+                'total' => $parts->sum('subtotal'),
+            ];
+        });
+
         return view('pembayaran-pranota-bpjs.show', $this->paymentDetails($pembayaran_pranota_bpj) + [
+            'paidEmployees' => $paidEmployees,
             'accounts' => Coa::orderBy('nomor_akun')->get(['id', 'nomor_akun', 'nama_akun']),
         ]);
     }
