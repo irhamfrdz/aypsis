@@ -6,17 +6,24 @@
 @push('styles')
 <style>
     @media print {
+        @page { size: A4 portrait; margin: 15mm; }
         body { height: auto !important; background: white !important; }
         body > header, #sidebar, #sidebar-overlay { display: none !important; }
         body > div.flex, #page-content { overflow: visible !important; }
         #page-content { margin-left: 0 !important; }
         #page-content > div { padding: 0 !important; }
+        .po-screen { display: none !important; }
+        .po-print { display: block !important; color: #111; font: 12pt 'Times New Roman', serif; }
+        .po-print table { width: 100%; border-collapse: collapse; }
+        .po-print th, .po-print td { border: 1px solid #333; padding: 6px; vertical-align: top; }
+        .po-print thead { display: table-header-group; }
+        .po-print tr { break-inside: avoid; }
     }
 </style>
 @endpush
 
 @section('content')
-<div class="mx-auto max-w-5xl space-y-6 pb-8">
+<div class="po-screen mx-auto max-w-5xl space-y-6 pb-8">
     <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
         <div>
             <a href="{{ route('purchase-orders.index') }}" class="text-sm font-semibold text-blue-700 hover:underline">&larr; Daftar Purchase Order</a>
@@ -90,5 +97,38 @@
             </div>
         @endif
     </div>
+</div>
+<div class="po-print hidden">
+    <header style="display:flex;align-items:center;gap:18px;border-bottom:3px double #333;padding-bottom:14px;text-align:center">
+        <img src="{{ asset('images/logo_transparent.png') }}" alt="Logo PT Alexindo Yakinprima" style="width:85px;height:85px;object-fit:contain">
+        <div style="flex:1">
+            <div style="font-style:italic">Perusahaan Pelayaran Nasional</div>
+            <div style="font-size:20pt;font-weight:bold;color:#9b5157">PT. ALEXINDO YAKINPRIMA</div>
+            <div style="font-size:10pt">Jl. Pluit Raya No. 8 Blok B No. 12 Jakarta 14440</div>
+            <div style="font-size:10pt">Telp. (021) 6606231-6614175-76 &nbsp; Email: alexindo_yakinprima@yahoo.co.id</div>
+        </div>
+    </header>
+    <h2 style="text-align:center;font:bold 15pt Arial,sans-serif;margin:22px 0">MEMO / PURCHASE ORDER</h2>
+    <p style="text-align:right">Jakarta, {{ $purchaseOrder->tanggal_po->translatedFormat('d F Y') }}</p>
+    <div style="margin:28px 0">
+        <div>Perihal &nbsp;&nbsp;: Memo / PO {{ $purchaseOrder->nomor_po }}</div>
+        <div>Kepada &nbsp;: {{ $purchaseOrder->vendor }}</div>
+        @if($purchaseOrder->alamat_vendor)<div style="margin-left:85px;white-space:pre-line">{{ $purchaseOrder->alamat_vendor }}</div>@endif
+    </div>
+    <p>Dengan Hormat,</p>
+    <p>Mohon dapat disediakan dan dikirimkan kepada kami:</p>
+    <p style="margin:22px 0">Quot. No &nbsp;: {{ $purchaseOrder->nomor_referensi ?: '-' }}</p>
+    <table>
+        <thead><tr><th style="width:35px">No</th><th>Item</th><th style="width:65px">Qty</th><th style="width:115px">Unit Price</th><th style="width:115px">Total</th></tr></thead>
+        <tbody>
+            @foreach($purchaseOrder->items as $item)
+                <tr><td>{{ $item->urutan }}</td><td>{{ $item->deskripsi }}</td><td>{{ number_format((float) $item->kuantitas, 3, ',', '.') }} {{ $item->satuan }}</td><td style="text-align:right">{{ number_format((float) $item->harga_satuan, 2, ',', '.') }}</td><td style="text-align:right">{{ number_format((float) $item->jumlah, 2, ',', '.') }}</td></tr>
+            @endforeach
+            <tr><td colspan="4" style="text-align:right;font-weight:bold">Total</td><td style="text-align:right;font-weight:bold">Rp {{ number_format((float) $purchaseOrder->total, 2, ',', '.') }}</td></tr>
+        </tbody>
+    </table>
+    @if($purchaseOrder->catatan)<p style="white-space:pre-line;margin-top:24px">{{ $purchaseOrder->catatan }}</p>@endif
+    <p style="margin-top:35px">Demikian surat ini kami sampaikan, sekian dan terima kasih.</p>
+    <div style="margin:45px 10px 0 auto;width:180px;text-align:center">Hormat Kami,<br><br><br><br><br>PT. Alexindo Yakinprima</div>
 </div>
 @endsection
