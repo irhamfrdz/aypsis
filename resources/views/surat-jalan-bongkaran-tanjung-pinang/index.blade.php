@@ -39,6 +39,11 @@
     .bongkaran-page .tp-muted { color:#748091; }
     .bongkaran-page .tp-status { display:inline-flex;padding:3px 7px;border-radius:4px;background:#edf6f1;color:#34704f;font-weight:500; }
     .bongkaran-page .tp-pending { display:inline-flex;padding:3px 7px;border-radius:4px;background:#fcf3e5;color:#946b2c;font-weight:500; }
+    .bongkaran-page .tp-modal-panel { max-height:calc(100vh - 36px);overflow-y:auto;border:1px solid var(--bongkaran-line);border-radius:8px;box-shadow:0 8px 30px rgb(30 58 95 / 16%); }
+    .bongkaran-page .tp-modal-panel input,.bongkaran-page .tp-modal-panel textarea { min-height:36px;padding:8px 10px;border:1px solid #d5dde7;border-radius:5px;background:#fff;font-size:12px; }
+    .bongkaran-page .tp-modal-panel textarea { min-height:75px; }
+    .bongkaran-page .tp-modal-panel label { display:block;margin-bottom:5px;color:#536379;font-weight:500; }
+    body.tp-modal-open { overflow:hidden; }
     .bongkaran-page .overflow-x-auto::-webkit-scrollbar { height:5px; }
     .bongkaran-page .overflow-x-auto::-webkit-scrollbar-thumb { background:#d5dde7;border-radius:4px; }
     .bongkaran-page .tp-pagination { margin-top:16px;padding-top:12px;border-top:1px solid var(--bongkaran-line); }
@@ -133,7 +138,7 @@
                                 @else
                                     <span class="tp-pending">Belum dibuat</span>
                                     @can('surat-jalan-bongkaran-tanjung-pinang-create')
-                                        <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['manifest_id' => $manifest->id, 'nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="ml-2 inline-flex items-center rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"><i class="fas fa-plus mr-1"></i>Buat SJ</a>
+                                        <button type="button" onclick="openTpCreateModal(this)" data-manifest-id="{{ $manifest->id }}" data-kapal="{{ $selectedKapal }}" data-voyage="{{ $selectedVoyage }}" data-bl="{{ $manifest->nomor_bl }}" data-pengirim="{{ $manifest->pengirim }}" data-penerima="{{ $manifest->penerima }}" data-barang="{{ $manifest->nama_barang }}" data-kontainer="{{ $manifest->nomor_kontainer }}" data-seal="{{ $manifest->no_seal }}" data-size="{{ $manifest->size_kontainer }}" data-tipe="{{ $manifest->tipe_kontainer }}" data-term="{{ $manifest->term }}" class="ml-2 inline-flex items-center rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"><i class="fas fa-plus mr-1"></i>Buat SJ</button>
                                     @endcan
                                 @endif
                             </td>
@@ -182,5 +187,77 @@
             @endif
         </div>
     </div>
+
+    <div id="tpCreateModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 p-3 md:p-6" role="dialog" aria-modal="true" aria-labelledby="tpCreateModalTitle" onclick="if(event.target===this) closeTpCreateModal()">
+        <div class="tp-modal-panel w-full max-w-4xl bg-white">
+            <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
+                <div><h2 id="tpCreateModalTitle" class="text-lg font-semibold">Tambah Surat Jalan Bongkaran</h2><p class="mt-1 text-xs text-slate-500">Data manifest, kapal, dan voyage sudah diisikan.</p></div>
+                <button type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100" onclick="closeTpCreateModal()" aria-label="Tutup"><i class="fas fa-times"></i></button>
+            </div>
+            <form method="POST" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.store') }}" class="p-5">
+                @csrf
+                <input type="hidden" name="manifest_id" id="tp_manifest_id" value="{{ old('manifest_id') }}">
+                <input type="hidden" name="nama_kapal" id="tp_nama_kapal" value="{{ old('nama_kapal', $selectedKapal) }}">
+                <input type="hidden" name="no_voyage" id="tp_no_voyage" value="{{ old('no_voyage', $selectedVoyage) }}">
+                <div class="mb-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900"><strong id="tp_selected_container">Pilih manifest</strong><span class="ml-2" id="tp_selected_ship"></span></div>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div><label for="tp_nomor_surat_jalan">Nomor Surat Jalan <span class="text-red-600">*</span></label><input id="tp_nomor_surat_jalan" name="nomor_surat_jalan" required value="{{ old('nomor_surat_jalan') }}" class="w-full"></div>
+                    <div><label for="tp_tanggal_surat_jalan">Tanggal Surat Jalan <span class="text-red-600">*</span></label><input id="tp_tanggal_surat_jalan" type="date" name="tanggal_surat_jalan" required value="{{ old('tanggal_surat_jalan', now()->format('Y-m-d')) }}" class="w-full"></div>
+                    <div><label for="tp_no_bl">Nomor BL</label><input id="tp_no_bl" name="no_bl" value="{{ old('no_bl') }}" class="w-full"></div>
+                    <div><label for="tp_no_kontainer">Nomor Kontainer</label><input id="tp_no_kontainer" name="no_kontainer" value="{{ old('no_kontainer') }}" class="w-full"></div>
+                    <div><label for="tp_no_seal">Nomor Seal</label><input id="tp_no_seal" name="no_seal" value="{{ old('no_seal') }}" class="w-full"></div>
+                    <div><label for="tp_size">Ukuran Kontainer</label><input id="tp_size" name="size" value="{{ old('size') }}" class="w-full"></div>
+                    <div><label for="tp_tipe_kontainer">Tipe Kontainer</label><input id="tp_tipe_kontainer" name="tipe_kontainer" value="{{ old('tipe_kontainer') }}" class="w-full"></div>
+                    <div><label for="tp_term">Term</label><input id="tp_term" name="term" value="{{ old('term') }}" class="w-full"></div>
+                    <div><label for="tp_pengirim">Pengirim</label><input id="tp_pengirim" name="pengirim" value="{{ old('pengirim') }}" class="w-full"></div>
+                    <div><label for="tp_penerima">Penerima</label><input id="tp_penerima" name="penerima" value="{{ old('penerima') }}" class="w-full"></div>
+                    <div class="md:col-span-2"><label for="tp_jenis_barang">Jenis Barang</label><input id="tp_jenis_barang" name="jenis_barang" value="{{ old('jenis_barang') }}" class="w-full"></div>
+                    <div><label for="tp_tujuan_pengambilan">Tujuan Pengambilan</label><input id="tp_tujuan_pengambilan" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan') }}" class="w-full"></div>
+                    <div><label for="tp_tujuan_pengiriman">Tujuan Pengiriman</label><input id="tp_tujuan_pengiriman" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman') }}" class="w-full"></div>
+                    <div><label for="tp_supir">Supir</label><input id="tp_supir" name="supir" value="{{ old('supir') }}" class="w-full"></div>
+                    <div><label for="tp_no_plat">Nomor Plat</label><input id="tp_no_plat" name="no_plat" value="{{ old('no_plat') }}" class="w-full"></div>
+                    <div><label for="tp_kenek">Kenek</label><input id="tp_kenek" name="kenek" value="{{ old('kenek') }}" class="w-full"></div>
+                    <div class="md:col-span-2"><label for="tp_aktifitas">Aktivitas / Catatan</label><textarea id="tp_aktifitas" name="aktifitas" rows="3" class="w-full">{{ old('aktifitas') }}</textarea></div>
+                </div>
+                <div class="mt-5 flex justify-end gap-2 border-t border-slate-200 pt-4">
+                    <button type="button" onclick="closeTpCreateModal()" class="rounded border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">Batal</button>
+                    <button type="submit" class="rounded bg-[#1E3A5F] px-5 py-2 font-medium text-white hover:bg-[#2b4c75]"><i class="fas fa-save mr-1"></i>Simpan Surat Jalan</button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
+@push('scripts')
+<script>
+function openTpCreateModal(button) {
+    const data = button.dataset;
+    const fields = {
+        tp_manifest_id: 'manifestId', tp_nama_kapal: 'kapal', tp_no_voyage: 'voyage', tp_no_bl: 'bl',
+        tp_pengirim: 'pengirim', tp_penerima: 'penerima', tp_jenis_barang: 'barang', tp_no_kontainer: 'kontainer',
+        tp_no_seal: 'seal', tp_size: 'size', tp_tipe_kontainer: 'tipe', tp_term: 'term'
+    };
+    Object.entries(fields).forEach(([id, key]) => { document.getElementById(id).value = data[key] || ''; });
+    document.getElementById('tp_selected_container').textContent = data.kontainer || data.bl || 'Manifest';
+    document.getElementById('tp_selected_ship').textContent = `${data.kapal || ''} · ${data.voyage || ''}`;
+    const modal = document.getElementById('tpCreateModal');
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    document.body.classList.add('tp-modal-open');
+    document.getElementById('tp_nomor_surat_jalan').focus();
+}
+function closeTpCreateModal() {
+    const modal = document.getElementById('tpCreateModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+    document.body.classList.remove('tp-modal-open');
+}
+document.addEventListener('keydown', event => { if (event.key === 'Escape') closeTpCreateModal(); });
+@if($errors->any())
+document.addEventListener('DOMContentLoaded', () => {
+    const modal = document.getElementById('tpCreateModal');
+    modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.classList.add('tp-modal-open');
+});
+@endif
+</script>
+@endpush
 @endsection
