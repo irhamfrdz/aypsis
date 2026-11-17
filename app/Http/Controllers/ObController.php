@@ -2657,7 +2657,8 @@ class ObController extends Controller
             return response()->json(['success' => false, 'message' => 'TL semua hanya untuk voyage JP.'], 422);
         }
 
-        $bls = Bl::where('nama_kapal', $validated['nama_kapal'])
+        $normalizedKapal = $this->normalizeShipName($validated['nama_kapal']);
+        $bls = Bl::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $validated['no_voyage'])->get();
         $eligible = $bls->filter(fn ($bl) => ! $bl->sudah_ob && ! $bl->sudah_tl);
         if ($eligible->isEmpty()) {
