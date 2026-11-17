@@ -2,52 +2,66 @@
 
 @section('title', 'Pilih Kapal & Voyage - Surat Jalan Bongkaran Tanjung Pinang')
 
-@push('styles')
-<style>
-    .tp-select { font: 12px/1.5 Arial,sans-serif; color:#344256; }
-    .tp-select h1,.tp-select h2 { color:#1E3A5F; }
-    .tp-select .tp-card { border:1px solid #e1e6ed;border-radius:8px;background:#fff;box-shadow:0 2px 6px rgb(30 58 95 / 4%); }
-    .tp-select select { min-height:38px;border-color:#d5dde7;border-radius:5px;font:12px Arial,sans-serif; }
-    .tp-select button,.tp-select a { border-radius:5px;font:12px Arial,sans-serif; }
-</style>
-@endpush
-
 @section('content')
-<div class="tp-select flex-1 bg-[#F5F7FA] p-4 md:p-6">
-    <div class="mx-auto max-w-6xl">
-        <div class="mb-5">
-            <h1 class="text-xl font-semibold">Surat Jalan Bongkaran Tanjung Pinang</h1>
-            <nav class="mt-1 flex items-center gap-2 text-xs text-slate-500"><a href="{{ route('dashboard') }}" class="hover:text-blue-700">Dashboard</a><span>/</span><span>Pilih Kapal & Voyage</span></nav>
+<div class="flex-1 p-4 md:p-6">
+    <div class="mb-4 flex flex-col justify-between md:mb-6 md:flex-row md:items-center">
+        <div>
+            <h1 class="text-xl font-bold text-gray-900 md:text-2xl">Pilih Kapal & Voyage</h1>
+            <nav class="mt-1 flex flex-wrap items-center text-xs text-gray-600 md:text-sm">
+                <a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a>
+                <span class="mx-1 md:mx-2">/</span>
+                <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="hover:text-blue-600">Surat Jalan Bongkaran Tanjung Pinang</a>
+                <span class="mx-1 md:mx-2">/</span>
+                <span class="text-gray-500">Pilih Kapal & Voyage</span>
+            </nav>
+        </div>
+    </div>
+
+    <div class="mx-auto max-w-2xl rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div class="border-b border-gray-200 px-4 py-4 md:px-6">
+            <h2 class="text-base font-semibold text-gray-900 md:text-lg">Pilih Kapal dan Voyage</h2>
+            <p class="mt-1 text-xs text-gray-600 md:text-sm">Silakan pilih kapal dan voyage untuk melihat data manifest dan surat jalan.</p>
         </div>
 
-        <div class="tp-card mx-auto max-w-2xl">
-            <div class="border-b border-slate-200 px-5 py-4">
-                <h2 class="text-base font-semibold">Pilih Kapal dan Voyage</h2>
-                <p class="mt-1 text-xs text-slate-500">Pilih kapal dan voyage untuk menampilkan surat jalan bongkaran Tanjung Pinang.</p>
-            </div>
-            <div class="p-5">
-                <form method="GET" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.list') }}" id="tpSelectShipForm" class="space-y-5">
+        <div class="p-4 md:p-6">
+            <form method="GET" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.list') }}" id="selectShipForm">
+                <div class="space-y-4 md:space-y-6">
                     <div>
-                        <label for="nama_kapal" class="mb-1.5 block text-xs font-semibold text-slate-600">Kapal <span class="text-red-600">*</span></label>
-                        <select name="nama_kapal" id="nama_kapal" required class="w-full focus:border-blue-700 focus:ring-blue-700">
+                        <label for="nama_kapal" class="mb-1 block text-sm font-medium text-gray-700 md:mb-2">Kapal <span class="text-red-500">*</span></label>
+                        <select name="nama_kapal" id="nama_kapal" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 md:px-4 md:py-3" required>
                             <option value="">-- Pilih Kapal --</option>
-                            @foreach($kapals as $kapal)<option value="{{ $kapal }}" @selected(request('nama_kapal') === $kapal)>{{ $kapal }}</option>@endforeach
+                            @foreach($kapals as $kapal)
+                                <option value="{{ $kapal }}" @selected(request('nama_kapal') == $kapal)>{{ $kapal }}</option>
+                            @endforeach
                         </select>
                     </div>
+
                     <div>
-                        <label for="no_voyage" class="mb-1.5 block text-xs font-semibold text-slate-600">Voyage <span class="text-red-600">*</span></label>
-                        <select name="no_voyage" id="no_voyage" required disabled class="w-full focus:border-blue-700 focus:ring-blue-700">
+                        <label for="no_voyage" class="mb-1 block text-sm font-medium text-gray-700 md:mb-2">Voyage <span class="text-red-500">*</span></label>
+                        <select name="no_voyage" id="no_voyage" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 md:px-4 md:py-3" required disabled>
                             <option value="">-- Pilih Voyage --</option>
-                            @foreach($voyages as $voyage)<option value="{{ $voyage }}" @selected(request('no_voyage') === $voyage)>{{ $voyage }}</option>@endforeach
+                            @foreach($voyages as $voyage)
+                                <option value="{{ $voyage }}" @selected(request('no_voyage') == $voyage)>{{ $voyage }}</option>
+                            @endforeach
                         </select>
-                        <p id="tpVoyageHint" class="mt-1 text-xs text-slate-500">Pilih kapal terlebih dahulu.</p>
+                        <p id="voyageHint" class="mt-1 text-xs text-gray-500 md:text-sm">Silakan pilih kapal terlebih dahulu</p>
                     </div>
-                    <div class="flex flex-col-reverse justify-between gap-3 border-t border-slate-100 pt-4 sm:flex-row sm:items-center">
-                        <a href="{{ route('dashboard') }}" class="px-4 py-2 text-center text-slate-600 hover:bg-slate-50">Batal</a>
-                        <button id="tpSubmitBtn" type="submit" disabled class="bg-[#1E3A5F] px-5 py-2.5 font-semibold text-white hover:bg-[#2b4c75] disabled:cursor-not-allowed disabled:opacity-50">Lanjutkan <i class="fas fa-arrow-right ml-1"></i></button>
+
+                    <div class="flex flex-col gap-3 pt-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0">
+                        <a href="{{ route('dashboard') }}" class="flex w-full items-center justify-center rounded-lg bg-green-600 px-6 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-green-700 sm:w-auto">
+                            <svg class="mr-2 inline h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/></svg>
+                            Dashboard
+                        </a>
+                        <div class="flex w-full flex-row items-center gap-3 sm:w-auto">
+                            <a href="{{ route('dashboard') }}" class="flex-1 rounded-lg bg-gray-500 px-6 py-2.5 text-center text-sm font-medium text-white transition-colors duration-200 hover:bg-gray-600 sm:flex-none">Batal</a>
+                            <button type="submit" id="submitBtn" disabled class="flex flex-1 items-center justify-center rounded-lg bg-blue-600 px-6 py-2.5 text-sm font-medium text-white transition-colors duration-200 hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50 sm:flex-none">
+                                <svg class="mr-2 hidden h-4 w-4 sm:inline-block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                                Lanjutkan
+                            </button>
+                        </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -55,48 +69,64 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', () => {
-    const kapal = document.getElementById('nama_kapal');
-    const voyage = document.getElementById('no_voyage');
-    const submit = document.getElementById('tpSubmitBtn');
-    const hint = document.getElementById('tpVoyageHint');
+document.addEventListener('DOMContentLoaded', function () {
+    const kapalSelect = document.getElementById('nama_kapal');
+    const voyageSelect = document.getElementById('no_voyage');
+    const submitBtn = document.getElementById('submitBtn');
+    const voyageHint = document.getElementById('voyageHint');
     const initialVoyage = @json(request('no_voyage'));
 
-    const updateSubmit = () => { submit.disabled = !(kapal.value && voyage.value); };
-    const loadVoyages = async (selected = '') => {
-        voyage.disabled = true;
-        voyage.innerHTML = '<option value="">Memuat voyage...</option>';
-        updateSubmit();
-        if (!kapal.value) {
-            voyage.innerHTML = '<option value="">-- Pilih Voyage --</option>';
-            hint.textContent = 'Pilih kapal terlebih dahulu.';
+    function updateSubmitButton() {
+        submitBtn.disabled = !(kapalSelect.value && voyageSelect.value);
+    }
+
+    async function loadVoyages(kapalName, selectedVoyage = '') {
+        if (!kapalName) {
+            voyageSelect.disabled = true;
+            voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+            voyageHint.textContent = 'Silakan pilih kapal terlebih dahulu';
+            updateSubmitButton();
             return;
         }
-        try {
-            const url = new URL(@json(route('surat-jalan-bongkaran-tanjung-pinang.get-voyages')), window.location.origin);
-            url.searchParams.set('nama_kapal', kapal.value);
-            const response = await fetch(url);
-            const data = await response.json();
-            voyage.innerHTML = '<option value="">-- Pilih Voyage --</option>';
-            (data.voyages || []).forEach(value => {
-                const option = document.createElement('option');
-                option.value = value;
-                option.textContent = value;
-                option.selected = value === selected;
-                voyage.appendChild(option);
-            });
-            voyage.disabled = !data.voyages?.length;
-            hint.textContent = data.voyages?.length ? 'Pilih voyage untuk menampilkan datanya.' : 'Tidak ada voyage untuk kapal ini.';
-        } catch (error) {
-            voyage.innerHTML = '<option value="">Gagal memuat voyage</option>';
-            hint.textContent = 'Voyage gagal dimuat. Silakan pilih ulang kapal.';
-        }
-        updateSubmit();
-    };
 
-    kapal.addEventListener('change', () => loadVoyages());
-    voyage.addEventListener('change', updateSubmit);
-    if (kapal.value) loadVoyages(initialVoyage); else updateSubmit();
+        voyageSelect.disabled = true;
+        voyageSelect.innerHTML = '<option value="">Memuat voyage...</option>';
+        voyageHint.textContent = 'Memuat daftar voyage...';
+        updateSubmitButton();
+
+        try {
+            const url = new URL(@json(route('surat-jalan-bongkaran-tanjung-pinang.get-voyages', [], false)), window.location.origin);
+            url.searchParams.set('nama_kapal', kapalName);
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Gagal mengambil data voyage');
+            const data = await response.json();
+            voyageSelect.innerHTML = '<option value="">-- Pilih Voyage --</option>';
+
+            if (data.success && data.voyages && data.voyages.length) {
+                data.voyages.forEach(function (voyage) {
+                    const option = document.createElement('option');
+                    option.value = voyage;
+                    option.textContent = voyage;
+                    option.selected = voyage === selectedVoyage;
+                    voyageSelect.appendChild(option);
+                });
+                voyageSelect.disabled = false;
+                voyageHint.textContent = 'Pilih voyage untuk menampilkan data.';
+            } else {
+                voyageSelect.innerHTML = '<option value="">Tidak ada voyage ditemukan</option>';
+                voyageHint.textContent = 'Tidak ada voyage untuk kapal ini.';
+            }
+        } catch (error) {
+            voyageSelect.innerHTML = '<option value="">Error memuat voyage</option>';
+            voyageHint.textContent = 'Voyage gagal dimuat. Silakan pilih ulang kapal.';
+        }
+        updateSubmitButton();
+    }
+
+    kapalSelect.addEventListener('change', function () { loadVoyages(this.value); });
+    voyageSelect.addEventListener('change', updateSubmitButton);
+    if (kapalSelect.value) loadVoyages(kapalSelect.value, initialVoyage);
+    else updateSubmitButton();
 });
 </script>
 @endpush
