@@ -19,6 +19,7 @@
                 @if(!empty($validated['jenis_biaya']))
                     <span>Jenis biaya: <strong class="text-gray-900">{{ implode(', ', $validated['jenis_biaya']) }}</strong></span>
                 @endif
+                <span>PPh: <strong class="text-gray-900">{{ $validated['gunakan_pph'] === '1' ? 'Digunakan' : 'Tidak digunakan' }}</strong></span>
             </div>
         </div>
         <div class="flex flex-wrap items-center gap-2">

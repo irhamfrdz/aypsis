@@ -24,3 +24,17 @@
         @endforelse
     </div>
 </fieldset>
+
+<fieldset class="mt-4 rounded-xl border border-gray-200 bg-gray-50/70 p-4 sm:p-5">
+    <legend class="text-sm font-semibold text-gray-900">Perhitungan PPh</legend>
+    <div class="mt-2 flex flex-wrap gap-4 text-sm text-gray-700">
+        <label class="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="gunakan_pph" value="1" @checked(old('gunakan_pph', '1') == '1') class="border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            Gunakan PPh
+        </label>
+        <label class="flex cursor-pointer items-center gap-2">
+            <input type="radio" name="gunakan_pph" value="0" @checked(old('gunakan_pph', '1') == '0') class="border-gray-300 text-indigo-600 focus:ring-indigo-500">
+            Tanpa PPh
+        </label>
+    </div>
+</fieldset>

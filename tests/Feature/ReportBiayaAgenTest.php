@@ -31,6 +31,13 @@ class ReportBiayaAgenTest extends TestCase
             $table->decimal('adjustment', 15, 2)->default(0);
             $table->decimal('grand_total', 15, 2);
         });
+        Schema::create('manifests', function (Blueprint $table) {
+            $table->string('nama_kapal');
+            $table->string('no_voyage')->nullable();
+            $table->date('tanggal_berangkat')->nullable();
+            $table->date('tanggal_mulai_berlayar')->nullable();
+            $table->date('tanggal_muat')->nullable();
+        });
 
         DB::table('biaya_kapals')->insert([
             ['id' => 1, 'tanggal' => '2026-10-01', 'nomor_invoice' => 'AGEN-001', 'deleted_at' => null],
@@ -55,6 +62,14 @@ class ReportBiayaAgenTest extends TestCase
         $this->assertSame([1, 2], $byShip['rows']->pluck('id')->all());
         $this->assertEquals(10, $byShip['summary']['adjustment']);
         $this->assertEquals(304, $byShip['summary']['grand_total']);
+
+        $withoutPph = $controller->show(Request::create('/report-biaya-agen/show', 'GET', [
+            'mode' => 'kapal', 'kapal' => 'Kapal A', 'gunakan_pph' => '0',
+        ]))->getData();
+        $this->assertSame('0', $withoutPph['validated']['gunakan_pph']);
+        $this->assertEquals(0, $withoutPph['summary']['pph']);
+        $this->assertEquals(310, $withoutPph['summary']['grand_total']);
+        $this->assertEquals([0, 0], $withoutPph['rows']->pluck('pph')->all());
 
         $byDate = $controller->show(Request::create('/report-biaya-agen/show', 'GET', [
             'mode' => 'tanggal', 'start_date' => '2026-10-02', 'end_date' => '2026-10-05',

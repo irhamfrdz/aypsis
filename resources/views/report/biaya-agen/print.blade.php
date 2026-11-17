@@ -56,6 +56,7 @@
             <tr><td class="label">Kapal</td><td class="separator">:</td><td>{{ $validated['kapal'] ?? 'Semua kapal' }}</td></tr>
             <tr><td class="label">Periode</td><td class="separator">:</td><td>{{ isset($validated['start_date']) ? \Carbon\Carbon::parse($validated['start_date'])->format('d/m/Y').' - '.\Carbon\Carbon::parse($validated['end_date'])->format('d/m/Y') : 'Semua tanggal' }}</td></tr>
             <tr><td class="label">Jenis Biaya</td><td class="separator">:</td><td>{{ empty($validated['jenis_biaya']) ? 'Semua jenis biaya' : implode(', ', $validated['jenis_biaya']) }}</td></tr>
+            <tr><td class="label">PPh</td><td class="separator">:</td><td>{{ $validated['gunakan_pph'] === '1' ? 'Digunakan' : 'Tidak digunakan' }}</td></tr>
             <tr><td class="label">Jumlah Item</td><td class="separator">:</td><td>{{ $rows->count() }}</td></tr>
         </table>
 

@@ -4,6 +4,7 @@
         <tr><td>Mode</td><td>{{ ucfirst($validated['mode']) }}</td></tr>
         <tr><td>Kapal</td><td>{{ $validated['kapal'] ?? 'Semua kapal' }}</td><td>Periode</td><td>{{ isset($validated['start_date']) ? \Carbon\Carbon::parse($validated['start_date'])->format('d/m/Y').' - '.\Carbon\Carbon::parse($validated['end_date'])->format('d/m/Y') : 'Semua tanggal' }}</td></tr>
         <tr><td>Jenis biaya</td><td colspan="15">{{ empty($validated['jenis_biaya']) ? 'Semua jenis biaya' : implode(', ', $validated['jenis_biaya']) }}</td></tr>
+        <tr><td>PPh</td><td colspan="15">{{ $validated['gunakan_pph'] === '1' ? 'Digunakan' : 'Tidak digunakan' }}</td></tr>
     </thead>
     <tbody>
         <tr><th>Kapal</th><th>Item</th><th>Trip</th><th>Subtotal</th><th>PPh</th><th>Penyesuaian</th><th>Total biaya agen</th><td colspan="9"></td></tr>

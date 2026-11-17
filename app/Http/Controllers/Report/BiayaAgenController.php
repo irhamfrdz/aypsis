@@ -74,6 +74,7 @@ class BiayaAgenController extends Controller
             'end_date' => ['required_if:mode,tanggal,gabungan', 'nullable', 'date', 'after_or_equal:start_date'],
             'jenis_biaya' => ['nullable', 'array'],
             'jenis_biaya.*' => ['string', 'max:255'],
+            'gunakan_pph' => ['nullable', Rule::in(['0', '1'])],
         ]);
 
         if ($validator->fails()) {
@@ -81,6 +82,7 @@ class BiayaAgenController extends Controller
         }
 
         $validated = $validator->validated();
+        $validated['gunakan_pph'] = $validated['gunakan_pph'] ?? '1';
         $validated['jenis_biaya'] = collect($validated['jenis_biaya'] ?? [])
             ->map(fn ($jenisBiaya) => trim($jenisBiaya))
             ->filter()
@@ -117,6 +119,13 @@ class BiayaAgenController extends Controller
             ->orderBy('invoice.nomor_invoice')
             ->orderBy('rincian.id')
             ->get();
+
+        $rows->each(function ($row) use ($validated) {
+            if ($validated['gunakan_pph'] === '0' || (isset($row->pph_active) && ! $row->pph_active)) {
+                $row->pph = 0;
+                $row->grand_total = (float) $row->sub_total + (float) $row->adjustment;
+            }
+        });
 
         $summary = [
             'subtotal' => $rows->sum('sub_total'),
