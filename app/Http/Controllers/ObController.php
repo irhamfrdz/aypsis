@@ -2659,28 +2659,34 @@ class ObController extends Controller
         $bls = Bl::where('nama_kapal', $validated['nama_kapal'])
             ->where('no_voyage', $validated['no_voyage'])->get();
         $processed = 0;
-        $failed = [];
-        foreach ($bls as $bl) {
-            if ($bl->sudah_ob || $bl->sudah_tl) {
-                continue;
-            }
-            $itemRequest = Request::create('/ob/process-tl-bongkar', 'POST', [
-                'bl_id' => $bl->id,
-                'ke_gudang_id' => $validated['ke_gudang_id'],
-                'tanggal_ob' => $validated['tanggal_ob'],
-            ]);
-            $result = $this->processTLBongkar($itemRequest)->getData();
-            if ($result->success ?? false) {
+        DB::beginTransaction();
+        try {
+            foreach ($bls as $bl) {
+                if ($bl->sudah_ob || $bl->sudah_tl) {
+                    continue;
+                }
+                $itemRequest = Request::create('/ob/process-tl-bongkar', 'POST', [
+                    'bl_id' => $bl->id,
+                    'ke_gudang_id' => $validated['ke_gudang_id'],
+                    'tanggal_ob' => $validated['tanggal_ob'],
+                ]);
+                $result = $this->processTLBongkar($itemRequest)->getData();
+                if (! ($result->success ?? false)) {
+                    throw new \RuntimeException('Kontainer '.($bl->nomor_kontainer ?: $bl->id).': '.($result->message ?? 'gagal diproses'));
+                }
                 $processed++;
-            } else {
-                $failed[] = $bl->nomor_kontainer ?: (string) $bl->id;
             }
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json(['success' => false, 'message' => 'TL semua dibatalkan. '.$e->getMessage()], 500);
         }
 
         return response()->json([
-            'success' => $failed === [],
-            'message' => $processed.' kontainer berhasil TL'.($failed ? '; gagal: '.implode(', ', $failed) : '.'),
-        ], $failed ? 500 : 200);
+            'success' => true,
+            'message' => $processed.' kontainer berhasil TL.',
+        ]);
     }
 
     public function processTLBongkar(Request $request)
@@ -2724,32 +2730,32 @@ class ObController extends Controller
             $bl->catatan_ob = 'Proses TL Bongkar (Tanda Langsung) - Langsung Dibongkar';
             $bl->save();
 
-            // Record to history and update container gudangs_id
-            try {
-                if ($bl->nomor_kontainer) {
-                    $targetGudangId = $gudangTujuan->id;
+            // History is required; any failure rolls back the entire TL transaction.
+            if (! $bl->nomor_kontainer) {
+                throw new \RuntimeException('Nomor kontainer kosong, history tidak dapat dicatat.');
+            }
+            $targetGudangId = $gudangTujuan->id;
 
-                    if ($targetGudangId) {
-                        StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
-                            ->update(['gudangs_id' => $targetGudangId]);
+            if ($targetGudangId) {
+                StockKontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                    ->update(['gudangs_id' => $targetGudangId]);
 
-                        Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
-                            ->update(['gudangs_id' => $targetGudangId]);
-                    }
+                Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)
+                    ->update(['gudangs_id' => $targetGudangId]);
+            }
 
-                    $typeKontainer = Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
-                    HistoryKontainer::create([
-                        'nomor_kontainer' => $bl->nomor_kontainer,
-                        'tipe_kontainer' => $typeKontainer,
-                        'jenis_kegiatan' => 'Masuk',
-                        'tanggal_kegiatan' => $validated['tanggal_ob'],
-                        'gudang_id' => $targetGudangId,
-                        'keterangan' => 'OB TL Bongkar (Tanda Langsung) dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
-                        'created_by' => $user->id,
-                    ]);
-                }
-            } catch (\Exception $e) {
-                \Log::warning('Failed to update gudangs_id or history in processTLBongkar: '.$e->getMessage());
+            $typeKontainer = Kontainer::where('nomor_seri_gabungan', $bl->nomor_kontainer)->exists() ? 'kontainer' : 'stock';
+            $history = HistoryKontainer::create([
+                'nomor_kontainer' => $bl->nomor_kontainer,
+                'tipe_kontainer' => $typeKontainer,
+                'jenis_kegiatan' => 'Masuk',
+                'tanggal_kegiatan' => $validated['tanggal_ob'],
+                'gudang_id' => $targetGudangId,
+                'keterangan' => 'OB TL Bongkar (Tanda Langsung) dari Kapal: '.($bl->nama_kapal ?? '-').'. Voyage: '.($bl->no_voyage ?? '-'),
+                'created_by' => $user->id,
+            ]);
+            if (! $history->exists) {
+                throw new \RuntimeException('History kontainer gagal disimpan.');
             }
 
             // If BL is linked to a Prospek, update its status to 'sudah_muat'
