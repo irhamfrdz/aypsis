@@ -249,13 +249,15 @@ class ManifestSugengController extends Controller
     public function moveRows(Request $request): JsonResponse
     {
         $data = $request->validate([
-            'source_id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
-            'target_id' => ['required', 'integer', 'different:source_id', 'exists:manifest_sugengs,id'],
+            'source_ids' => ['required', 'array', 'min:1', 'max:500'],
+            'source_ids.*' => ['required', 'integer', 'distinct', 'exists:manifest_sugengs,id'],
+            'target_id' => ['required', 'integer', 'exists:manifest_sugengs,id'],
             'position' => ['required', Rule::in(['before', 'after'])],
         ]);
 
         DB::transaction(function () use ($data): void {
-            $source = ManifestSugeng::query()->findOrFail($data['source_id']);
+            $sourceIds = array_map('intval', $data['source_ids']);
+            $source = ManifestSugeng::query()->findOrFail($sourceIds[0]);
             $items = ManifestSugeng::query()
                 ->where('nama_kapal', $source->nama_kapal)
                 ->where('no_voyage', $source->no_voyage)
@@ -263,14 +265,23 @@ class ManifestSugengController extends Controller
                 ->orderBy('sort_order')->orderBy('id')
                 ->lockForUpdate()->get();
 
-            $sourceIndex = $items->search(fn ($item) => $item->id === $source->id);
-            $targetIndex = $items->search(fn ($item) => $item->id === $data['target_id']);
-            abort_if($sourceIndex === false || $targetIndex === false, 422, 'Baris hanya dapat dipindahkan dalam kapal dan voyage yang sama.');
+            $itemIds = $items->pluck('id')->all();
+            $sourceIds = array_values(array_unique($sourceIds));
+            $targetId = (int) $data['target_id'];
+            abort_if(
+                ! in_array($targetId, $itemIds, true)
+                    || array_diff($sourceIds, $itemIds)
+                    || in_array($targetId, $sourceIds, true),
+                422,
+                'Baris hanya dapat dipindahkan dalam kapal dan voyage yang sama.'
+            );
 
-            $ordered = $items->all();
-            $moving = array_splice($ordered, $sourceIndex, 1)[0];
-            $targetIndex = collect($ordered)->search(fn ($item) => $item->id === $data['target_id']);
-            array_splice($ordered, $targetIndex + ($data['position'] === 'after' ? 1 : 0), 0, [$moving]);
+            $moving = $items->filter(fn ($item) => in_array($item->id, $sourceIds, true))->values()->all();
+            abort_if(count($moving) !== count($sourceIds), 422, 'Sebagian baris yang dipilih tidak ditemukan.');
+            $ordered = $items->reject(fn ($item) => in_array($item->id, $sourceIds, true))->values()->all();
+            $targetIndex = collect($ordered)->search(fn ($item) => $item->id === $targetId);
+            abort_if($targetIndex === false, 422, 'Baris tujuan tidak ditemukan.');
+            array_splice($ordered, $targetIndex + ($data['position'] === 'after' ? 1 : 0), 0, $moving);
             foreach ($ordered as $position => $item) {
                 if ($item->sort_order !== $position + 1) {
                     $item->sort_order = $position + 1;

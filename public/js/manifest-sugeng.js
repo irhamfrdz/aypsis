@@ -138,6 +138,7 @@ const initializeManifestSugengSheet = table => {
     };
     const selectedRows = () => rows.filter(row => row.dataset.selected === 'true');
     let draggingId = null;
+    let draggingIds = [];
     let movingRow = false;
     const clearDragStyles = () => table.querySelectorAll('.sheet-dragging, .sheet-drop-before, .sheet-drop-after')
         .forEach(row => row.classList.remove('sheet-dragging', 'sheet-drop-before', 'sheet-drop-after'));
@@ -145,13 +146,15 @@ const initializeManifestSugengSheet = table => {
         const header = event.target.closest('tbody .sheet-row-number[draggable="true"]');
         if (!header || event.target.closest('.sheet-row-resize, .sugeng-assign-checkbox') || movingRow) { event.preventDefault(); return; }
         draggingId = header.parentElement.dataset.itemId;
+        const selectedIds = [...new Set(selectedRows().map(row => row.dataset.itemId))];
+        draggingIds = selectedIds.includes(draggingId) ? selectedIds : [draggingId];
         event.dataTransfer.effectAllowed = 'move';
         event.dataTransfer.setData('text/plain', draggingId);
-        rows.filter(row => row.dataset.itemId === draggingId).forEach(row => row.classList.add('sheet-dragging'));
+        rows.filter(row => draggingIds.includes(row.dataset.itemId)).forEach(row => row.classList.add('sheet-dragging'));
     });
     table.addEventListener('dragover', event => {
         const target = event.target.closest('tbody tr[data-item-id]');
-        if (!draggingId || !target || target.dataset.itemId === draggingId) return;
+        if (!draggingId || !target || draggingIds.includes(target.dataset.itemId)) return;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
         table.querySelectorAll('.sheet-drop-before, .sheet-drop-after')
@@ -164,7 +167,7 @@ const initializeManifestSugengSheet = table => {
     });
     table.addEventListener('drop', async event => {
         const target = event.target.closest('tbody tr[data-item-id]');
-        if (!draggingId || !target || target.dataset.itemId === draggingId) return;
+        if (!draggingId || !target || draggingIds.includes(target.dataset.itemId)) return;
         event.preventDefault();
         const sourceId = draggingId;
         const position = target.classList.contains('sheet-drop-before') ? 'before' : 'after';
@@ -175,7 +178,7 @@ const initializeManifestSugengSheet = table => {
             const response = await fetch(table.dataset.moveUrl, {
                 method: 'PATCH', credentials: 'same-origin',
                 headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': table.dataset.csrf, Accept: 'application/json' },
-                body: JSON.stringify({ source_id: Number(sourceId), target_id: Number(target.dataset.itemId), position }),
+                body: JSON.stringify({ source_ids: draggingIds.map(Number), target_id: Number(target.dataset.itemId), position }),
             });
             const result = await response.json();
             if (!response.ok) throw new Error(result.message || 'Posisi data gagal disimpan.');
@@ -207,7 +210,7 @@ const initializeManifestSugengSheet = table => {
             movingRow = false;
         }
     });
-    table.addEventListener('dragend', () => { draggingId = null; clearDragStyles(); });
+    table.addEventListener('dragend', () => { draggingId = null; draggingIds = []; clearDragStyles(); });
     const markControls = table.closest('.sugeng-sheet-scroll')?.parentElement?.querySelector('.sugeng-mark-controls');
     markControls?.addEventListener('click', async event => {
         const button = event.target.closest('button[data-mark]');
