@@ -39,7 +39,7 @@
     .bongkaran-page .tp-muted { color:#748091; }
     .bongkaran-page .tp-status { display:inline-flex;padding:3px 7px;border-radius:4px;background:#edf6f1;color:#34704f;font-weight:500; }
     .bongkaran-page .tp-pending { display:inline-flex;padding:3px 7px;border-radius:4px;background:#fcf3e5;color:#946b2c;font-weight:500; }
-    .bongkaran-page .tp-modal-panel { max-height:calc(100vh - 36px);overflow-y:auto;border:1px solid #cbd5e1;border-radius:8px;background:#fff;box-shadow:0 20px 60px rgb(15 23 42 / 35%); }
+    .bongkaran-page .tp-modal-panel { border:1px solid #d1d5db;border-radius:8px;background:#fff;box-shadow:0 8px 30px rgb(30 58 95 / 12%); }
     .bongkaran-page .tp-modal-panel input,.bongkaran-page .tp-modal-panel textarea { min-height:36px;padding:8px 10px;border:1px solid #d5dde7;border-radius:5px;background:#fff;font-size:12px; }
     .bongkaran-page .tp-modal-panel textarea { min-height:75px; }
     .bongkaran-page .tp-modal-panel label { display:block;margin-bottom:5px;color:#536379;font-weight:500; }
@@ -188,19 +188,21 @@
         </div>
     </div>
 
-    <div id="tpCreateModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-3 md:p-6" style="background-color:rgba(15,23,42,.58);backdrop-filter:blur(1px);" role="dialog" aria-modal="true" aria-labelledby="tpCreateModalTitle" onclick="if(event.target===this) closeTpCreateModal()">
-        <div class="tp-modal-panel w-full max-w-4xl bg-white">
-            <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
-                <div><h2 id="tpCreateModalTitle" class="text-lg font-semibold">Tambah Surat Jalan Bongkaran</h2><p class="mt-1 text-xs text-slate-500">Data manifest, kapal, dan voyage sudah diisikan.</p></div>
-                <button type="button" class="rounded p-2 text-slate-500 hover:bg-slate-100" onclick="closeTpCreateModal()" aria-label="Tutup"><i class="fas fa-times"></i></button>
+    <div id="tpCreateModal" class="fixed inset-0 z-50 hidden h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50" style="background-color:rgba(75,85,99,.55);" role="dialog" aria-modal="true" aria-labelledby="tpCreateModalTitle" onclick="if(event.target===this) closeTpCreateModal()">
+        <div class="tp-modal-panel relative top-10 mx-auto mb-10 w-11/12 max-w-4xl rounded-lg border bg-white p-5 shadow-lg">
+            <div class="flex items-center justify-between border-b pb-3">
+                <div><h3 id="tpCreateModalTitle" class="text-xl font-semibold text-gray-900">Buat Surat Jalan Bongkaran</h3><p class="mt-1 text-xs text-gray-500">Data manifest, kapal, dan voyage sudah diisikan.</p></div>
+                <button type="button" onclick="closeTpCreateModal()" class="text-2xl text-gray-400 hover:text-gray-600" aria-label="Tutup"><svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg></button>
             </div>
-            <form method="POST" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.store') }}" class="p-5">
+            <form method="POST" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.store') }}" class="mt-4">
                 @csrf
                 <input type="hidden" name="manifest_id" id="tp_manifest_id" value="{{ old('manifest_id') }}">
                 <input type="hidden" name="nama_kapal" id="tp_nama_kapal" value="{{ old('nama_kapal', $selectedKapal) }}">
                 <input type="hidden" name="no_voyage" id="tp_no_voyage" value="{{ old('no_voyage', $selectedVoyage) }}">
+                <div class="max-h-[70vh] overflow-y-auto px-2">
                 <div class="mb-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900"><strong id="tp_selected_container">Pilih manifest</strong><span class="ml-2" id="tp_selected_ship"></span></div>
-                <div class="grid gap-4 md:grid-cols-2">
+                <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Dasar</h4></div>
                     <div><label for="tp_nomor_surat_jalan">Nomor Surat Jalan <span class="text-red-600">*</span></label><input id="tp_nomor_surat_jalan" name="nomor_surat_jalan" required value="{{ old('nomor_surat_jalan') }}" class="w-full"></div>
                     <div><label for="tp_tanggal_surat_jalan">Tanggal Surat Jalan <span class="text-red-600">*</span></label><input id="tp_tanggal_surat_jalan" type="date" name="tanggal_surat_jalan" required value="{{ old('tanggal_surat_jalan', now()->format('Y-m-d')) }}" class="w-full"></div>
                     <div><label for="tp_no_bl">Nomor BL</label><input id="tp_no_bl" name="no_bl" value="{{ old('no_bl') }}" class="w-full"></div>
@@ -211,17 +213,20 @@
                     <div><label for="tp_term">Term</label><input id="tp_term" name="term" value="{{ old('term') }}" class="w-full"></div>
                     <div><label for="tp_pengirim">Pengirim</label><input id="tp_pengirim" name="pengirim" value="{{ old('pengirim') }}" class="w-full"></div>
                     <div><label for="tp_penerima">Penerima</label><input id="tp_penerima" name="penerima" value="{{ old('penerima') }}" class="w-full"></div>
+                    <div class="md:col-span-2 mt-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Pengiriman</h4></div>
                     <div class="md:col-span-2"><label for="tp_jenis_barang">Jenis Barang</label><input id="tp_jenis_barang" name="jenis_barang" value="{{ old('jenis_barang') }}" class="w-full"></div>
                     <div><label for="tp_tujuan_pengambilan">Tujuan Pengambilan</label><input id="tp_tujuan_pengambilan" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan') }}" class="w-full"></div>
                     <div><label for="tp_tujuan_pengiriman">Tujuan Pengiriman</label><input id="tp_tujuan_pengiriman" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman') }}" class="w-full"></div>
+                    <div class="md:col-span-2 mt-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Kendaraan</h4></div>
                     <div><label for="tp_supir">Supir</label><input id="tp_supir" name="supir" value="{{ old('supir') }}" class="w-full"></div>
                     <div><label for="tp_no_plat">Nomor Plat</label><input id="tp_no_plat" name="no_plat" value="{{ old('no_plat') }}" class="w-full"></div>
                     <div><label for="tp_kenek">Kenek</label><input id="tp_kenek" name="kenek" value="{{ old('kenek') }}" class="w-full"></div>
                     <div class="md:col-span-2"><label for="tp_aktifitas">Aktivitas / Catatan</label><textarea id="tp_aktifitas" name="aktifitas" rows="3" class="w-full">{{ old('aktifitas') }}</textarea></div>
                 </div>
-                <div class="mt-5 flex justify-end gap-2 border-t border-slate-200 pt-4">
-                    <button type="button" onclick="closeTpCreateModal()" class="rounded border border-slate-300 bg-white px-4 py-2 text-slate-700 hover:bg-slate-50">Batal</button>
-                    <button type="submit" class="rounded bg-[#1E3A5F] px-5 py-2 font-medium text-white hover:bg-[#2b4c75]"><i class="fas fa-save mr-1"></i>Simpan Surat Jalan</button>
+                </div>
+                <div class="mt-4 flex justify-end gap-2 border-t pt-4">
+                    <button type="button" onclick="closeTpCreateModal()" class="rounded bg-gray-500 px-4 py-2 text-sm font-medium text-white hover:bg-gray-600">Batal</button>
+                    <button type="submit" class="rounded bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700"><i class="fas fa-save mr-1"></i>Simpan Surat Jalan</button>
                 </div>
             </form>
         </div>
@@ -241,21 +246,19 @@ function openTpCreateModal(button) {
     document.getElementById('tp_selected_ship').textContent = `${data.kapal || ''} · ${data.voyage || ''}`;
     const modal = document.getElementById('tpCreateModal');
     modal.classList.remove('hidden');
-    modal.classList.add('flex');
     document.body.classList.add('tp-modal-open');
     document.getElementById('tp_nomor_surat_jalan').focus();
 }
 function closeTpCreateModal() {
     const modal = document.getElementById('tpCreateModal');
     modal.classList.add('hidden');
-    modal.classList.remove('flex');
     document.body.classList.remove('tp-modal-open');
 }
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeTpCreateModal(); });
 @if($errors->any())
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('tpCreateModal');
-    modal.classList.remove('hidden'); modal.classList.add('flex'); document.body.classList.add('tp-modal-open');
+    modal.classList.remove('hidden'); document.body.classList.add('tp-modal-open');
 });
 @endif
 </script>
