@@ -77,21 +77,6 @@
         <select name="type" class="rounded-lg border border-gray-300 px-3 py-2 text-sm"><option value="">Semua jenis</option>@foreach(['fcl' => 'FCL', 'lcl' => 'LCL', 'ttsj' => 'TTSJ'] as $value => $label)<option value="{{ $value }}" @selected(request('type') === $value)>{{ $label }}</option>@endforeach</select>
         <button class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white">Cari</button>
     </form>
-    @can('manifest-sugeng-manage')
-    <fieldset class="rounded-xl border border-blue-200 bg-blue-50 p-4">
-        <legend class="px-2 text-sm font-semibold text-blue-900">Pilih data untuk dimasukan ke kapal</legend>
-        <div class="flex flex-wrap gap-2">
-            @forelse($items as $item)
-                <label class="inline-flex max-w-full cursor-pointer items-center gap-2 rounded-lg border border-blue-200 bg-white px-3 py-2 text-sm hover:bg-blue-100">
-                    <input type="checkbox" class="sugeng-assign-checkbox h-4 w-4 shrink-0 accent-blue-600" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal">
-                    <span class="truncate">{{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: 'Data '.$item->id }}{{ $item->nomor_kontainer ? ' · '.$item->nomor_kontainer : '' }}</span>
-                </label>
-            @empty
-                <span class="text-sm text-gray-600">Tidak ada data untuk dipilih.</span>
-            @endforelse
-        </div>
-    </fieldset>
-    @endcan
     @include('manifest-sugeng._sheet')
     {{ $items->links() }}
 </div>

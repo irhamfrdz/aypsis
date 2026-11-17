@@ -32,6 +32,7 @@
     .sugeng-sheet .sheet-size-heading { position: relative; height: 24px; padding: 2px; background: #f3f4f6; color: #374151; font-size: 10px; user-select: none; }
     .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; touch-action: none; }
     .sugeng-sheet tbody .sheet-row-number { position: sticky; }
+    .sugeng-sheet .sugeng-assign-checkbox { display: inline-block; width: 13px; height: 13px; margin: 0 2px 0 0; vertical-align: middle; cursor: pointer; accent-color: #2563eb; }
     .sugeng-sheet .sheet-row-resize { position: absolute; bottom: -5px; left: 0; z-index: 4; display: block; width: 100%; height: 12px; cursor: row-resize; touch-action: none; }
     .sugeng-sheet .sheet-row-resize::after { content: ''; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 3px; border-radius: 2px; background: #818cf8; }
     .sugeng-sheet .sheet-row-resize:hover::after { height: 5px; background: #4f46e5; }
@@ -117,6 +118,7 @@
             @php $lastContainer = null; @endphp
             @forelse($items as $item)
                 @php
+                    $assignmentCheckboxRendered = false;
                     $isLcl = $item->source_type === 'lcl' || str_contains(strtoupper((string) $item->tipe_kontainer), 'LCL');
                     $isCargo = $item->source_type === 'cargo' || str_contains(strtoupper((string) $item->tipe_kontainer), 'CARGO');
                     $containerKey = implode('|', [$item->nama_kapal, $item->no_voyage, strtoupper(trim((string) $item->nomor_kontainer))]);
@@ -138,7 +140,7 @@
                     $shipper = $item->shipperJb;
                 @endphp
                 @if($isLcl && $item->nomor_kontainer && $lastContainer !== $containerKey)
-                    <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($containerCells as $value)
+                    <tr class="sheet-container" data-item-id="{{ $item->id }}" data-kind="container" data-line="0"><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">@can('manifest-sugeng-manage')<input type="checkbox" class="sugeng-assign-checkbox" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal" draggable="false">@php $assignmentCheckboxRendered = true; @endphp @endcan{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($containerCells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'container.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="container" data-line="0" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'container.'.$column, $value) }}</div></td>
                     @endforeach</tr>
@@ -169,7 +171,7 @@
                             $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription : ''),
                         ];
                     @endphp
-                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">@can('manifest-sugeng-manage')@if(!$assignmentCheckboxRendered)<input type="checkbox" class="sugeng-assign-checkbox" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal" draggable="false">@php $assignmentCheckboxRendered = true; @endphp @endif @endcan{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div></td>
                     @endforeach</tr>
