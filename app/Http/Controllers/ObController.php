@@ -2646,6 +2646,7 @@ class ObController extends Controller
      */
     public function processTLBongkarVoyage(Request $request)
     {
+        set_time_limit(300);
         $validated = $request->validate([
             'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
@@ -2658,13 +2659,14 @@ class ObController extends Controller
 
         $bls = Bl::where('nama_kapal', $validated['nama_kapal'])
             ->where('no_voyage', $validated['no_voyage'])->get();
+        $eligible = $bls->filter(fn ($bl) => ! $bl->sudah_ob && ! $bl->sudah_tl);
+        if ($eligible->isEmpty()) {
+            return response()->json(['success' => false, 'message' => 'Tidak ada kontainer pada voyage ini yang belum OB atau TL.'], 422);
+        }
         $processed = 0;
         DB::beginTransaction();
         try {
-            foreach ($bls as $bl) {
-                if ($bl->sudah_ob || $bl->sudah_tl) {
-                    continue;
-                }
+            foreach ($eligible as $bl) {
                 $itemRequest = Request::create('/ob/process-tl-bongkar', 'POST', [
                     'bl_id' => $bl->id,
                     'ke_gudang_id' => $validated['ke_gudang_id'],
@@ -2679,6 +2681,11 @@ class ObController extends Controller
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
+            \Log::error('TL semua voyage gagal', [
+                'nama_kapal' => $validated['nama_kapal'],
+                'no_voyage' => $validated['no_voyage'],
+                'error' => $e->getMessage(),
+            ]);
 
             return response()->json(['success' => false, 'message' => 'TL semua dibatalkan. '.$e->getMessage()], 500);
         }

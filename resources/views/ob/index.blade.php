@@ -2594,7 +2594,9 @@ document.getElementById('tlBongkarForm').addEventListener('submit', async functi
     event.preventDefault();
     const button = document.getElementById('tlBongkarSubmit');
     const error = document.getElementById('tlBongkarError');
+    const originalLabel = button.innerHTML;
     button.disabled = true;
+    button.textContent = 'Sedang memproses TL...';
     error.classList.add('hidden');
     try {
         const isBulk = document.getElementById('tlBongkarModal').dataset.bulk === '1';
@@ -2611,7 +2613,13 @@ document.getElementById('tlBongkarForm').addEventListener('submit', async functi
                 tanggal_ob: document.getElementById('tlBongkarTanggal').value
             })
         });
-        const data = await response.json();
+        const responseText = await response.text();
+        let data;
+        try {
+            data = JSON.parse(responseText);
+        } catch {
+            throw new Error('Server tidak mengirim respons yang valid. Periksa status TL pada halaman ini sebelum mencoba lagi.');
+        }
         if (!response.ok) {
             throw new Error(data?.message || `HTTP error! status: ${response.status}`);
         }
@@ -2625,8 +2633,10 @@ document.getElementById('tlBongkarForm').addEventListener('submit', async functi
     } catch (err) {
         error.textContent = err.message;
         error.classList.remove('hidden');
+        showNotification(err.message, 'error');
     } finally {
         button.disabled = false;
+        button.innerHTML = originalLabel;
     }
 });
 
