@@ -32,7 +32,7 @@
     .sugeng-sheet .sheet-size-heading { position: relative; height: 24px; padding: 2px; background: #f3f4f6; color: #374151; font-size: 10px; user-select: none; }
     .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; touch-action: none; }
     .sugeng-sheet tbody .sheet-row-number { position: sticky; }
-    .sugeng-sheet .sugeng-assign-checkbox { display: inline-block; width: 13px; height: 13px; margin: 0 2px 0 0; vertical-align: middle; cursor: pointer; accent-color: #2563eb; }
+    .sugeng-sheet .sugeng-assign-checkbox { position: absolute; top: 50%; left: -16px; width: 13px; height: 13px; margin: 0; transform: translateY(-50%); cursor: pointer; accent-color: #2563eb; }
     .sugeng-sheet .sheet-row-resize { position: absolute; bottom: -5px; left: 0; z-index: 4; display: block; width: 100%; height: 12px; cursor: row-resize; touch-action: none; }
     .sugeng-sheet .sheet-row-resize::after { content: ''; position: absolute; bottom: 4px; left: 10px; right: 10px; height: 3px; border-radius: 2px; background: #818cf8; }
     .sugeng-sheet .sheet-row-resize:hover::after { height: 5px; background: #4f46e5; }
