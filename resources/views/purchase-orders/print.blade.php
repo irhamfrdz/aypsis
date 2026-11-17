@@ -47,15 +47,15 @@
     <p style="margin-top:28px">Dengan Hormat,</p>
     <p>Mohon dapat disediakan dan dikirim kepada kami sebagai berikut:</p>
     <table>
-        <thead><tr><th>KETERANGAN</th><th style="width:100px">KUANTITAS</th><th style="width:120px">HARGA</th><th style="width:120px">JUMLAH</th></tr></thead>
+        <thead><tr><th style="width:35px">NO</th><th>KETERANGAN</th><th style="width:100px">KUANTITAS</th><th style="width:120px">HARGA</th><th style="width:120px">JUMLAH</th></tr></thead>
         <tbody>
             @foreach($purchaseOrder->items as $item)
-                <tr><td>{{ $item->deskripsi }}</td><td>{{ number_format((float) $item->kuantitas, 3, ',', '.') }} {{ $item->satuan }}</td><td style="text-align:right">{{ number_format((float) $item->harga_satuan, 2, ',', '.') }}</td><td style="text-align:right">{{ number_format((float) $item->jumlah, 2, ',', '.') }}</td></tr>
+                <tr><td style="text-align:center">{{ $item->urutan }}</td><td>{{ $item->deskripsi }}</td><td>{{ rtrim(rtrim(number_format((float) $item->kuantitas, 3, ',', '.'), '0'), ',') }} {{ $item->satuan }}</td><td style="text-align:right">{{ number_format((float) $item->harga_satuan, 2, ',', '.') }}</td><td style="text-align:right">{{ number_format((float) $item->jumlah, 2, ',', '.') }}</td></tr>
             @endforeach
-            <tr><td colspan="3" style="text-align:right">SUBTOTAL</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->subtotal, 2, ',', '.') }}</td></tr>
-            @if((float) $purchaseOrder->diskon > 0)<tr><td colspan="3" style="text-align:right">DISKON</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->diskon, 2, ',', '.') }}</td></tr>@endif
-            <tr><td colspan="3" style="text-align:right">PPN</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->pajak, 2, ',', '.') }}</td></tr>
-            <tr><td colspan="3" style="text-align:right;font-weight:bold">TOTAL</td><td style="text-align:right;font-weight:bold">{{ number_format((float) $purchaseOrder->total, 2, ',', '.') }}</td></tr>
+            <tr><td colspan="4" style="text-align:right">SUBTOTAL</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->subtotal, 2, ',', '.') }}</td></tr>
+            @if((float) $purchaseOrder->diskon > 0)<tr><td colspan="4" style="text-align:right">DISKON</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->diskon, 2, ',', '.') }}</td></tr>@endif
+            <tr><td colspan="4" style="text-align:right">PPN</td><td style="text-align:right">{{ number_format((float) $purchaseOrder->pajak, 2, ',', '.') }}</td></tr>
+            <tr><td colspan="4" style="text-align:right;font-weight:bold">TOTAL</td><td style="text-align:right;font-weight:bold">{{ number_format((float) $purchaseOrder->total, 2, ',', '.') }}</td></tr>
         </tbody>
     </table>
     <p style="margin-top:12px;font-style:italic">{{ ucfirst(trim(\App\Helpers\Terbilang::make((int) round((float) $purchaseOrder->total)))) }} rupiah</p>
