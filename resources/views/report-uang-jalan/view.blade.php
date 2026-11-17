@@ -118,7 +118,7 @@
                             $totalAdj += $ujAdjTotal;
                         @endphp
                         <tr class="hover:bg-amber-50/30 transition duration-150">
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ $index + 1 }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 font-medium">{{ $uangJalans->firstItem() + $index }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <div class="text-sm font-bold text-gray-800">{{ $uj->tanggal_uang_jalan->format('d/m/Y') }}</div>
                                 <div class="text-xs text-gray-400 font-medium">{{ $uj->nomor_uang_jalan }}</div>
@@ -228,25 +228,20 @@
                     <tr>
                         <th colspan="8" class="px-4 py-4 text-right text-xs font-bold text-gray-400 uppercase tracking-widest">Summary Total</th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-gray-700">
-                            {{ number_format($uangJalans->sum('jumlah_uang_jalan'), 0, ',', '.') }}
+                            {{ number_format($periodTotals['uang_jalan'], 0, ',', '.') }}
                         </th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-gray-700">
-                            @php
-                                $totalLainLain = $uangJalans->sum(function($uj) {
-                                    return ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0);
-                                });
-                            @endphp
-                            {{ number_format($totalLainLain, 0, ',', '.') }}
+                            {{ number_format($periodTotals['lain_lain'], 0, ',', '.') }}
                         </th>
-                        <th class="px-4 py-4 text-right text-sm font-bold {{ $totalAdj > 0 ? 'text-green-600' : ($totalAdj < 0 ? 'text-red-600' : 'text-gray-400') }}">
-                            @if($totalAdj != 0)
-                                {{ $totalAdj > 0 ? '+' : '' }}{{ number_format($totalAdj, 0, ',', '.') }}
+                        <th class="px-4 py-4 text-right text-sm font-bold {{ $periodTotals['adjustment'] > 0 ? 'text-green-600' : ($periodTotals['adjustment'] < 0 ? 'text-red-600' : 'text-gray-400') }}">
+                            @if($periodTotals['adjustment'] != 0)
+                                {{ $periodTotals['adjustment'] > 0 ? '+' : '' }}{{ number_format($periodTotals['adjustment'], 0, ',', '.') }}
                             @else
                                 -
                             @endif
                         </th>
                         <th class="px-4 py-4 text-right text-sm font-bold text-amber-600 bg-amber-50">
-                            {{ number_format($uangJalans->sum('jumlah_total') + $totalAdj, 0, ',', '.') }}
+                            {{ number_format($periodTotals['grand_total'], 0, ',', '.') }}
                         </th>
                         <th></th>
                     </tr>
@@ -254,6 +249,7 @@
                 @endif
             </table>
         </div>
+        <div class="no-print border-t border-gray-100 px-6 py-4">{{ $uangJalans->links() }}</div>
     </div>
 </div>
 

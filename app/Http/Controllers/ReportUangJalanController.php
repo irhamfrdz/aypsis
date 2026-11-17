@@ -572,8 +572,27 @@ class ReportUangJalanController extends Controller
         $this->appendStandalonePembayaranAktivitasLain($uangJalans, $adjustmentsByUjId, $startDate, $endDate, $search);
         $this->appendPranotaObRows($uangJalans, $startDate, $endDate, $search);
 
+        $periodTotals = [
+            'uang_jalan' => $uangJalans->sum('jumlah_uang_jalan'),
+            'lain_lain' => $uangJalans->sum(fn ($uj) => ($uj->jumlah_mel ?? 0) + ($uj->jumlah_pelancar ?? 0) + ($uj->jumlah_kawalan ?? 0) + ($uj->jumlah_parkir ?? 0)),
+            'adjustment' => $adjustmentsByUjId->flatten(1)->sum(function ($adj) {
+                $nominal = (float) ($adj->grand_total ?: ($adj->total ?: ($adj->jumlah ?? 0)));
+
+                return strtolower((string) ($adj->jenis_penyesuaian ?? '')) === 'penambahan' ? $nominal : -$nominal;
+            }),
+            'grand_total' => $uangJalans->sum('jumlah_total'),
+        ];
+        $periodTotals['grand_total'] += $periodTotals['adjustment'];
+        $uangJalans = $uangJalans->sortByDesc('tanggal_uang_jalan')->values();
+        $page = max(1, (int) $request->input('page', 1));
+        $uangJalans = new \Illuminate\Pagination\LengthAwarePaginator(
+            $uangJalans->forPage($page, 100)->values(), $uangJalans->count(), 100, $page,
+            ['path' => $request->url(), 'query' => $request->except('page')]
+        );
+
         return view('report-uang-jalan.view', [
             'uangJalans' => $uangJalans,
+            'periodTotals' => $periodTotals,
             'adjustmentsByUjId' => $adjustmentsByUjId,
             'startDate' => $startDate,
             'endDate' => $endDate,
