@@ -48,16 +48,17 @@
                     <div>
                         <label class="block text-sm font-semibold text-gray-700 mb-2">Cari Nomor Kontainer <span class="text-red-500">*</span></label>
                         <div class="relative">
-                            <select id="kontainer_id" name="kontainer_id" required 
+                            <select id="kontainer_id" name="kontainer_ids[]" multiple
                                     class="w-full border border-gray-300 rounded-xl px-4 py-3 vanilla-searchable invisible h-0 overflow-hidden">
-                                <option value="">-- Ketik Nomor Kontainer --</option>
                             </select>
                         </div>
+                        <p class="mt-2 text-xs text-gray-500">Cari dan pilih satu per satu nomor kontainer. Anda dapat memilih hingga 100 kontainer.</p>
                         <p class="mt-2 text-xs text-gray-500 font-medium italic flex items-center">
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                             Data diambil dari Master Kontainer & Stock Kontainer Aktif.
                         </p>
-                        @error('kontainer_id') <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p> @enderror
+                        @error('kontainer_ids') <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p> @enderror
+                        @error('kontainer_ids.*') <p class="mt-1 text-xs text-red-600 font-semibold">{{ $message }}</p> @enderror
                     </div>
 
                     <!-- Origin Warehouse (Auto-filled) -->
@@ -67,7 +68,6 @@
                             <input type="text" id="asal_gudang_display" readonly 
                                    class="w-full border-2 border-blue-100 bg-blue-50/50 rounded-xl px-4 py-3 text-gray-600 font-semibold cursor-not-allowed shadow-inner" 
                                    placeholder="Pilih kontainer dahulu...">
-                            <input type="hidden" name="asal_name" id="asal_name_hidden">
                         </div>
                     </div>
 
@@ -141,6 +141,7 @@
             this.id = id;
             this.searchUrl = searchUrl;
             this.select = document.getElementById(id);
+            this.selected = new Map();
             this.init();
         }
         
@@ -171,8 +172,17 @@
             this.dropdown.appendChild(this.list);
             this.container.appendChild(this.trigger);
             this.container.appendChild(this.dropdown);
+            this.selectedList = document.createElement('div');
+            this.selectedList.className = 'mt-2 flex flex-wrap gap-2';
+            this.container.appendChild(this.selectedList);
             
             this.select.parentNode.insertBefore(this.container, this.select);
+            this.select.form.addEventListener('submit', event => {
+                if (this.selected.size === 0) {
+                    event.preventDefault();
+                    alert('Pilih setidaknya satu nomor kontainer.');
+                }
+            });
             
             this.trigger.onclick = (e) => { e.stopPropagation(); this.toggle(); };
             this.search.onclick = (e) => e.stopPropagation();
@@ -196,7 +206,7 @@
         async performSearch(term) {
             this.list.innerHTML = `<div class="px-4 py-4 text-sm text-gray-500 flex items-center justify-center"><svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Mencari...</div>`;
             try {
-                const response = await fetch(`${this.searchUrl}?term=${term}`);
+                const response = await fetch(`${this.searchUrl}?term=${encodeURIComponent(term)}`);
                 const results = await response.json();
                 this.renderList(results);
             } catch (error) {
@@ -228,6 +238,13 @@
         }
         
         selectValue(res) {
+            if (this.selected.has(res.id)) { this.close(); return; }
+            if ([...this.selected.values()].some(item => item.nomor === res.nomor)) {
+                alert('Nomor kontainer ini sudah dipilih.');
+                this.close();
+                return;
+            }
+            if (this.selected.size >= 100) { alert('Maksimal 100 kontainer dalam satu proses.'); return; }
             let opt = this.select.querySelector(`option[value="${res.id}"]`);
             if (!opt) {
                 opt = document.createElement('option');
@@ -235,23 +252,40 @@
                 opt.text = res.text;
                 this.select.appendChild(opt);
             }
-            this.select.value = res.id;
-            this.trigger.querySelector('.current-value').textContent = res.text;
-            
-            // Populating Origin Warehouse Display
+            opt.selected = true;
+            this.selected.set(res.id, res);
+            this.renderSelected();
+            this.search.value = '';
+            this.renderList([]);
+            this.close();
+        }
+
+        renderSelected() {
+            this.selectedList.replaceChildren();
+            this.selected.forEach((res, id) => {
+                const chip = document.createElement('span');
+                chip.className = 'inline-flex items-center gap-2 rounded-lg bg-blue-50 px-3 py-1.5 text-sm text-blue-900';
+                const label = document.createElement('span');
+                label.textContent = res.nomor;
+                const remove = document.createElement('button');
+                remove.type = 'button';
+                remove.className = 'font-bold text-red-600';
+                remove.setAttribute('aria-label', `Hapus ${res.nomor}`);
+                remove.textContent = '×';
+                remove.onclick = () => {
+                    this.selected.delete(id);
+                    this.select.querySelector(`option[value="${id}"]`)?.remove();
+                    this.renderSelected();
+                };
+                chip.append(label, remove);
+                this.selectedList.appendChild(chip);
+            });
+            this.trigger.querySelector('.current-value').textContent = this.selected.size
+                ? `${this.selected.size} kontainer dipilih — tambah lagi` : '-- Ketik Nomor Kontainer --';
             const asalWrapper = document.getElementById('asal_gudang_wrapper');
             const asalDisplay = document.getElementById('asal_gudang_display');
-            const asalHidden = document.getElementById('asal_name_hidden');
-            
-            if (res.asal_name) {
-                asalDisplay.value = res.asal_name;
-                asalHidden.value = res.asal_name;
-                asalWrapper.classList.remove('hidden');
-            } else {
-                asalWrapper.classList.add('hidden');
-            }
-
-            this.close();
+            asalDisplay.value = [...this.selected.values()].map(res => `${res.nomor}: ${res.asal_name}`).join('; ');
+            asalWrapper.classList.toggle('hidden', this.selected.size === 0);
         }
         
         toggle() { this.dropdown.classList.contains('hidden') ? this.open() : this.close(); }

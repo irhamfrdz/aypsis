@@ -8,6 +8,8 @@ use App\Models\Kontainer;
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 class GerakKontainerController extends Controller
 {
@@ -72,53 +74,48 @@ class GerakKontainerController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'kontainer_id' => 'required',
+        $data = $request->validate([
+            'kontainer_ids' => ['required', 'array', 'min:1', 'max:100'],
+            'kontainer_ids.*' => ['required', 'string', 'distinct', 'regex:/^(stock|kontainer)_[0-9]+$/'],
             'gudang_id' => 'required|exists:gudangs,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:500',
         ]);
 
-        $parts = explode('_', $request->kontainer_id);
-        if (count($parts) < 2) {
-            return back()->with('error', 'Format kontainer tidak valid.');
-        }
+        $count = DB::transaction(function () use ($data) {
+            $movedNumbers = [];
+            foreach ($data['kontainer_ids'] as $selectedId) {
+                [$source, $id] = explode('_', $selectedId, 2);
+                $model = $source === 'stock' ? StockKontainer::class : Kontainer::class;
+                $item = $model::query()->lockForUpdate()->find($id);
+                if (! $item) {
+                    throw ValidationException::withMessages(['kontainer_ids' => "Kontainer {$selectedId} tidak ditemukan."]);
+                }
 
-        $source = $parts[0];
-        $id = $parts[1];
+                $nomor = $item->nomor_seri_gabungan;
+                if (isset($movedNumbers[$nomor])) {
+                    continue;
+                }
+                $movedNumbers[$nomor] = true;
+                $asalId = $item->gudangs_id;
+                $item->gudangs_id = $data['gudang_id'];
+                $item->save();
 
-        $nomor = '';
-        $tipe = '';
-        $asal_id = null;
+                HistoryKontainer::create([
+                    'nomor_kontainer' => $nomor,
+                    'tipe_kontainer' => $item->tipe_kontainer,
+                    'jenis_kegiatan' => 'Pindahan Gudang',
+                    'tanggal_kegiatan' => $data['tanggal'],
+                    'asal_gudang_id' => $asalId,
+                    'gudang_id' => $data['gudang_id'],
+                    'keterangan' => ($data['keterangan'] ?? null) ?: 'Pemindahan dari '.(Gudang::find($asalId)?->nama_gudang ?? 'gudang lama').' ke tujuan baru',
+                    'created_by' => Auth::id(),
+                ]);
+            }
 
-        if ($source == 'stock') {
-            $item = StockKontainer::findOrFail($id);
-            $asal_id = $item->gudangs_id;
-            $item->gudangs_id = $request->gudang_id;
-            $item->save();
-            $nomor = $item->nomor_seri_gabungan;
-            $tipe = $item->tipe_kontainer;
-        } else {
-            $item = Kontainer::findOrFail($id);
-            $asal_id = $item->gudangs_id;
-            $item->gudangs_id = $request->gudang_id;
-            $item->save();
-            $nomor = $item->nomor_seri_gabungan;
-            $tipe = $item->tipe_kontainer;
-        }
+            return count($movedNumbers);
+        });
 
-        // Log to HistoryKontainer
-        HistoryKontainer::create([
-            'nomor_kontainer' => $nomor,
-            'tipe_kontainer' => $tipe,
-            'jenis_kegiatan' => 'Pindahan Gudang',
-            'tanggal_kegiatan' => $request->tanggal,
-            'asal_gudang_id' => $asal_id,
-            'gudang_id' => $request->gudang_id,
-            'keterangan' => $request->keterangan ?? 'Pemindahan dari '.($request->asal_name ?? 'gudang lama').' ke tujuan baru',
-            'created_by' => Auth::id(),
-        ]);
-
-        return redirect()->route('gerak-kontainer.index')->with('success', "Kontainer {$nomor} berhasil dipindahkan.");
+        return redirect()->route('gerak-kontainer.index')->with('success', "{$count} kontainer berhasil dipindahkan.");
     }
 }
