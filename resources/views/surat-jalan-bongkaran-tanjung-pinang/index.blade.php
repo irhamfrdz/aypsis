@@ -4,111 +4,183 @@
 
 @push('styles')
 <style>
-    body:has(.tp-bongkaran-page) { font-family:Arial,sans-serif;font-size:12px; }
-    body:has(.tp-bongkaran-page) #page-content { background:#F5F7FA; }
-    .tp-bongkaran-page { --tp-navy:#1E3A5F;--tp-line:#e1e6ed;font:12px/1.5 Arial,sans-serif;color:#344256; }
-    .tp-bongkaran-page :is(p,span,a,button,input,select,label,table,th,td,div) { font-family:Arial,sans-serif;font-size:12px; }
-    .tp-bongkaran-page h1 { color:var(--tp-navy);font:600 20px/1.4 Arial,sans-serif; }
-    .tp-bongkaran-page h2 { color:var(--tp-navy);font:600 16px/1.4 Arial,sans-serif; }
-    .tp-bongkaran-page .tp-panel { border:1px solid var(--tp-line);border-radius:8px;background:#fff;box-shadow:0 2px 6px rgb(30 58 95 / 4%); }
-    .tp-bongkaran-page input { min-height:34px;padding:7px 10px;border:1px solid #d5dde7;border-radius:5px;font-size:12px; }
-    .tp-bongkaran-page .tp-button { min-height:34px;padding:7px 12px;border:1px solid #cdd7e4;border-radius:5px;background:#fff;color:var(--tp-navy);font-weight:500;white-space:nowrap; }
-    .tp-bongkaran-page .tp-button-primary { border-color:var(--tp-navy);background:var(--tp-navy);color:white; }
-    .tp-bongkaran-page .tp-button:hover { background:#edf2f8; }
-    .tp-bongkaran-page .tp-button-primary:hover { background:#2b4c75; }
-    .tp-bongkaran-page table { width:100%;min-width:1120px;border-collapse:collapse; }
-    .tp-bongkaran-page thead th { padding:10px 12px;border-bottom:1px solid var(--tp-line);background:#F5F7FA;color:#647184;font-weight:600;text-align:left; }
-    .tp-bongkaran-page td { padding:10px 12px;border-bottom:1px solid var(--tp-line);vertical-align:middle; }
-    .tp-bongkaran-page tbody tr:hover { background:#f8fafc; }
-    .tp-bongkaran-page .tp-muted { color:#748091; }
+    body:has(.bongkaran-page) { font-family: Arial, sans-serif; font-size: 12px; }
+    body:has(.bongkaran-page) #page-content { background: #F5F7FA; }
+    .bongkaran-page { --bongkaran-navy:#1E3A5F;--bongkaran-line:#e1e6ed;font:12px/1.5 Arial,sans-serif;color:#344256;padding:0;min-width:0; }
+    .bongkaran-page :is(p,span,a,button,input,select,textarea,label,table,th,td,div) { font-family:Arial,sans-serif;font-size:12px; }
+    .bongkaran-page h1 { font:600 20px/1.4 Arial,sans-serif;color:var(--bongkaran-navy); }
+    .bongkaran-page :is(h2,h3) { font:600 16px/1.4 Arial,sans-serif;color:var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-heading { margin-bottom:18px; }
+    .bongkaran-page .bongkaran-heading nav { color:#8490a1; }
+    .bongkaran-page .bongkaran-heading a { color:#5b718d; }
+    .bongkaran-page .bongkaran-panel { border-color:var(--bongkaran-line);border-radius:8px;background:#fff;box-shadow:0 2px 6px rgb(30 58 95 / 4%);min-width:0; }
+    .bongkaran-page .bongkaran-panel-header { padding:16px;border-color:var(--bongkaran-line); }
+    .bongkaran-page .bongkaran-panel-header>.flex { flex-wrap:wrap;gap:12px 20px; }
+    .bongkaran-page .bongkaran-panel-header>.flex>div:first-child>.flex { margin-top:5px;flex-wrap:wrap;gap:6px 20px;color:#748091; }
+    .bongkaran-page .bongkaran-actions { display:flex;flex-wrap:wrap;gap:8px; }
+    .bongkaran-page .bongkaran-actions :is(a,button) { min-height:34px;padding:7px 12px;border:1px solid #cdd7e4;border-radius:5px;background:#fff;color:var(--bongkaran-navy);box-shadow:none;font-weight:500;transition:none;white-space:nowrap; }
+    .bongkaran-page .bongkaran-actions .tp-primary { background:var(--bongkaran-navy);color:#fff;border-color:var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-actions :is(a,button):hover { background:#edf2f8; }
+    .bongkaran-page .bongkaran-actions .tp-primary:hover { background:#2b4c75; }
+    .bongkaran-page .bongkaran-actions :is(svg,i) { width:14px;height:14px;font-size:12px;margin-right:6px; }
+    .bongkaran-page .bongkaran-panel-body { padding:16px; }
+    .bongkaran-page .bongkaran-filters { margin-bottom:16px;padding:12px;background:#fafbfd;border:1px solid #e7ebf1;border-radius:6px; }
+    .bongkaran-page .bongkaran-filters>div { gap:12px; }
+    .bongkaran-page .bongkaran-filters label { color:#617087;font-weight:400; }
+    .bongkaran-page input:not([type="hidden"]),.bongkaran-page select { min-height:34px;padding:7px 10px;border:1px solid #d5dde7;border-radius:5px;background:#fff;box-shadow:none;font-size:12px; }
+    .bongkaran-page .bongkaran-filters button[type="submit"] { min-height:34px;padding:7px 12px;border:1px solid var(--bongkaran-navy);border-radius:5px;background:var(--bongkaran-navy);color:#fff; }
+    .bongkaran-page .bongkaran-filters .tp-reset { min-height:34px;padding:7px 12px;border:1px solid #cdd7e4;border-radius:5px;background:#fff;color:var(--bongkaran-navy); }
+    .bongkaran-page .bongkaran-summary { display:flex;flex-wrap:wrap;gap:4px 20px;padding:10px 12px;background:#f5f7fa;border:1px solid #e6ebf1;border-radius:5px;color:#748091; }
+    .bongkaran-page .bongkaran-summary strong { color:#536379;font-weight:600; }
+    .bongkaran-page .tp-table { width:100%;min-width:1400px;border-collapse:collapse; }
+    .bongkaran-page thead th { padding:10px 12px;border-bottom:1px solid var(--bongkaran-line);background:#F5F7FA;color:#647184;font-size:12px;font-weight:600;letter-spacing:.01em; }
+    .bongkaran-page .tp-table td { padding:10px 12px;border-bottom:1px solid var(--bongkaran-line);vertical-align:middle;color:#344256;line-height:1.5; }
+    .bongkaran-page tbody tr:hover { background:#f8fafc; }
+    .bongkaran-page .tp-muted { color:#748091; }
+    .bongkaran-page .tp-status { display:inline-flex;padding:3px 7px;border-radius:4px;background:#edf6f1;color:#34704f;font-weight:500; }
+    .bongkaran-page .tp-pending { display:inline-flex;padding:3px 7px;border-radius:4px;background:#fcf3e5;color:#946b2c;font-weight:500; }
+    .bongkaran-page .overflow-x-auto::-webkit-scrollbar { height:5px; }
+    .bongkaran-page .overflow-x-auto::-webkit-scrollbar-thumb { background:#d5dde7;border-radius:4px; }
+    .bongkaran-page .tp-pagination { margin-top:16px;padding-top:12px;border-top:1px solid var(--bongkaran-line); }
+    @media(max-width:640px) { .bongkaran-page .bongkaran-panel-header,.bongkaran-page .bongkaran-panel-body { padding:12px; } }
 </style>
 @endpush
 
 @section('content')
-<div class="tp-bongkaran-page flex-1 p-4 md:p-6">
-    <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+<div class="bongkaran-page flex-1 p-6">
+    <div class="bongkaran-heading mb-6 flex items-center justify-between">
         <div>
-            <h1>Surat Jalan Bongkaran Tanjung Pinang</h1>
-            <nav class="mt-1 flex items-center gap-2 text-slate-500"><a href="{{ route('dashboard') }}" class="hover:text-blue-700">Dashboard</a><span>/</span><a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="hover:text-blue-700">Surat Jalan Bongkaran</a><span>/</span><span>Data Kapal & Voyage</span></nav>
-        </div>
-        <div class="flex flex-wrap gap-2">
-            <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="tp-button"><i class="fas fa-ship mr-1"></i> Ganti Kapal / Voyage</a>
-            @can('surat-jalan-bongkaran-tanjung-pinang-create')
-                <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="tp-button tp-button-primary"><i class="fas fa-plus mr-1"></i> Tambah Surat Jalan</a>
-            @endcan
+            <h1 class="text-2xl font-bold">Surat Jalan Bongkaran Tanjung Pinang</h1>
+            <nav class="mt-1 flex text-sm"><a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a><span class="mx-2">/</span><a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="hover:text-blue-600">Surat Jalan Bongkaran</a><span class="mx-2">/</span><span>Data Kapal & Voyage</span></nav>
         </div>
     </div>
 
-    @if(session('success'))<div class="mb-4 rounded border border-green-200 bg-green-50 px-4 py-3 text-green-800">{{ session('success') }}</div>@endif
-    @if(session('error'))<div class="mb-4 rounded border border-red-200 bg-red-50 px-4 py-3 text-red-800">{{ session('error') }}</div>@endif
+    @if(session('success'))<div class="mb-5 flex items-center rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-green-800"><i class="fas fa-check-circle mr-2"></i>{{ session('success') }}</div>@endif
+    @if(session('error'))<div class="mb-5 flex items-center rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-800"><i class="fas fa-exclamation-circle mr-2"></i>{{ session('error') }}</div>@endif
 
-    <div class="tp-panel mb-4 flex flex-wrap items-center gap-x-8 gap-y-2 px-4 py-3">
-        <div><span class="tp-muted">Kapal:</span> <strong class="text-slate-800">{{ $selectedKapal }}</strong></div>
-        <div><span class="tp-muted">Voyage:</span> <strong class="text-slate-800">{{ $selectedVoyage }}</strong></div>
-        <div><span class="tp-muted">Total manifest:</span> <strong class="text-slate-800">{{ number_format($stats['manifest']) }}</strong></div>
-        <div><span class="tp-muted">Sudah dibuat SJ:</span> <strong class="text-slate-800">{{ number_format($stats['sudah_sj']) }}</strong></div>
-        <div><span class="tp-muted">Belum dibuat SJ:</span> <strong class="text-slate-800">{{ number_format($stats['belum_sj']) }}</strong></div>
-    </div>
-
-    <div class="tp-panel">
-        <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 px-4 py-3">
-            <div class="flex flex-wrap items-center gap-2">
-                <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.list', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => 'manifest']) }}" class="tp-button {{ $mode === 'manifest' ? 'tp-button-primary' : '' }}">Data Manifest</a>
-                <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.list', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => 'surat_jalan']) }}" class="tp-button {{ $mode === 'surat_jalan' ? 'tp-button-primary' : '' }}">Surat Jalan Tersimpan</a>
+    <div class="bongkaran-panel rounded-lg border border-gray-200 bg-white shadow-sm">
+        <div class="bongkaran-panel-header border-b border-gray-200 px-6 py-4">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h2 class="text-lg font-semibold">Surat Jalan Bongkaran Tanjung Pinang</h2>
+                    <div class="mt-2 flex items-center gap-4">
+                        <span><span class="font-medium">Kapal:</span> {{ $selectedKapal }}</span>
+                        <span><span class="font-medium">Voyage:</span> {{ $selectedVoyage }}</span>
+                    </div>
+                </div>
+                <div class="bongkaran-actions flex gap-2">
+                    @can('surat-jalan-bongkaran-tanjung-pinang-create')
+                    <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="tp-primary inline-flex items-center"><i class="fas fa-plus"></i>Tambah Surat Jalan</a>
+                    @endcan
+                    <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="inline-flex items-center"><i class="fas fa-sync-alt"></i>Ganti Kapal/Voyage</a>
+                </div>
             </div>
-            <form method="GET" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.list') }}" class="flex flex-wrap gap-2">
-                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}"><input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}"><input type="hidden" name="mode" value="{{ $mode }}">
-                <input type="search" name="search" value="{{ $search }}" placeholder="Cari nomor SJ, BL, kontainer, supir" class="w-64 max-w-full">
-                <button class="tp-button tp-button-primary"><i class="fas fa-search mr-1"></i> Cari</button>
-                @if($search)<a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.list', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="tp-button">Reset</a>@endif
+        </div>
+
+        <div class="bongkaran-panel-body p-6">
+            <form method="GET" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.list') }}" class="bongkaran-filters mb-6">
+                <input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}">
+                <input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}">
+                <div class="flex flex-col gap-4">
+                    <div class="flex flex-wrap items-center gap-6">
+                        <div class="flex items-center gap-3">
+                            <label for="mode" class="whitespace-nowrap text-sm font-medium">Tampilan:</label>
+                            <select name="mode" id="mode" onchange="this.form.submit()">
+                                <option value="manifest" @selected($mode === 'manifest')>Manifest</option>
+                                <option value="surat_jalan" @selected($mode === 'surat_jalan')>Surat Jalan Bongkaran</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-wrap items-center gap-x-5 gap-y-1">
+                            <span><strong>Total Manifest:</strong> {{ number_format($stats['manifest']) }}</span>
+                            <span><strong>Sudah dibuat SJ:</strong> {{ number_format($stats['sudah_sj']) }}</span>
+                            <span><strong>Belum dibuat SJ:</strong> {{ number_format($stats['belum_sj']) }}</span>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-4 md:flex-row">
+                        <div class="flex-1">
+                            <label for="search" class="mb-1 block text-sm font-medium">Pencarian</label>
+                            <input type="text" id="search" name="search" value="{{ $search }}" class="w-full" placeholder="{{ $mode === 'surat_jalan' ? 'Cari nomor surat jalan, kontainer, BL, atau supir...' : 'Cari nomor BL, kontainer, seal, barang, atau penerima...' }}">
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <button type="submit" class="inline-flex items-center"><i class="fas fa-search mr-2"></i>Cari</button>
+                            <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.list', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage, 'mode' => $mode]) }}" class="tp-reset inline-flex items-center"><i class="fas fa-sync-alt mr-2"></i>Reset</a>
+                        </div>
+                    </div>
+                </div>
             </form>
+
+            @if($mode === 'manifest')
+            <div class="overflow-x-auto">
+                <table class="tp-table" id="manifestTable">
+                    <thead><tr>
+                        <th>No. Urut</th><th>Nomor BL</th><th>Nomor Kontainer</th><th>Seal</th><th>Ukuran / Tipe</th><th>Pengirim</th><th>Penerima</th><th>Nama Barang</th><th>Term</th><th>Status Surat Jalan</th>
+                    </tr></thead>
+                    <tbody class="bg-white">
+                    @forelse($manifests as $manifest)
+                        <tr>
+                            <td>{{ $manifest->nomor_urut ?: '—' }}</td>
+                            <td class="font-medium">{{ $manifest->nomor_bl ?: '—' }}</td>
+                            <td>{{ $manifest->nomor_kontainer ?: '—' }}</td>
+                            <td>{{ $manifest->no_seal ?: '—' }}</td>
+                            <td>{{ $manifest->size_kontainer ?: '—' }} / {{ $manifest->tipe_kontainer ?: '—' }}</td>
+                            <td>{{ $manifest->pengirim ?: '—' }}</td>
+                            <td>{{ $manifest->penerima ?: '—' }}</td>
+                            <td class="max-w-xs truncate" title="{{ $manifest->nama_barang }}">{{ $manifest->nama_barang ?: '—' }}</td>
+                            <td>{{ $manifest->term ?: '—' }}</td>
+                            <td class="whitespace-nowrap">
+                                @if($manifest->suratJalanBongkaranTanjungPinang)
+                                    <span class="tp-status">SJ {{ $manifest->suratJalanBongkaranTanjungPinang->nomor_surat_jalan }}</span>
+                                @else
+                                    <span class="tp-pending">Belum dibuat</span>
+                                    @can('surat-jalan-bongkaran-tanjung-pinang-create')
+                                        <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['manifest_id' => $manifest->id, 'nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="ml-2 inline-flex items-center rounded bg-blue-600 px-3 py-1.5 text-white hover:bg-blue-700"><i class="fas fa-plus mr-1"></i>Buat SJ</a>
+                                    @endcan
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="10" class="py-12 text-center text-gray-500">Tidak ada data manifest untuk {{ $selectedKapal }} / {{ $selectedVoyage }}.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @else
+            <div class="overflow-x-auto">
+                <table class="tp-table" id="suratJalanTable">
+                    <thead><tr><th>Nomor Surat Jalan</th><th>Tanggal</th><th>Kapal / Voyage</th><th>Nomor BL</th><th>Nomor Kontainer / Seal</th><th>Pengirim / Penerima</th><th>Supir / Plat</th><th>Tujuan</th><th>Aksi</th></tr></thead>
+                    <tbody class="bg-white">
+                    @forelse($suratJalans as $suratJalan)
+                        <tr>
+                            <td class="font-medium">{{ $suratJalan->nomor_surat_jalan }}</td>
+                            <td>{{ $suratJalan->tanggal_surat_jalan?->format('d/m/Y') ?? '—' }}</td>
+                            <td>{{ $suratJalan->nama_kapal }}<div class="tp-muted">{{ $suratJalan->no_voyage }}</div></td>
+                            <td>{{ $suratJalan->no_bl ?: '—' }}</td>
+                            <td>{{ $suratJalan->no_kontainer ?: '—' }}<div class="tp-muted">{{ $suratJalan->no_seal ?: '—' }}</div></td>
+                            <td>{{ $suratJalan->pengirim ?: '—' }}<div class="tp-muted">{{ $suratJalan->penerima ?: '—' }}</div></td>
+                            <td>{{ $suratJalan->supir ?: '—' }}<div class="tp-muted">{{ $suratJalan->no_plat ?: '—' }}</div></td>
+                            <td>{{ $suratJalan->tujuan_pengiriman ?: '—' }}</td>
+                            <td class="whitespace-nowrap">
+                                <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.print', $suratJalan->id) }}" target="_blank" class="px-2 py-1 text-blue-700" title="Cetak"><i class="fas fa-print"></i></a>
+                                @can('surat-jalan-bongkaran-tanjung-pinang-update')<a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.edit', $suratJalan->id) }}" class="px-2 py-1 text-blue-700" title="Ubah"><i class="fas fa-pen"></i></a>@endcan
+                                @can('surat-jalan-bongkaran-tanjung-pinang-delete')<form method="POST" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.destroy', $suratJalan->id) }}" class="inline" onsubmit="return confirm('Hapus surat jalan ini?')">@csrf @method('DELETE')<input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}"><input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}"><button class="px-2 py-1 text-red-700" title="Hapus"><i class="fas fa-trash"></i></button></form>@endcan
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="9" class="py-12 text-center text-gray-500">Belum ada surat jalan untuk pilihan ini.</td></tr>
+                    @endforelse
+                    </tbody>
+                </table>
+            </div>
+            @endif
+
+            @php($pageData = $mode === 'manifest' ? $manifests : $suratJalans)
+            @if($pageData->hasPages())
+                <div class="bongkaran-panel-body tp-pagination flex flex-wrap items-center justify-between gap-3">
+                    <span class="tp-muted">Menampilkan {{ $pageData->firstItem() }}–{{ $pageData->lastItem() }} dari {{ $pageData->total() }} data</span>
+                    {{ $pageData->links() }}
+                </div>
+            @endif
         </div>
-        <div class="overflow-x-auto">
-            <table>
-                @if($mode === 'manifest')
-                <thead><tr><th>No. BL / Urut</th><th>Kontainer / Seal</th><th>Ukuran / Tipe</th><th>Pengirim</th><th>Penerima</th><th>Barang / Term</th><th>Status / Aksi</th></tr></thead>
-                <tbody>
-                @forelse($manifests as $manifest)
-                    <tr>
-                        <td><div class="font-medium text-slate-800">{{ $manifest->nomor_bl ?: '—' }}</div><div class="tp-muted mt-0.5">No. urut {{ $manifest->nomor_urut ?: '—' }}</div></td>
-                        <td><div class="font-medium">{{ $manifest->nomor_kontainer ?: '—' }}</div><div class="tp-muted">Seal: {{ $manifest->no_seal ?: '—' }}</div></td>
-                        <td><div>{{ $manifest->size_kontainer ?: '—' }}</div><div class="tp-muted">{{ $manifest->tipe_kontainer ?: '—' }}</div></td>
-                        <td><div class="max-w-[200px] truncate" title="{{ $manifest->pengirim }}">{{ $manifest->pengirim ?: '—' }}</div></td>
-                        <td><div class="max-w-[200px] truncate" title="{{ $manifest->penerima }}">{{ $manifest->penerima ?: '—' }}</div></td>
-                        <td><div class="max-w-[230px] truncate" title="{{ $manifest->nama_barang }}">{{ $manifest->nama_barang ?: '—' }}</div><div class="tp-muted">Term: {{ $manifest->term ?: '—' }}</div></td>
-                        <td class="whitespace-nowrap">
-                            @if($manifest->suratJalanBongkaranTanjungPinang)
-                                <span class="rounded bg-green-50 px-2 py-1 font-medium text-green-700">SJ {{ $manifest->suratJalanBongkaranTanjungPinang->nomor_surat_jalan }}</span>
-                            @else
-                                <span class="tp-muted mr-2">Belum dibuat</span>
-                                @can('surat-jalan-bongkaran-tanjung-pinang-create')<a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['manifest_id' => $manifest->id, 'nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="tp-button tp-button-primary"><i class="fas fa-plus mr-1"></i> Buat SJ</a>@endcan
-                            @endif
-                        </td>
-                    </tr>
-                @empty
-                    <tr><td colspan="7" class="py-12 text-center"><div class="font-medium text-slate-700">Tidak ada data manifest untuk kapal dan voyage ini.</div><div class="tp-muted mt-1">{{ $selectedKapal }} · {{ $selectedVoyage }}</div></td></tr>
-                @endforelse
-                </tbody>
-                @else
-                <thead><tr><th>Tanggal / No. SJ</th><th>BL / Kontainer</th><th>Pengirim / Penerima</th><th>Supir / Plat</th><th>Tujuan</th><th class="text-right">Aksi</th></tr></thead>
-                <tbody>
-                @forelse($suratJalans as $suratJalan)
-                    <tr>
-                        <td><div class="font-medium text-slate-800">{{ $suratJalan->tanggal_surat_jalan?->format('d/m/Y') ?? '—' }}</div><div class="tp-muted mt-0.5">{{ $suratJalan->nomor_surat_jalan }}</div></td>
-                        <td><div>{{ $suratJalan->no_bl ?: 'BL —' }}</div><div class="tp-muted">{{ $suratJalan->no_kontainer ?: 'Kontainer —' }}{{ $suratJalan->size ? ' · '.$suratJalan->size : '' }}</div></td>
-                        <td><div>{{ $suratJalan->pengirim ?: '—' }}</div><div class="tp-muted">{{ $suratJalan->penerima ?: '—' }}</div></td>
-                        <td><div>{{ $suratJalan->supir ?: '—' }}</div><div class="tp-muted">{{ $suratJalan->no_plat ?: 'Plat —' }}</div></td>
-                        <td>{{ $suratJalan->tujuan_pengiriman ?: '—' }}</td>
-                        <td class="whitespace-nowrap text-right"><a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.print', $suratJalan->id) }}" target="_blank" class="px-2 py-1 text-blue-700" title="Cetak"><i class="fas fa-print"></i></a>@can('surat-jalan-bongkaran-tanjung-pinang-update')<a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.edit', $suratJalan->id) }}" class="px-2 py-1 text-blue-700" title="Ubah"><i class="fas fa-pen"></i></a>@endcan @can('surat-jalan-bongkaran-tanjung-pinang-delete')<form method="POST" action="{{ route('surat-jalan-bongkaran-tanjung-pinang.destroy', $suratJalan->id) }}" class="inline" onsubmit="return confirm('Hapus surat jalan ini?')">@csrf @method('DELETE')<input type="hidden" name="nama_kapal" value="{{ $selectedKapal }}"><input type="hidden" name="no_voyage" value="{{ $selectedVoyage }}"><button class="px-2 py-1 text-red-700" title="Hapus"><i class="fas fa-trash"></i></button></form>@endcan</td>
-                    </tr>
-                @empty
-                    <tr><td colspan="6" class="py-12 text-center"><div class="font-medium text-slate-700">Belum ada surat jalan untuk pilihan ini.</div><div class="tp-muted mt-1">{{ $selectedKapal }} · {{ $selectedVoyage }}</div></td></tr>
-                @endforelse
-                </tbody>
-                @endif
-            </table>
-        </div>
-        @if($mode === 'manifest' && $manifests->hasPages())<div class="flex justify-between border-t border-slate-200 px-4 py-3"><span class="tp-muted">Menampilkan {{ $manifests->firstItem() }}–{{ $manifests->lastItem() }} dari {{ $manifests->total() }}</span>{{ $manifests->links() }}</div>@elseif($mode === 'surat_jalan' && $suratJalans->hasPages())<div class="flex justify-between border-t border-slate-200 px-4 py-3"><span class="tp-muted">Menampilkan {{ $suratJalans->firstItem() }}–{{ $suratJalans->lastItem() }} dari {{ $suratJalans->total() }}</span>{{ $suratJalans->links() }}</div>@endif
     </div>
 </div>
 @endsection
