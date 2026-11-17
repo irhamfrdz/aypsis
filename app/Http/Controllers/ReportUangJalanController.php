@@ -501,8 +501,13 @@ class ReportUangJalanController extends Controller
                     $fakeSj->jenis_barang = $detail->barang ?? $item->tagihanOb?->barang ?? '-';
                     $fakeSj->tujuan_pengambilan = $detail->tujuan_gudang ?? $item->tagihanOb?->keterangan ?? '-';
                     $fakeSj->supir = $detail->nama_supir ?? '-';
-                    $fakeSj->no_plat = $suratJalan?->no_plat ?? '-';
-                    $fakeSj->setRelation('supirKaryawan', $suratJalan?->supirKaryawan);
+                    $fakeSj->no_plat = $detail->nomor_polisi ?? $suratJalan?->no_plat ?? '-';
+                    $driver = $suratJalan?->supirKaryawan;
+                    $normalizeDriver = fn ($name) => preg_replace('/[^\pL\pN]/u', '', mb_strtolower(trim((string) $name)));
+                    $matchesDriver = $driver && in_array($normalizeDriver($fakeSj->supir), [
+                        $normalizeDriver($driver->nama_lengkap), $normalizeDriver($driver->nama_panggilan),
+                    ], true);
+                    $fakeSj->setRelation('supirKaryawan', $matchesDriver ? $driver : null);
 
                     $row = new UangJalan;
                     $row->id = -($idOffset + (int) $item->id);
