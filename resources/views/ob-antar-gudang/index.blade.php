@@ -504,7 +504,7 @@
                                     <select name="nama_supir" id="nama_supir" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500 text-sm" required>
                                         <option value="">--Pilih Supir--</option>
                                         @foreach($supirs as $supir)
-                                            <option value="{{ $supir->nama_lengkap }}" data-vehicles="{{ json_encode($obVehiclesByDriver->get($supir->id, collect())->values()) }}">{{ $supir->nama_lengkap }} {{ $supir->nama_panggilan ? '(' . $supir->nama_panggilan . ')' : '' }}</option>
+                                            <option value="{{ $supir->nama_lengkap }}" data-plat="{{ $supir->plat }}" data-vehicles="{{ json_encode($obVehiclesByDriver->get($supir->id, collect())->values()) }}">{{ $supir->nama_lengkap }} {{ $supir->nama_panggilan ? '(' . $supir->nama_panggilan . ')' : '' }}</option>
                                         @endforeach
                                     </select>
                                 </div>
@@ -1140,10 +1140,11 @@
         const driver = document.getElementById('nama_supir');
         const vehicles = JSON.parse(driver.selectedOptions[0]?.dataset.vehicles || '[]');
         vehicles.sort((a, b) => Number(b.id) - Number(a.id));
-        const vehicle = vehicles[0];
+        const vehicle = vehicles.find(item => item.nomor_polisi?.trim()) || vehicles[0];
         document.getElementById('ob_mobil_id').value = vehicle?.id || '';
-        document.getElementById('ob_nomor_polisi').value = vehicle?.nomor_polisi || '';
-        document.getElementById('ob_plate_note').textContent = driver.value && !vehicle ? 'Kendaraan belum terdaftar untuk supir ini.' : '';
+        const plate = vehicle?.nomor_polisi || driver.selectedOptions[0]?.dataset.plat || '';
+        document.getElementById('ob_nomor_polisi').value = plate;
+        document.getElementById('ob_plate_note').textContent = driver.value && !plate ? 'Plat belum terdaftar untuk supir ini.' : '';
 
     }
     document.getElementById('nama_supir').addEventListener('change', updateObVehicle);

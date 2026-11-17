@@ -194,7 +194,7 @@ class ObAntarGudangController extends Controller
         // Fetch supirs for the modal
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+            ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
         // Fetch pricelists for Harga OB logic, including destination-specific rates.
         $pricelists = MasterPricelistObAntarGudang::with('gudangTujuan')
@@ -259,10 +259,10 @@ class ObAntarGudangController extends Controller
             'keterangan' => 'nullable|string',
         ]);
 
-        $selectedMobil = Mobil::query()
-            ->whereHas('karyawan', fn ($query) => $query->where('nama_lengkap', $validated['nama_supir']))
-            ->orderByDesc('id')
-            ->first();
+        $selectedDriver = Karyawan::where('nama_lengkap', $validated['nama_supir'])->first();
+        $selectedMobil = $selectedDriver ? Mobil::where('karyawan_id', $selectedDriver->id)
+            ->whereNotNull('nomor_polisi')->where('nomor_polisi', '<>', '')
+            ->orderByDesc('id')->first() : null;
 
         $ukuran = preg_replace('/\s+/', '', str_ireplace('ft', '', $validated['ukuran']));
         $validated['is_combo'] = $request->boolean('is_combo');
@@ -477,7 +477,7 @@ class ObAntarGudangController extends Controller
             $tagihan->size_kontainer = $validated['ukuran'];
             $tagihan->nama_supir = $validated['nama_supir'];
             $tagihan->mobil_id = $selectedMobil?->id;
-            $tagihan->nomor_polisi = $selectedMobil?->nomor_polisi;
+            $tagihan->nomor_polisi = $selectedMobil?->nomor_polisi ?: $selectedDriver?->plat;
             $tagihan->surat_jalan_id = $comboContainer && $validated['nomor_kontainer'] === $comboNumber ? null : $suratJalanId;
             $tagihan->status_kontainer = $validated['status_kontainer'];
             $tagihan->is_combo = $validated['is_combo'];
