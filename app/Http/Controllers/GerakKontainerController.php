@@ -16,8 +16,10 @@ class GerakKontainerController extends Controller
     public function index()
     {
         $gudangs = Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
+        $gudangOptions = Gudang::orderBy('nama_gudang')->get(['id', 'nama_gudang', 'lokasi'])
+            ->map(fn ($g) => ['id' => $g->id, 'nama' => $g->nama_gudang, 'lokasi' => $g->lokasi])->values();
 
-        return view('gerak-kontainer.index', compact('gudangs'));
+        return view('gerak-kontainer.index', compact('gudangs', 'gudangOptions'));
     }
 
     public function search(Request $request)
@@ -77,6 +79,8 @@ class GerakKontainerController extends Controller
         $data = $request->validate([
             'kontainer_ids' => ['required', 'array', 'min:1', 'max:100'],
             'kontainer_ids.*' => ['required', 'string', 'distinct', 'regex:/^(stock|kontainer)_[0-9]+$/'],
+            'asal_gudang_ids' => ['nullable', 'array'],
+            'asal_gudang_ids.*' => ['nullable', 'integer', 'exists:gudangs,id'],
             'gudang_id' => 'required|exists:gudangs,id',
             'tanggal' => 'required|date',
             'keterangan' => 'nullable|string|max:500',
@@ -97,7 +101,9 @@ class GerakKontainerController extends Controller
                     continue;
                 }
                 $movedNumbers[$nomor] = true;
-                $asalId = $item->gudangs_id;
+                $asalId = array_key_exists($selectedId, $data['asal_gudang_ids'] ?? [])
+                    ? ($data['asal_gudang_ids'][$selectedId] ?: null)
+                    : $item->gudangs_id;
                 $item->gudangs_id = $data['gudang_id'];
                 $item->save();
 
