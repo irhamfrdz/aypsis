@@ -23,6 +23,12 @@ class ReportUangJalanRefundTest extends TestCase
             $table->id();
             $table->string('name');
         });
+        Schema::create('karyawans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nama_lengkap');
+            $table->string('nama_panggilan');
+            $table->string('nik');
+        });
         Schema::create('pembayaran_aktivitas_lains', function (Blueprint $table) {
             $table->id();
             foreach (['nomor', 'nomor_accurate', 'debit_kredit', 'keterangan', 'penerima', 'nomor_polisi', 'invoice_ids', 'jenis_aktivitas', 'no_surat_jalan'] as $column) {
@@ -71,8 +77,9 @@ class ReportUangJalanRefundTest extends TestCase
         $this->assertEquals(-600000, $exportRefund[18]);
     }
 
-    public function test_addition_export_includes_recipient_and_matching_driver_nik(): void
+    public function test_addition_export_uses_recipient_nik_even_when_recipient_differs_from_driver(): void
     {
+        DB::table('karyawans')->insert(['nama_lengkap' => 'JANNER SILAEN', 'nama_panggilan' => 'JANNER', 'nik' => '987654']);
         $driver = new \stdClass;
         $driver->nik = '123456';
         $sj = new SuratJalan;
@@ -90,7 +97,7 @@ class ReportUangJalanRefundTest extends TestCase
 
         $adjustment = (object) [
             'jenis_penyesuaian' => 'penambahan',
-            'penerima' => 'Budi',
+            'penerima' => 'JANNER SILAEN',
             'grand_total' => 100000,
             'total' => 100000,
             'jumlah' => 100000,
@@ -101,8 +108,8 @@ class ReportUangJalanRefundTest extends TestCase
         $export = new ReportUangJalanExport(collect([$uj]), Carbon::parse('2026-09-01'), Carbon::parse('2026-09-30'), collect([10 => collect([$adjustment])]));
         $addition = $export->array()[1];
 
-        $this->assertSame('Budi', $addition[8]);
-        $this->assertSame('123456', $addition[9]);
+        $this->assertSame('JANNER SILAEN', $addition[8]);
+        $this->assertSame('987654', $addition[9]);
     }
 
     public function test_accurate_search_and_existing_negative_refund_keep_the_correct_sign(): void

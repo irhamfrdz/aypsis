@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Models\Karyawan;
 use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
@@ -36,6 +37,25 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
         $rows = [];
         $index = 0;
         $dataRowStart = 5; // headings take rows 1-4, data starts at row 5
+        $recipientNames = $this->adjustmentsByUjId->flatten(1)
+            ->filter(fn ($adj) => strtolower((string) ($adj->jenis_penyesuaian ?? '')) === 'penambahan')
+            ->pluck('penerima')->filter()->map(fn ($name) => trim((string) $name))->filter()->unique()->values();
+        $nikByRecipient = collect();
+        if ($recipientNames->isNotEmpty()) {
+            $karyawans = Karyawan::query()
+                ->whereIn('nama_lengkap', $recipientNames)
+                ->orWhereIn('nama_panggilan', $recipientNames)
+                ->get(['nama_lengkap', 'nama_panggilan', 'nik']);
+            foreach ($recipientNames as $name) {
+                $matchingNiks = $karyawans
+                    ->filter(fn ($karyawan) => strcasecmp(trim((string) $karyawan->nama_lengkap), $name) === 0
+                        || strcasecmp(trim((string) $karyawan->nama_panggilan), $name) === 0)
+                    ->pluck('nik')->filter()->unique()->values();
+                if ($matchingNiks->count() === 1) {
+                    $nikByRecipient[mb_strtolower($name)] = (string) $matchingNiks->first();
+                }
+            }
+        }
 
         foreach ($this->uangJalans as $uj) {
             $index++;
@@ -110,7 +130,7 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
                     $displayNominal = $isPenambahan ? $adjNominal : -$adjNominal;
                     $adjPenerima = trim((string) ($adj->penerima ?? ''));
                     $adjNamaPenerima = $adjPenerima !== '' ? $adjPenerima : $supir;
-                    $adjNik = $adjNamaPenerima === $supir ? $nik : '-';
+                    $adjNik = $nikByRecipient[mb_strtolower($adjNamaPenerima)] ?? ($adjNamaPenerima === $supir ? $nik : '-');
 
                     $rows[] = [
                         '',  // No
