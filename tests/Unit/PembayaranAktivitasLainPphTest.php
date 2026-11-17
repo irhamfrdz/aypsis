@@ -31,6 +31,18 @@ class PembayaranAktivitasLainPphTest extends TestCase
         );
     }
 
+    public function test_miscellaneous_payment_deducts_automatic_and_manual_pph(): void
+    {
+        $this->assertSame(
+            ['pph_nominal' => 2000, 'grand_total' => 98000],
+            PembayaranAktivitasLain::calculateTotals(100000, 'Pembayaran Lain Lain', 2)
+        );
+        $this->assertSame(
+            ['pph_nominal' => 1500, 'grand_total' => 98500],
+            PembayaranAktivitasLain::calculateTotals(100000, 'Pembayaran Lain Lain', 2, 1500)
+        );
+    }
+
     public function test_other_activities_do_not_deduct_pph(): void
     {
         $this->assertSame(

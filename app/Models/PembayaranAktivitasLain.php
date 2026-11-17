@@ -63,7 +63,7 @@ class PembayaranAktivitasLain extends Model
     protected static function booted(): void
     {
         static::saving(function (self $payment): void {
-            $manual = $payment->jenis_aktivitas === 'Pembayaran Kendaraan'
+            $manual = in_array($payment->jenis_aktivitas, ['Pembayaran Kendaraan', 'Pembayaran Lain Lain'], true)
                 && (float) $payment->pph_persen > 0
                 && (bool) $payment->pph_manual;
             $payment->pph_manual = $manual;
@@ -89,7 +89,7 @@ class PembayaranAktivitasLain extends Model
 
     public static function calculateTotals(int $jumlah, ?string $jenisAktivitas, ?float $pphPersen, ?int $manualPphNominal = null, ?int $taxableAmount = null): array
     {
-        $pphNominal = $jenisAktivitas === 'Pembayaran Kendaraan'
+        $pphNominal = in_array($jenisAktivitas, ['Pembayaran Kendaraan', 'Pembayaran Lain Lain'], true)
             ? ($manualPphNominal ?? (int) round(($taxableAmount ?? $jumlah) * ($pphPersen ?? 0) / 100))
             : 0;
 

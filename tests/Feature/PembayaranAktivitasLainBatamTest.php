@@ -510,6 +510,29 @@ class PembayaranAktivitasLainBatamTest extends TestCase
         $this->assertStringContainsString('Administrasi', DB::table('coa_transactions')->where('nomor_referensi', $payment->nomor)->where('coa_id', $second)->value('keterangan'));
     }
 
+    public function test_miscellaneous_payment_saves_pph_and_balances_journal(): void
+    {
+        $this->withoutMiddleware();
+        $expense = DB::table('akun_coa')->insertGetId(['saldo' => 0]);
+        $bank = DB::table('akun_coa')->insertGetId(['saldo' => 1000]);
+        $payload = $this->vehiclePayload('jakarta');
+        $payload['jenis_aktivitas'] = 'Pembayaran Lain Lain';
+        $payload['debit_kredit'] = 'kredit';
+        $payload['akun_bank_id'] = $bank;
+        $payload['akun_details'] = [
+            ['akun_coa_id' => $expense, 'nominal' => 300, 'memo' => 'Biaya lain'],
+        ];
+        $this->post(route('pembayaran-aktivitas-lain.store'), $payload)
+            ->assertSessionHasNoErrors()
+            ->assertRedirect(route('pembayaran-aktivitas-lain.index'));
+        $payment = PembayaranAktivitasLain::firstOrFail();
+        $this->assertSame(6, $payment->pph_nominal);
+        $this->assertSame(294, $payment->grand_total);
+        $this->assertDatabaseHas('coa_transactions', ['coa_id' => $bank, 'kredit' => 294]);
+        $this->assertDatabaseHas('coa_transactions', ['coa_id' => $this->taxAccountId, 'kredit' => 6]);
+        $this->assertEquals(DB::table('coa_transactions')->sum('debit'), DB::table('coa_transactions')->sum('kredit'));
+    }
+
     public function test_batam_vehicle_payment_saves_account_breakdown_without_journal(): void
     {
         $this->withoutMiddleware();

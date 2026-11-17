@@ -160,10 +160,10 @@
                     @enderror
                 </div>
 
-                <!-- PPh untuk pembayaran kendaraan -->
-                <div id="pph_kendaraan_field" class="{{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                <!-- PPh untuk pembayaran kendaraan dan lain lain -->
+                <div id="pph_kendaraan_field" class="{{ in_array(old('jenis_aktivitas'), ['Pembayaran Kendaraan', 'Pembayaran Lain Lain']) ? '' : 'hidden' }}">
                     <label class="block text-sm font-medium text-gray-700 mb-2">PPh <span class="text-red-500">*</span></label>
-                    <select name="pph_persen" id="pph_kendaraan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('pph_persen') border-red-500 @enderror" {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? 'required' : '' }}>
+                    <select name="pph_persen" id="pph_kendaraan_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('pph_persen') border-red-500 @enderror" {{ in_array(old('jenis_aktivitas'), ['Pembayaran Kendaraan', 'Pembayaran Lain Lain']) ? 'required' : '' }}>
                         <option value="">Pilih PPh</option>
                         <option value="0" {{ old('pph_persen') === '0' ? 'selected' : '' }}>Tidak menggunakan PPh</option>
                         <option value="2" {{ old('pph_persen') === '2' ? 'selected' : '' }}>2%</option>
@@ -340,7 +340,7 @@
                     @enderror
                 </div>
 
-                <div id="pph_summary_field" class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm md:col-span-2 {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' ? '' : 'hidden' }}">
+                <div id="pph_summary_field" class="rounded-xl border border-blue-200 bg-blue-50 p-4 text-sm md:col-span-2 {{ in_array(old('jenis_aktivitas'), ['Pembayaran Kendaraan', 'Pembayaran Lain Lain']) ? '' : 'hidden' }}">
                     <label for="pph_nominal_input" class="block text-gray-700 mb-2">Nominal PPh (Rp)</label>
                     <div class="flex flex-col gap-2 sm:flex-row">
                         <input type="number" name="pph_nominal" id="pph_nominal_input" min="0" step="1" value="{{ old('pph_nominal') }}" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm text-right @error('pph_nominal') border-red-500 @enderror">
@@ -352,7 +352,7 @@
                         <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                     @enderror
                     <p id="pph_nominal_error" class="hidden text-red-500 text-xs mt-1">Nominal PPh harus berupa angka bulat antara 0 dan Jumlah.</p>
-                    <div id="akun_pph_field" class="mt-3 {{ old('jenis_aktivitas') === 'Pembayaran Kendaraan' && (float) old('pph_persen', 0) > 0 ? '' : 'hidden' }}">
+                    <div id="akun_pph_field" class="mt-3 {{ in_array(old('jenis_aktivitas'), ['Pembayaran Kendaraan', 'Pembayaran Lain Lain']) && (float) old('pph_persen', 0) > 0 ? '' : 'hidden' }}">
                         <label for="akun_pph_select" class="block text-gray-700 mb-2">Pilih Akun PPh <span class="text-red-500">*</span></label>
                         <select name="akun_pph_id" id="akun_pph_select" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm @error('akun_pph_id') border-red-500 @enderror">
                             <option value="">Pilih Akun COA</option>
@@ -791,7 +791,7 @@ function initializeSelect2() {
     const akunPphField = document.getElementById('akun_pph_field');
     const akunPphSelect = document.getElementById('akun_pph_select');
     function updatePphSummary(recalculate = false) {
-        const isVehicle = jenisAktivitas.value === 'Pembayaran Kendaraan';
+        const isVehicle = ['Pembayaran Kendaraan', 'Pembayaran Lain Lain'].includes(jenisAktivitas.value);
         pphSummary.classList.toggle('hidden', !isVehicle);
         const hasRate = isVehicle && pphSelect.value !== '';
         const canEdit = hasRate && Number(pphSelect.value) > 0;
@@ -839,8 +839,8 @@ function initializeSelect2() {
         document.getElementById('grand_total_display').textContent = 'Rp ' + (jumlah - pphNominal).toLocaleString('id-ID');
     }
     jumlahDisplay.addEventListener('input', () => updatePphSummary());
-    pphSelect.addEventListener('change', () => updatePphSummary(true));
-    jenisAktivitas.addEventListener('change', () => updatePphSummary(true));
+    $(pphSelect).on('change', () => updatePphSummary(true));
+    $(jenisAktivitas).on('change', () => updatePphSummary(true));
     pphInput.addEventListener('input', () => {
         pphManualInput.value = '1';
         updatePphSummary();
@@ -917,9 +917,10 @@ function initializeSelect2() {
                 });
             }, 100);
         } else {
-            pphField.classList.add('hidden');
-            pphSelect.required = false;
-            pphSelect.value = '';
+            const usesPph = jenisVal === 'Pembayaran Lain Lain';
+            pphField.classList.toggle('hidden', !usesPph);
+            pphSelect.required = usesPph;
+            if (!usesPph) pphSelect.value = '';
             subJenisKendaraan.classList.add('hidden');
             subJenisSelect.removeAttribute('required');
             $('#sub_jenis_kendaraan_select').val('').trigger('change');
@@ -1509,7 +1510,7 @@ function initializeSelect2() {
         const akunBiaya = akunBiayaSelect.selectedOptions[0];
         const akunBank = akunBankSelect.selectedOptions[0];
         const jumlah = parseFloat(jumlahInput.value) || 0;
-        const pph = jenisAktivitas.value === 'Pembayaran Kendaraan' ? Number(pphInput.value) || 0 : 0;
+        const pph = ['Pembayaran Kendaraan', 'Pembayaran Lain Lain'].includes(jenisAktivitas.value) ? Number(pphInput.value) || 0 : 0;
         const akunPph = akunPphSelect.selectedOptions[0];
         
         if (!jenisTransaksi || !akunBiaya || !akunBank || jumlah <= 0) {
@@ -1642,7 +1643,7 @@ function initializeSelect2() {
         }
         
         // Add conditional required fields
-        if (jenisAktivitas === 'Pembayaran Kendaraan') {
+        if (['Pembayaran Kendaraan', 'Pembayaran Lain Lain'].includes(jenisAktivitas)) {
             requiredFields.push({ id: 'pph_kendaraan_select', name: 'PPh' });
             if (Number(document.getElementById('pph_kendaraan_select').value) > 0) {
                 requiredFields.push({ id: 'akun_pph_select', name: 'Akun PPh' });
@@ -1697,7 +1698,7 @@ function initializeSelect2() {
             }
         }
 
-        if (jenisAktivitas === 'Pembayaran Kendaraan' && Number(document.getElementById('pph_kendaraan_select').value) > 0) {
+        if (['Pembayaran Kendaraan', 'Pembayaran Lain Lain'].includes(jenisAktivitas) && Number(document.getElementById('pph_kendaraan_select').value) > 0) {
             const pphInput = document.getElementById('pph_nominal_input');
             const pphNominal = Number(pphInput.value);
             const jumlah = Number(document.getElementById('jumlah_input_value').value);
@@ -2004,7 +2005,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const pphField = document.getElementById('pph_kendaraan_field');
     const pphSelect = document.getElementById('pph_kendaraan_select');
     const syncPphField = () => {
-        const isVehicle = activity.value === 'Pembayaran Kendaraan';
+        const isVehicle = ['Pembayaran Kendaraan', 'Pembayaran Lain Lain'].includes(activity.value);
         pphField.classList.toggle('hidden', !isVehicle);
         pphSelect.required = isVehicle;
     };
