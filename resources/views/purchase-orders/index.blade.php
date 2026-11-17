@@ -21,8 +21,8 @@
 
     <form method="GET" action="{{ route('purchase-orders.index') }}" class="grid grid-cols-1 gap-4 rounded-xl border border-slate-200 bg-white p-5 shadow-sm sm:grid-cols-[1fr_180px_auto] sm:items-end">
         <div>
-            <label for="search" class="mb-2 block text-sm font-semibold text-slate-700">Cari PO atau Vendor</label>
-            <input id="search" name="search" type="search" maxlength="100" value="{{ request('search') }}" placeholder="Nomor PO atau nama vendor" class="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
+            <label for="search" class="mb-2 block text-sm font-semibold text-slate-700">Cari PO, Referensi, atau Vendor</label>
+            <input id="search" name="search" type="search" maxlength="100" value="{{ request('search') }}" placeholder="Nomor PO, referensi, atau nama vendor" class="block w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:border-blue-500 focus:ring-blue-500">
         </div>
         <div>
             <label for="filter_status" class="mb-2 block text-sm font-semibold text-slate-700">Status</label>

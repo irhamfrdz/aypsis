@@ -21,6 +21,7 @@
         <div>
             <a href="{{ route('purchase-orders.index') }}" class="text-sm font-semibold text-blue-700 hover:underline">&larr; Daftar Purchase Order</a>
             <h1 class="mt-2 text-2xl font-bold text-slate-900">{{ $purchaseOrder->nomor_po }}</h1>
+            @if($purchaseOrder->nomor_referensi)<p class="mt-1 text-sm text-slate-600">Nomor Referensi: {{ $purchaseOrder->nomor_referensi }}</p>@endif
             <p class="mt-1 text-sm text-slate-500">Tanggal PO {{ $purchaseOrder->tanggal_po->format('d/m/Y') }}</p>
         </div>
         <div class="flex flex-wrap gap-2 print:hidden">

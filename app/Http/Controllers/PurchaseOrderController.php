@@ -25,6 +25,7 @@ class PurchaseOrderController extends Controller
         $orders = PurchaseOrder::query()
             ->when($filters['search'] ?? null, fn ($query, $search) => $query->where(function ($query) use ($search) {
                 $query->where('nomor_po', 'like', "%{$search}%")
+                    ->orWhere('nomor_referensi', 'like', "%{$search}%")
                     ->orWhere('vendor', 'like', "%{$search}%");
             }))
             ->when($filters['status'] ?? null, fn ($query, $status) => $query->where('status', $status))
@@ -223,6 +224,7 @@ class PurchaseOrderController extends Controller
     {
         $data = $request->validate([
             'nomor_po' => ['nullable', 'string', 'max:60', Rule::unique('purchase_orders', 'nomor_po')->ignore($purchaseOrder?->id)],
+            'nomor_referensi' => ['nullable', 'string', 'max:100'],
             'permohonan_amprahan_id' => [$purchaseOrder ? 'prohibited' : 'nullable', 'integer', 'exists:permohonan_amprahans,id'],
             'tanggal_po' => ['required', 'date'],
             'tanggal_dibutuhkan' => ['nullable', 'date', 'after_or_equal:tanggal_po'],

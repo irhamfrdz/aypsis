@@ -12,7 +12,7 @@ class PurchaseOrder extends Model
     use Auditable;
 
     protected $fillable = [
-        'nomor_po', 'tanggal_po', 'tanggal_dibutuhkan', 'vendor', 'alamat_vendor',
+        'nomor_po', 'nomor_referensi', 'tanggal_po', 'tanggal_dibutuhkan', 'vendor', 'alamat_vendor',
         'status', 'catatan', 'subtotal', 'diskon', 'pajak_persen', 'pajak', 'total',
         'created_by', 'updated_by',
         'permohonan_amprahan_id',
