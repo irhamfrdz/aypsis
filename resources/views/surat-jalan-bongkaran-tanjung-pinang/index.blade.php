@@ -39,7 +39,7 @@
     .bongkaran-page .tp-muted { color:#748091; }
     .bongkaran-page .tp-status { display:inline-flex;padding:3px 7px;border-radius:4px;background:#edf6f1;color:#34704f;font-weight:500; }
     .bongkaran-page .tp-pending { display:inline-flex;padding:3px 7px;border-radius:4px;background:#fcf3e5;color:#946b2c;font-weight:500; }
-    .bongkaran-page .tp-modal-panel { max-height:calc(100vh - 36px);overflow-y:auto;border:1px solid var(--bongkaran-line);border-radius:8px;box-shadow:0 8px 30px rgb(30 58 95 / 16%); }
+    .bongkaran-page .tp-modal-panel { max-height:calc(100vh - 36px);overflow-y:auto;border:1px solid #cbd5e1;border-radius:8px;background:#fff;box-shadow:0 20px 60px rgb(15 23 42 / 35%); }
     .bongkaran-page .tp-modal-panel input,.bongkaran-page .tp-modal-panel textarea { min-height:36px;padding:8px 10px;border:1px solid #d5dde7;border-radius:5px;background:#fff;font-size:12px; }
     .bongkaran-page .tp-modal-panel textarea { min-height:75px; }
     .bongkaran-page .tp-modal-panel label { display:block;margin-bottom:5px;color:#536379;font-weight:500; }
@@ -188,7 +188,7 @@
         </div>
     </div>
 
-    <div id="tpCreateModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/50 p-3 md:p-6" role="dialog" aria-modal="true" aria-labelledby="tpCreateModalTitle" onclick="if(event.target===this) closeTpCreateModal()">
+    <div id="tpCreateModal" class="fixed inset-0 z-[100] hidden items-center justify-center p-3 md:p-6" style="background-color:rgba(15,23,42,.58);backdrop-filter:blur(1px);" role="dialog" aria-modal="true" aria-labelledby="tpCreateModalTitle" onclick="if(event.target===this) closeTpCreateModal()">
         <div class="tp-modal-panel w-full max-w-4xl bg-white">
             <div class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-5 py-4">
                 <div><h2 id="tpCreateModalTitle" class="text-lg font-semibold">Tambah Surat Jalan Bongkaran</h2><p class="mt-1 text-xs text-slate-500">Data manifest, kapal, dan voyage sudah diisikan.</p></div>
