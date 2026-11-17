@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Cetak {{ $purchaseOrder->nomor_po }}</title>
     <style>
-        @page { size: A4 portrait; margin: 15mm; }
+        @page { size: A4 portrait; margin: 10mm; }
         body { max-width: 190mm; margin: 24px auto; color: #111; font: 12pt 'Times New Roman', serif; }
         table { width: 100%; border-collapse: collapse; }
         th, td { border: 1px solid #333; padding: 7px; vertical-align: top; }
@@ -18,11 +18,12 @@
         .letterhead-contact { font-size: 9pt; line-height: 1.4; }
         .toolbar { margin-bottom: 24px; display: flex; gap: 10px; font: 14px Arial, sans-serif; }
         .toolbar button, .toolbar a { border: 1px solid #777; border-radius: 6px; padding: 8px 14px; background: white; color: #111; text-decoration: none; cursor: pointer; }
-        @media print { body { margin: 0; } .toolbar { display: none; } }
+        @media print { body { margin: 0; } .toolbar { display: none; } .print-sheet { zoom: var(--print-scale, 1); } }
     </style>
 </head>
 <body>
-    <div class="toolbar"><button type="button" onclick="window.print()">Cetak</button><a href="{{ route('purchase-orders.show', $purchaseOrder) }}">Kembali ke PO</a></div>
+    <div class="toolbar"><button type="button" onclick="printPurchaseOrder()">Cetak</button><a href="{{ route('purchase-orders.show', $purchaseOrder) }}">Kembali ke PO</a></div>
+    <main class="print-sheet" id="po-print-sheet">
     <header class="letterhead">
         <img class="letterhead-logo" src="{{ asset('images/logo_transparent.png') }}" alt="Logo PT. Alexindo Yakinprima">
         <div class="letterhead-text">
@@ -62,5 +63,21 @@
     @if($purchaseOrder->catatan)<p style="white-space:pre-line;margin-top:24px">Note:<br>{{ $purchaseOrder->catatan }}</p>@endif
     <p style="margin-top:30px">Demikianlah purchase order ini kami sampaikan sekian dan terima kasih.</p>
     <div style="margin:45px 10px 0 auto;width:180px;text-align:center">Hormat kami,<br><br><br><br><br>(____________________)</div>
+    </main>
+    <script>
+        function fitPurchaseOrderToPage() {
+            const sheet = document.getElementById('po-print-sheet');
+            sheet.style.width = '190mm';
+            const availableHeight = 270 * 96 / 25.4;
+            const scale = Math.min(1, availableHeight / (sheet.scrollHeight + 8));
+            sheet.style.setProperty('--print-scale', scale.toFixed(4));
+        }
+        function printPurchaseOrder() {
+            fitPurchaseOrderToPage();
+            window.print();
+        }
+        window.addEventListener('beforeprint', fitPurchaseOrderToPage);
+        window.addEventListener('load', fitPurchaseOrderToPage);
+    </script>
 </body>
 </html>
