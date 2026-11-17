@@ -412,7 +412,7 @@ class ReportUangJalanController extends Controller
             $fakeSj->jenis_barang = $payment->keterangan ?: 'Pembayaran Aktivitas Lain';
             $fakeSj->tujuan_pengambilan = '-';
             $fakeSj->supir = $payment->penerima ?: '-';
-            $fakeSj->no_plat = $payment->nomor_polisi ?: '-';
+            $fakeSj->no_plat = ($payment->nomor_polisi ?? null) ?: '-';
             $fakeUj->surat_jalan_id = 1;
             $fakeUj->setRelation('suratJalan', $fakeSj);
             $fakeUj->setRelation('pranotaUangJalan', collect());
@@ -501,7 +501,7 @@ class ReportUangJalanController extends Controller
                     $fakeSj->jenis_barang = $detail->barang ?? $item->tagihanOb?->barang ?? '-';
                     $fakeSj->tujuan_pengambilan = $detail->tujuan_gudang ?? $item->tagihanOb?->keterangan ?? '-';
                     $fakeSj->supir = $detail->nama_supir ?? '-';
-                    $fakeSj->no_plat = $detail->nomor_polisi ?: ($suratJalan?->no_plat ?: '-');
+                    $fakeSj->no_plat = ($detail->nomor_polisi ?? null) ?: ($suratJalan?->no_plat ?: '-');
                     $driver = $suratJalan?->supirKaryawan;
                     $normalizeDriver = fn ($name) => preg_replace('/[^\pL\pN]/u', '', mb_strtolower(trim((string) $name)));
                     $matchesDriver = $driver && in_array($normalizeDriver($fakeSj->supir), [
