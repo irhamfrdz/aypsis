@@ -232,6 +232,7 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($groupedByContainer as $container)
                             @php
+                                $hasContainerNumber = filled($container['nomor_kontainer'] ?? null);
                                 $firstPivot = $container['items']->first();
                                 $hasSealed = $firstPivot && $firstPivot->nomor_seal;
                                 $prospek = $container['prospek'] ?? null;
@@ -242,10 +243,10 @@
                             @endphp
                             <tr class="hover:bg-gray-50 transition-colors {{ $isShipped ? 'bg-green-50 border-l-4 border-l-green-500' : ($isActive ? 'border-l-4 border-l-blue-500' : ($isSealedNoProspek ? 'border-l-4 border-l-yellow-400' : '')) }}">
                                 <td class="px-4 py-4">
-                                    <input type="checkbox" class="container-checkbox rounded border-gray-300 text-blue-600" value="{{ $container['nomor_kontainer'] }}">
+                                    <input type="checkbox" class="container-checkbox rounded border-gray-300 text-blue-600" value="{{ $container['nomor_kontainer'] }}" @disabled(!$hasContainerNumber)>
                                 </td>
                                 <td class="px-6 py-4">
-                                    <div class="text-sm font-semibold text-gray-900">{{ $container['nomor_kontainer'] }}</div>
+                                    <div class="text-sm font-semibold text-gray-900">{{ $hasContainerNumber ? $container['nomor_kontainer'] : 'Nomor kontainer belum diisi' }}</div>
                                     @if($isShipped)
                                         <div class="text-xs text-green-600 font-bold mt-1 inline-flex items-center">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -330,6 +331,7 @@
                                 </td>
                                 <td class="px-6 py-4">
                                     <div class="flex items-center gap-2">
+                                        @if($hasContainerNumber)
                                         <a href="{{ route('tanda-terima-lcl.show-container', ['nomor_kontainer' => $container['nomor_kontainer'], 'seal' => $hasSealed ? $firstPivot->nomor_seal : 'unsealed']) }}"
                                            style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #2563eb; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; text-decoration: none; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
                                            onmouseover="this.style.backgroundColor='#1d4ed8'" 
@@ -341,6 +343,11 @@
                                             </svg>
                                             Detail
                                         </a>
+                                        @else
+                                            <button type="button" disabled title="Nomor kontainer belum diisi" class="inline-flex items-center px-3 py-1.5 bg-gray-200 text-gray-500 rounded-md text-xs font-medium cursor-not-allowed">
+                                                Detail
+                                            </button>
+                                        @endif
                                         @if($hasSealed)
                                             <button type="button" onclick="showUnsealModal('{{ $container['nomor_kontainer'] }}', '{{ $firstPivot->nomor_seal }}', event)" 
                                                     style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #dc2626; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
