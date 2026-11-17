@@ -37,22 +37,20 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
         $rows = [];
         $index = 0;
         $dataRowStart = 5; // headings take rows 1-4, data starts at row 5
-        $recipientNames = $this->adjustmentsByUjId->flatten(1)
-            ->filter(fn ($adj) => strtolower((string) ($adj->jenis_penyesuaian ?? '')) === 'penambahan')
-            ->pluck('penerima')->filter()->map(fn ($name) => trim((string) $name))->filter()->unique()->values();
-        $nikByRecipient = collect();
-        if ($recipientNames->isNotEmpty()) {
-            $karyawans = Karyawan::query()
-                ->whereIn('nama_lengkap', $recipientNames)
-                ->orWhereIn('nama_panggilan', $recipientNames)
-                ->get(['nama_lengkap', 'nama_panggilan', 'nik']);
-            foreach ($recipientNames as $name) {
-                $matchingNiks = $karyawans
-                    ->filter(fn ($karyawan) => strcasecmp(trim((string) $karyawan->nama_lengkap), $name) === 0
-                        || strcasecmp(trim((string) $karyawan->nama_panggilan), $name) === 0)
-                    ->pluck('nik')->filter()->unique()->values();
-                if ($matchingNiks->count() === 1) {
-                    $nikByRecipient[mb_strtolower($name)] = (string) $matchingNiks->first();
+        $normalize = fn ($value) => preg_replace('/[^\pL\pN]/u', '', mb_strtolower(trim((string) $value)));
+        $hasAdditions = $this->adjustmentsByUjId->flatten(1)
+            ->contains(fn ($adj) => strtolower((string) ($adj->jenis_penyesuaian ?? '')) === 'penambahan');
+        $karyawansByName = collect();
+        if ($hasAdditions) {
+            foreach (Karyawan::query()->get(['nama_lengkap', 'nama_panggilan', 'nik', 'plat']) as $karyawan) {
+                if (! filled($karyawan->nik)) {
+                    continue;
+                }
+                foreach (['nama_lengkap', 'nama_panggilan'] as $field) {
+                    $key = $normalize($karyawan->{$field});
+                    if ($key !== '') {
+                        $karyawansByName[$key] = ($karyawansByName[$key] ?? collect())->push($karyawan);
+                    }
                 }
             }
         }
@@ -130,7 +128,21 @@ class ReportUangJalanExport implements FromArray, ShouldAutoSize, WithColumnForm
                     $displayNominal = $isPenambahan ? $adjNominal : -$adjNominal;
                     $adjPenerima = trim((string) ($adj->penerima ?? ''));
                     $adjNamaPenerima = $adjPenerima !== '' ? $adjPenerima : $supir;
-                    $adjNik = $nikByRecipient[mb_strtolower($adjNamaPenerima)] ?? ($adjNamaPenerima === $supir ? $nik : '-');
+                    $candidates = ($karyawansByName[$normalize($adjNamaPenerima)] ?? collect())->unique('nik');
+                    if ($candidates->count() > 1 && $normalize($supir) !== '') {
+                        $driverMatches = $candidates->filter(fn ($karyawan) => $normalize($karyawan->nama_panggilan) === $normalize($supir));
+                        if ($driverMatches->count() === 1) {
+                            $candidates = $driverMatches;
+                        }
+                    }
+                    if ($candidates->count() > 1 && $normalize($plat) !== '') {
+                        $plateMatches = $candidates->filter(fn ($karyawan) => $normalize($karyawan->plat) === $normalize($plat));
+                        if ($plateMatches->count() === 1) {
+                            $candidates = $plateMatches;
+                        }
+                    }
+                    $adjNik = $candidates->count() === 1 ? (string) $candidates->first()->nik
+                        : ($candidates->isEmpty() && $normalize($adjNamaPenerima) === $normalize($supir) ? $nik : '-');
 
                     $rows[] = [
                         '',  // No

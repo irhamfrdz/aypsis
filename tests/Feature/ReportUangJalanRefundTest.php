@@ -112,6 +112,34 @@ class ReportUangJalanRefundTest extends TestCase
         $this->assertSame('987654', $addition[9]);
     }
 
+    public function test_addition_export_disambiguates_shared_full_name_using_driver_nickname(): void
+    {
+        DB::table('karyawans')->insert([
+            ['nama_lengkap' => 'ABDULLAH', 'nama_panggilan' => 'DULOH', 'nik' => '111111'],
+            ['nama_lengkap' => 'ABDULLAH', 'nama_panggilan' => 'ULL', 'nik' => '222222'],
+        ]);
+        $sj = new SuratJalan;
+        $sj->supir = 'DULOH';
+        $sj->setRelation('supirKaryawan', null);
+
+        $uj = new UangJalan;
+        $uj->id = 11;
+        $uj->tanggal_uang_jalan = Carbon::parse('2026-09-04');
+        $uj->setRelation('suratJalan', $sj);
+        $uj->setRelation('suratJalanBongkaran', null);
+        $uj->setRelation('pranotaUangJalan', collect());
+        $uj->setRelation('createdBy', null);
+
+        $adjustment = (object) [
+            'jenis_penyesuaian' => 'penambahan', 'penerima' => 'ABDULLAH',
+            'grand_total' => 100000, 'total' => 100000, 'jumlah' => 100000,
+            'tanggal_invoice' => Carbon::parse('2026-09-04'), 'nomor_invoice' => 'ADJ-11', 'nomor' => 'ADJ-11',
+        ];
+        $export = new ReportUangJalanExport(collect([$uj]), Carbon::parse('2026-09-01'), Carbon::parse('2026-09-30'), collect([11 => collect([$adjustment])]));
+
+        $this->assertSame('111111', $export->array()[1][9]);
+    }
+
     public function test_accurate_search_and_existing_negative_refund_keep_the_correct_sign(): void
     {
         DB::table('pembayaran_aktivitas_lains')->where('id', 1)->update(['jumlah' => -600000]);
