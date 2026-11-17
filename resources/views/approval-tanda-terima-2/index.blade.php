@@ -321,7 +321,7 @@
                             </div>
                             <div class="flex justify-end gap-2 border-t border-gray-100 px-6 py-4">
                                 <button id="approval-manifest-sugeng-cancel" type="button" class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
-                                <button type="submit" name="defer_assignment" value="1" class="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">Masukkan tanpa kapal/voyage</button>
+                                <button type="submit" name="defer_assignment" value="1" formtarget="_blank" class="rounded-lg border border-indigo-300 px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">Masukkan tanpa kapal/voyage</button>
                                 <button type="submit" name="defer_assignment" value="0" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Masukkan dengan kapal/voyage</button>
                             </div>
                         </dialog>
