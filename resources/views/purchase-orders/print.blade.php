@@ -18,7 +18,7 @@
         .letterhead-contact { font-size: 9pt; line-height: 1.4; }
         .toolbar { margin-bottom: 24px; display: flex; gap: 10px; font: 14px Arial, sans-serif; }
         .toolbar button, .toolbar a { border: 1px solid #777; border-radius: 6px; padding: 8px 14px; background: white; color: #111; text-decoration: none; cursor: pointer; }
-        @media print { body { margin: 0; } .toolbar { display: none; } .print-sheet { zoom: var(--print-scale, 1); } }
+        @media print { body { width: 190mm; max-width: none; margin: 0; } .toolbar { display: none; } .print-sheet { zoom: var(--print-scale, 1); margin-inline: auto; } }
     </style>
 </head>
 <body>
