@@ -29,8 +29,6 @@
     .sugeng-sheet .sheet-cell-content { max-height: 34px; overflow: hidden; white-space: pre-line; }
     .sugeng-sheet td:focus-within .sheet-cell-content { overflow: auto; }
     .sugeng-sheet .sheet-row-number { position: sticky; left: 0; z-index: 2; width: 44px; min-width: 44px; padding: 0; text-align: center; vertical-align: middle; background: #f3f4f6; color: #4b5563; font-weight: normal; cursor: pointer; user-select: none; }
-    .sugeng-sheet .sugeng-assign-checkbox { display: block; width: 15px; height: 15px; margin: 2px auto; cursor: pointer; accent-color: #2563eb; }
-    .sugeng-sheet tbody tr:has(.sugeng-assign-checkbox:checked) .sheet-row-number { background: #dbeafe; color: #1e40af; }
     .sugeng-sheet .sheet-size-heading { position: relative; height: 24px; padding: 2px; background: #f3f4f6; color: #374151; font-size: 10px; user-select: none; }
     .sugeng-sheet .sheet-column-resize { position: absolute; top: 0; right: -4px; z-index: 3; width: 8px; height: 100%; cursor: col-resize; touch-action: none; }
     .sugeng-sheet tbody .sheet-row-number { position: sticky; }
@@ -171,7 +169,7 @@
                             $isCargo ? '' : (!$isLcl && $line === 0 ? $containerDescription : ''),
                         ];
                     @endphp
-                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">@can('manifest-sugeng-manage')@if($line === 0)<input type="checkbox" class="sugeng-assign-checkbox" value="{{ $item->id }}" aria-label="Pilih data manifest {{ $item->nomor_bl ?: $item->nomor_tanda_terima ?: $item->id }} untuk dimasukan ke dalam kapal" draggable="false">@endif @endcan{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)
+                    <tr data-item-id="{{ $item->id }}" data-kind="detail" data-line="{{ $line }}" @if(in_array(data_get($item->sheet_values, 'row_marks.'.$line), ['ungu', 'biru', 'merah'], true)) data-mark="{{ data_get($item->sheet_values, 'row_marks.'.$line) }}" @endif><th scope="row" class="sheet-row-number" tabindex="0" @can('manifest-sugeng-manage') draggable="true" title="Tarik untuk memindahkan data" @endcan aria-label="Pilih baris {{ $sheetRow++ }}">{{ $sheetRow - 1 }}<span class="sheet-row-resize" title="Tarik untuk mengatur tinggi baris"></span></th>@foreach($cells as $value)
                         @php $column = $columns[$loop->index]; @endphp
                         <td tabindex="-1" data-column="{{ $column }}" @class(['sheet-ayp' => $column === 'AA' && strtoupper(trim((string) data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value))) === 'AYP']) @can('manifest-sugeng-manage') contenteditable="true" data-save-url="{{ route('manifest-sugeng.cell.update', $item) }}" data-kind="detail" data-line="{{ $line }}" @endcan><div class="sheet-cell-content">{{ data_get($item->sheet_values, 'details.'.$line.'.'.$column, $value) }}</div></td>
                     @endforeach</tr>
