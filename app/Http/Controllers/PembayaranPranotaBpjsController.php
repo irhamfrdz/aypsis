@@ -379,6 +379,8 @@ class PembayaranPranotaBpjsController extends Controller
             ->where('pembayaran_pranota_bpjs_id', $payment->id)
             ->join('pranota_bpjs_details', 'pranota_bpjs_details.id', '=', 'pembayaran_pranota_bpjs_parts.pranota_bpjs_detail_id')
             ->select('pembayaran_pranota_bpjs_parts.komponen', 'pembayaran_pranota_bpjs_parts.tipe', 'pranota_bpjs_details.*')->get();
+        $employeeCounts = $paidParts->groupBy(fn ($part) => $part->komponen.'|'.$part->tipe)
+            ->map(fn ($rows) => $rows->unique(fn ($row) => $row->tipe_karyawan.'|'.$row->karyawan_id)->count());
         foreach ($paidParts as $paidPart) {
             // Hydrate database values directly so JSON snapshots are decoded once.
             $detail = (new \App\Models\PranotaBpjsDetail)->newFromBuilder((array) $paidPart);
@@ -405,6 +407,6 @@ class PembayaranPranotaBpjsController extends Controller
                 : ($allocations->isEmpty() && $payment->bank ? $payment->bank->nomor_akun.' - '.$payment->bank->nama_akun : '-');
         }
 
-        return compact('payment', 'parts', 'journalAmounts', 'accountLabels');
+        return compact('payment', 'parts', 'journalAmounts', 'accountLabels', 'employeeCounts');
     }
 }
