@@ -207,6 +207,7 @@
                     <div class="md:col-span-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Dasar</h4></div>
                     <div><label for="tp_nomor_surat_jalan">Nomor Surat Jalan</label><input id="tp_nomor_surat_jalan" type="text" readonly value="{{ $nomorSuratJalanPreview }}" data-next-id="{{ (int) \App\Models\SuratJalanBongkaranTanjungPinang::max('id') + 1 }}" class="w-full bg-gray-100 text-gray-600"></div>
                     <div><label for="tp_tanggal_surat_jalan">Tanggal Surat Jalan <span class="text-red-600">*</span></label><input id="tp_tanggal_surat_jalan" type="date" name="tanggal_surat_jalan" required value="{{ old('tanggal_surat_jalan', now()->format('Y-m-d')) }}" class="w-full"></div>
+                    <div><label for="tp_uang_jalan">Biaya Uang Jalan (Rp)</label><input id="tp_uang_jalan" type="number" name="uang_jalan" min="0" step="0.01" value="{{ old('uang_jalan', '0') }}" class="w-full" placeholder="Masukkan biaya uang jalan"></div>
                     <div><label for="tp_no_bl">Nomor BL</label><input id="tp_no_bl" name="no_bl" value="{{ old('no_bl') }}" class="w-full"></div>
                     <div><label for="tp_no_kontainer">Nomor Kontainer</label><input id="tp_no_kontainer" name="no_kontainer" value="{{ old('no_kontainer') }}" class="w-full"></div>
                     <div><label for="tp_no_seal">Nomor Seal</label><input id="tp_no_seal" name="no_seal" value="{{ old('no_seal') }}" class="w-full"></div>
@@ -252,6 +253,10 @@
             <div class="mt-4">
                 <label for="tpBulkTanggal" class="mb-1 block text-sm font-medium text-gray-700">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
                 <input id="tpBulkTanggal" type="date" required value="{{ now()->format('Y-m-d') }}" class="w-full">
+            </div>
+            <div class="mt-4">
+                <label for="tpBulkUangJalan" class="mb-1 block text-sm font-medium text-gray-700">Biaya Uang Jalan per Surat (Rp)</label>
+                <input id="tpBulkUangJalan" type="number" min="0" step="0.01" value="0" class="w-full" placeholder="Masukkan biaya uang jalan">
             </div>
         </div>
         <div class="mt-5 flex justify-end gap-2 border-t pt-4">
@@ -325,6 +330,7 @@ async function submitTpBulkCreate() {
                 nama_kapal: @json($selectedKapal),
                 no_voyage: @json($selectedVoyage),
                 tanggal_surat_jalan: tanggal,
+                uang_jalan: document.getElementById('tpBulkUangJalan').value || 0,
                 manifest_numbers: manifestNumbers,
             }),
         });

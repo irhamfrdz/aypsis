@@ -30,14 +30,14 @@
                 'pengirim' => 'Pengirim', 'penerima' => 'Penerima', 'jenis_barang' => 'Jenis Barang',
                 'tujuan_pengambilan' => 'Tujuan Pengambilan', 'tujuan_pengiriman' => 'Tujuan Pengiriman',
                 'no_kontainer' => 'Nomor Kontainer', 'no_seal' => 'Nomor Seal', 'size' => 'Ukuran Kontainer',
-                'tipe_kontainer' => 'Tipe Kontainer', 'term' => 'Term',
+                'tipe_kontainer' => 'Tipe Kontainer', 'term' => 'Term', 'uang_jalan' => 'Biaya Uang Jalan (Rp)',
             ] as $field => $label)
                 <div>
                     <label for="{{ $field }}" class="mb-1 block text-sm font-medium text-slate-700">{{ $label }} @if($field === 'tanggal_surat_jalan')<span class="text-red-600">*</span>@endif</label>
                     @if($field === 'nomor_surat_jalan')
                         <input id="{{ $field }}" type="text" value="{{ $editing ? $suratJalan->nomor_surat_jalan : $nomorSuratJalanPreview }}" data-next-id="{{ $editing ? $suratJalan->id : (int) \App\Models\SuratJalanBongkaranTanjungPinang::max('id') + 1 }}" readonly class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600">
                     @else
-                        <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'tanggal_surat_jalan' ? 'date' : 'text' }}" value="{{ old($field, $field === 'tanggal_surat_jalan' ? $suratJalan->tanggal_surat_jalan?->format('Y-m-d') : $suratJalan->$field) }}" @if($field === 'tanggal_surat_jalan') required @endif class="w-full rounded-lg border-slate-300 text-sm focus:border-teal-600 focus:ring-teal-600 @error($field) border-red-500 @enderror">
+                        <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'tanggal_surat_jalan' ? 'date' : ($field === 'uang_jalan' ? 'number' : 'text') }}" value="{{ old($field, $field === 'tanggal_surat_jalan' ? $suratJalan->tanggal_surat_jalan?->format('Y-m-d') : ($suratJalan->$field ?? ($field === 'uang_jalan' ? 0 : null))) }}" @if($field === 'tanggal_surat_jalan') required @endif @if($field === 'uang_jalan') min="0" step="0.01" placeholder="Masukkan biaya uang jalan" @endif class="w-full rounded-lg border-slate-300 text-sm focus:border-teal-600 focus:ring-teal-600 @error($field) border-red-500 @enderror">
                     @endif
                 </div>
             @endforeach

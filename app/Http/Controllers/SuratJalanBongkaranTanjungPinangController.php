@@ -139,6 +139,7 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             'nama_kapal' => ['required', 'string', 'max:255'],
             'no_voyage' => ['required', 'string', 'max:255'],
             'tanggal_surat_jalan' => ['required', 'date'],
+            'uang_jalan' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
             'manifest_numbers' => ['required', 'array', 'min:1'],
             'manifest_numbers.*' => ['required', 'string', 'max:255', 'distinct'],
         ]);
@@ -192,6 +193,7 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
                     'size' => $manifest->size_kontainer,
                     'tipe_kontainer' => $manifest->tipe_kontainer,
                     'term' => $manifest->term,
+                    'uang_jalan' => $data['uang_jalan'] ?? 0,
                     'input_by' => Auth::id(),
                     'input_date' => now(),
                 ]);
@@ -336,8 +338,9 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
 
     private function validated(Request $request, ?SuratJalanBongkaranTanjungPinang $suratJalan = null): array
     {
-        return $request->validate([
+        $data = $request->validate([
             'tanggal_surat_jalan' => ['required', 'date'],
+            'uang_jalan' => ['nullable', 'numeric', 'min:0', 'max:9999999999999.99'],
             'manifest_id' => ['nullable', 'integer', 'exists:manifests,id'],
             'nama_kapal' => ['required', 'string', 'max:255'],
             'no_voyage' => ['required', 'string', 'max:255'],
@@ -354,5 +357,11 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             'term' => ['nullable', 'string', 'max:255'],
             'aktifitas' => ['nullable', 'string'],
         ]);
+
+        $data['uang_jalan'] = array_key_exists('uang_jalan', $data)
+            ? ($data['uang_jalan'] ?? 0)
+            : ($suratJalan?->uang_jalan ?? 0);
+
+        return $data;
     }
 }
