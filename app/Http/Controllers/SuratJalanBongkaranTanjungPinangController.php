@@ -133,6 +133,81 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             ->with('success', 'Surat jalan bongkaran Tanjung Pinang '.$suratJalan->nomor_surat_jalan.' berhasil dibuat.');
     }
 
+    public function storeBulk(Request $request)
+    {
+        $data = $request->validate([
+            'nama_kapal' => ['required', 'string', 'max:255'],
+            'no_voyage' => ['required', 'string', 'max:255'],
+            'tanggal_surat_jalan' => ['required', 'date'],
+            'manifest_ids' => ['required', 'array', 'min:1'],
+            'manifest_ids.*' => ['required', 'integer', 'distinct', 'exists:manifests,id'],
+        ]);
+
+        $jumlahDibuat = DB::transaction(function () use ($data) {
+            $jumlahDibuat = 0;
+
+            foreach ($data['manifest_ids'] as $manifestId) {
+                $manifest = Manifest::query()
+                    ->whereKey($manifestId)
+                    ->where('nama_kapal', $data['nama_kapal'])
+                    ->where('no_voyage', $data['no_voyage'])
+                    ->lockForUpdate()
+                    ->first();
+
+                if (! $manifest) {
+                    throw ValidationException::withMessages([
+                        'manifest_ids' => 'Ada manifest yang tidak termasuk kapal dan voyage yang dipilih. Muat ulang halaman lalu coba lagi.',
+                    ]);
+                }
+
+                if ($manifest->suratJalanBongkaranTanjungPinang()->exists()) {
+                    throw ValidationException::withMessages([
+                        'manifest_ids' => 'Manifest '.$manifest->nomor_bl.' sudah memiliki surat jalan. Muat ulang halaman lalu pilih manifest yang belum dibuatkan SJ.',
+                    ]);
+                }
+
+                $record = SuratJalanBongkaranTanjungPinang::create([
+                    'tanggal_surat_jalan' => $data['tanggal_surat_jalan'],
+                    'nomor_surat_jalan' => 'TEMP-'.Str::uuid(),
+                    'manifest_id' => $manifest->id,
+                    'nama_kapal' => $manifest->nama_kapal,
+                    'no_voyage' => $manifest->no_voyage,
+                    'no_bl' => $manifest->nomor_bl,
+                    'pengirim' => $manifest->pengirim,
+                    'penerima' => $manifest->penerima,
+                    'jenis_barang' => $manifest->nama_barang,
+                    'no_kontainer' => $manifest->nomor_kontainer,
+                    'no_seal' => $manifest->no_seal,
+                    'size' => $manifest->size_kontainer,
+                    'tipe_kontainer' => $manifest->tipe_kontainer,
+                    'term' => $manifest->term,
+                    'input_by' => Auth::id(),
+                    'input_date' => now(),
+                ]);
+
+                $record->nomor_surat_jalan = $this->formatNomorSuratJalan(
+                    $record->id,
+                    $record->tanggal_surat_jalan->toDateString()
+                );
+                $record->save();
+                $this->recordCustomerWarehouseMovement($record);
+                $jumlahDibuat++;
+            }
+
+            return $jumlahDibuat;
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => "{$jumlahDibuat} surat jalan berhasil dibuat.",
+            'redirect' => route('surat-jalan-bongkaran-tanjung-pinang.list', [
+                'nama_kapal' => $data['nama_kapal'],
+                'no_voyage' => $data['no_voyage'],
+                'mode' => 'manifest',
+            ]),
+        ]);
+    }
+
     public function edit(int $id)
     {
         return view('surat-jalan-bongkaran-tanjung-pinang.form', [

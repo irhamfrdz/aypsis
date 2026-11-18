@@ -76,6 +76,9 @@
                 <div class="bongkaran-actions flex gap-2">
                     @can('surat-jalan-bongkaran-tanjung-pinang-create')
                     <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.create', ['nama_kapal' => $selectedKapal, 'no_voyage' => $selectedVoyage]) }}" class="tp-primary inline-flex items-center"><i class="fas fa-plus"></i>Tambah Surat Jalan</a>
+                    @if($mode === 'manifest')
+                    <button type="button" onclick="openTpBulkModal()" class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-white hover:bg-indigo-700"><i class="fas fa-layer-group"></i>Tambah Massal</button>
+                    @endif
                     @endcan
                     <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.index') }}" class="inline-flex items-center"><i class="fas fa-sync-alt"></i>Ganti Kapal/Voyage</a>
                 </div>
@@ -118,11 +121,19 @@
             <div class="overflow-x-auto">
                 <table class="tp-table" id="manifestTable">
                     <thead><tr>
+                        @can('surat-jalan-bongkaran-tanjung-pinang-create')<th><input type="checkbox" id="tp_select_all_manifests" aria-label="Pilih semua manifest pada halaman ini"></th>@endcan
                         <th>No. Urut</th><th>Nomor BL</th><th>Nomor Kontainer</th><th>Seal</th><th>Ukuran / Tipe</th><th>Pengirim</th><th>Penerima</th><th>Nama Barang</th><th>Term</th><th>Status Surat Jalan</th>
                     </tr></thead>
                     <tbody class="bg-white">
                     @forelse($manifests as $manifest)
                         <tr>
+                            @can('surat-jalan-bongkaran-tanjung-pinang-create')
+                            <td>
+                                @unless($manifest->suratJalanBongkaranTanjungPinang)
+                                    <input type="checkbox" class="tp-manifest-select" value="{{ $manifest->id }}" aria-label="Pilih manifest {{ $manifest->nomor_bl ?: $manifest->nomor_kontainer }}">
+                                @endunless
+                            </td>
+                            @endcan
                             <td>{{ $manifest->nomor_urut ?: '—' }}</td>
                             <td class="font-medium">{{ $manifest->nomor_bl ?: '—' }}</td>
                             <td>{{ $manifest->nomor_kontainer ?: '—' }}</td>
@@ -144,7 +155,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="10" class="py-12 text-center text-gray-500">Tidak ada data manifest untuk {{ $selectedKapal }} / {{ $selectedVoyage }}.</td></tr>
+                        <tr><td colspan="{{ auth()->user()->can('surat-jalan-bongkaran-tanjung-pinang-create') ? 11 : 10 }}" class="py-12 text-center text-gray-500">Tidak ada data manifest untuk {{ $selectedKapal }} / {{ $selectedVoyage }}.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -227,8 +238,125 @@
         </div>
     </div>
 </div>
+<div id="tpBulkModal" class="fixed inset-0 z-[60] hidden h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50" style="background-color:rgba(75,85,99,.55);" role="dialog" aria-modal="true" aria-labelledby="tpBulkModalTitle" onclick="if(event.target===this) closeTpBulkModal()">
+    <div class="tp-modal-panel relative top-20 mx-auto mb-10 w-11/12 max-w-xl rounded-lg border bg-white p-5 shadow-lg">
+        <div class="flex items-center justify-between border-b pb-3">
+            <div>
+                <h3 id="tpBulkModalTitle" class="text-xl font-semibold text-gray-900">Buat Surat Jalan Massal</h3>
+                <p class="mt-1 text-xs text-gray-500">{{ $selectedKapal }} · Voyage {{ $selectedVoyage }}</p>
+            </div>
+            <button type="button" onclick="closeTpBulkModal()" class="text-2xl text-gray-400 hover:text-gray-600" aria-label="Tutup">&times;</button>
+        </div>
+        <div class="mt-4">
+            <div id="tpBulkAlert" class="mb-4 hidden rounded-md border px-3 py-2 text-sm" role="alert"></div>
+            <p class="text-sm text-gray-600">Pilih beberapa manifest pada halaman ini. Data manifest akan disalin otomatis ke setiap surat jalan.</p>
+            <div class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+                <span id="tpBulkSelectedCount">0 manifest dipilih</span>
+            </div>
+            <div class="mt-4">
+                <label for="tpBulkTanggal" class="mb-1 block text-sm font-medium text-gray-700">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
+                <input id="tpBulkTanggal" type="date" required value="{{ now()->format('Y-m-d') }}" class="w-full">
+            </div>
+        </div>
+        <div class="mt-5 flex justify-end gap-2 border-t pt-4">
+            <button type="button" onclick="closeTpBulkModal()" class="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700">Batal</button>
+            <button type="button" id="tpBulkSubmit" onclick="submitTpBulkCreate()" class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
+                <span id="tpBulkSubmitLabel">Buat Surat Jalan</span>
+            </button>
+        </div>
+    </div>
+</div>
 @push('scripts')
 <script>
+const tpBulkSelectAll = document.getElementById('tp_select_all_manifests');
+if (tpBulkSelectAll) {
+    tpBulkSelectAll.addEventListener('change', () => {
+        document.querySelectorAll('.tp-manifest-select').forEach(checkbox => { checkbox.checked = tpBulkSelectAll.checked; });
+        updateTpBulkSelection();
+    });
+}
+document.querySelectorAll('.tp-manifest-select').forEach(checkbox => checkbox.addEventListener('change', updateTpBulkSelection));
+
+function updateTpBulkSelection() {
+    const checkboxes = Array.from(document.querySelectorAll('.tp-manifest-select'));
+    const selectedCount = checkboxes.filter(checkbox => checkbox.checked).length;
+    const countLabel = document.getElementById('tpBulkSelectedCount');
+    const selectAll = document.getElementById('tp_select_all_manifests');
+    const submitButton = document.getElementById('tpBulkSubmit');
+    if (countLabel) countLabel.textContent = `${selectedCount} manifest dipilih`;
+    if (submitButton) submitButton.disabled = selectedCount === 0;
+    if (selectAll) {
+        selectAll.checked = checkboxes.length > 0 && selectedCount === checkboxes.length;
+        selectAll.indeterminate = selectedCount > 0 && selectedCount < checkboxes.length;
+    }
+}
+
+function openTpBulkModal() {
+    updateTpBulkSelection();
+    document.getElementById('tpBulkAlert').classList.add('hidden');
+    document.getElementById('tpBulkModal').classList.remove('hidden');
+    document.body.classList.add('tp-modal-open');
+}
+
+function closeTpBulkModal() {
+    document.getElementById('tpBulkModal').classList.add('hidden');
+    document.body.classList.remove('tp-modal-open');
+}
+
+function showTpBulkAlert(message, success = false) {
+    const alert = document.getElementById('tpBulkAlert');
+    alert.textContent = message;
+    alert.className = `mb-4 rounded-md border px-3 py-2 text-sm ${success ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800'}`;
+}
+
+async function submitTpBulkCreate() {
+    const manifestIds = Array.from(document.querySelectorAll('.tp-manifest-select:checked')).map(checkbox => checkbox.value);
+    const tanggal = document.getElementById('tpBulkTanggal').value;
+    if (manifestIds.length === 0) {
+        showTpBulkAlert('Pilih minimal satu manifest terlebih dahulu.');
+        return;
+    }
+    if (!tanggal) {
+        showTpBulkAlert('Tanggal surat jalan wajib diisi.');
+        return;
+    }
+
+    const button = document.getElementById('tpBulkSubmit');
+    const label = document.getElementById('tpBulkSubmitLabel');
+    button.disabled = true;
+    label.textContent = 'Menyimpan...';
+
+    try {
+        const response = await fetch(@json(route('surat-jalan-bongkaran-tanjung-pinang.bulk-store')), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': @json(csrf_token()),
+            },
+            body: JSON.stringify({
+                nama_kapal: @json($selectedKapal),
+                no_voyage: @json($selectedVoyage),
+                tanggal_surat_jalan: tanggal,
+                manifest_ids: manifestIds,
+            }),
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) {
+            const messages = data.errors ? Object.values(data.errors).flat().join(' ') : (data.message || 'Gagal membuat surat jalan massal.');
+            throw new Error(messages);
+        }
+
+        showTpBulkAlert(data.message || 'Surat jalan berhasil dibuat.', true);
+        setTimeout(() => { window.location.assign(data.redirect); }, 700);
+    } catch (error) {
+        showTpBulkAlert(error.message || 'Terjadi kesalahan saat menyimpan surat jalan.');
+        button.disabled = false;
+        label.textContent = 'Buat Surat Jalan';
+    }
+}
+
 function openTpCreateModal(button) {
     const data = button.dataset;
     const fields = {
@@ -256,7 +384,7 @@ function closeTpCreateModal() {
     modal.classList.add('hidden');
     document.body.classList.remove('tp-modal-open');
 }
-document.addEventListener('keydown', event => { if (event.key === 'Escape') closeTpCreateModal(); });
+document.addEventListener('keydown', event => { if (event.key === 'Escape') { closeTpCreateModal(); closeTpBulkModal(); } });
 document.getElementById('tp_tanggal_surat_jalan').addEventListener('change', updateTpNomorSuratJalan);
 @if($errors->any())
 document.addEventListener('DOMContentLoaded', () => {

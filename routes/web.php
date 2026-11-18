@@ -4834,6 +4834,7 @@ Route::middleware([
             Route::get('/list', [$controller, 'index'])->name('list')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-view');
             Route::get('/create', [$controller, 'create'])->name('create')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
             Route::post('/', [$controller, 'store'])->name('store')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
+            Route::post('/bulk-store', [$controller, 'storeBulk'])->name('bulk-store')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-create');
             Route::get('/{id}/edit', [$controller, 'edit'])->name('edit')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-update');
             Route::put('/{id}', [$controller, 'update'])->name('update')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-update');
             Route::delete('/{id}', [$controller, 'destroy'])->name('destroy')->middleware('can:surat-jalan-bongkaran-tanjung-pinang-delete');
