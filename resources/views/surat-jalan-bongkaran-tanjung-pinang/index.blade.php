@@ -104,7 +104,7 @@
                     <div class="flex flex-col gap-4 md:flex-row">
                         <div class="flex-1">
                             <label for="search" class="mb-1 block text-sm font-medium">Pencarian</label>
-                            <input type="text" id="search" name="search" value="{{ $search }}" class="w-full" placeholder="{{ $mode === 'surat_jalan' ? 'Cari nomor surat jalan, kontainer, BL, atau supir...' : 'Cari nomor BL, kontainer, seal, barang, atau penerima...' }}">
+                            <input type="text" id="search" name="search" value="{{ $search }}" class="w-full" placeholder="{{ $mode === 'surat_jalan' ? 'Cari nomor surat jalan, kontainer, atau BL...' : 'Cari nomor BL, kontainer, seal, barang, atau penerima...' }}">
                         </div>
                         <div class="flex items-end gap-2">
                             <button type="submit" class="inline-flex items-center"><i class="fas fa-search mr-2"></i>Cari</button>
@@ -152,7 +152,7 @@
             @else
             <div class="overflow-x-auto">
                 <table class="tp-table" id="suratJalanTable">
-                    <thead><tr><th>Nomor Surat Jalan</th><th>Tanggal</th><th>Kapal / Voyage</th><th>Nomor BL</th><th>Nomor Kontainer / Seal</th><th>Pengirim / Penerima</th><th>Supir / Plat</th><th>Tujuan</th><th>Aksi</th></tr></thead>
+                    <thead><tr><th>Nomor Surat Jalan</th><th>Tanggal</th><th>Kapal / Voyage</th><th>Nomor BL</th><th>Nomor Kontainer / Seal</th><th>Pengirim / Penerima</th><th>Tujuan</th><th>Aksi</th></tr></thead>
                     <tbody class="bg-white">
                     @forelse($suratJalans as $suratJalan)
                         <tr>
@@ -162,7 +162,6 @@
                             <td>{{ $suratJalan->no_bl ?: '—' }}</td>
                             <td>{{ $suratJalan->no_kontainer ?: '—' }}<div class="tp-muted">{{ $suratJalan->no_seal ?: '—' }}</div></td>
                             <td>{{ $suratJalan->pengirim ?: '—' }}<div class="tp-muted">{{ $suratJalan->penerima ?: '—' }}</div></td>
-                            <td>{{ $suratJalan->supir ?: '—' }}<div class="tp-muted">{{ $suratJalan->no_plat ?: '—' }}</div></td>
                             <td>{{ $suratJalan->tujuan_pengiriman ?: '—' }}</td>
                             <td class="whitespace-nowrap">
                                 <a href="{{ route('surat-jalan-bongkaran-tanjung-pinang.print', $suratJalan->id) }}" target="_blank" class="px-2 py-1 text-blue-700" title="Cetak"><i class="fas fa-print"></i></a>
@@ -171,7 +170,7 @@
                             </td>
                         </tr>
                     @empty
-                        <tr><td colspan="9" class="py-12 text-center text-gray-500">Belum ada surat jalan untuk pilihan ini.</td></tr>
+                        <tr><td colspan="8" class="py-12 text-center text-gray-500">Belum ada surat jalan untuk pilihan ini.</td></tr>
                     @endforelse
                     </tbody>
                 </table>
@@ -217,10 +216,6 @@
                     <div class="md:col-span-2"><label for="tp_jenis_barang">Jenis Barang</label><input id="tp_jenis_barang" name="jenis_barang" value="{{ old('jenis_barang') }}" class="w-full"></div>
                     <div><label for="tp_tujuan_pengambilan">Tujuan Pengambilan</label><input id="tp_tujuan_pengambilan" name="tujuan_pengambilan" value="{{ old('tujuan_pengambilan') }}" class="w-full"></div>
                     <div><label for="tp_tujuan_pengiriman">Tujuan Pengiriman</label><input id="tp_tujuan_pengiriman" name="tujuan_pengiriman" value="{{ old('tujuan_pengiriman') }}" class="w-full"></div>
-                    <div class="md:col-span-2 mt-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Kendaraan</h4></div>
-                    <div><label for="tp_supir">Supir</label><input id="tp_supir" name="supir" value="{{ old('supir') }}" class="w-full"></div>
-                    <div><label for="tp_no_plat">Nomor Plat</label><input id="tp_no_plat" name="no_plat" value="{{ old('no_plat') }}" class="w-full"></div>
-                    <div><label for="tp_kenek">Kenek</label><input id="tp_kenek" name="kenek" value="{{ old('kenek') }}" class="w-full"></div>
                     <div class="md:col-span-2"><label for="tp_aktifitas">Aktivitas / Catatan</label><textarea id="tp_aktifitas" name="aktifitas" rows="3" class="w-full">{{ old('aktifitas') }}</textarea></div>
                 </div>
                 </div>

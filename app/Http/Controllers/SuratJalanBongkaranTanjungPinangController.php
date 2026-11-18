@@ -68,7 +68,7 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             ? SuratJalanBongkaranTanjungPinang::query()->where('nama_kapal', $selectedKapal)->where('no_voyage', $selectedVoyage)
                 ->when($search !== '', fn ($query) => $query->where(function ($q) use ($search) {
                     $q->where('nomor_surat_jalan', 'like', "%{$search}%")->orWhere('no_bl', 'like', "%{$search}%")
-                        ->orWhere('no_kontainer', 'like', "%{$search}%")->orWhere('supir', 'like', "%{$search}%");
+                        ->orWhere('no_kontainer', 'like', "%{$search}%");
                 }))->orderByDesc('tanggal_surat_jalan')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
@@ -195,9 +195,6 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             'jenis_barang' => ['nullable', 'string', 'max:255'],
             'tujuan_pengambilan' => ['nullable', 'string', 'max:255'],
             'tujuan_pengiriman' => ['nullable', 'string', 'max:255'],
-            'supir' => ['nullable', 'string', 'max:255'],
-            'no_plat' => ['nullable', 'string', 'max:255'],
-            'kenek' => ['nullable', 'string', 'max:255'],
             'no_kontainer' => ['nullable', 'string', 'max:255'],
             'no_seal' => ['nullable', 'string', 'max:255'],
             'size' => ['nullable', 'string', 'max:255'],
