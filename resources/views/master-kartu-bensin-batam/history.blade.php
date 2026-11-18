@@ -36,7 +36,7 @@
                 <div class="text-right md:border-l md:border-white/10 md:pl-6">
                     <p class="text-xs text-blue-200 uppercase font-semibold tracking-wider">Saldo Saat Ini</p>
                     <div class="text-3xl font-extrabold mt-1 text-green-400">
-                        Rp {{ number_format($card->saldo ?? 0, 0, ',', '.') }}
+                        Rp {{ number_format($card->saldo ?? 0, 2, ',', '.') }}
                     </div>
                     @can('master-kartu-bensin-batam-edit')
                     <button type="button" id="open-topup-modal" class="mt-3 inline-flex items-center gap-2 rounded-lg bg-green-500 px-4 py-2 text-sm font-semibold text-white hover:bg-green-600">
@@ -85,7 +85,7 @@
                 </div>
                 <div>
                     <label for="topup-nominal" class="mb-1 block text-sm font-medium text-gray-700">Nominal (Rp) <span class="text-red-500">*</span></label>
-                    <input type="number" id="topup-nominal" name="nominal" value="{{ old('nominal') }}" min="1" step="1" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nominal top up">
+                    <input type="number" id="topup-nominal" name="nominal" value="{{ old('nominal') }}" min="0.01" max="9999999999999.99" step="0.01" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500" placeholder="Masukkan nominal top up">
                     @error('nominal')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
                 <div>
@@ -148,8 +148,8 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($log->nomor_pranota)
                                 <a href="{{ route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]) }}" class="font-semibold text-blue-700 hover:underline">{{ $log->nomor_pranota }}</a>
-                                <div class="mt-1 text-xs text-gray-500">Admin Rp {{ number_format($log->biaya_admin, 0, ',', '.') }}</div>
-                                <div class="text-xs font-semibold text-gray-700">Total Rp {{ number_format((float) $log->nominal + (float) $log->biaya_admin, 0, ',', '.') }}</div>
+                                <div class="mt-1 text-xs text-gray-500">Admin Rp {{ number_format($log->biaya_admin, 2, ',', '.') }}</div>
+                                <div class="text-xs font-semibold text-gray-700">Total Rp {{ number_format((float) $log->nominal + (float) $log->biaya_admin, 2, ',', '.') }}</div>
                             @else
                                 <span class="text-gray-400">-</span>
                             @endif
@@ -167,16 +167,16 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap font-bold text-gray-900">
                             @if($log->tipe == 'bertambah')
-                            <span class="text-green-600">+ Rp {{ number_format($log->nominal, 0, ',', '.') }}</span>
+                            <span class="text-green-600">+ Rp {{ number_format($log->nominal, 2, ',', '.') }}</span>
                             @else
-                            <span class="text-red-600">- Rp {{ number_format($log->nominal, 0, ',', '.') }}</span>
+                            <span class="text-red-600">- Rp {{ number_format($log->nominal, 2, ',', '.') }}</span>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-gray-500">
-                            Rp {{ number_format($log->saldo_sebelum, 0, ',', '.') }}
+                            Rp {{ number_format($log->saldo_sebelum, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap font-semibold text-gray-800">
-                            Rp {{ number_format($log->saldo_sesudah, 0, ',', '.') }}
+                            Rp {{ number_format($log->saldo_sesudah, 2, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 text-gray-600 max-w-sm">
                             {{ $log->keterangan ?? '-' }}

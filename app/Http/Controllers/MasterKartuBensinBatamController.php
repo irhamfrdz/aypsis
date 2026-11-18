@@ -267,7 +267,7 @@ class MasterKartuBensinBatamController extends Controller
     {
         $validated = $request->validate([
             'tanggal' => 'required|date_format:Y-m-d',
-            'nominal' => 'required|integer|min:1',
+            'nominal' => 'required|numeric|min:0.01|max:9999999999999.99|regex:/^\d+(?:\.\d{1,2})?$/',
             'biaya_admin' => 'required|numeric|min:0|max:9999999999999.99',
             'keterangan' => 'required|string|max:1000',
         ]);
