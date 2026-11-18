@@ -232,7 +232,7 @@
     </div>
 </div>
 <div id="tpBulkModal" class="fixed inset-0 z-[60] hidden h-full w-full overflow-y-auto bg-gray-600 bg-opacity-50" style="background-color:rgba(75,85,99,.55);" role="dialog" aria-modal="true" aria-labelledby="tpBulkModalTitle" onclick="if(event.target===this) closeTpBulkModal()">
-    <div class="tp-modal-panel relative top-20 mx-auto mb-10 w-11/12 max-w-xl rounded-lg border bg-white p-5 shadow-lg">
+    <div class="tp-modal-panel relative top-5 mx-auto mb-10 w-11/12 max-w-6xl rounded-lg border bg-white p-5 shadow-lg">
         <div class="flex items-center justify-between border-b pb-3">
             <div>
                 <h3 id="tpBulkModalTitle" class="text-xl font-semibold text-gray-900">Buat Surat Jalan Massal</h3>
@@ -240,48 +240,122 @@
             </div>
             <button type="button" onclick="closeTpBulkModal()" class="text-2xl text-gray-400 hover:text-gray-600" aria-label="Tutup">&times;</button>
         </div>
-        <div class="mt-4">
+        <div class="mt-4 max-h-[80vh] overflow-y-auto px-1">
             <div id="tpBulkAlert" class="mb-4 hidden rounded-md border px-3 py-2 text-sm" role="alert"></div>
-            <p class="text-sm text-gray-600">Masukkan satu Nomor BL atau Nomor Kontainer per baris. Data manifest akan disalin otomatis ke setiap surat jalan.</p>
-            <div class="mt-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
+            <div class="mb-4 rounded-lg border border-indigo-200 bg-indigo-50 p-3">
+                <h4 class="mb-2 text-sm font-semibold text-indigo-800"><i class="fas fa-info-circle mr-1"></i>Panduan Input Massal</h4>
+                <p class="mb-1 text-xs text-indigo-700">Setiap baris berisi satu Nomor BL atau Nomor Kontainer. Data manifest lainnya akan diisi otomatis.</p>
+                <div class="overflow-x-auto rounded border border-indigo-100 bg-white px-3 py-2 font-mono text-xs text-indigo-900">Nomor BL / Nomor Kontainer (satu nomor per baris)</div>
+                <p class="mt-1 text-xs text-indigo-600"><strong>Contoh:</strong> BL-001 lalu baris berikutnya AYP1234567</p>
+            </div>
+            <div class="mb-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-sm text-blue-900">
                 <span id="tpBulkSelectedCount">0 manifest dimasukkan</span>
             </div>
             <div class="mt-4">
                 <label for="tpBulkManifestText" class="mb-1 block text-sm font-medium text-gray-700">Nomor BL / Nomor Kontainer <span class="text-red-600">*</span></label>
-                <textarea id="tpBulkManifestText" rows="7" class="w-full rounded-md border border-gray-300 px-3 py-2 font-mono text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan satu nomor per baris&#10;BL-001&#10;AYPU1234567"></textarea>
+                <textarea id="tpBulkManifestText" rows="10" class="w-full rounded-lg border border-gray-300 px-3 py-2 font-mono text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan data di sini...&#10;BL-001&#10;AYP1234567"></textarea>
             </div>
             <div class="mt-4">
                 <label for="tpBulkTanggal" class="mb-1 block text-sm font-medium text-gray-700">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                <input id="tpBulkTanggal" type="date" required value="{{ now()->format('Y-m-d') }}" class="w-full">
+                <input id="tpBulkTanggal" type="date" required value="{{ now()->format('Y-m-d') }}" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500">
             </div>
             <div class="mt-4">
                 <label for="tpBulkUangJalan" class="mb-1 block text-sm font-medium text-gray-700">Biaya Uang Jalan per Surat (Rp)</label>
-                <input id="tpBulkUangJalan" type="number" min="0" step="0.01" value="0" class="w-full" placeholder="Masukkan biaya uang jalan">
+                <input id="tpBulkUangJalan" type="number" min="0" step="0.01" value="0" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="Masukkan biaya uang jalan">
+            </div>
+            <div class="mb-4 flex items-center gap-3">
+                <button type="button" onclick="parseTpBulkData()" class="inline-flex items-center rounded-lg bg-indigo-100 px-4 py-2 text-sm font-medium text-indigo-800 hover:bg-indigo-200"><i class="fas fa-eye mr-2"></i>Parse &amp; Preview</button>
+                <span id="tpBulkParseInfo" class="text-sm text-gray-500"></span>
+            </div>
+            <div id="tpBulkPreviewContainer" class="mb-4 hidden overflow-x-auto rounded-lg border border-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-gray-50"><tr><th class="px-3 py-2 text-left font-medium uppercase text-gray-500">No</th><th class="px-3 py-2 text-left font-medium uppercase text-gray-500">Nomor BL / Kontainer</th><th class="px-3 py-2 text-left font-medium uppercase text-gray-500">Tanggal Surat Jalan</th><th class="px-3 py-2 text-left font-medium uppercase text-gray-500">Biaya Uang Jalan</th></tr></thead>
+                    <tbody id="tpBulkPreviewBody" class="divide-y divide-gray-100 bg-white"></tbody>
+                </table>
             </div>
         </div>
-        <div class="mt-5 flex justify-end gap-2 border-t pt-4">
-            <button type="button" onclick="closeTpBulkModal()" class="rounded border border-gray-300 px-4 py-2 text-sm text-gray-700">Batal</button>
-            <button type="button" id="tpBulkSubmit" onclick="submitTpBulkCreate()" class="rounded bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">
-                <span id="tpBulkSubmitLabel">Buat Surat Jalan</span>
+        <div class="mt-4 flex justify-end gap-3 border-t pt-3">
+            <button type="button" onclick="closeTpBulkModal()" class="rounded-lg bg-gray-500 px-4 py-2 text-sm font-medium text-white hover:bg-gray-600">Batal</button>
+            <button type="button" id="tpBulkSubmit" onclick="submitTpBulkCreate()" disabled class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-400">
+                <span id="tpBulkSubmitLabel">Simpan Semua</span>
+                <span id="tpBulkSubmitLoading" class="hidden"><i class="fas fa-spinner fa-spin mr-2"></i>Menyimpan...</span>
             </button>
         </div>
     </div>
 </div>
 @push('scripts')
 <script>
-document.getElementById('tpBulkManifestText')?.addEventListener('input', updateTpBulkSelection);
+let tpBulkParsedNumbers = [];
+document.getElementById('tpBulkManifestText')?.addEventListener('input', () => {
+    tpBulkParsedNumbers = [];
+    document.getElementById('tpBulkPreviewContainer').classList.add('hidden');
+    document.getElementById('tpBulkParseInfo').textContent = '';
+    updateTpBulkSelection();
+});
+['tpBulkTanggal', 'tpBulkUangJalan'].forEach(id => {
+    document.getElementById(id)?.addEventListener('input', () => {
+        tpBulkParsedNumbers = [];
+        document.getElementById('tpBulkPreviewContainer').classList.add('hidden');
+        document.getElementById('tpBulkParseInfo').textContent = 'Perubahan data, silakan parse ulang.';
+        document.getElementById('tpBulkParseInfo').className = 'text-sm text-amber-600';
+        updateTpBulkSelection();
+    });
+});
 
 function updateTpBulkSelection() {
     const lines = (document.getElementById('tpBulkManifestText')?.value || '').split(/\r?\n/).map(line => line.trim()).filter(Boolean);
-    const selectedCount = new Set(lines.map(line => line.toLocaleLowerCase())).size;
     const countLabel = document.getElementById('tpBulkSelectedCount');
     const submitButton = document.getElementById('tpBulkSubmit');
-    if (countLabel) countLabel.textContent = `${selectedCount} manifest dimasukkan`;
-    if (submitButton) submitButton.disabled = selectedCount === 0;
+    if (countLabel) countLabel.textContent = `${lines.length} manifest dimasukkan`;
+    if (submitButton) submitButton.disabled = tpBulkParsedNumbers.length === 0;
+}
+
+function parseTpBulkData() {
+    const lines = document.getElementById('tpBulkManifestText').value.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const tanggal = document.getElementById('tpBulkTanggal').value;
+    const parseInfo = document.getElementById('tpBulkParseInfo');
+    if (!lines.length) {
+        parseInfo.textContent = 'Masukkan minimal satu nomor manifest.';
+        parseInfo.className = 'text-sm text-red-600';
+        return;
+    }
+    if (!tanggal) {
+        parseInfo.textContent = 'Tanggal surat jalan wajib diisi.';
+        parseInfo.className = 'text-sm text-red-600';
+        return;
+    }
+    const normalized = lines.map(line => line.toLocaleLowerCase());
+    if (new Set(normalized).size !== lines.length) {
+        parseInfo.textContent = 'Ada nomor yang dimasukkan lebih dari satu kali.';
+        parseInfo.className = 'text-sm text-red-600';
+        return;
+    }
+
+    tpBulkParsedNumbers = lines;
+    const biaya = Number(document.getElementById('tpBulkUangJalan').value || 0);
+    const body = document.getElementById('tpBulkPreviewBody');
+    body.replaceChildren();
+    lines.forEach((nomor, index) => {
+        const row = document.createElement('tr');
+        [String(index + 1), nomor, tanggal, `Rp ${new Intl.NumberFormat('id-ID').format(biaya)}`].forEach(value => {
+            const cell = document.createElement('td');
+            cell.className = 'whitespace-nowrap px-3 py-2 text-gray-700';
+            cell.textContent = value;
+            row.appendChild(cell);
+        });
+        body.appendChild(row);
+    });
+    document.getElementById('tpBulkPreviewContainer').classList.remove('hidden');
+    parseInfo.textContent = `${lines.length} baris siap diproses. Kecocokan manifest akan diperiksa saat disimpan.`;
+    parseInfo.className = 'text-sm text-green-700';
+    updateTpBulkSelection();
 }
 
 function openTpBulkModal() {
     document.getElementById('tpBulkManifestText').value = '';
+    tpBulkParsedNumbers = [];
+    document.getElementById('tpBulkPreviewContainer').classList.add('hidden');
+    document.getElementById('tpBulkParseInfo').textContent = '';
     updateTpBulkSelection();
     document.getElementById('tpBulkAlert').classList.add('hidden');
     document.getElementById('tpBulkModal').classList.remove('hidden');
@@ -300,11 +374,10 @@ function showTpBulkAlert(message, success = false) {
 }
 
 async function submitTpBulkCreate() {
-    const manifestText = document.getElementById('tpBulkManifestText').value;
-    const manifestNumbers = manifestText.split(/\r?\n/).map(line => line.trim()).filter(Boolean);
+    const manifestNumbers = tpBulkParsedNumbers;
     const tanggal = document.getElementById('tpBulkTanggal').value;
     if (manifestNumbers.length === 0) {
-        showTpBulkAlert('Masukkan minimal satu Nomor BL atau Nomor Kontainer.');
+        showTpBulkAlert('Masukkan data lalu tekan Parse & Preview terlebih dahulu.');
         return;
     }
     if (!tanggal) {
@@ -314,8 +387,10 @@ async function submitTpBulkCreate() {
 
     const button = document.getElementById('tpBulkSubmit');
     const label = document.getElementById('tpBulkSubmitLabel');
+    const loading = document.getElementById('tpBulkSubmitLoading');
     button.disabled = true;
-    label.textContent = 'Menyimpan...';
+    label.classList.add('hidden');
+    loading.classList.remove('hidden');
 
     try {
         const response = await fetch(@json(route('surat-jalan-bongkaran-tanjung-pinang.bulk-store')), {
@@ -344,8 +419,9 @@ async function submitTpBulkCreate() {
         setTimeout(() => { window.location.assign(data.redirect); }, 700);
     } catch (error) {
         showTpBulkAlert(error.message || 'Terjadi kesalahan saat menyimpan surat jalan.');
-        button.disabled = false;
-        label.textContent = 'Buat Surat Jalan';
+        updateTpBulkSelection();
+        label.classList.remove('hidden');
+        loading.classList.add('hidden');
     }
 }
 
