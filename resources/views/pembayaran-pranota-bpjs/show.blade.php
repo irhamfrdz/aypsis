@@ -5,7 +5,6 @@
 <div class="max-w-7xl mx-auto space-y-6">
     <div class="flex flex-wrap justify-between items-center gap-4"><h1 class="text-2xl font-bold text-gray-800">{{ $payment->nomor_pembayaran }}</h1><div class="flex flex-wrap items-center gap-2">
         @can('pembayaran-pranota-bpjs-create')
-            @include('pembayaran-pranota-bpjs.partials.refresh-employees', ['payment' => $payment])
             <form method="POST" action="{{ route('pembayaran-pranota-bpjs.sync-coa', $payment) }}" onsubmit="this.querySelector('button').disabled = true;">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"><i class="fas fa-rotate" aria-hidden="true"></i>SYNC COA</button>
@@ -13,18 +12,7 @@
         @endcan
         <a href="{{ route('pembayaran-pranota-bpjs.index') }}" class="px-4 py-2 border rounded-lg">Kembali</a></div></div>
     @include('pembayaran-pranota-bpjs.partials.messages')
-    @can('pranota-bpjs-update')
-    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm">
-        <p class="text-indigo-900">Tambahkan karyawan yang belum tercatat pada pranota melalui pembaruan data. Tagihan tambahan dapat dibayar melalui pembayaran berikutnya.</p>
-        <div class="mt-2 flex flex-wrap gap-3">
-            @foreach($payment->pranotas as $pranota)
-                @if($pranota->status !== 'cancelled')
-                <a href="{{ route('pranota-bpjs.refresh-data', $pranota) }}" class="inline-flex items-center gap-2 font-semibold text-indigo-700 hover:underline"><i class="fa-solid fa-users" aria-hidden="true"></i>Perbarui Data Karyawan — {{ $pranota->nomor_pranota }}</a>
-                @endif
-            @endforeach
-        </div>
-    </div>
-    @endcan
+
     <div class="bg-white border rounded-xl p-6 grid md:grid-cols-2 gap-5 text-sm">
         <div><p class="text-gray-500">Tanggal Pembayaran</p><p class="font-semibold">{{ $payment->tanggal_pembayaran->format('d/m/Y') }}</p></div>
         <div><p class="text-gray-500">Status</p><p class="text-green-700 font-semibold">Lunas</p></div>

@@ -129,11 +129,7 @@
                     <td data-label="Sisa Tagihan" class="bpjs-money font-semibold {{ $remaining > 0 ? 'text-amber-700' : 'text-gray-500' }}"><span class="block text-xs font-normal text-gray-400">Rp</span>{{ number_format($remaining, 2, ',', '.') }}</td>
                     <td data-label="Status"><span class="bpjs-badge {{ $statusColor }}">{{ $statusLabel }}</span><div class="mt-2 h-1 overflow-hidden rounded-full bg-gray-100" role="progressbar" aria-label="Pembayaran {{ $pranota->nomor_pranota }}" aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"><div class="h-full rounded-full bg-emerald-500" style="width: {{ $progress }}%"></div></div><span class="mt-1 block text-gray-500" style="font-size: 10px">{{ number_format($progress, 1, ',', '.') }}% terbayar</span></td>
                     <td data-label="Aksi" class="bpjs-row-action">
-                        @can('pranota-bpjs-update')
-                        @if($pranota->status !== 'cancelled')
-                        <a href="{{ route('pranota-bpjs.refresh-data', $pranota) }}" class="bpjs-btn mb-2" aria-label="Perbarui data karyawan pranota {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-users" aria-hidden="true"></i>Perbarui Data Karyawan</a>
-                        @endif
-                        @endcan
+
                         @can('pembayaran-pranota-bpjs-create')
                         @if($remaining > 0 && in_array($pranota->status, ['draft', 'approved', 'unpaid', 'partial']))
                         <a href="{{ route('pembayaran-pranota-bpjs.create', ['pranota_id' => $pranota->id]) }}" class="bpjs-btn bpjs-btn-primary">Buat Pembayaran</a>
@@ -176,7 +172,6 @@
                         <a target="_blank" rel="noopener" aria-label="Print Permohonan Transfer {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', [$payment, 'dokumen' => 'permohonan-transfer']) }}"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i>Print Permohonan Transfer</a>
                         @can('pembayaran-pranota-bpjs-create')
                         <a href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}#edit-bank" class="bpjs-btn" aria-label="Edit bank {{ $payment->nomor_pembayaran }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>Edit Bank</a>
-                        @include('pembayaran-pranota-bpjs.partials.refresh-employees', ['payment' => $payment])
                         <form method="POST" action="{{ route('pembayaran-pranota-bpjs.destroy', $payment) }}" onsubmit="return confirm('Tarik seluruh pembayaran {{ $payment->nomor_pembayaran }}? Saldo seluruh Akun Bank dan Bank yang Digunakan dikembalikan sesuai transaksi ini, dan tagihan dapat dibayar kembali.');">
                             @csrf
                             @method('DELETE')
