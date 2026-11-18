@@ -8,6 +8,12 @@
         <a href="{{ route('pembayaran-pranota-bpjs.index') }}" class="inline-flex items-center rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50">Kembali</a>
     </div>
     @include('pembayaran-pranota-bpjs.partials.messages')
+    @can('pranota-bpjs-update')
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm">
+        <p class="text-indigo-900">Ada karyawan yang belum tercantum? Perbarui data pranota untuk menambahkan karyawan, lalu pilih kembali karyawan yang akan dibayar.</p>
+        <a href="{{ route('pranota-bpjs.refresh-data', $pranota) }}" class="mt-2 inline-flex items-center gap-2 font-semibold text-indigo-700 hover:underline"><i class="fa-solid fa-users" aria-hidden="true"></i>Perbarui Data Karyawan</a>
+    </div>
+    @endcan
     <form method="POST" action="{{ route('pembayaran-pranota-bpjs.store') }}" class="space-y-6">
         @csrf
         <input type="hidden" name="select_employees" value="1">

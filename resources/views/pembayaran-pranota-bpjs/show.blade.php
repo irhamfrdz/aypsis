@@ -12,6 +12,18 @@
         @endcan
         <a href="{{ route('pembayaran-pranota-bpjs.index') }}" class="px-4 py-2 border rounded-lg">Kembali</a></div></div>
     @include('pembayaran-pranota-bpjs.partials.messages')
+    @can('pranota-bpjs-update')
+    <div class="rounded-xl border border-indigo-200 bg-indigo-50 p-4 text-sm">
+        <p class="text-indigo-900">Tambahkan karyawan yang belum tercatat pada pranota melalui pembaruan data. Tagihan tambahan dapat dibayar melalui pembayaran berikutnya.</p>
+        <div class="mt-2 flex flex-wrap gap-3">
+            @foreach($payment->pranotas as $pranota)
+                @if($pranota->status !== 'cancelled')
+                <a href="{{ route('pranota-bpjs.refresh-data', $pranota) }}" class="inline-flex items-center gap-2 font-semibold text-indigo-700 hover:underline"><i class="fa-solid fa-users" aria-hidden="true"></i>Perbarui Data Karyawan — {{ $pranota->nomor_pranota }}</a>
+                @endif
+            @endforeach
+        </div>
+    </div>
+    @endcan
     <div class="bg-white border rounded-xl p-6 grid md:grid-cols-2 gap-5 text-sm">
         <div><p class="text-gray-500">Tanggal Pembayaran</p><p class="font-semibold">{{ $payment->tanggal_pembayaran->format('d/m/Y') }}</p></div>
         <div><p class="text-gray-500">Status</p><p class="text-green-700 font-semibold">Lunas</p></div>
