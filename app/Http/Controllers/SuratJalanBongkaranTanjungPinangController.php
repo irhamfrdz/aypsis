@@ -4,10 +4,15 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalanBongkaranTanjungPinang;
 use App\Models\Manifest;
+use App\Models\Gudang;
+use App\Models\HistoryKontainer;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class SuratJalanBongkaranTanjungPinangController extends Controller
 {
@@ -119,6 +124,7 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             $record = SuratJalanBongkaranTanjungPinang::create($data);
             $record->nomor_surat_jalan = $this->formatNomorSuratJalan($record->id, $record->tanggal_surat_jalan->toDateString());
             $record->save();
+            $this->recordCustomerWarehouseMovement($record);
 
             return $record;
         });
@@ -172,6 +178,66 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
     private function formatNomorSuratJalan(int $id, string $tanggal): string
     {
         return sprintf('SJB/TP/%s/%06d', str_replace('-', '', $tanggal), $id);
+    }
+
+    private function recordCustomerWarehouseMovement(SuratJalanBongkaranTanjungPinang $suratJalan): void
+    {
+        $nomorKontainer = trim((string) $suratJalan->no_kontainer);
+        if ($nomorKontainer === '') {
+            return;
+        }
+
+        $gudangTujuan = Gudang::query()
+            ->whereRaw('LOWER(TRIM(nama_gudang)) = ?', ['gudang customer tanjung pinang'])
+            ->first();
+
+        if (! $gudangTujuan) {
+            throw ValidationException::withMessages([
+                'no_kontainer' => 'Gudang "Gudang Customer Tanjung Pinang" belum terdaftar di master gudang.',
+            ]);
+        }
+
+        $tanggalKegiatan = $suratJalan->tanggal_surat_jalan->toDateString();
+        $riwayatSebelumnya = HistoryKontainer::query()
+            ->where('nomor_kontainer', $nomorKontainer)
+            ->whereDate('tanggal_kegiatan', '<=', $tanggalKegiatan)
+            ->orderByDesc('tanggal_kegiatan')
+            ->orderByDesc('created_at')
+            ->orderByDesc('id')
+            ->first();
+
+        $kontainerSewa = Kontainer::query()
+            ->where('nomor_seri_gabungan', $nomorKontainer)
+            ->orderByDesc('id')
+            ->first();
+        $kontainerStok = StockKontainer::query()
+            ->where('nomor_seri_gabungan', $nomorKontainer)
+            ->orderByDesc('id')
+            ->first();
+
+        if (! $kontainerStok && ! $kontainerSewa) {
+            throw ValidationException::withMessages([
+                'no_kontainer' => 'Nomor kontainer belum terdaftar pada master kontainer atau stock kontainer, sehingga lokasinya tidak dapat diperbarui.',
+            ]);
+        }
+
+        $gudangAsalId = $riwayatSebelumnya
+            ? $riwayatSebelumnya->gudang_id
+            : ($kontainerStok?->gudangs_id ?? $kontainerSewa?->gudangs_id);
+        $tipeKontainer = $kontainerStok?->tipe_kontainer
+            ?? $kontainerSewa?->tipe_kontainer
+            ?? $suratJalan->tipe_kontainer;
+
+        HistoryKontainer::create([
+            'nomor_kontainer' => $nomorKontainer,
+            'tipe_kontainer' => $tipeKontainer,
+            'jenis_kegiatan' => 'Masuk',
+            'tanggal_kegiatan' => $tanggalKegiatan,
+            'asal_gudang_id' => $gudangAsalId,
+            'gudang_id' => $gudangTujuan->id,
+            'keterangan' => 'Pindah ke Gudang Customer Tanjung Pinang (Surat Jalan: '.$suratJalan->nomor_surat_jalan.')',
+            'created_by' => Auth::id(),
+        ]);
     }
 
     private function selection(array $data): array
