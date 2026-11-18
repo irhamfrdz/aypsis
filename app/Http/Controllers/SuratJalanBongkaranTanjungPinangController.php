@@ -139,30 +139,41 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             'nama_kapal' => ['required', 'string', 'max:255'],
             'no_voyage' => ['required', 'string', 'max:255'],
             'tanggal_surat_jalan' => ['required', 'date'],
-            'manifest_ids' => ['required', 'array', 'min:1'],
-            'manifest_ids.*' => ['required', 'integer', 'distinct', 'exists:manifests,id'],
+            'manifest_numbers' => ['required', 'array', 'min:1'],
+            'manifest_numbers.*' => ['required', 'string', 'max:255', 'distinct'],
         ]);
 
         $jumlahDibuat = DB::transaction(function () use ($data) {
             $jumlahDibuat = 0;
 
-            foreach ($data['manifest_ids'] as $manifestId) {
+            foreach ($data['manifest_numbers'] as $manifestNumber) {
                 $manifest = Manifest::query()
-                    ->whereKey($manifestId)
                     ->where('nama_kapal', $data['nama_kapal'])
                     ->where('no_voyage', $data['no_voyage'])
+                    ->where(function ($query) use ($manifestNumber) {
+                        $query->where('nomor_bl', $manifestNumber)
+                            ->orWhere('nomor_kontainer', $manifestNumber);
+                    })
                     ->lockForUpdate()
-                    ->first();
+                    ->get();
 
-                if (! $manifest) {
+                if ($manifest->isEmpty()) {
                     throw ValidationException::withMessages([
-                        'manifest_ids' => 'Ada manifest yang tidak termasuk kapal dan voyage yang dipilih. Muat ulang halaman lalu coba lagi.',
+                        'manifest_numbers' => "Manifest dengan nomor {$manifestNumber} tidak ditemukan pada kapal dan voyage yang dipilih.",
                     ]);
                 }
 
+                if ($manifest->count() > 1) {
+                    throw ValidationException::withMessages([
+                        'manifest_numbers' => "Nomor {$manifestNumber} cocok dengan lebih dari satu manifest. Gunakan Nomor BL yang unik.",
+                    ]);
+                }
+
+                $manifest = $manifest->first();
+
                 if ($manifest->suratJalanBongkaranTanjungPinang()->exists()) {
                     throw ValidationException::withMessages([
-                        'manifest_ids' => 'Manifest '.$manifest->nomor_bl.' sudah memiliki surat jalan. Muat ulang halaman lalu pilih manifest yang belum dibuatkan SJ.',
+                        'manifest_numbers' => 'Manifest '.$manifest->nomor_bl.' sudah memiliki surat jalan.',
                     ]);
                 }
 
