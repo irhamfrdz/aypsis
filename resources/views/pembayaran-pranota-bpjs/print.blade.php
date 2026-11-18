@@ -69,7 +69,7 @@
     <h2>Pranota yang Dibayar</h2>
     <table><thead><tr><th>Nomor Pranota</th><th>Periode</th><th class="right">Dibayar</th></tr></thead><tbody>
         @foreach($payment->pranotas as $pranota)<tr><td>{{ $pranota->nomor_pranota }}</td><td>{{ sprintf('%02d', $pranota->periode_bulan) }}/{{ $pranota->periode_tahun }}</td><td class="right">Rp {{ number_format($pranota->pivot->subtotal, 2, ',', '.') }}</td></tr>@endforeach
-    </tbody><tfoot><tr class="total"><td colspan="2">Total Pembayaran</td><td class="right">Rp {{ number_format($payment->total_pembayaran, 2, ',', '.') }}</td></tr></tfoot></table>
+    </tbody><tfoot><tr class="total"><td colspan="2">Total Pembayaran</td><td class="right">Rp {{ number_format($payment->total_pembayaran, 2, ',', '.') }}</td></tr><tr class="total"><td colspan="2">Grand Total Karyawan yang Dibayarkan</td><td class="right">{{ number_format($paidEmployeeCount, 0, ',', '.') }} Karyawan</td></tr></tfoot></table>
     @if(! $isTransferRequest && $parts->isNotEmpty())
     <h2>Rincian Tipe yang Dibayar</h2>
     <table><thead><tr><th>Tipe</th><th>Akun Bank yang Digunakan</th><th class="right">Nominal</th><th class="right">TUNJANGAN</th><th class="right">BIAYA</th><th class="right">HUTANG</th></tr></thead><tbody>

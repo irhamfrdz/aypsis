@@ -328,7 +328,17 @@ class PembayaranPranotaBpjsController extends Controller
 
     public function print(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
+        $paidEmployeeCount = \App\Models\PranotaBpjsDetail::query()
+            ->whereIn('id', DB::table('pembayaran_pranota_bpjs_parts')
+                ->select('pranota_bpjs_detail_id')
+                ->where('pembayaran_pranota_bpjs_id', $pembayaran_pranota_bpj->id))
+            ->select('tipe_karyawan', 'karyawan_id')
+            ->distinct()
+            ->get()
+            ->count();
+
         return view('pembayaran-pranota-bpjs.print', $this->paymentDetails($pembayaran_pranota_bpj) + [
+            'paidEmployeeCount' => $paidEmployeeCount,
             'accountAllocations' => $this->printAccountAllocations($pembayaran_pranota_bpj),
         ]);
     }
