@@ -10,6 +10,11 @@ class PembayaranPranotaBpjs extends Model
 
     protected $guarded = ['id'];
 
+    protected function casts(): array
+    {
+        return ['employee_snapshots' => 'array'];
+    }
+
     protected $casts = ['tanggal_pembayaran' => 'date', 'total_pembayaran' => 'decimal:2', 'bank_allocations' => 'array', 'journal_allocations' => 'array'];
 
     public function pranotas()

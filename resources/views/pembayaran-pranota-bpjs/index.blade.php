@@ -176,6 +176,7 @@
                         <a target="_blank" rel="noopener" aria-label="Print Permohonan Transfer {{ $payment->nomor_pembayaran }}" class="bpjs-btn" href="{{ route('pembayaran-pranota-bpjs.print', [$payment, 'dokumen' => 'permohonan-transfer']) }}"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i>Print Permohonan Transfer</a>
                         @can('pembayaran-pranota-bpjs-create')
                         <a href="{{ route('pembayaran-pranota-bpjs.show', $payment) }}#edit-bank" class="bpjs-btn" aria-label="Edit bank {{ $payment->nomor_pembayaran }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i>Edit Bank</a>
+                        @include('pembayaran-pranota-bpjs.partials.refresh-employees', ['payment' => $payment])
                         <form method="POST" action="{{ route('pembayaran-pranota-bpjs.destroy', $payment) }}" onsubmit="return confirm('Tarik seluruh pembayaran {{ $payment->nomor_pembayaran }}? Saldo seluruh Akun Bank dan Bank yang Digunakan dikembalikan sesuai transaksi ini, dan tagihan dapat dibayar kembali.');">
                             @csrf
                             @method('DELETE')

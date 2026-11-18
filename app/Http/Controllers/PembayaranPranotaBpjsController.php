@@ -18,7 +18,7 @@ class PembayaranPranotaBpjsController extends Controller
     public function __construct(private CoaTransactionService $journal)
     {
         $this->middleware('can:pembayaran-pranota-bpjs-view')->only(['index', 'show']);
-        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update', 'destroy', 'syncCoa']);
+        $this->middleware('can:pembayaran-pranota-bpjs-create')->only(['create', 'store', 'update', 'destroy', 'syncCoa', 'refreshEmployees']);
     }
 
     public function index(Request $request)
@@ -275,6 +275,20 @@ class PembayaranPranotaBpjsController extends Controller
         return back()->with('success', $changed ? 'COA pembayaran berhasil disinkronkan.' : 'COA pembayaran sudah sesuai. Tidak ada nominal yang digandakan.');
     }
 
+    public function refreshEmployees(PembayaranPranotaBpjs $pembayaran_pranota_bpj)
+    {
+        try {
+            $count = (new \App\Services\BpjsPaymentEmployeeUpdater)->update($pembayaran_pranota_bpj);
+        } catch (ValidationException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Gagal memperbarui karyawan pembayaran BPJS', ['payment_id' => $pembayaran_pranota_bpj->id, 'exception' => $e]);
+            return back()->with('error', 'Pembaruan gagal. Tidak ada perubahan disimpan.');
+        }
+        Log::info('Karyawan pembayaran BPJS diperbarui', ['payment_id' => $pembayaran_pranota_bpj->id, 'user_id' => auth()->id(), 'changed' => $count]);
+        return back()->with('success', $count.' data karyawan diperbarui dari master. Nominal dan jurnal pembayaran tetap.');
+    }
+
     public function update(Request $request, PembayaranPranotaBpjs $pembayaran_pranota_bpj)
     {
         $data = $request->validate([
@@ -309,11 +323,12 @@ class PembayaranPranotaBpjsController extends Controller
             ->where('pembayaran_pranota_bpjs_id', $pembayaran_pranota_bpj->id)->get();
         $details = \App\Models\PranotaBpjsDetail::with(['karyawan', 'header'])
             ->whereIn('id', $employeeParts->pluck('pranota_bpjs_detail_id'))->get()->keyBy('id');
-        $paidEmployees = $employeeParts->groupBy('pranota_bpjs_detail_id')->map(function ($parts, $detailId) use ($details) {
+        $paidEmployees = $employeeParts->groupBy('pranota_bpjs_detail_id')->map(function ($parts, $detailId) use ($details, $pembayaran_pranota_bpj) {
             $detail = $details->get($detailId);
 
             return [
-                'employee' => $detail?->karyawan_pranota,
+                'employee' => isset($pembayaran_pranota_bpj->employee_snapshots[$detailId])
+                    ? (object) $pembayaran_pranota_bpj->employee_snapshots[$detailId] : $detail?->karyawan_pranota,
                 'pranota' => $detail?->header,
                 'parts' => $parts,
                 'total' => $parts->sum('subtotal'),

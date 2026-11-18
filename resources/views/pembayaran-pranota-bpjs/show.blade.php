@@ -5,6 +5,7 @@
 <div class="max-w-7xl mx-auto space-y-6">
     <div class="flex flex-wrap justify-between items-center gap-4"><h1 class="text-2xl font-bold text-gray-800">{{ $payment->nomor_pembayaran }}</h1><div class="flex flex-wrap items-center gap-2">
         @can('pembayaran-pranota-bpjs-create')
+            @include('pembayaran-pranota-bpjs.partials.refresh-employees', ['payment' => $payment])
             <form method="POST" action="{{ route('pembayaran-pranota-bpjs.sync-coa', $payment) }}" onsubmit="this.querySelector('button').disabled = true;">
                 @csrf
                 <button type="submit" class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700 disabled:opacity-50"><i class="fas fa-rotate" aria-hidden="true"></i>SYNC COA</button>
@@ -86,7 +87,7 @@
                             <td class="p-4">{{ $row['employee']?->nik ?? '-' }}</td>
                             <td class="p-4 font-medium">{{ $row['employee']?->nama_lengkap ?? 'Data karyawan tidak tersedia' }}</td>
                             <td class="p-4">{{ $row['pranota']?->nomor_pranota ?? '-' }}@if($row['pranota'])<span class="block text-xs text-gray-500">{{ sprintf('%02d', $row['pranota']->periode_bulan) }}/{{ $row['pranota']->periode_tahun }}</span>@endif</td>
-                            <td class="p-4">@foreach($row['parts'] as $employeePart)<div>{{ $employeePart->komponen === 'jkn' ? 'JKN' : ($employeePart->komponen === 'jamsostek' ? 'BP Jamsostek' : $employeePart->komponen) }} / {{ $employeePart->tipe }}: Rp {{ number_format($employeePart->subtotal, 2, ',', '.') }}</div>@endforeach</td>
+                            <td class="p-4">@foreach($row['parts'] as $employeePart)<div>{{ $employeePart->komponen === 'jkn' ? 'JKN' : ($employeePart->komponen === 'jamsostek' ? 'BP Jamsostek' : $employeePart->komponen) }} / {{ $employeePart->tipe }}: Rp {{ number_format($employeePart->subtotal, 2, ',', '.') }}<span class="block text-xs text-gray-500">Group: {{ $employeePart->komponen === 'jkn' ? ($row['employee']?->group_jkn ?? '-') : ($row['employee']?->group_bp_jamsostek ?? '-') }}</span></div>@endforeach</td>
                             <td class="p-4 text-right whitespace-nowrap font-semibold">Rp {{ number_format($row['total'], 2, ',', '.') }}</td>
                         </tr>
                     @empty

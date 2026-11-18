@@ -371,6 +371,7 @@ Route::middleware([
     Route::resource('pranota-bpjs', PranotaBpjsController::class);
     Route::get('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/print', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'print'])->name('pembayaran-pranota-bpjs.print')->middleware('can:pembayaran-pranota-bpjs-view');
     Route::post('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/sync-coa', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'syncCoa'])->name('pembayaran-pranota-bpjs.sync-coa')->middleware('can:pembayaran-pranota-bpjs-create');
+    Route::post('pembayaran-pranota-bpjs/{pembayaran_pranota_bpj}/refresh-employees', [\App\Http\Controllers\PembayaranPranotaBpjsController::class, 'refreshEmployees'])->name('pembayaran-pranota-bpjs.refresh-employees')->middleware('can:pembayaran-pranota-bpjs-create');
     Route::resource('pembayaran-pranota-bpjs', \App\Http\Controllers\PembayaranPranotaBpjsController::class)->only(['index', 'create', 'store', 'show', 'update', 'destroy']);
 
     Route::get('master-customer-buruh/download-template', [\App\Http\Controllers\MasterCustomerBuruhController::class, 'downloadTemplate'])->name('master-customer-buruh.download-template');

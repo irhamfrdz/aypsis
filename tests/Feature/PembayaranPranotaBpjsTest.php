@@ -36,6 +36,7 @@ class PembayaranPranotaBpjsTest extends TestCase
         (require database_path('migrations/2026_11_05_130000_add_bank_allocations_to_pembayaran_pranota_bpjs.php'))->up();
         (require database_path('migrations/2026_11_09_140000_add_journal_amounts_to_bpjs_payment_parts.php'))->up();
         (require database_path('migrations/2026_11_10_180000_add_journal_allocations_to_bpjs_payments.php'))->up();
+        (require database_path('migrations/2026_11_18_160000_add_employee_snapshots_to_bpjs_payments.php'))->up();
         (require database_path('migrations/2025_09_30_141213_create_nomor_terakhir_table.php'))->up();
         Schema::create('akun_coa', function (Blueprint $table) {
             $table->id();
@@ -50,6 +51,44 @@ class PembayaranPranotaBpjsTest extends TestCase
             ['id' => 1, 'nomor_akun' => '100', 'nama_akun' => 'Bank Uji', 'tipe_akun' => 'Bank', 'saldo' => 1000000],
             ['id' => 2, 'nomor_akun' => '200', 'nama_akun' => 'Hutang BPJS', 'tipe_akun' => 'Hutang', 'saldo' => -1000000],
         ]);
+    }
+
+    public function test_employee_refresh_updates_only_selected_payment_and_preserves_amounts(): void
+    {
+        Schema::create('karyawans', function (Blueprint $table) {
+            $table->id();
+            foreach (['nik', 'nama_lengkap', 'group_jkn', 'tipe_jkn', 'group_bp_jamsostek', 'tipe_bp_jamsostek', 'cabang_bpjs'] as $field) {
+                $table->string($field)->nullable();
+            }
+        });
+        DB::table('karyawans')->insert(['id' => 1, 'nama_lengkap' => 'Uji', 'group_jkn' => 'BARU', 'tipe_jkn' => 'KANTOR']);
+        $pranota = $this->pranota('partial', 100);
+        $detail = \App\Models\PranotaBpjsDetail::create([
+            'pranota_bpjs_header_id' => $pranota->id, 'karyawan_id' => 1,
+            'tipe_karyawan' => \App\Models\Karyawan::class,
+            'snapshot_bpjs' => ['karyawan' => ['nama_lengkap' => 'Uji', 'group_jkn' => 'LAMA', 'tipe_jkn' => 'CREW']],
+        ]);
+        $payments = [];
+        foreach (['jkn', 'jamsostek'] as $component) {
+            $payment = PembayaranPranotaBpjs::create([
+                'nomor_pembayaran' => 'REFRESH-'.$component, 'tanggal_pembayaran' => '2026-11-01',
+                'bank_coa_id' => 2, 'akun_coa_id' => 1, 'total_pembayaran' => 50,
+            ]);
+            DB::table('pembayaran_pranota_bpjs_parts')->insert([
+                'pembayaran_pranota_bpjs_id' => $payment->id, 'pranota_bpjs_detail_id' => $detail->id,
+                'pranota_bpjs_header_id' => $pranota->id, 'komponen' => $component, 'tipe' => 'CREW', 'subtotal' => 50,
+            ]);
+            $payments[] = $payment;
+        }
+        $updater = new \App\Services\BpjsPaymentEmployeeUpdater;
+        $this->assertSame(1, $updater->update($payments[0]));
+        $this->assertSame(0, $updater->update($payments[0]));
+        $this->assertSame('BARU', $payments[0]->fresh()->employee_snapshots[$detail->id]['group_jkn']);
+        $this->assertNull($payments[1]->fresh()->employee_snapshots);
+        $this->assertSame(['KANTOR', 'CREW'], DB::table('pembayaran_pranota_bpjs_parts')->orderBy('id')->pluck('tipe')->all());
+        $this->assertEquals(100, DB::table('pembayaran_pranota_bpjs_parts')->sum('subtotal'));
+        $this->assertSame('LAMA', $detail->fresh()->snapshot_bpjs['karyawan']['group_jkn']);
+        $this->assertSame(0, DB::table('coa_transactions')->count());
     }
 
     public function test_employee_list_only_contains_parts_of_selected_payment(): void
