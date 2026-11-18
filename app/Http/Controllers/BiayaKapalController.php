@@ -1245,8 +1245,11 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
             'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.no_bl.*' => 'required|integer|exists:manifests,id',
             'trucking_sections.*.container_adjustments' => 'nullable|array',
             'trucking_sections.*.container_adjustments.*' => 'nullable|numeric',
+            'trucking_sections.*.container_dooring_dates' => 'nullable|array',
+            'trucking_sections.*.container_dooring_dates.*' => 'nullable|date',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
@@ -1701,6 +1704,7 @@ class BiayaKapalController extends Controller
                         'nama_vendor' => $section['nama_vendor'] ?? null,
                         'no_bl' => $section['no_bl'] ?? [],
                         'container_adjustments' => $containerTotals['adjustments'],
+                        'container_dooring_dates' => $section['container_dooring_dates'] ?? [],
                         'total_biaya_20ft' => $containerTotals['20ft'],
                         'total_biaya_40ft' => $containerTotals['40ft'],
                         'subtotal' => $subtotal,
@@ -1710,6 +1714,7 @@ class BiayaKapalController extends Controller
                         'notes_adjustment' => $section['notes_adjustment'] ?? null,
                         'total_biaya' => $adjustedSubtotal - $pph,
                     ]);
+                    $this->recordTruckingDooringMovements($biayaKapal, $section);
                 }
 
                 // Auto-calculate nominal for trucking from section totals
@@ -4984,8 +4989,11 @@ class BiayaKapalController extends Controller
             'trucking_sections.*.nama_vendor' => 'nullable|string|max:255',
             'trucking_sections.*.group_index' => 'nullable|integer',
             'trucking_sections.*.no_bl' => 'nullable|array',
+            'trucking_sections.*.no_bl.*' => 'required|integer|exists:manifests,id',
             'trucking_sections.*.container_adjustments' => 'nullable|array',
             'trucking_sections.*.container_adjustments.*' => 'nullable|numeric',
+            'trucking_sections.*.container_dooring_dates' => 'nullable|array',
+            'trucking_sections.*.container_dooring_dates.*' => 'nullable|date',
             'trucking_sections.*.total_biaya_20ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.total_biaya_40ft' => 'nullable|numeric|min:0',
             'trucking_sections.*.adjustment' => 'nullable|numeric',
@@ -5657,6 +5665,10 @@ class BiayaKapalController extends Controller
 
             // TRUCKING UPDATE
             if ($request->has('trucking_sections')) {
+                $doorMovementMarker = '[BiayaKapalTruckingDooring:'.$biayaKapal->id.']';
+                \App\Models\HistoryKontainer::where('keterangan', 'like', '%'.$doorMovementMarker.'%')
+                    ->get()
+                    ->each(fn ($history) => $history->delete());
                 BiayaKapalTrucking::where('biaya_kapal_id', $biayaKapal->id)->delete();
                 if (! empty($request->trucking_sections)) {
                     $truckingPphAllocations = $this->calculateTruckingPphAllocations($request->trucking_sections);
@@ -5678,6 +5690,7 @@ class BiayaKapalController extends Controller
                             'nama_vendor' => $section['nama_vendor'] ?? null,
                             'no_bl' => $section['no_bl'] ?? [],
                             'container_adjustments' => $containerTotals['adjustments'],
+                            'container_dooring_dates' => $section['container_dooring_dates'] ?? [],
                             'total_biaya_20ft' => $containerTotals['20ft'],
                             'total_biaya_40ft' => $containerTotals['40ft'],
                             'subtotal' => $subtotal,
@@ -5687,6 +5700,7 @@ class BiayaKapalController extends Controller
                             'notes_adjustment' => $section['notes_adjustment'] ?? null,
                             'total_biaya' => $adjustedSubtotal - $pph,
                         ]);
+                        $this->recordTruckingDooringMovements($biayaKapal, $section);
                     }
                 }
                 // Auto-calculate nominal for trucking from section totals
@@ -8364,6 +8378,109 @@ class BiayaKapalController extends Controller
         }
 
         return $allocations;
+    }
+
+    /**
+     * Record dooring as a container movement into the Tanjung Pinang customer warehouse.
+     * The history model synchronizes the current warehouse on Kontainer and StockKontainer.
+     */
+    private function recordTruckingDooringMovements(BiayaKapal $biayaKapal, array $section): void
+    {
+        $doorDates = $section['container_dooring_dates'] ?? [];
+        if (! is_array($doorDates) || $doorDates === []) {
+            return;
+        }
+
+        $selectedManifestIds = array_map('strval', $section['no_bl'] ?? []);
+        $marker = '[BiayaKapalTruckingDooring:'.$biayaKapal->id.']';
+        $warehouse = null;
+
+        foreach ($doorDates as $manifestId => $doorDate) {
+            if (blank($doorDate)) {
+                continue;
+            }
+
+            if (! in_array((string) $manifestId, $selectedManifestIds, true)) {
+                throw ValidationException::withMessages([
+                    'trucking_sections' => 'Tanggal dooring hanya dapat diisi untuk kontainer yang dipilih pada vendor trucking tersebut.',
+                ]);
+            }
+
+            $manifest = Manifest::query()
+                ->whereKey($manifestId)
+                ->where('no_voyage', $section['voyage'] ?? null)
+                ->first();
+
+            if (! $manifest) {
+                throw ValidationException::withMessages([
+                    'trucking_sections' => 'Manifest untuk tanggal dooring tidak ditemukan pada voyage yang dipilih.',
+                ]);
+            }
+
+            $containerNumber = trim((string) $manifest->nomor_kontainer);
+            if ($containerNumber === '') {
+                continue;
+            }
+
+            $existingMovement = \App\Models\HistoryKontainer::query()
+                ->where('nomor_kontainer', $containerNumber)
+                ->where('keterangan', 'like', '%'.$marker.'%')
+                ->first();
+
+            if ($existingMovement) {
+                if ($existingMovement->tanggal_kegiatan->toDateString() === (string) $doorDate) {
+                    continue;
+                }
+
+                throw ValidationException::withMessages([
+                    'trucking_sections' => "Kontainer {$containerNumber} memiliki lebih dari satu tanggal dooring dalam biaya kapal ini.",
+                ]);
+            }
+
+            $warehouse ??= \App\Models\Gudang::query()
+                ->whereRaw('LOWER(TRIM(nama_gudang)) = ?', ['gudang customer tanjung pinang'])
+                ->first();
+
+            if (! $warehouse) {
+                throw ValidationException::withMessages([
+                    'trucking_sections' => 'Gudang "Gudang Customer Tanjung Pinang" belum terdaftar di master gudang.',
+                ]);
+            }
+
+            $rentalContainer = \App\Models\Kontainer::query()
+                ->where('nomor_seri_gabungan', $containerNumber)
+                ->orderByDesc('id')
+                ->first();
+            $stockContainer = \App\Models\StockKontainer::query()
+                ->where('nomor_seri_gabungan', $containerNumber)
+                ->orderByDesc('id')
+                ->first();
+
+            if (! $rentalContainer && ! $stockContainer) {
+                throw ValidationException::withMessages([
+                    'trucking_sections' => "Kontainer {$containerNumber} belum terdaftar pada master kontainer atau stock kontainer.",
+                ]);
+            }
+
+            $previousHistory = \App\Models\HistoryKontainer::query()
+                ->where('nomor_kontainer', $containerNumber)
+                ->whereDate('tanggal_kegiatan', '<=', $doorDate)
+                ->orderByDesc('tanggal_kegiatan')
+                ->orderByDesc('created_at')
+                ->orderByDesc('id')
+                ->first();
+
+            \App\Models\HistoryKontainer::create([
+                'nomor_kontainer' => $containerNumber,
+                'tipe_kontainer' => $stockContainer?->tipe_kontainer ?? $rentalContainer?->tipe_kontainer,
+                'jenis_kegiatan' => 'Masuk',
+                'tanggal_kegiatan' => $doorDate,
+                'asal_gudang_id' => $previousHistory?->gudang_id ?? $stockContainer?->gudangs_id ?? $rentalContainer?->gudangs_id,
+                'gudang_id' => $warehouse->id,
+                'keterangan' => 'Dooring masuk ke Gudang Customer Tanjung Pinang (Biaya Kapal '.$biayaKapal->nomor_invoice.') '.$marker,
+                'created_by' => auth()->id(),
+            ]);
+        }
     }
 
     /**

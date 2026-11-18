@@ -544,7 +544,7 @@
         if (list.querySelector(`.trucking-container-adjustment-row[data-id="${id}"]`)) return;
 
         const row = document.createElement('div');
-        row.className = 'trucking-container-adjustment-row grid grid-cols-1 items-center gap-2 rounded-md border border-yellow-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_180px_180px]';
+        row.className = 'trucking-container-adjustment-row grid grid-cols-1 items-center gap-2 rounded-md border border-yellow-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_180px_180px_180px]';
         row.setAttribute('data-id', id);
         row.innerHTML = `
             <div class="min-w-0">
@@ -555,6 +555,10 @@
                 <input type="text" inputmode="numeric" name="trucking_sections[${sectionIndex}][container_adjustments][${id}]"
                        class="trucking-container-adjustment-input mt-1 w-full rounded-md border border-yellow-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-yellow-500">
             </label>
+            <label class="text-xs font-medium text-gray-600">Tanggal Dooring
+                <input type="date" name="trucking_sections[${sectionIndex}][container_dooring_dates][${id}]"
+                       class="trucking-container-dooring-date mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
+            </label>
             <div class="text-xs text-gray-600">Tarif akhir
                 <strong class="trucking-container-final-price mt-1 block text-sm text-emerald-700"></strong>
             </div>`;
@@ -562,6 +566,7 @@
         const input = row.querySelector('.trucking-container-adjustment-input');
         input.value = adjustment ? Number(adjustment).toLocaleString('id-ID') : '0';
         input.addEventListener('click', event => event.stopPropagation());
+        row.querySelector('.trucking-container-dooring-date').addEventListener('click', event => event.stopPropagation());
         input.addEventListener('keydown', function(event) {
             if (event.key !== '-') return;
             event.preventDefault();

@@ -513,14 +513,14 @@
         return Math.max(0, baseCost + parseTruckingAdjustment(input?.value));
     }
 
-    function addTruckingContainerAdjustmentRow(sectionIndex, option, adjustment = 0) {
+    function addTruckingContainerAdjustmentRow(sectionIndex, option, adjustment = 0, dooringDate = '') {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         const id = option.getAttribute('data-id');
         const list = section.querySelector('.trucking-container-adjustment-list');
         if (list.querySelector(`.trucking-container-adjustment-row[data-id="${id}"]`)) return;
 
         const row = document.createElement('div');
-        row.className = 'trucking-container-adjustment-row grid grid-cols-1 items-center gap-2 rounded-md border border-yellow-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_180px_180px]';
+        row.className = 'trucking-container-adjustment-row grid grid-cols-1 items-center gap-2 rounded-md border border-yellow-200 bg-white p-2 md:grid-cols-[minmax(0,1fr)_180px_180px_180px]';
         row.setAttribute('data-id', id);
         row.innerHTML = `
             <div class="min-w-0">
@@ -531,6 +531,10 @@
                 <input type="text" inputmode="numeric" name="trucking_sections[${sectionIndex}][container_adjustments][${id}]"
                        class="trucking-container-adjustment-input mt-1 w-full rounded-md border border-yellow-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-yellow-500">
             </label>
+            <label class="text-xs font-medium text-gray-600">Tanggal Dooring
+                <input type="date" name="trucking_sections[${sectionIndex}][container_dooring_dates][${id}]"
+                       class="trucking-container-dooring-date mt-1 w-full rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:ring-2 focus:ring-blue-500">
+            </label>
             <div class="text-xs text-gray-600">Tarif akhir
                 <strong class="trucking-container-final-price mt-1 block text-sm text-emerald-700"></strong>
             </div>`;
@@ -538,6 +542,9 @@
         const input = row.querySelector('.trucking-container-adjustment-input');
         input.value = adjustment ? Number(adjustment).toLocaleString('id-ID') : '0';
         input.addEventListener('click', event => event.stopPropagation());
+        const dooringDateInput = row.querySelector('.trucking-container-dooring-date');
+        dooringDateInput.value = dooringDate || '';
+        dooringDateInput.addEventListener('click', event => event.stopPropagation());
         input.addEventListener('keydown', function(event) {
             if (event.key !== '-') return;
             event.preventDefault();
@@ -704,7 +711,7 @@
     }
 
     // Helper for Trucking BL Chips in Edit Mode
-    window.addBlChipToTruckingSection = function(sectionIndex, blId, adjustment = 0) {
+    window.addBlChipToTruckingSection = function(sectionIndex, blId, adjustment = 0, dooringDate = '') {
         const section = document.querySelector(`.trucking-section[data-trucking-section-index="${sectionIndex}"]`);
         const chipsContainer = section.querySelector('.trucking-selected-bl-chips');
         const hiddenInputsContainer = section.querySelector('.trucking-hidden-bl-inputs');
@@ -744,7 +751,7 @@
         input.name = `trucking_sections[${sectionIndex}][no_bl][]`;
         input.value = blId;
         hiddenInputsContainer.appendChild(input);
-        if (selectedOption) addTruckingContainerAdjustmentRow(sectionIndex, selectedOption, adjustment);
+        if (selectedOption) addTruckingContainerAdjustmentRow(sectionIndex, selectedOption, adjustment, dooringDate);
         
         updateTruckingCount(sectionIndex);
     };
