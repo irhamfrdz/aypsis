@@ -1825,6 +1825,23 @@
                                 <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-batam][export]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-batam.export') || (isset($userMatrixPermissions['surat-jalan-bongkaran-batam']['export']) && $userMatrixPermissions['surat-jalan-bongkaran-batam']['export']) || ($user && $user->can('surat-jalan-bongkaran-batam-export'))) checked @endif></td>
                             </tr>
 
+                            {{-- Surat Jalan Bongkaran Tanjung Pinang --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">↳</span>
+                                        <span class="text-teal-700 font-bold">Surat Jalan Bongkaran Tanjung Pinang</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-tanjung-pinang][view]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-tanjung-pinang.view') || (isset($userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['view']) && $userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['view']) || ($user && $user->can('surat-jalan-bongkaran-tanjung-pinang-view'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-tanjung-pinang][create]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-tanjung-pinang.create') || (isset($userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['create']) && $userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['create']) || ($user && $user->can('surat-jalan-bongkaran-tanjung-pinang-create'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-tanjung-pinang][update]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-tanjung-pinang.update') || (isset($userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['update']) && $userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['update']) || ($user && $user->can('surat-jalan-bongkaran-tanjung-pinang-update'))) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[surat-jalan-bongkaran-tanjung-pinang][delete]" value="1" class="permission-checkbox" @if(old('permissions.surat-jalan-bongkaran-tanjung-pinang.delete') || (isset($userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['delete']) && $userMatrixPermissions['surat-jalan-bongkaran-tanjung-pinang']['delete']) || ($user && $user->can('surat-jalan-bongkaran-tanjung-pinang-delete'))) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Surat Jalan Batam --}}
                             <tr class="submodule-row" data-parent="operational">
                                 <td class="submodule">

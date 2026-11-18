@@ -719,6 +719,7 @@ class UserController extends Controller
             // match the short prefix first and mis-parse the permission name.
             $operationalModules = [
                 'surat-jalan-tarik-kosong-batam' => 'surat-jalan-tarik-kosong-batam',
+                'surat-jalan-bongkaran-tanjung-pinang' => 'surat-jalan-bongkaran-tanjung-pinang',
                 'surat-jalan-bongkaran-batam' => 'surat-jalan-bongkaran-batam',
                 'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'surat-jalan-batam' => 'surat-jalan-batam',
@@ -4560,6 +4561,16 @@ class UserController extends Controller
                                 $found = true;
                             }
                         }
+                    }
+
+                    if ($module === 'surat-jalan-bongkaran-tanjung-pinang' && in_array($action, ['view', 'create', 'update', 'delete'], true)) {
+                        $permissionId = Permission::where('name', $module.'-'.$action)->value('id');
+                        if ($permissionId) {
+                            $permissionIds[] = $permissionId;
+                            $found = true;
+                        }
+
+                        continue;
                     }
 
                     // Handle uang-jalan-bongkaran permissions explicitly
