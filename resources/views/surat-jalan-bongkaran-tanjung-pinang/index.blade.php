@@ -203,7 +203,7 @@
                 <div class="mb-4 rounded-md border border-blue-100 bg-blue-50 px-3 py-2 text-xs text-blue-900"><strong id="tp_selected_container">Pilih manifest</strong><span class="ml-2" id="tp_selected_ship"></span></div>
                 <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                     <div class="md:col-span-2"><h4 class="mb-2 text-md font-semibold text-gray-800">Informasi Dasar</h4></div>
-                    <div><label for="tp_nomor_surat_jalan">Nomor Surat Jalan <span class="text-red-600">*</span></label><input id="tp_nomor_surat_jalan" name="nomor_surat_jalan" required value="{{ old('nomor_surat_jalan') }}" class="w-full"></div>
+                    <div><label for="tp_nomor_surat_jalan">Nomor Surat Jalan</label><input id="tp_nomor_surat_jalan" type="text" readonly value="{{ $nomorSuratJalanPreview }}" data-next-id="{{ (int) \App\Models\SuratJalanBongkaranTanjungPinang::max('id') + 1 }}" class="w-full bg-gray-100 text-gray-600"></div>
                     <div><label for="tp_tanggal_surat_jalan">Tanggal Surat Jalan <span class="text-red-600">*</span></label><input id="tp_tanggal_surat_jalan" type="date" name="tanggal_surat_jalan" required value="{{ old('tanggal_surat_jalan', now()->format('Y-m-d')) }}" class="w-full"></div>
                     <div><label for="tp_no_bl">Nomor BL</label><input id="tp_no_bl" name="no_bl" value="{{ old('no_bl') }}" class="w-full"></div>
                     <div><label for="tp_no_kontainer">Nomor Kontainer</label><input id="tp_no_kontainer" name="no_kontainer" value="{{ old('no_kontainer') }}" class="w-full"></div>
@@ -242,6 +242,7 @@ function openTpCreateModal(button) {
         tp_no_seal: 'seal', tp_size: 'size', tp_tipe_kontainer: 'tipe', tp_term: 'term'
     };
     Object.entries(fields).forEach(([id, key]) => { document.getElementById(id).value = data[key] || ''; });
+    updateTpNomorSuratJalan();
     document.getElementById('tp_selected_container').textContent = data.kontainer || data.bl || 'Manifest';
     document.getElementById('tp_selected_ship').textContent = `${data.kapal || ''} · ${data.voyage || ''}`;
     const modal = document.getElementById('tpCreateModal');
@@ -249,16 +250,23 @@ function openTpCreateModal(button) {
     document.body.classList.add('tp-modal-open');
     document.getElementById('tp_nomor_surat_jalan').focus();
 }
+function updateTpNomorSuratJalan() {
+    const input = document.getElementById('tp_nomor_surat_jalan');
+    const tanggal = document.getElementById('tp_tanggal_surat_jalan').value;
+    if (!tanggal) return;
+    input.value = `SJB/TP/${tanggal.replaceAll('-', '')}/${String(input.dataset.nextId).padStart(6, '0')}`;
+}
 function closeTpCreateModal() {
     const modal = document.getElementById('tpCreateModal');
     modal.classList.add('hidden');
     document.body.classList.remove('tp-modal-open');
 }
 document.addEventListener('keydown', event => { if (event.key === 'Escape') closeTpCreateModal(); });
+document.getElementById('tp_tanggal_surat_jalan').addEventListener('change', updateTpNomorSuratJalan);
 @if($errors->any())
 document.addEventListener('DOMContentLoaded', () => {
     const modal = document.getElementById('tpCreateModal');
-    modal.classList.remove('hidden'); document.body.classList.add('tp-modal-open');
+    modal.classList.remove('hidden'); document.body.classList.add('tp-modal-open'); updateTpNomorSuratJalan();
 });
 @endif
 </script>

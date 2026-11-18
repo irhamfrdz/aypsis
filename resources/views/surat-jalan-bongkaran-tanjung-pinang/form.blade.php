@@ -34,8 +34,12 @@
                 'tipe_kontainer' => 'Tipe Kontainer', 'term' => 'Term',
             ] as $field => $label)
                 <div>
-                    <label for="{{ $field }}" class="mb-1 block text-sm font-medium text-slate-700">{{ $label }} @if(in_array($field, ['nomor_surat_jalan', 'tanggal_surat_jalan']))<span class="text-red-600">*</span>@endif</label>
-                    <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'tanggal_surat_jalan' ? 'date' : 'text' }}" value="{{ old($field, $field === 'tanggal_surat_jalan' ? $suratJalan->tanggal_surat_jalan?->format('Y-m-d') : $suratJalan->$field) }}" @if(in_array($field, ['nomor_surat_jalan', 'tanggal_surat_jalan'])) required @endif class="w-full rounded-lg border-slate-300 text-sm focus:border-teal-600 focus:ring-teal-600 @error($field) border-red-500 @enderror">
+                    <label for="{{ $field }}" class="mb-1 block text-sm font-medium text-slate-700">{{ $label }} @if($field === 'tanggal_surat_jalan')<span class="text-red-600">*</span>@endif</label>
+                    @if($field === 'nomor_surat_jalan')
+                        <input id="{{ $field }}" type="text" value="{{ $editing ? $suratJalan->nomor_surat_jalan : $nomorSuratJalanPreview }}" data-next-id="{{ $editing ? $suratJalan->id : (int) \App\Models\SuratJalanBongkaranTanjungPinang::max('id') + 1 }}" readonly class="w-full rounded-lg border-slate-300 bg-slate-100 text-sm text-slate-600">
+                    @else
+                        <input id="{{ $field }}" name="{{ $field }}" type="{{ $field === 'tanggal_surat_jalan' ? 'date' : 'text' }}" value="{{ old($field, $field === 'tanggal_surat_jalan' ? $suratJalan->tanggal_surat_jalan?->format('Y-m-d') : $suratJalan->$field) }}" @if($field === 'tanggal_surat_jalan') required @endif class="w-full rounded-lg border-slate-300 text-sm focus:border-teal-600 focus:ring-teal-600 @error($field) border-red-500 @enderror">
+                    @endif
                 </div>
             @endforeach
             <div class="md:col-span-2">
@@ -50,4 +54,17 @@
     </form>
 </div>
 </div>
+@if(!$editing)
+@push('scripts')
+<script>
+const tpDateInput = document.getElementById('tanggal_surat_jalan');
+const tpNumberInput = document.getElementById('nomor_surat_jalan');
+tpDateInput.addEventListener('change', () => {
+    if (tpDateInput.value) {
+        tpNumberInput.value = `SJB/TP/${tpDateInput.value.replaceAll('-', '')}/${String(tpNumberInput.dataset.nextId).padStart(6, '0')}`;
+    }
+});
+</script>
+@endpush
+@endif
 @endsection

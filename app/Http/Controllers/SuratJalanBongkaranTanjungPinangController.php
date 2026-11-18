@@ -6,7 +6,8 @@ use App\Models\SuratJalanBongkaranTanjungPinang;
 use App\Models\Manifest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SuratJalanBongkaranTanjungPinangController extends Controller
 {
@@ -71,7 +72,12 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
                 }))->orderByDesc('tanggal_surat_jalan')->orderByDesc('id')->paginate(25)->withQueryString()
             : collect();
 
-        return view('surat-jalan-bongkaran-tanjung-pinang.index', compact('manifests', 'suratJalans', 'search', 'stats', 'selectedKapal', 'selectedVoyage', 'mode'));
+        $nomorSuratJalanPreview = $this->formatNomorSuratJalan(
+            (int) SuratJalanBongkaranTanjungPinang::max('id') + 1,
+            now()->toDateString()
+        );
+
+        return view('surat-jalan-bongkaran-tanjung-pinang.index', compact('manifests', 'suratJalans', 'search', 'stats', 'selectedKapal', 'selectedVoyage', 'mode', 'nomorSuratJalanPreview'));
     }
 
     public function create(Request $request)
@@ -94,6 +100,10 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
 
         return view('surat-jalan-bongkaran-tanjung-pinang.form', [
             'suratJalan' => $suratJalan,
+            'nomorSuratJalanPreview' => $this->formatNomorSuratJalan(
+                $suratJalan->exists ? $suratJalan->id : (int) SuratJalanBongkaranTanjungPinang::max('id') + 1,
+                old('tanggal_surat_jalan', now()->toDateString())
+            ),
         ]);
     }
 
@@ -102,10 +112,19 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
         $data = $this->validated($request);
         $data['input_by'] = Auth::id();
         $data['input_date'] = now();
-        SuratJalanBongkaranTanjungPinang::create($data);
+        $suratJalan = DB::transaction(function () use ($data) {
+            // Insert with a unique temporary value so the database can allocate the ID,
+            // then derive the permanent, automatically assigned number from that ID.
+            $data['nomor_surat_jalan'] = 'TEMP-'.Str::uuid();
+            $record = SuratJalanBongkaranTanjungPinang::create($data);
+            $record->nomor_surat_jalan = $this->formatNomorSuratJalan($record->id, $record->tanggal_surat_jalan->toDateString());
+            $record->save();
+
+            return $record;
+        });
 
         return redirect()->route('surat-jalan-bongkaran-tanjung-pinang.list', $this->selection($data))
-            ->with('success', 'Surat jalan bongkaran Tanjung Pinang berhasil dibuat.');
+            ->with('success', 'Surat jalan bongkaran Tanjung Pinang '.$suratJalan->nomor_surat_jalan.' berhasil dibuat.');
     }
 
     public function edit(int $id)
@@ -150,6 +169,11 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
         return SuratJalanBongkaranTanjungPinang::findOrFail($id);
     }
 
+    private function formatNomorSuratJalan(int $id, string $tanggal): string
+    {
+        return sprintf('SJB/TP/%s/%06d', str_replace('-', '', $tanggal), $id);
+    }
+
     private function selection(array $data): array
     {
         return array_filter([
@@ -161,7 +185,6 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
     private function validated(Request $request, ?SuratJalanBongkaranTanjungPinang $suratJalan = null): array
     {
         return $request->validate([
-            'nomor_surat_jalan' => ['required', 'string', 'max:255', Rule::unique('surat_jalan_bongkaran_tanjung_pinangs')->ignore($suratJalan?->id)],
             'tanggal_surat_jalan' => ['required', 'date'],
             'manifest_id' => ['nullable', 'integer', 'exists:manifests,id'],
             'nama_kapal' => ['required', 'string', 'max:255'],
