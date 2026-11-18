@@ -10,7 +10,7 @@
         <div class="flex flex-wrap gap-2">
             <button id="manifest-view-open" type="button" class="rounded-lg border border-indigo-300 bg-white px-4 py-2 text-sm font-semibold text-indigo-700 hover:bg-indigo-50">Pilih kapal / voyage</button>
             @can('manifest-sugeng-manage')<button id="manifest-assign-open" type="button" hidden class="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700">Masukan ke dalam kapal (<span id="manifest-assign-selected-count">0</span>)</button>@endcan
-            @if(request('nama_kapal') && request('no_voyage'))<a href="{{ route('manifest-sugeng.export', ['nama_kapal' => request('nama_kapal'), 'no_voyage' => request('no_voyage')]) }}" class="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Export Excel Manifest & Perincian</a>@endif
+            @if($hasViewChoice && $items->total() > 0)<a href="{{ route('manifest-sugeng.export', request()->only(['nama_kapal', 'no_voyage', 'assignment', 'type', 'search'])) }}" class="inline-flex items-center gap-2 rounded-lg bg-emerald-600 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-700"><i class="fas fa-file-excel" aria-hidden="true"></i>Download Excel</a>@endif
         </div>
     </div>
     @if(session('success'))<div class="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">{{ session('success') }}</div>@endif
