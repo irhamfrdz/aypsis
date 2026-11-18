@@ -4,69 +4,24 @@ namespace App\Services;
 
 use Illuminate\Support\Collection;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ManifestSugengExcelService
 {
     public function create(Collection $items): string
     {
-        $book = new Spreadsheet;
-        $sheet = $book->getActiveSheet();
-        $sheet->setTitle('MANIFEST & PERINCIAN');
+        $book = IOFactory::load(resource_path('templates/approval_tanda_terima_2.xlsx'));
+        $sheet = $book->getSheet(0);
+        $sheet->removeRow(1, 2);
+        $sheet->getSheetView()->setZoomScale(70);
+        $sheet->freezePane('A7');
         $firstItem = $items->first();
-        $sheet->setCellValue('B1', 'PT. ALEXINDO YAKIN PRIMA');
-        $sheet->mergeCells('B1:AG1');
-        $sheet->setCellValue('B2', 'Perusahaan Pelayaran Nasional');
-        $sheet->mergeCells('B2:AG2');
-        $sheet->setCellValue('B3', 'M A N I F E S T    O F    C A R G O');
-        $sheet->mergeCells('B3:AG3');
-        $sheet->setCellValue('B4', trim(($firstItem->nama_kapal ?? '').($firstItem->no_voyage ? ' / '.$firstItem->no_voyage : '')));
-        $sheet->mergeCells('B4:AG4');
-        $headers = [
-            'A' => 'B/L NO.', 'B' => 'HS CODE', 'C' => 'MARK AND NUMBERS', 'D' => 'SEAL NO.',
-            'E' => 'JUMLAH', 'F' => 'SATUAN', 'G' => 'DESCRIPTION OF GOODS', 'H' => 'JUMLAH',
-            'I' => 'SATUAN', 'J' => 'DESCRIPTION OF GOODS', 'K' => 'WEIGHT', 'L' => 'MEASS',
-            'M' => 'SHIPPER', 'N' => 'ADDRESS', 'O' => 'NO. IDENTITAS (NPWP SHIPPER)',
-            'P' => 'CONSIGNEE', 'Q' => 'ADDRESS', 'R' => 'NO. IDENTITAS (NPWP CONSIGNEE)',
-            'S' => 'NOTIFY PARTY (CONSIGNEE)', 'T' => 'ADDRESS', 'U' => 'NO. IDENTITAS (NPWP NOTIFY PARTY CONSIGNEE)',
-            'V' => 'DELIVERY ADDRESS & CONTACT PERSON', 'W' => 'DOCUMENT PPFTZ-03',
-            'X' => 'CONDITION', 'Y' => 'NUMBER', 'Z' => 'DATE', 'AA' => 'JUMLAH',
-            'AB' => 'SATUAN', 'AC' => 'KETERANGAN PERHITUNGAN M3 / KGS',
-        ];
-        $headers = array_fill_keys(array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']), true);
-        $sheet->setCellValue('I6', 'MANIFEST'); $sheet->mergeCells('I6:K6');
-        $sheet->setCellValue('L6', 'PERINCIAN'); $sheet->mergeCells('L6:N6');
-        $topHeaders = ['B' => 'B/L NO.', 'C' => 'HS CODE', 'D' => 'MARK AND NUMBERS', 'E' => 'SEAL NO.'];
-        foreach ($topHeaders as $column => $label) {
-            $sheet->setCellValue($column.'7', $label);
-        }
-        foreach (['B','C','D','E','O','P','Q','R','S','T','U','V','W','X','Y','Z','AA','AB'] as $column) $sheet->mergeCells($column.'7:'.$column.'8');
-        $sheet->setCellValue('F7', 'DESCRIPTION OF GOODS'); $sheet->mergeCells('F7:H8');
-        $sheet->setCellValue('I7', 'DESCRIPTION OF GOODS'); $sheet->mergeCells('I7:K7');
-        $sheet->setCellValue('L7', 'DESCRIPTION OF GOODS'); $sheet->mergeCells('L7:N7');
-        foreach (['I' => 'JUMLAH', 'J' => 'SATUAN', 'K' => 'DESCRIPTION OF GOODS', 'L' => 'JUMLAH', 'M' => 'SATUAN', 'N' => 'DESCRIPTION OF GOODS'] as $column => $label) {
-            $sheet->setCellValue($column.'8', $label);
-        }
-        $sheet->setCellValue('AC7', 'RECEIPT SIGNS & ROAD LETTERS'); $sheet->mergeCells('AC7:AD7');
-        $sheet->setCellValue('AC8', 'NUMBER'); $sheet->setCellValue('AD8', 'DATE');
-        foreach (['AE' => 'JUMLAH', 'AF' => 'SATUAN', 'AG' => 'K E T E R A N G A N PERHITUNGAN M3 / KGS'] as $column => $label) {
-            $sheet->setCellValue($column.'7', $label); $sheet->mergeCells($column.'7:'.$column.'8');
-        }
-        $sheet->getStyle('B1:AG4')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('B1:AG1')->getFont()->setBold(true)->setSize(22)->getColor()->setRGB('172554');
-        $sheet->getStyle('B3:AG3')->getFont()->setBold(true)->setSize(18);
-        $sheet->getStyle('B6:AG8')->getFont()->setBold(true);
-        $sheet->getStyle('B6:AG8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER)->setWrapText(true);
-        $sheet->getStyle('I6:K6')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('92D050');
-        $sheet->getStyle('L6:N6')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('00B0F0');
-        $sheet->getRowDimension(7)->setRowHeight(42); $sheet->getRowDimension(8)->setRowHeight(30);
+        $sheet->setCellValue('A4', trim(($firstItem->nama_kapal ?? '').($firstItem->no_voyage ? ' / '.$firstItem->no_voyage : '')));
 
-        $row = 9;
+        $headers = array_fill_keys(array_merge(range('B', 'Z'), ['AA', 'AB', 'AC', 'AD', 'AE', 'AF', 'AG']), true);
+        $row = 8;
         $lastContainer = null;
         $lastLclPartyKey = null;
         $lclPartyGroups = [];
@@ -159,16 +114,15 @@ class ManifestSugengExcelService
                 $row++;
             }
         }
-        $sheet->freezePane('H9');
-        $sheet->getStyle('B7:AG'.($row - 1))->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-        $sheet->getStyle('B9:AG'.($row - 1))->getAlignment()->setVertical(Alignment::VERTICAL_TOP)->setWrapText(true);
-        $widths = [75,75,105,95,55,65,180,65,65,807,65,65,807,110,110,190,210,160,190,210,160,190,210,160,230,130,120,150,110,65,55,220];
-        foreach ($widths as $index => $width) {
-            $sheet->getColumnDimension(Coordinate::stringFromColumnIndex($index + 2))->setWidth(max(8, $width / 7));
-        }
         $path = tempnam(sys_get_temp_dir(), 'manifest_sugeng_');
-        (new Xlsx($book))->save($path);
-        $book->disconnectWorksheets();
+        try {
+            (new Xlsx($book))->save($path);
+        } catch (\Throwable $exception) {
+            @unlink($path);
+            throw $exception;
+        } finally {
+            $book->disconnectWorksheets();
+        }
 
         return $path;
     }
@@ -188,8 +142,4 @@ class ManifestSugengExcelService
         return is_numeric($text) ? (float) $text : null;
     }
 
-    private function shiftColumn(string $column, int $offset): string
-    {
-        return Coordinate::stringFromColumnIndex(Coordinate::columnIndexFromString($column) + $offset);
-    }
 }
