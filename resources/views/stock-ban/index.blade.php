@@ -5,6 +5,17 @@
 
 @push('styles')
 <style>
+.stock-ban-responsive-table th,
+.stock-ban-responsive-table td {
+    padding-left: .45rem !important;
+    padding-right: .45rem !important;
+    white-space: normal !important;
+    overflow-wrap: anywhere;
+    font-size: .7rem;
+}
+.stock-ban-responsive-table th {
+    line-height: 1.25;
+}
     .tab-btn {
         padding: 0.75rem 1rem;
         font-weight: 500;
@@ -539,8 +550,8 @@
                      </button>
                 </div>
                 
-                <div class="hidden md:block overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="hidden md:block overflow-x-hidden">
+                    <table class="w-full table-fixed divide-y divide-gray-200 stock-ban-responsive-table">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -1132,8 +1143,8 @@
                     </div>
                 </div>
             </div>
-                <div class="hidden md:block overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                <div class="hidden md:block overflow-x-hidden">
+                    <table class="w-full table-fixed divide-y divide-gray-200 stock-ban-responsive-table">
                         <thead class="bg-gray-50">
                             <tr>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
