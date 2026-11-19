@@ -2154,6 +2154,11 @@
                                     </div>
 
                                     <div>
+                                        <label for="return_tanggal_kembali" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Kembali ke Gudang <span class="text-red-500">*</span></label>
+                                        <input type="date" name="tanggal_kembali" id="return_tanggal_kembali" value="{{ date('Y-m-d') }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" required>
+                                    </div>
+
+                                    <div>
                                         <label for="return_nomor_bukti" class="block text-sm font-medium text-gray-700 mb-2">
                                             Nomor Bukti Kembali
                                         </label>

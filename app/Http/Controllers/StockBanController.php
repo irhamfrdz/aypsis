@@ -830,6 +830,7 @@ class StockBanController extends Controller
 
         $request->validate([
             'lokasi' => 'required|string|max:255',
+            'tanggal_kembali' => 'required|date',
             'nomor_bukti_kembali' => 'nullable|string|max:255',
             'keterangan' => 'nullable|string',
         ]);
@@ -847,7 +848,10 @@ class StockBanController extends Controller
         $stockBan->update([
             'status' => 'Stok',
             'mobil_id' => null,
+            'penerima_id' => null,
+            'penerima_manual' => null,
             'lokasi' => $request->lokasi,
+            'tanggal_kembali' => $request->tanggal_kembali,
             'nomor_bukti_kembali' => $request->nomor_bukti_kembali,
             'tanggal_keluar' => null,
             'keterangan' => $stockBan->keterangan ? ($stockBan->keterangan."\n".$returnNote) : $returnNote,
