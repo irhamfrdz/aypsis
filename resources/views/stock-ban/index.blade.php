@@ -16,6 +16,21 @@
 .stock-ban-responsive-table th {
     line-height: 1.25;
 }
+.stock-ban-responsive-table th:last-child,
+.stock-ban-responsive-table td:last-child {
+    width: 150px;
+}
+.stock-ban-responsive-table td:last-child > div {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    align-items: center;
+    gap: .5rem;
+}
+.stock-ban-responsive-table td:last-child form {
+    display: inline-flex;
+    margin: 0;
+}
     .tab-btn {
         padding: 0.75rem 1rem;
         font-weight: 500;
