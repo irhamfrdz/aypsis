@@ -436,7 +436,8 @@
                     
                     <!-- Ban Kanisir -->
                     @php
-                        $banKanisir = $stockBans->where('kondisi', 'kanisir')->where('status', 'Stok')->count();
+                        $banKanisir = $stockBans->where('kondisi', 'kanisir')->where('status', 'Stok')
+                            ->filter(fn ($ban) => stripos($ban->lokasi ?? '', 'Ruko 10') !== false)->count();
                     @endphp
                     <div id="card-kanisir" onclick="setCardFilter('kanisir', false)" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -3333,7 +3334,7 @@
                     else if (currentCardFilter === 'terpakai') filterMatch = status === 'terpakai';
                     else if (currentCardFilter === 'sedang-dimasak') filterMatch = status === 'sedang dimasak';
                     else if (currentCardFilter === 'asli') filterMatch = kondisi === 'asli';
-                    else if (currentCardFilter === 'kanisir') filterMatch = kondisi === 'kanisir' && status === 'stok';
+                    else if (currentCardFilter === 'kanisir') filterMatch = kondisi === 'kanisir' && status === 'stok' && (activeTab.id !== 'tab-ban-luar' || lokasi.includes('ruko 10'));
                     else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
@@ -3382,7 +3383,7 @@
                     else if (currentCardFilter === 'terpakai') filterMatch = status === 'terpakai';
                     else if (currentCardFilter === 'sedang-dimasak') filterMatch = status === 'sedang dimasak';
                     else if (currentCardFilter === 'asli') filterMatch = kondisi === 'asli';
-                    else if (currentCardFilter === 'kanisir') filterMatch = kondisi === 'kanisir' && status === 'stok';
+                    else if (currentCardFilter === 'kanisir') filterMatch = kondisi === 'kanisir' && status === 'stok' && (activeTab.id !== 'tab-ban-luar' || lokasi.includes('ruko 10'));
                     else if (currentCardFilter === 'afkir') filterMatch = kondisi === 'afkir' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'garasi-pluit') filterMatch = lokasi.includes('garasi pluit') && status === 'stok';
                     else if (currentCardFilter === 'ruko-10') filterMatch = lokasi.includes('ruko 10') && status === 'stok';
