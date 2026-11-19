@@ -171,12 +171,20 @@
             white-space: nowrap;
         }
 
-        .container-number-list span {
-            display: block;
-            white-space: normal;
-            overflow-wrap: anywhere;
-            line-height: 1.3;
-            padding: 1px 0;
+        .container-number-list {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .custom-table .container-number-list td {
+            width: 50%;
+            border: 0;
+            padding: 1px 3px 1px 0;
+            white-space: nowrap;
+            font-size: 0.9em;
+            line-height: 1.2;
+            vertical-align: top;
         }
 
         .bl-main-number {
@@ -497,11 +505,14 @@
                                 </td>
                                 <td rowspan="{{ $rowspan }}">
                                     @if($containers->isNotEmpty())
-                                        <div class="container-number-list">
-                                            @foreach($containers as $container)
-                                                <span>{{ $container }}</span>
+                                        <table class="container-number-list">
+                                            @foreach($containers->chunk(2) as $pair)
+                                                <tr>
+                                                    <td>{{ $pair->first() }}</td>
+                                                    <td>{{ $pair->skip(1)->first() ?? '' }}</td>
+                                                </tr>
                                             @endforeach
-                                        </div>
+                                        </table>
                                     @else
                                         -
                                     @endif
