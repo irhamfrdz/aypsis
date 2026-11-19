@@ -684,7 +684,7 @@
                                     {{ $ban->nomor_bukti_pakai ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
+                                    {{ $ban->status === 'Stok' ? '-' : ($ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->lokasi ?? '-' }}
@@ -1274,7 +1274,7 @@
                                     {{ $ban->nomor_bukti_pakai ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                    {{ $ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-' }}
+                                    {{ $ban->status === 'Stok' ? '-' : ($ban->penerima->nama_lengkap ?? $ban->penerima_manual ?? '-') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ $ban->lokasi ?? '-' }}
