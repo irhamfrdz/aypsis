@@ -7,12 +7,30 @@ return new class extends Migration
 {
     public function up(): void
     {
-        $this->renameInvoice('BKP-11-26-000072', 'BKP-11-26-000070');
+        DB::transaction(function (): void {
+            if (! DB::table('biaya_kapals')->where('nomor_invoice', 'BKP-11-26-000072')->exists()) {
+                return;
+            }
+
+            $target = DB::table('biaya_kapals')->where('nomor_invoice', 'BKP-11-26-000070')->first();
+            if ($target) {
+                if ($target->deleted_at === null) {
+                    throw new RuntimeException('Nomor invoice BKP-11-26-000070 masih digunakan oleh data aktif.');
+                }
+
+                $this->renameInvoice('BKP-11-26-000070', 'BKP-11-26-70-DEL');
+            }
+
+            $this->renameInvoice('BKP-11-26-000072', 'BKP-11-26-000070');
+        });
     }
 
     public function down(): void
     {
-        $this->renameInvoice('BKP-11-26-000070', 'BKP-11-26-000072');
+        DB::transaction(function (): void {
+            $this->renameInvoice('BKP-11-26-000070', 'BKP-11-26-000072');
+            $this->renameInvoice('BKP-11-26-70-DEL', 'BKP-11-26-000070');
+        });
     }
 
     private function renameInvoice(string $from, string $to): void
