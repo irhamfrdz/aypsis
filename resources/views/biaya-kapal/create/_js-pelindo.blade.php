@@ -30,15 +30,26 @@
     }
 
     function updatePelindoLokasi(tagihan) {
-        const kegiatan = tagihan.querySelector('.pelindo-jenis-tagihan-select').value;
         const lokasiSelect = tagihan.querySelector('.pelindo-lokasi-select');
         const previous = lokasiSelect.value;
         lokasiSelect.replaceChildren(new Option('-- Pilih Lokasi --', ''));
         [...new Set(pelindoBarangOptions
-            .filter(option => option.kegiatan === kegiatan)
-            .map(option => option.lokasi))]
+            .map(option => option.lokasi)
+            .filter(Boolean))]
             .forEach(lokasi => lokasiSelect.add(new Option(lokasi, lokasi)));
         if ([...lokasiSelect.options].some(option => option.value === previous)) lokasiSelect.value = previous;
+
+        const jenisSelect = tagihan.querySelector('.pelindo-jenis-tagihan-select');
+        const previousJenis = jenisSelect.value;
+        const lokasiTerpilih = lokasiSelect.value;
+        jenisSelect.replaceChildren(new Option(lokasiTerpilih ? '-- Pilih Jenis Tagihan --' : '-- Pilih Lokasi Terlebih Dahulu --', ''));
+        [...new Set(pelindoBarangOptions
+            .filter(option => option.lokasi === lokasiTerpilih)
+            .map(option => option.kegiatan)
+            .filter(Boolean))]
+            .forEach(kegiatan => jenisSelect.add(new Option(kegiatan, kegiatan)));
+        if ([...jenisSelect.options].some(option => option.value === previousJenis)) jenisSelect.value = previousJenis;
+        jenisSelect.disabled = !lokasiTerpilih;
     }
 
     function updatePelindoBarang(tagihan) {
@@ -369,6 +380,8 @@
             resetPelindoJumlah(tagihan);
         } else if (event.target.matches('.pelindo-lokasi-select')) {
             const tagihan = event.target.closest('.pelindo-tagihan');
+            tagihan.querySelector('.pelindo-jenis-tagihan-select').value = '';
+            updatePelindoLokasi(tagihan);
             tagihan.querySelectorAll('.pelindo-barang-select').forEach(select => {
                 select.value = '';
                 delete select.dataset.oldValue;
