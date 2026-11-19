@@ -62,11 +62,11 @@
                             <label for="karyawan_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                                 Nama Supir <span class="text-red-500">*</span>
                             </label>
-                            <select name="karyawan_id" id="karyawan_id" required class="select2 block w-full" data-supir-options="{{ json_encode($supirs->map(fn ($supir) => ['id' => $supir->id, 'label' => $supir->label_supir ?? ($supir->nama_panggilan ?: $supir->nama_lengkap)])) }}">
+                            <select name="karyawan_id" id="karyawan_id" required class="select2 block w-full" data-karyawan-options="{{ json_encode(\App\Models\Karyawan::orderBy('nama_lengkap')->get()->map(fn ($karyawan) => ['id' => $karyawan->id, 'label' => $karyawan->nama_panggilan ?: $karyawan->nama_lengkap])) }}">
                                 <option value="">Pilih Supir...</option>
-                                @foreach($supirs as $supir)
-                                    <option value="{{ $supir->id }}" data-mobil-id="{{ $mobils->where('karyawan_id', $supir->id)->first()?->id ?? '' }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
-                                        {{ $supir->label_supir ?? ($supir->nama_panggilan ?: $supir->nama_lengkap) }}
+                                @foreach(\App\Models\Karyawan::orderBy('nama_lengkap')->get() as $karyawan)
+                                    <option value="{{ $karyawan->id }}" data-mobil-id="{{ $mobils->where('karyawan_id', $karyawan->id)->first()?->id ?? '' }}" {{ old('karyawan_id') == $karyawan->id ? 'selected' : '' }}>
+                                        {{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}
                                     </option>
                                 @endforeach
                             </select>
