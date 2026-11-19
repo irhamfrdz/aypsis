@@ -171,6 +171,14 @@
             white-space: nowrap;
         }
 
+        .container-number-list span {
+            display: block;
+            white-space: normal;
+            overflow-wrap: anywhere;
+            line-height: 1.3;
+            padding: 1px 0;
+        }
+
         .bl-main-number {
             display: block;
             margin-bottom: 2px;
@@ -441,10 +449,10 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Nomor BL</th>
-                    <th style="width: 25%;">Kontainer</th>
-                    <th style="width: 27%;">Jenis Biaya</th>
-                    <th style="width: 10%;">Jumlah</th>
+                    <th style="width: 13%;">Nomor BL</th>
+                    <th style="width: 35%;">Kontainer</th>
+                    <th style="width: 21%;">Jenis Biaya</th>
+                    <th style="width: 8%;">Jumlah</th>
                     <th style="width: 18%;">Subtotal</th>
                 </tr>
             </thead>
@@ -489,7 +497,7 @@
                                 </td>
                                 <td rowspan="{{ $rowspan }}">
                                     @if($containers->isNotEmpty())
-                                        <div class="compact-list {{ $containers->count() > 16 ? 'columns-3' : '' }}">
+                                        <div class="container-number-list">
                                             @foreach($containers as $container)
                                                 <span>{{ $container }}</span>
                                             @endforeach
