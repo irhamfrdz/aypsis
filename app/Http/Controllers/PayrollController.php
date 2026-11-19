@@ -49,7 +49,7 @@ class PayrollController extends Controller
                 }
                 $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                        ->where('tipe', 'Masuk');
+                        ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($karyawans);
             }
@@ -73,7 +73,7 @@ class PayrollController extends Controller
                 }
                 $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                        ->where('tipe', 'Masuk');
+                        ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($nonKaryawans);
             }
@@ -103,7 +103,7 @@ class PayrollController extends Controller
                     }
                 }
 
-                // Count unique days they clocked in
+                // Count each date with a clock-in or clock-out once
                 $uniqueDaysDates = $k->absensi->filter(function ($abs) use ($isSatpam) {
                     if ($isSatpam) {
                         return true;
@@ -243,7 +243,7 @@ class PayrollController extends Controller
             }
             $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                    ->where('tipe', 'Masuk');
+                    ->whereIn('tipe', ['Masuk', 'Pulang']);
             }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($karyawans);
         }
@@ -267,7 +267,7 @@ class PayrollController extends Controller
             }
             $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
-                    ->where('tipe', 'Masuk');
+                    ->whereIn('tipe', ['Masuk', 'Pulang']);
             }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($nonKaryawans);
         }

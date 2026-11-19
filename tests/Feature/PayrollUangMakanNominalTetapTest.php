@@ -146,6 +146,43 @@ class PayrollUangMakanNominalTetapTest extends TestCase
         $this->assertEquals(350000, $row['nominal_per_hari']);
     }
 
+    public function test_clock_out_alone_counts_and_same_day_logs_do_not_double_pay(): void
+    {
+        DB::table('absensis')->where('karyawan_id', 2)->delete();
+        foreach ([
+            ['2026-10-12 17:00:00', 'Pulang'],
+            ['2026-10-13 08:00:00', 'Masuk'],
+            ['2026-10-13 17:00:00', 'Pulang'],
+            ['2026-10-13 18:00:00', 'Pulang'],
+            ['2026-10-14 12:00:00', 'Istirahat_Keluar'],
+            ['2026-10-18 17:00:00', 'Pulang'],
+            ['2026-10-19 17:00:00', 'Pulang'],
+        ] as [$time, $type]) {
+            DB::table('absensis')->insert(['karyawan_id' => 2, 'waktu' => $time, 'tipe' => $type]);
+        }
+
+        $controller = new PayrollController;
+        $view = $controller->uangMakan(Request::create('/', 'GET', $this->parameters() + ['generate' => 1]));
+        $row = collect($view->getData()['payrolls'])->first(fn ($row) => $row['karyawan']->id === 2);
+        $this->assertSame(2, $row['total_kehadiran']);
+        $this->assertEqualsCanonicalizing(['2026-10-12', '2026-10-13'], $row['dates_kehadiran']);
+        $this->assertEquals(100000, $row['total_payout']);
+
+        Excel::shouldReceive('download')->once()->andReturn(response('export'));
+        $controller->storeUangMakan(Request::create('/', 'POST', $this->parameters()));
+        $stored = PayrollUangMakan::where('karyawan_id', 2)->firstOrFail();
+        $this->assertEquals(2, $stored->total_kehadiran);
+        $this->assertEquals(100000, $stored->total_payout);
+
+        DB::table('pranota_uang_makans')->insert(['id' => 1, 'nomor_pranota' => 'PUM-PULANG']);
+        $request = Request::create('/refresh', 'POST', $this->parameters() + [
+            'row_items' => [['key' => 'Karyawan_2', 'kehadiran' => '1 Hari', 'nominal_awal' => 50000]],
+        ]);
+        $refreshed = (new PranotaUangMakanController)->refreshAbsensi($request, 1)->getData(true)['data']['Karyawan_2'];
+        $this->assertSame('2 Hari', $refreshed['kehadiran']);
+        $this->assertEquals(100000, $refreshed['nominal_awal']);
+    }
+
     private function seedJakartaSatpam(): void
     {
         DB::table('karyawans')->insert([

@@ -126,7 +126,7 @@ class PranotaUangMakanController extends Controller
             $tetap = Karyawan::whereIn('id', array_unique($tetapIds))
                 ->with(['absensi' => function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate, $endDate])
-                        ->where('tipe', 'Masuk');
+                        ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])
                 ->get();
             $allEmployees = $allEmployees->merge($tetap);
@@ -136,7 +136,7 @@ class PranotaUangMakanController extends Controller
             $tidakTetap = KaryawanTidakTetap::whereIn('id', array_unique($tidakTetapIds))
                 ->with(['absensi' => function ($q) use ($startDate, $endDate) {
                     $q->whereBetween('waktu', [$startDate, $endDate])
-                        ->where('tipe', 'Masuk');
+                        ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])
                 ->get();
             $allEmployees = $allEmployees->merge($tidakTetap);
@@ -168,7 +168,7 @@ class PranotaUangMakanController extends Controller
                 }
             }
 
-            // Count unique days clocked in
+            // Count each date with a clock-in or clock-out once
             $uniqueDaysDates = $k->absensi->filter(function ($abs) use ($isSatpam) {
                 if ($isSatpam) {
                     return true;
