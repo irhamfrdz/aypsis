@@ -62,7 +62,7 @@
                             <label for="karyawan_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
                                 Nama Supir <span class="text-red-500">*</span>
                             </label>
-                            <select name="karyawan_id" id="karyawan_id" required class="select2 block w-full" data-supir-options="{{ json_encode($supirs->map(fn ($supir) => ['id' => $supir->id, 'label' => $supir->label_supir ?? ($supir->nama_panggilan ?: $supir->nama_lengkap)])) }}" data-karyawan-options="{{ json_encode(\App\Models\Karyawan::orderBy('nama_lengkap')->get()->map(fn ($karyawan) => ['id' => $karyawan->id, 'label' => $karyawan->nama_panggilan ?: $karyawan->nama_lengkap])) }}">
+                            <select name="karyawan_id" id="karyawan_id" required class="select2 block w-full" data-supir-options="{{ json_encode($supirs->map(fn ($supir) => ['id' => $supir->id, 'label' => $supir->label_supir ?? ($supir->nama_panggilan ?: $supir->nama_lengkap)])) }}">
                                 <option value="">Pilih Supir...</option>
                                 @foreach($supirs as $supir)
                                     <option value="{{ $supir->id }}" data-mobil-id="{{ $mobils->where('karyawan_id', $supir->id)->first()?->id ?? '' }}" {{ old('karyawan_id') == $supir->id ? 'selected' : '' }}>
@@ -366,26 +366,8 @@
             const selectedOption = $(this).find('option:selected');
             const lastKmAkhir = selectedOption.data('last-km-akhir');
             const karyawanId = selectedOption.data('karyawan-id');
-            const nomorPolisi = selectedOption.text().trim().toUpperCase().replace(/\s+/g, '');
             const $karyawan = $('#karyawan_id');
             const currentKaryawanId = $karyawan.val();
-
-            if (nomorPolisi === 'BP806EJ') {
-                const semuaKaryawan = $karyawan.data('karyawan-options');
-                $karyawan.empty().append(new Option('Pilih Supir...', '', false, false));
-                semuaKaryawan.forEach(function(karyawan) {
-                    $karyawan.append(new Option(karyawan.label, karyawan.id, false, String(karyawan.id) === String(currentKaryawanId)));
-                });
-                $karyawan.trigger('change.select2');
-            } else if ($karyawan.data('all-karyawan-active')) {
-                const supirOptions = $karyawan.data('supir-options');
-                $karyawan.empty().append(new Option('Pilih Supir...', '', false, false));
-                supirOptions.forEach(function(supir) {
-                    $karyawan.append(new Option(supir.label, supir.id, false, String(supir.id) === String(currentKaryawanId)));
-                });
-                $karyawan.trigger('change.select2');
-            }
-            $karyawan.data('all-karyawan-active', nomorPolisi === 'BP806EJ');
 
             if (lastKmAkhir !== undefined && lastKmAkhir !== '') {
                 $('#km_awal').val(lastKmAkhir);
