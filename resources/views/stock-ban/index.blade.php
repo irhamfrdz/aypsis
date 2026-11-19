@@ -558,6 +558,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali ke Gudang</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masak</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -664,6 +665,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ date('d-m-Y', strtotime($ban->tanggal_masuk)) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $ban->tanggal_kembali?->format('d-m-Y') ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div class="flex flex-col">
@@ -876,6 +880,7 @@
                             <div class="text-[10px] text-gray-400">
                                 <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
                             </div>
+                            <div class="text-[10px] text-gray-500">Kembali ke gudang: {{ $ban->tanggal_kembali?->format('d/m/y') ?? '-' }}</div>
                             <div class="flex flex-wrap gap-1">
                                 @if($ban->status == 'Stok' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jual Ban"><i class="fas fa-shopping-cart text-xs"></i></button>
@@ -1146,6 +1151,7 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi / Posisi</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Masuk</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Kembali ke Gudang</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masak</th>
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -1249,6 +1255,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     {{ date('d-m-Y', strtotime($ban->tanggal_masuk)) }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ $ban->tanggal_kembali?->format('d-m-Y') ?? '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div class="flex flex-col">
@@ -1445,6 +1454,7 @@
                             <div class="text-[10px] text-gray-400">
                                 <i class="far fa-calendar-alt mr-1"></i> {{ date('d/m/y', strtotime($ban->tanggal_masuk)) }}
                             </div>
+                            <div class="text-[10px] text-gray-500">Kembali ke gudang: {{ $ban->tanggal_kembali?->format('d/m/y') ?? '-' }}</div>
                             <div class="flex flex-wrap gap-1">
                                 @if($ban->status == 'Stok' || $ban->status == 'Rusak')
                                     <button type="button" class="btn-jual-modal w-8 h-8 flex items-center justify-center rounded-lg bg-amber-50 text-amber-600" data-id="{{ $ban->id }}" data-seri="{{ $ban->nomor_seri ?? '-' }}" title="Jual Ban"><i class="fas fa-shopping-cart text-xs"></i></button>
