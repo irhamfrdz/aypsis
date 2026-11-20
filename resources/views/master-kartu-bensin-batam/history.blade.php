@@ -118,7 +118,8 @@
                 @csrf
                 <div>
                     <label for="print-penerima" class="mb-1 block text-sm font-medium text-gray-700">Penerima <span class="text-red-500">*</span></label>
-                    <select id="print-penerima" name="penerima_id" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                    <input type="search" id="print-penerima-search" autocomplete="off" placeholder="Cari nama karyawan..." aria-label="Cari nama karyawan" class="mb-2 w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                    <select id="print-penerima" name="penerima_id" required size="6" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
                         <option value="">Pilih karyawan</option>
                         @foreach($karyawans as $karyawan)
                             <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
@@ -256,11 +257,30 @@
     document.addEventListener('DOMContentLoaded', function () {
         const printModal = document.getElementById('print-pranota-modal');
         const printForm = document.getElementById('print-pranota-form');
+        const penerimaSelect = document.getElementById('print-penerima');
+        const penerimaSearch = document.getElementById('print-penerima-search');
+        const penerimaOptions = Array.from(penerimaSelect.options).filter(option => option.value).map(option => ({
+            value: option.value,
+            label: option.textContent
+        }));
+        function filterPenerima(selectedId = '') {
+            const query = penerimaSearch.value.trim().toLocaleLowerCase('id');
+            penerimaSelect.replaceChildren();
+            const placeholder = new Option('Pilih karyawan', '');
+            penerimaSelect.add(placeholder);
+            penerimaOptions.filter(option => option.label.toLocaleLowerCase('id').includes(query)).forEach(option => {
+                penerimaSelect.add(new Option(option.label, option.value));
+            });
+            penerimaSelect.value = selectedId;
+            if (penerimaSelect.selectedIndex < 0) penerimaSelect.value = '';
+        }
+        penerimaSearch.addEventListener('input', function () { filterPenerima(); });
         document.querySelectorAll('[data-print-pranota-url]').forEach(button => button.addEventListener('click', function () {
             printForm.action = button.dataset.printPranotaUrl;
-            document.getElementById('print-penerima').value = button.dataset.penerimaId || '';
+            penerimaSearch.value = '';
+            filterPenerima(button.dataset.penerimaId || '');
             printModal.classList.remove('hidden');
-            document.getElementById('print-penerima').focus();
+            penerimaSearch.focus();
         }));
         function closePrintModal() { printModal.classList.add('hidden'); }
         printModal.querySelectorAll('[data-close-print-pranota]').forEach(button => button.addEventListener('click', closePrintModal));
