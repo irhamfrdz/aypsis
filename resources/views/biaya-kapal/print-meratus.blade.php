@@ -111,6 +111,7 @@
             font-size: {{ $currentPaper['tableFont'] }};
             vertical-align: top;
             font-weight: bold;
+            overflow-wrap: anywhere;
         }
 
         .section-header {
@@ -275,6 +276,13 @@
             $meratusByBl = $meratusDetails->groupBy(function ($detail) use ($normalizeNomorBl) {
                 return ($detail->kapal ?? '-').'|'.($detail->voyage ?? '-').'|'.$normalizeNomorBl($detail->nomor_bl);
             });
+            $firstReferenceDate = $meratusDetails->pluck('tanggal_invoice_vendor')->filter()->min();
+            $lastReferenceDate = $meratusDetails->pluck('tanggal_invoice_vendor')->filter()->max();
+            $referenceDateDisplay = $firstReferenceDate ? \Carbon\Carbon::parse($firstReferenceDate)->format('d/M/Y') : '-';
+            if ($firstReferenceDate && $lastReferenceDate && $firstReferenceDate != $lastReferenceDate) {
+                $referenceDateDisplay .= ' - '.\Carbon\Carbon::parse($lastReferenceDate)->format('d/M/Y');
+            }
+            $referenceDisplay = $meratusDetails->pluck('nomor_referensi')->filter()->unique()->implode(', ') ?: '-';
 
             // Calculate Totals
             $totalSubtotal = 0;
@@ -331,6 +339,16 @@
                     <td></td>
                     <td></td>
                 </tr>
+                <tr>
+                    <td>Tanggal Ref.</td>
+                    <td>: {{ $referenceDateDisplay }}</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td>Referensi</td>
+                    <td colspan="3">: {{ $referenceDisplay }}</td>
+                </tr>
             </table>
         </div>
 
@@ -340,11 +358,9 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Tanggal Ref.</th>
-                    <th style="width: 20%;">Referensi</th>
-                    <th style="width: 15%;">Nomor Voyage</th>
-                    <th style="width: 25%;">Nomor BL</th>
-                    <th style="width: 20%;">DPP</th>
+                    <th style="width: 25%;">Nomor Voyage</th>
+                    <th style="width: 40%;">Nomor BL</th>
+                    <th style="width: 30%;">DPP</th>
                 </tr>
             </thead>
             <tbody>
@@ -356,15 +372,6 @@
                 
                 @forelse($perSection as $sectionKey => $details)
                 @php
-                    $firstDate = $details->min('tanggal_invoice_vendor');
-                    $lastDate = $details->max('tanggal_invoice_vendor');
-                    $isSameDate = $firstDate == $lastDate;
-                    $formattedDate = $firstDate ? \Carbon\Carbon::parse($firstDate)->format('d/M/Y') : '-';
-                    if (!$isSameDate && $firstDate && $lastDate) {
-                        $formattedDate = \Carbon\Carbon::parse($firstDate)->format('d/M/Y') . ' - ' . \Carbon\Carbon::parse($lastDate)->format('d/M/Y');
-                    }
-                    
-                    $references = $details->pluck('nomor_referensi')->filter()->unique()->values();
                     $sectionDpp = $details->sum('sub_total');
                     $firstDetail = $details->first();
                     $blInduk = $normalizeNomorBl($firstDetail->nomor_bl) ?: '-';
@@ -375,14 +382,6 @@
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
-                    <td class="text-center">{{ $formattedDate }}</td>
-                    <td>
-                        @foreach($references as $ref)
-                            {{ $ref }}{{ !$loop->last ? ',' : '' }}
-                            @if(!$loop->last && $loop->iteration % 2 == 0) <br> @endif
-                        @endforeach
-                        @if($references->isEmpty()) - @endif
-                    </td>
                     <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
                     <td class="text-center">
                         <span class="bl-main-number">{{ $blInduk }}</span>
@@ -398,25 +397,25 @@
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="6" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="4" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
                 <tr>
-                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td colspan="3" class="text-right">DPP (SEBELUM DP)</td>
                     <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                 </tr>
                 @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
                 <tr>
-                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td colspan="3" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
                     <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td colspan="3" class="text-right">DP DIPERHITUNGKAN</td>
                     <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td colspan="3" class="text-right">SISA SETELAH DP</td>
                     <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
