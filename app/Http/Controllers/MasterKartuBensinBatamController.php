@@ -349,10 +349,16 @@ class MasterKartuBensinBatamController extends Controller
             403
         );
 
-        $validated = $request->validate(['penerima_id' => ['required', 'integer', 'exists:karyawans,id']]);
+        $validated = $request->validate([
+            'penerima_id' => ['required', 'integer', 'exists:karyawans,id'],
+            'nomor_rekening' => ['required', 'string', 'max:50', 'regex:/^[0-9 -]+$/'],
+        ]);
         $card = MasterKartuBensinBatam::findOrFail($id);
         $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
-        $log->update(['penerima_id' => $validated['penerima_id']]);
+        $log->update([
+            'penerima_id' => $validated['penerima_id'],
+            'nomor_rekening' => trim($validated['nomor_rekening']),
+        ]);
 
         return redirect()->route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]);
     }

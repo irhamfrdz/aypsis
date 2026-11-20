@@ -65,6 +65,7 @@
             <tr><td class="label">Keperluan</td><td class="separator">:</td><td>Top up kartu bensin Batam</td><td class="label">Provider</td><td class="separator">:</td><td>{{ $card->provider ?: '-' }}</td></tr>
             <tr><td class="label">Nama Kartu</td><td class="separator">:</td><td>{{ $card->nama_kartu ?: '-' }}</td><td class="label">Nomor Kartu</td><td class="separator">:</td><td>{{ $card->nomor_kartu ?: '-' }}</td></tr>
             <tr><td class="label">Penerima</td><td class="separator">:</td><td colspan="4">{{ $penerima?->nama_lengkap ?: '-' }}</td></tr>
+            <tr><td class="label">Nomor Rekening</td><td class="separator">:</td><td colspan="4">{{ $log->nomor_rekening ?: '-' }}</td></tr>
         </table>
 
         <table class="items">

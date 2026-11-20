@@ -126,6 +126,10 @@
                         @endforeach
                     </select>
                 </div>
+                <div>
+                    <label for="print-nomor-rekening" class="mb-1 block text-sm font-medium text-gray-700">Nomor Rekening <span class="text-red-500">*</span></label>
+                    <input type="text" id="print-nomor-rekening" name="nomor_rekening" inputmode="numeric" maxlength="50" required placeholder="Masukkan nomor rekening penerima" class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                </div>
                 <div class="flex justify-end gap-2">
                     <button type="button" data-close-print-pranota class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
                     <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Buka Halaman Cetak</button>
@@ -216,7 +220,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex flex-col items-start gap-1">
                                 @if($log->nomor_pranota)
-                                <button type="button" data-print-pranota-url="{{ route('master-kartu-bensin-batam.pranota.penerima', [$card->id, $log->id]) }}" data-penerima-id="{{ $log->penerima_id }}" class="inline-flex items-center gap-1 font-semibold text-indigo-700 hover:underline" aria-label="Cetak Permohonan Transfer {{ $log->nomor_pranota }}">
+                                <button type="button" data-print-pranota-url="{{ route('master-kartu-bensin-batam.pranota.penerima', [$card->id, $log->id]) }}" data-penerima-id="{{ $log->penerima_id }}" data-nomor-rekening="{{ $log->nomor_rekening }}" class="inline-flex items-center gap-1 font-semibold text-indigo-700 hover:underline" aria-label="Cetak Permohonan Transfer {{ $log->nomor_pranota }}">
                                     <i class="fas fa-print" aria-hidden="true"></i> Cetak Permohonan Transfer
                                 </button>
                                 @endif
@@ -279,6 +283,7 @@
             printForm.action = button.dataset.printPranotaUrl;
             penerimaSearch.value = '';
             filterPenerima(button.dataset.penerimaId || '');
+            document.getElementById('print-nomor-rekening').value = button.dataset.nomorRekening || '';
             printModal.classList.remove('hidden');
             penerimaSearch.focus();
         }));

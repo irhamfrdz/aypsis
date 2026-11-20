@@ -16,6 +16,7 @@ class MasterKartuBensinBatamHistory extends Model
         'nomor_transaksi',
         'nomor_pranota',
         'penerima_id',
+        'nomor_rekening',
         'biaya_admin',
         'tanggal',
         'tipe',
