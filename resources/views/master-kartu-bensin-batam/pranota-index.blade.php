@@ -18,6 +18,9 @@
     @if($errors->any())
         <div class="mb-5 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{{ $errors->first() }}</div>
     @endif
+    @if(session('success'))
+        <div class="mb-5 rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700" role="status">{{ session('success') }}</div>
+    @endif
 
     <form method="GET" action="{{ route('pranota-topup-kartu-bensin-batam.index') }}" class="mb-5 rounded-xl border border-gray-200 bg-white p-4 shadow-sm">
         <div class="grid gap-4 md:grid-cols-4">
@@ -72,10 +75,17 @@
                         <td class="whitespace-nowrap px-5 py-4 text-right font-bold text-gray-900">Rp {{ number_format((float) $pranota->nominal + (float) $pranota->biaya_admin, 2, ',', '.') }}</td>
                         <td class="whitespace-nowrap px-5 py-4">
                             @if($pranota->card)
-                                <div class="flex gap-3">
+                                <div class="flex flex-wrap items-center gap-3">
                                     <a href="{{ route('master-kartu-bensin-batam.pranota', [$pranota->master_kartu_bensin_batam_id, $pranota->id]) }}" target="_blank" rel="noopener" class="font-semibold text-blue-700 hover:underline">Cetak Permohonan Transfer</a>
                                     @can('master-kartu-bensin-batam-view')
                                         <a href="{{ route('master-kartu-bensin-batam.history', $pranota->master_kartu_bensin_batam_id) }}" class="text-gray-600 hover:underline">Riwayat</a>
+                                    @endcan
+                                    @can('master-kartu-bensin-batam-edit')
+                                        <form action="{{ route('pranota-topup-kartu-bensin-batam.destroy', $pranota->id) }}" method="POST" onsubmit="return confirm('Hapus pranota {{ $pranota->nomor_pranota }}? Transaksi top up dan saldo kartu tetap tersimpan.')">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button type="submit" class="font-semibold text-red-600 hover:underline">Hapus</button>
+                                        </form>
                                     @endcan
                                 </div>
                             @else

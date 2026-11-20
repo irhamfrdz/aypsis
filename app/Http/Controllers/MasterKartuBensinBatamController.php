@@ -363,6 +363,20 @@ class MasterKartuBensinBatamController extends Controller
         return redirect()->route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]);
     }
 
+    public function destroyPranota($historyId)
+    {
+        $log = MasterKartuBensinBatamHistory::whereNotNull('nomor_pranota')->findOrFail($historyId);
+        $log->update([
+            'nomor_pranota' => null,
+            'biaya_admin' => 0,
+            'penerima_id' => null,
+            'nomor_rekening' => null,
+        ]);
+
+        return redirect()->route('pranota-topup-kartu-bensin-batam.index')
+            ->with('success', 'Pranota berhasil dihapus. Transaksi top up dan saldo kartu tetap tersimpan.');
+    }
+
     public function pranotaIndex(Request $request)
     {
         $validator = \Illuminate\Support\Facades\Validator::make($request->all(), [
