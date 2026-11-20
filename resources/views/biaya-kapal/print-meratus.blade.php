@@ -153,25 +153,6 @@
         .text-right { text-align: right; }
         .font-bold { font-weight: bold; }
 
-        .compact-list {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 1px 5px;
-            align-items: start;
-            font-size: 0.92em;
-            line-height: 1.15;
-        }
-
-        .compact-list.columns-3 {
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            font-size: 0.86em;
-            gap: 1px 3px;
-        }
-
-        .compact-list span {
-            white-space: nowrap;
-        }
-
         .container-number-list {
             width: 100%;
             border-collapse: collapse;
@@ -186,11 +167,6 @@
             font-size: 0.9em;
             line-height: 1.2;
             vertical-align: top;
-        }
-
-        .bl-main-number {
-            display: block;
-            margin-bottom: 2px;
         }
 
         .total-row td {
@@ -454,9 +430,6 @@
                         $firstBlDetail = $blDetails->first();
                         $blInduk = $normalizeNomorBl($firstBlDetail->nomor_bl) ?: '-';
                         $manifestInfo = $meratusManifestGroups->get(($firstBlDetail->voyage ?? '').'|'.$blInduk);
-                        $blVariants = collect($manifestInfo['variants'] ?? [])
-                            ->whenEmpty(fn ($items) => $items->push($firstBlDetail->nomor_bl))
-                            ->filter()->unique()->values();
                         $containers = collect($manifestInfo['containers'] ?? []);
                         if ($containers->isEmpty()) {
                             $containers = $blDetails->pluck('nomor_kontainer')
@@ -475,16 +448,7 @@
                         <tr>
                             @if($loop->first)
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
-                                <td class="text-center" rowspan="{{ $rowspan }}">
-                                    <span class="bl-main-number">{{ $blInduk }}</span>
-                                    @if($blVariants->isNotEmpty() && !($blVariants->count() === 1 && $blVariants->first() === $blInduk))
-                                        <div class="compact-list {{ $blVariants->count() > 10 ? 'columns-3' : '' }}">
-                                            @foreach($blVariants as $variant)
-                                                <span>{{ $variant }}</span>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </td>
+                                <td class="text-center" rowspan="{{ $rowspan }}">{{ $blInduk }}</td>
                                 <td rowspan="{{ $rowspan }}">
                                     @if($containers->isNotEmpty())
                                         <table class="container-number-list">
