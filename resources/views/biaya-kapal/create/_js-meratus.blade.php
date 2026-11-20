@@ -758,7 +758,7 @@
         const adminValue = parseFloat(section.querySelector('.admin-value-meratus').value) || 0;
         const adjustmentValue = parseFloat(section.querySelector('.adjustment-value-meratus').value) || 0;
 
-        const grandTotal = mode === 'pelunasan_dp' ? subTotal : subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue;
+        const grandTotal = Math.round(mode === 'pelunasan_dp' ? subTotal : subTotal + ppnForCalculation - pphForCalculation + materaiValue + adminValue + adjustmentValue);
 
         section.querySelector('.grand-total-display-meratus').value = meratusMoney(grandTotal);
         section.querySelector('.grand-total-value-meratus').value = grandTotal;
@@ -784,6 +784,7 @@
         document.querySelectorAll('.meratus-section').forEach(section => {
             grandTotalAll += parseFloat((section.querySelector('.meratus-cash-value') || section.querySelector('.grand-total-value-meratus')).value) || 0;
         });
+        grandTotalAll = Math.round(grandTotalAll);
 
         if (nominalInput) {
             nominalInput.value = grandTotalAll.toLocaleString('id-ID');
