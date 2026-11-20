@@ -423,6 +423,9 @@
                         $firstBlDetail = $blDetails->first();
                         $blInduk = $normalizeNomorBl($firstBlDetail->nomor_bl) ?: '-';
                         $blReference = $blDetails->pluck('nomor_referensi')->filter()->unique()->implode(', ') ?: '-';
+                        $referenceWithVoyage = $blReference !== '-' && filled($firstBlDetail->voyage)
+                            ? $blReference.' ('.$firstBlDetail->voyage.')'
+                            : $blReference;
                         $manifestInfo = $meratusManifestGroups->get(($firstBlDetail->voyage ?? '').'|'.$blInduk);
                         $containers = collect($manifestInfo['containers'] ?? []);
                         if ($containers->isEmpty()) {
@@ -443,7 +446,7 @@
                             @if($loop->first)
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $blInduk }}</td>
-                                <td rowspan="{{ $rowspan }}">{{ $blReference }}</td>
+                                <td rowspan="{{ $rowspan }}">{{ $referenceWithVoyage }}</td>
                                 <td rowspan="{{ $rowspan }}">
                                     @if($containers->isNotEmpty())
                                         <table class="container-number-list">
