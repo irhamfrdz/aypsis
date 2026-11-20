@@ -3592,6 +3592,8 @@ Route::middleware([
             ->middleware('can:master-kartu-bensin-batam-edit');
         Route::get('master-kartu-bensin-batam/{id}/history/{historyId}/pranota', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'showPranota'])
             ->name('master-kartu-bensin-batam.pranota');
+        Route::post('master-kartu-bensin-batam/{id}/history/{historyId}/pranota/penerima', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'savePranotaPenerima'])
+            ->name('master-kartu-bensin-batam.pranota.penerima');
         Route::post('master-kartu-bensin-batam/{id}/history/{historyId}/pranota', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'convertHistoryToPranota'])
             ->name('master-kartu-bensin-batam.pranota.convert')
             ->middleware('can:master-kartu-bensin-batam-edit');

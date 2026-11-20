@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\BiayaBensin;
+use App\Models\Karyawan;
 use App\Models\MasterKartuBensinBatam;
 use App\Models\MasterKartuBensinBatamHistory;
 use App\Models\Mobil;
@@ -197,7 +198,9 @@ class MasterKartuBensinBatamController extends Controller
             });
         }
 
-        return view('master-kartu-bensin-batam.history', compact('card', 'histories'));
+        $karyawans = Karyawan::orderBy('nama_lengkap')->get(['id', 'nama_lengkap']);
+
+        return view('master-kartu-bensin-batam.history', compact('card', 'histories', 'karyawans'));
     }
 
     public function editHistory($id, $historyId)
@@ -333,9 +336,25 @@ class MasterKartuBensinBatamController extends Controller
             403
         );
         $card = MasterKartuBensinBatam::findOrFail($id);
-        $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
+        $log = $card->histories()->with('penerima')->whereNotNull('nomor_pranota')->findOrFail($historyId);
+        $penerima = $log->penerima;
 
-        return view('master-kartu-bensin-batam.pranota', compact('card', 'log'));
+        return view('master-kartu-bensin-batam.pranota', compact('card', 'log', 'penerima'));
+    }
+
+    public function savePranotaPenerima(Request $request, $id, $historyId)
+    {
+        abort_unless(
+            auth()->user()->can('master-kartu-bensin-batam-view') || auth()->user()->can('pranota-topup-kartu-bensin-batam-view'),
+            403
+        );
+
+        $validated = $request->validate(['penerima_id' => ['required', 'integer', 'exists:karyawans,id']]);
+        $card = MasterKartuBensinBatam::findOrFail($id);
+        $log = $card->histories()->whereNotNull('nomor_pranota')->findOrFail($historyId);
+        $log->update(['penerima_id' => $validated['penerima_id']]);
+
+        return redirect()->route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]);
     }
 
     public function pranotaIndex(Request $request)

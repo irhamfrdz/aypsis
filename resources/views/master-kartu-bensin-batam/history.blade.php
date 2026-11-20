@@ -108,6 +108,31 @@
     </div>
     @endcan
 
+    <div id="print-pranota-modal" class="hidden fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" role="dialog" aria-modal="true" aria-labelledby="print-pranota-title">
+        <div class="w-full max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <div class="mb-5 flex items-center justify-between">
+                <h2 id="print-pranota-title" class="text-lg font-bold text-gray-800">Cetak Permohonan Transfer</h2>
+                <button type="button" data-close-print-pranota class="text-gray-500 hover:text-gray-800" aria-label="Tutup"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="print-pranota-form" method="POST" target="_blank" class="space-y-4">
+                @csrf
+                <div>
+                    <label for="print-penerima" class="mb-1 block text-sm font-medium text-gray-700">Penerima <span class="text-red-500">*</span></label>
+                    <select id="print-penerima" name="penerima_id" required class="w-full rounded-lg border border-gray-300 px-3 py-2 focus:border-blue-500 focus:ring-blue-500">
+                        <option value="">Pilih karyawan</option>
+                        @foreach($karyawans as $karyawan)
+                            <option value="{{ $karyawan->id }}">{{ $karyawan->nama_lengkap }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2">
+                    <button type="button" data-close-print-pranota class="rounded-lg border border-gray-300 px-4 py-2 text-sm font-semibold text-gray-700 hover:bg-gray-50">Batal</button>
+                    <button type="submit" class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700">Buka Halaman Cetak</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- History Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center">
@@ -190,9 +215,9 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex flex-col items-start gap-1">
                                 @if($log->nomor_pranota)
-                                <a href="{{ route('master-kartu-bensin-batam.pranota', [$card->id, $log->id]) }}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 font-semibold text-indigo-700 hover:underline" aria-label="Cetak Permohonan Transfer {{ $log->nomor_pranota }}">
+                                <button type="button" data-print-pranota-url="{{ route('master-kartu-bensin-batam.pranota.penerima', [$card->id, $log->id]) }}" data-penerima-id="{{ $log->penerima_id }}" class="inline-flex items-center gap-1 font-semibold text-indigo-700 hover:underline" aria-label="Cetak Permohonan Transfer {{ $log->nomor_pranota }}">
                                     <i class="fas fa-print" aria-hidden="true"></i> Cetak Permohonan Transfer
-                                </a>
+                                </button>
                                 @endif
                                 @can('master-kartu-bensin-batam-edit')
                                 <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}" class="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800" aria-label="Edit riwayat {{ $log->nomor_transaksi ?? $log->id }}">
@@ -229,6 +254,19 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        const printModal = document.getElementById('print-pranota-modal');
+        const printForm = document.getElementById('print-pranota-form');
+        document.querySelectorAll('[data-print-pranota-url]').forEach(button => button.addEventListener('click', function () {
+            printForm.action = button.dataset.printPranotaUrl;
+            document.getElementById('print-penerima').value = button.dataset.penerimaId || '';
+            printModal.classList.remove('hidden');
+            document.getElementById('print-penerima').focus();
+        }));
+        function closePrintModal() { printModal.classList.add('hidden'); }
+        printModal.querySelectorAll('[data-close-print-pranota]').forEach(button => button.addEventListener('click', closePrintModal));
+        printModal.addEventListener('click', event => { if (event.target === printModal) closePrintModal(); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') closePrintModal(); });
+
         const modal = document.getElementById('topup-modal');
         const openButton = document.getElementById('open-topup-modal');
         if (!modal || !openButton) return;

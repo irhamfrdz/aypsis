@@ -15,6 +15,7 @@ class MasterKartuBensinBatamHistory extends Model
         'master_kartu_bensin_batam_id',
         'nomor_transaksi',
         'nomor_pranota',
+        'penerima_id',
         'biaya_admin',
         'tanggal',
         'tipe',
@@ -42,5 +43,10 @@ class MasterKartuBensinBatamHistory extends Model
     public function createdBy()
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function penerima()
+    {
+        return $this->belongsTo(Karyawan::class, 'penerima_id');
     }
 }

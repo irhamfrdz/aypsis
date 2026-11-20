@@ -64,6 +64,7 @@
             <tr><td class="label">Nomor Pranota</td><td class="separator">:</td><td><strong>{{ $log->nomor_pranota }}</strong></td><td class="label">Tanggal</td><td class="separator">:</td><td>{{ $log->tanggal?->format('d/m/Y') ?: '-' }}</td></tr>
             <tr><td class="label">Keperluan</td><td class="separator">:</td><td>Top up kartu bensin Batam</td><td class="label">Provider</td><td class="separator">:</td><td>{{ $card->provider ?: '-' }}</td></tr>
             <tr><td class="label">Nama Kartu</td><td class="separator">:</td><td>{{ $card->nama_kartu ?: '-' }}</td><td class="label">Nomor Kartu</td><td class="separator">:</td><td>{{ $card->nomor_kartu ?: '-' }}</td></tr>
+            <tr><td class="label">Penerima</td><td class="separator">:</td><td colspan="4">{{ $penerima?->nama_lengkap ?: '-' }}</td></tr>
         </table>
 
         <table class="items">
