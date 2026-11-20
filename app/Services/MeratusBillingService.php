@@ -196,6 +196,7 @@ class MeratusBillingService
                 'quantities' => 'required|array', 'quantities.*' => 'required|numeric|gt:0',
                 'nomor_kontainers' => 'required|array', 'nomor_kontainers.*' => 'required|string',
                 'nomor_bls' => 'required|array', 'nomor_bls.*' => 'required|string|max:255',
+                'nomor_referensi_items' => 'sometimes|array', 'nomor_referensi_items.*' => 'nullable|string|max:100',
                 'size_items' => 'required|array', 'size_items.*' => 'required|in:20ft,40ft,45ft',
                 'per_containers' => 'sometimes|array', 'per_containers.*' => 'boolean',
                 'storage_items' => 'sometimes|array', 'storage_items.*' => 'boolean',
@@ -253,6 +254,7 @@ class MeratusBillingService
                 $nomorBl = preg_replace('/-\d+$/', '', $nomorBl) ?: $nomorBl;
                 $rows[] = array_merge($common, [
                     'nomor_kontainer' => $number, 'nomor_bl' => $nomorBl,
+                    'nomor_referensi' => $section['nomor_referensi_items'][$i] ?? ($common['nomor_referensi'] ?? null),
                     'bl_id' => ($section['bl_ids'][$i] ?? null) ?: null,
                     'pricelist_meratus_id' => $master?->id, 'jenis_biaya' => $label,
                     'lokasi' => $section['lokasi_items'][$i] ?? null, 'size' => $section['size_items'][$i],

@@ -96,9 +96,6 @@
                     </label>
                     <button type="button" class="voyage-manual-btn-meratus mt-2 text-sm text-blue-700">Ketik voyage manual</button>
                 </div>
-                <label class="text-sm text-gray-700">Nomor referensi kapal ini
-                    <input type="text" name="meratus[${sectionIndex}][nomor_referensi]" class="${meratusInputClass} mt-1" placeholder="Masukkan nomor referensi">
-                </label>
             </div>
             <fieldset class="meratus-billing-details">
             <h5 class="font-semibold text-gray-800">2. Isi biaya per nomor BL atau kontainer</h5>
@@ -455,6 +452,9 @@
                 <label class="text-sm text-gray-700">Kontainer pada BL<select class="meratus-manifest-select ${meratusInputClass} mt-1 h-24" multiple disabled></select><span class="block text-xs text-gray-500 mt-1">Gunakan Ctrl/Cmd untuk memilih beberapa kontainer.</span></label>
                 <label class="text-sm text-gray-700">Ukuran tarif<select class="meratus-container-size ${meratusInputClass} mt-1" required><option value="">Pilih ukuran</option><option value="20ft">20ft</option><option value="40ft">40ft</option><option value="45ft">45ft</option></select></label>
             </div>
+            <label class="block text-sm text-gray-700 mb-3">Nomor referensi BL ini
+                <input type="text" class="meratus-bl-reference ${meratusInputClass} mt-1" maxlength="100" placeholder="Masukkan nomor referensi">
+            </label>
             <p class="meratus-container-summary text-xs text-blue-700 mb-3"></p>
             <div class="meratus-cost-list space-y-3"></div>
             <div class="flex flex-wrap justify-between items-center gap-3 mt-3">
@@ -466,6 +466,7 @@
         refreshMeratusOptions(section, card);
         card.querySelector('.meratus-bl-select').addEventListener('change', event => {
             card.dataset.nomorBl = event.target.value;
+            card.querySelector('.meratus-bl-reference').value = '';
             card.dataset.blId = '';
             card.dataset.containerNumbers = '';
             card.dataset.selectionInitialized = '';
@@ -565,6 +566,7 @@
             </div>
             <input type="hidden" name="${field('nomor_kontainers')}" class="meratus-row-number">
             <input type="hidden" name="${field('nomor_bls')}" class="meratus-row-nomor-bl">
+            <input type="hidden" name="${field('nomor_referensi_items')}" class="meratus-row-reference">
             <input type="hidden" name="${field('bl_ids')}" class="meratus-row-bl">
             <input type="hidden" name="${field('size_items')}" class="meratus-row-size">
             <input type="hidden" name="${field('quantities')}" class="quantity-input-meratus" value="1">
@@ -671,6 +673,7 @@
                 const rowSize = manifest ? meratusSize(manifest.size) : (selectedContainer && row.dataset.savedSize || size);
                 row.querySelector('.meratus-row-number').value = rowNumber;
                 row.querySelector('.meratus-row-nomor-bl').value = nomorBl;
+                row.querySelector('.meratus-row-reference').value = card.querySelector('.meratus-bl-reference').value;
                 row.querySelector('.meratus-row-bl').value = manifest?.id || (selectedContainer && row.dataset.savedBlId) || card.dataset.blId || '';
                 row.querySelector('.meratus-row-size').value = rowSize;
                 const storageError = updateMeratusStorageRow(row);

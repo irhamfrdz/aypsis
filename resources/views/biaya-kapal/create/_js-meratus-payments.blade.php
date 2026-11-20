@@ -207,7 +207,7 @@
         });
         updateMeratusDpSelection(section);
         const index = section.dataset.sectionIndex;
-        ['penerima', 'nomor_rekening', 'nomor_referensi', 'tanggal_invoice_vendor', 'keterangan'].forEach(field => {
+        ['penerima', 'nomor_rekening', 'tanggal_invoice_vendor', 'keterangan'].forEach(field => {
             section.querySelector('[name="meratus[' + index + '][' + field + ']"]').value = data[field] || '';
         });
         for (const [key, field] of [['pph', 'pph'], ['ppn', 'ppn'], ['materai', 'biaya_materai'], ['admin', 'biaya_admin'], ['adjustment', 'adjustment']]) {
@@ -235,6 +235,7 @@
                     card.dataset.selectionInitialized = '1';
                     card.querySelector('.meratus-container-size').value = meratusSize(item.size);
                     card.dataset.blId = item.bl_id || '';
+                    card.querySelector('.meratus-bl-reference').value = item.nomor_referensi || '';
                     refreshMeratusOptions(section, card);
                     row = card.querySelector('.meratus-type-item');
                 } else row = addMeratusCost(section, card);

@@ -389,7 +389,7 @@
                 ->pluck('nomor_bl', 'id');
             $groupedMeratus = $biayaKapal->meratusDetails->groupBy(function($item) {
                 $tgl = $item->tanggal_invoice_vendor ? \Carbon\Carbon::parse($item->tanggal_invoice_vendor)->format('Y-m-d') : '';
-                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . ($item->nomor_referensi ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '') . '|||' . ($item->meratus_stage_id ?? '');
+                return ($item->kapal ?? '') . '|||' . ($item->voyage ?? '') . '|||' . ($item->penerima ?? '') . '|||' . ($item->nomor_rekening ?? '') . '|||' . $tgl . '|||' . ($item->keterangan ?? '') . '|||' . ($item->meratus_stage_id ?? '');
             });
             foreach($groupedMeratus as $key => $items) {
                  $parts = explode('|||', $key);
@@ -409,9 +409,8 @@
                          'voyage' => $parts[1],
                          'penerima' => $parts[2],
                          'nomor_rekening' => $parts[3],
-                         'nomor_referensi' => $parts[4],
-                         'tanggal_invoice_vendor' => $parts[5],
-                         'keterangan' => $parts[6],
+                         'tanggal_invoice_vendor' => $parts[4],
+                         'keterangan' => $parts[5],
                          'types' => $items->map(function($i) use ($legacyMeratusBls){
                              return [
                                  'type_id' => $i->pricelist_meratus_id ?? 'MANUAL',
@@ -428,6 +427,7 @@
                                  'tanggal_selesai_storage' => $i->tanggal_selesai_storage?->format('Y-m-d'),
                                   'nomor_kontainer' => $i->nomor_kontainer,
                                   'nomor_bl' => $i->nomor_bl ?: ($legacyMeratusBls[$i->bl_id] ?? null),
+                                 'nomor_referensi' => $i->nomor_referensi,
                                   'bl_id' => $i->bl_id
                              ];
                          })->toArray(),
