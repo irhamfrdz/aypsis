@@ -96,6 +96,9 @@
                     </label>
                     <button type="button" class="voyage-manual-btn-meratus mt-2 text-sm text-blue-700">Ketik voyage manual</button>
                 </div>
+                <label class="text-sm text-gray-700">Nomor referensi kapal ini
+                    <input type="text" name="meratus[${sectionIndex}][nomor_referensi]" class="${meratusInputClass} mt-1" placeholder="Masukkan nomor referensi">
+                </label>
             </div>
             <fieldset class="meratus-billing-details">
             <h5 class="font-semibold text-gray-800">2. Isi biaya per nomor BL atau kontainer</h5>
@@ -175,10 +178,6 @@
                 <input type="hidden" class="meratus-cash-value" value="0">
             </div>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Referensi</label>
-                    <input type="text" name="meratus[${sectionIndex}][nomor_referensi]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan No. Referensi">
-                </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Penerima</label>
                     <input type="text" name="meratus[${sectionIndex}][penerima]" class="w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500" placeholder="Masukkan nama penerima">

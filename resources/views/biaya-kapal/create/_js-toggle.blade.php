@@ -1436,6 +1436,11 @@
             // Show Meratus multi kapal wrapper
             if (meratusWrapper) meratusWrapper.classList.remove('hidden');
             initializeMeratusSections();
+            if (nomorReferensiWrapper) {
+                nomorReferensiWrapper.classList.add('hidden');
+                const referenceInput = nomorReferensiWrapper.querySelector('input');
+                if (referenceInput) referenceInput.value = '';
+            }
 
             // Hide standard kapal/voyage/bl fields
             kapalWrapper.classList.add('hidden');
