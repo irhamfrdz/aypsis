@@ -317,10 +317,9 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 18%;">Tanggal Ref.</th>
-                    <th style="width: 30%;">Referensi</th>
-                    <th style="width: 22%;">Nomor Voyage</th>
-                    <th style="width: 25%;">DPP</th>
+                    <th style="width: 22%;">Tanggal Ref.</th>
+                    <th style="width: 38%;">Nomor Voyage</th>
+                    <th style="width: 35%;">DPP</th>
                 </tr>
             </thead>
             <tbody>
@@ -339,36 +338,34 @@
                     if ($firstReferenceDate && $lastReferenceDate && $firstReferenceDate != $lastReferenceDate) {
                         $referenceDateDisplay .= ' - '.\Carbon\Carbon::parse($lastReferenceDate)->format('d/M/Y');
                     }
-                    $referenceDisplay = $details->pluck('nomor_referensi')->filter()->unique()->implode(', ') ?: '-';
                 @endphp
                 <tr>
                     <td class="text-center">{{ $loop->iteration }}</td>
                     <td class="text-center">{{ $referenceDateDisplay }}</td>
-                    <td>{{ $referenceDisplay }}</td>
                     <td class="text-center">{{ $details->first()->voyage ?? '-' }}</td>
                     <td class="text-right">Rp {{ number_format($sectionDpp, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="5" class="text-center">Tidak ada data detail.</td>
+                    <td colspan="4" class="text-center">Tidak ada data detail.</td>
                 </tr>
                 @endforelse
                 <tr>
-                    <td colspan="4" class="text-right">DPP (SEBELUM DP)</td>
+                    <td colspan="3" class="text-right">DPP (SEBELUM DP)</td>
                     <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                 </tr>
                 @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
                 <tr>
-                    <td colspan="4" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td colspan="3" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
                     <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td colspan="4" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td colspan="3" class="text-right">DP DIPERHITUNGKAN</td>
                     <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="4" class="text-right">SISA SETELAH DP</td>
+                    <td colspan="3" class="text-right">SISA SETELAH DP</td>
                     <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
@@ -409,12 +406,13 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 13%;">Nomor BL</th>
-                    <th style="width: 27%;">Kontainer</th>
-                    <th style="width: 18%;">Jenis Biaya</th>
-                    <th style="width: 13%;">Harga Satuan</th>
-                    <th style="width: 7%;">Jumlah</th>
-                    <th style="width: 17%;">Subtotal</th>
+                    <th style="width: 10%;">Nomor BL</th>
+                    <th style="width: 15%;">Referensi</th>
+                    <th style="width: 24%;">Kontainer</th>
+                    <th style="width: 16%;">Jenis Biaya</th>
+                    <th style="width: 12%;">Harga Satuan</th>
+                    <th style="width: 6%;">Jumlah</th>
+                    <th style="width: 12%;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -424,6 +422,7 @@
                     @php
                         $firstBlDetail = $blDetails->first();
                         $blInduk = $normalizeNomorBl($firstBlDetail->nomor_bl) ?: '-';
+                        $blReference = $blDetails->pluck('nomor_referensi')->filter()->unique()->implode(', ') ?: '-';
                         $manifestInfo = $meratusManifestGroups->get(($firstBlDetail->voyage ?? '').'|'.$blInduk);
                         $containers = collect($manifestInfo['containers'] ?? []);
                         if ($containers->isEmpty()) {
@@ -444,6 +443,7 @@
                             @if($loop->first)
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $no++ }}</td>
                                 <td class="text-center" rowspan="{{ $rowspan }}">{{ $blInduk }}</td>
+                                <td rowspan="{{ $rowspan }}">{{ $blReference }}</td>
                                 <td rowspan="{{ $rowspan }}">
                                     @if($containers->isNotEmpty())
                                         <table class="container-number-list">
@@ -470,7 +470,7 @@
                 @if($totalPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">PPH (2%)</td>
+                    <td colspan="4">PPH (2%)</td>
                     <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
@@ -480,7 +480,7 @@
                 @if($totalPPN > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">PPN (11%)</td>
+                    <td colspan="4">PPN (11%)</td>
                     <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
@@ -490,7 +490,7 @@
                 @if($totalMaterai > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">BIAYA MATERAI</td>
+                    <td colspan="4">BIAYA MATERAI</td>
                     <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
@@ -500,7 +500,7 @@
                 @if($totalAdmin > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">BIAYA ADMIN</td>
+                    <td colspan="4">BIAYA ADMIN</td>
                     <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdmin, 0, ',', '.') }}</td>
@@ -510,7 +510,7 @@
                 @if($totalAdjustment != 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="3">ADJUSTMENT</td>
+                    <td colspan="4">ADJUSTMENT</td>
                     <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
@@ -518,21 +518,21 @@
                 @endif
                 
                 <tr>
-                    <td colspan="6" class="text-right">DPP (SEBELUM DP)</td>
+                    <td colspan="7" class="text-right">DPP (SEBELUM DP)</td>
                     <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                 </tr>
                 @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
                 <tr>
-                    <td colspan="6" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td colspan="7" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
                     <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td colspan="6" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td colspan="7" class="text-right">DP DIPERHITUNGKAN</td>
                     <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="6" class="text-right">SISA SETELAH DP</td>
+                    <td colspan="7" class="text-right">SISA SETELAH DP</td>
                     <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
