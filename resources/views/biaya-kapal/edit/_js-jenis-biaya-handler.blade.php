@@ -1001,6 +1001,7 @@
         // Show Meratus wrapper if "Meratus" is selected
         else if (selectedText.toLowerCase().includes('meratus')) {
             if (meratusWrapper) meratusWrapper.classList.remove('hidden');
+            if (nomorReferensiWrapper) nomorReferensiWrapper.classList.add('hidden');
             if (meratusSectionsContainer && meratusSectionsContainer.children.length === 0) {
                 initializeMeratusSections();
             }
