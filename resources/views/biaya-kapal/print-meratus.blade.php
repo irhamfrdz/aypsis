@@ -416,10 +416,11 @@
                 <tr>
                     <th style="width: 5%;">No</th>
                     <th style="width: 13%;">Nomor BL</th>
-                    <th style="width: 35%;">Kontainer</th>
-                    <th style="width: 21%;">Jenis Biaya</th>
-                    <th style="width: 8%;">Jumlah</th>
-                    <th style="width: 18%;">Subtotal</th>
+                    <th style="width: 27%;">Kontainer</th>
+                    <th style="width: 18%;">Jenis Biaya</th>
+                    <th style="width: 13%;">Harga Satuan</th>
+                    <th style="width: 7%;">Jumlah</th>
+                    <th style="width: 17%;">Subtotal</th>
                 </tr>
             </thead>
             <tbody>
@@ -465,6 +466,7 @@
                                 </td>
                             @endif
                             <td>{{ strtoupper(($detail->jenis_biaya ?? 'BIAYA MERATUS').$status) }}</td>
+                            <td class="text-right">Rp {{ number_format((float) $detail->harga, 0, ',', '.') }}</td>
                             <td class="text-center">{{ rtrim(rtrim(number_format($detail->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
                             <td class="text-right">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
                         </tr>
@@ -475,6 +477,7 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td colspan="3">PPH (2%)</td>
+                    <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPH, 0, ',', '.') }}</td>
                 </tr>
@@ -484,6 +487,7 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td colspan="3">PPN (11%)</td>
+                    <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalPPN, 0, ',', '.') }}</td>
                 </tr>
@@ -493,6 +497,7 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td colspan="3">BIAYA MATERAI</td>
+                    <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalMaterai, 0, ',', '.') }}</td>
                 </tr>
@@ -502,6 +507,7 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td colspan="3">BIAYA ADMIN</td>
+                    <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdmin, 0, ',', '.') }}</td>
                 </tr>
@@ -511,27 +517,28 @@
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
                     <td colspan="3">ADJUSTMENT</td>
+                    <td></td>
                     <td class="text-center">1</td>
                     <td class="text-right">Rp {{ number_format($totalAdjustment, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 
                 <tr>
-                    <td colspan="5" class="text-right">DPP (SEBELUM DP)</td>
+                    <td colspan="6" class="text-right">DPP (SEBELUM DP)</td>
                     <td class="text-right">Rp {{ number_format($totalSubtotal, 0, ',', '.') }}</td>
                 </tr>
                 @if(round($totalTagihanSebelumDp, 2) !== round($totalSubtotal, 2))
                 <tr>
-                    <td colspan="5" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
+                    <td colspan="6" class="text-right">TOTAL TAGIHAN SEBELUM DP</td>
                     <td class="text-right">Rp {{ number_format($totalTagihanSebelumDp, 0, ',', '.') }}</td>
                 </tr>
                 @endif
                 <tr>
-                    <td colspan="5" class="text-right">DP DIPERHITUNGKAN</td>
+                    <td colspan="6" class="text-right">DP DIPERHITUNGKAN</td>
                     <td class="text-right">- Rp {{ number_format($dpDiperhitungkan, 0, ',', '.') }}</td>
                 </tr>
                 <tr class="total-row">
-                    <td colspan="5" class="text-right">SISA SETELAH DP</td>
+                    <td colspan="6" class="text-right">SISA SETELAH DP</td>
                     <td class="text-right">Rp {{ number_format($totalSetelahDp, 0, ',', '.') }}</td>
                 </tr>
             </tbody>
