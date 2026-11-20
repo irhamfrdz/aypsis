@@ -437,48 +437,14 @@
                                 ->flatMap(fn ($numbers) => array_map('trim', explode(',', (string) $numbers)))
                                 ->filter()->unique()->values();
                         }
-                        $printRows = collect();
-                        $details = $blDetails->values();
-                        $paired = [];
-                        foreach ($details as $index => $detail) {
-                            if (isset($paired[$index])) continue;
-
-                            $type = strtoupper(trim((string) $detail->jenis_biaya));
-                            $matchIndex = null;
-                            if (preg_match('/^(THC|LOLO)(?:\s+(.+))?$/', $type, $parts)) {
-                                $otherType = $parts[1] === 'THC' ? 'LOLO' : 'THC';
-                                $otherLabel = $otherType.(isset($parts[2]) ? ' '.$parts[2] : '');
-                                foreach ($details as $candidateIndex => $candidate) {
-                                    if ($candidateIndex === $index || isset($paired[$candidateIndex])) continue;
-                                    if (strtoupper(trim((string) $candidate->jenis_biaya)) === $otherLabel
-                                        && (float) $candidate->kuantitas === (float) $detail->kuantitas
-                                        && $candidate->is_muat === $detail->is_muat
-                                        && $candidate->is_bongkar === $detail->is_bongkar) {
-                                        $matchIndex = $candidateIndex;
-                                        break;
-                                    }
-                                }
-                            }
-
-                            if ($matchIndex !== null) $paired[$matchIndex] = true;
-                            $paired[$index] = true;
-                            $printRows->push([
-                                'jenis_biaya' => $matchIndex !== null ? 'THC + LOLO'.(isset($parts[2]) ? ' '.$parts[2] : '') : ($detail->jenis_biaya ?? 'BIAYA MERATUS'),
-                                'harga' => (float) $detail->harga + ($matchIndex !== null ? (float) $details[$matchIndex]->harga : 0),
-                                'kuantitas' => $detail->kuantitas,
-                                'sub_total' => (float) $detail->sub_total + ($matchIndex !== null ? (float) $details[$matchIndex]->sub_total : 0),
-                                'is_muat' => $detail->is_muat,
-                                'is_bongkar' => $detail->is_bongkar,
-                            ]);
-                        }
-                        $rowspan = $printRows->count();
+                        $rowspan = $blDetails->count();
                     @endphp
-                    @foreach($printRows as $detail)
+                    @foreach($blDetails as $detail)
                         @php
                             $status = '';
-                            if ($detail['is_muat'] && $detail['is_bongkar']) $status = ' (MUAT/BONGKAR)';
-                            elseif ($detail['is_muat']) $status = ' (MUAT)';
-                            elseif ($detail['is_bongkar']) $status = ' (BONGKAR)';
+                            if ($detail->is_muat && $detail->is_bongkar) $status = ' (MUAT/BONGKAR)';
+                            elseif ($detail->is_muat) $status = ' (MUAT)';
+                            elseif ($detail->is_bongkar) $status = ' (BONGKAR)';
                         @endphp
                         <tr>
                             @if($loop->first)
@@ -499,10 +465,10 @@
                                     @endif
                                 </td>
                             @endif
-                            <td>{{ strtoupper($detail['jenis_biaya'].$status) }}</td>
-                            <td class="text-right">Rp {{ number_format($detail['harga'], 0, ',', '.') }}</td>
-                            <td class="text-center">{{ rtrim(rtrim(number_format($detail['kuantitas'], 2, ',', '.'), '0'), ',') }}</td>
-                            <td class="text-right">Rp {{ number_format($detail['sub_total'], 0, ',', '.') }}</td>
+                            <td>{{ strtoupper(($detail->jenis_biaya ?? 'BIAYA MERATUS').$status) }}</td>
+                            <td class="text-right">Rp {{ number_format((float) $detail->harga, 0, ',', '.') }}</td>
+                            <td class="text-center">{{ rtrim(rtrim(number_format($detail->kuantitas, 2, ',', '.'), '0'), ',') }}</td>
+                            <td class="text-right">Rp {{ number_format($detail->sub_total, 0, ',', '.') }}</td>
                         </tr>
                     @endforeach
                 @endforeach
