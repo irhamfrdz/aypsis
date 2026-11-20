@@ -268,7 +268,8 @@
                     ...savedNumbers
                 ])].join(', ');
                 refreshMeratusCostContainers(section, card, row);
-                row.querySelector('.price-input-meratus').value = item.harga;
+                const selectedPricelist = pricelistMeratusData.find(pricelist => String(pricelist.id) === type);
+                row.querySelector('.price-input-meratus').value = String(selectedPricelist ? selectedPricelist.harga : item.harga);
                 row.querySelector('.meratus-storage-toggle').checked = Boolean(item.is_storage);
                 row.querySelector('.meratus-storage-start').value = item.tanggal_mulai_storage || '';
                 row.querySelector('.meratus-storage-end').value = item.tanggal_selesai_storage || '';
