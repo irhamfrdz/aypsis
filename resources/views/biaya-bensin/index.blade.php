@@ -137,6 +137,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kendaraan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kartu</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">KM Awal/Akhir</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Liter</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
@@ -174,6 +175,9 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $item->supir ? ($item->supir->nama_panggilan ?: $item->supir->nama_lengkap) : '-' }}
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-700">
+                                    {{ $item->keterangan ?: '-' }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                     <div>{{ number_format($item->km_awal, 0, ',', '.') }} KM</div>
@@ -237,7 +241,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="11" class="px-6 py-12 text-center">
+                                <td colspan="12" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <i class="fas fa-gas-pump text-gray-300 text-5xl mb-4"></i>
                                         <h3 class="text-lg font-medium text-gray-900 mb-1">Belum ada catatan biaya bensin</h3>
