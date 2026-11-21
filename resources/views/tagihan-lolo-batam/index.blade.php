@@ -356,7 +356,7 @@
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                 {{-- Modal Dialog Card --}}
-                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full border border-gray-100">
+                <div class="inline-block align-bottom bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle sm:max-w-7xl sm:w-full border border-gray-100">
                     <form action="{{ route('tagihan-lolo-batam.store') }}" method="POST" id="modalPranotaForm">
                         @csrf
                         {{-- Hidden Form Fields --}}
@@ -424,8 +424,8 @@
                                     </h4>
                                 </div>
 
-                                <div class="border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-                                    <table class="min-w-full divide-y divide-gray-200">
+                                <div class="border border-gray-200 rounded-xl overflow-x-auto shadow-sm">
+                                    <table class="min-w-[1100px] w-full divide-y divide-gray-200">
                                         <thead class="bg-gray-50 text-xs font-bold text-gray-600 uppercase border-b border-gray-200">
                                             <tr>
                                                 <th class="px-3 py-3 text-center w-10">#</th>
