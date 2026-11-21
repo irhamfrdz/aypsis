@@ -104,7 +104,7 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
             return [
                 $index + 1,
                 $item->nomor_bukti ?? '-',
-                $item->tanggal_masuk ? \Carbon\Carbon::parse($item->tanggal_masuk)->format('d/m/Y') : '-',
+                $item->tanggal_beli ? $item->tanggal_beli->format('d/m/Y') : ($item->created_at ? $item->created_at->format('d/m/Y') : '-'),
                 $item->nama_barang ?? ($item->masterNamaBarangAmprahan->nama_barang ?? '-'),
                 $item->type_amprahan ?? '-',
                 $item->lokasi ?? '-',
