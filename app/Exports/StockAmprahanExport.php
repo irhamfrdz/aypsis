@@ -25,7 +25,16 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
     {
         $mobilId = $this->filters['mobil_id'] ?? null;
 
-        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan'])
+        $query = StockAmprahan::with(['masterNamaBarangAmprahan', 'vendorAmprahan',
+            'usages' => function ($q) use ($mobilId) {
+                if ($mobilId) {
+                    $q->where(function ($usage) use ($mobilId) {
+                        $usage->where('kendaraan_id', $mobilId)
+                            ->orWhere('truck_id', $mobilId)
+                            ->orWhere('buntut_id', $mobilId);
+                    });
+                }
+            }, 'usages.penerima'])
             ->withSum(['usages as usages_sum_jumlah' => function ($q) use ($mobilId) {
                 if ($mobilId) {
                     $q->where('kendaraan_id', $mobilId)
@@ -90,6 +99,7 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
         return $query->get()->map(function ($item, $index) {
             $pemakaian = $item->usages_sum_jumlah ?? 0;
             $sisa = $item->jumlah - $pemakaian;
+            $penerimas = $item->usages->pluck('penerima')->filter()->unique('id');
 
             return [
                 $index + 1,
@@ -104,6 +114,8 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
                 $sisa,
                 $item->harga_satuan,
                 $item->harga_satuan * $item->jumlah,
+                $penerimas->pluck('nama_lengkap')->filter()->implode(', ') ?: '-',
+                $penerimas->pluck('nik')->filter()->implode(', ') ?: '-',
             ];
         });
     }
@@ -123,6 +135,8 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
             'Sisa Stock',
             'Harga Satuan',
             'Total Harga',
+            'Penerima',
+            'NIK Penerima',
         ];
 
         if (! empty($this->filters['mobil_id'])) {
@@ -139,7 +153,7 @@ class StockAmprahanExport implements FromCollection, ShouldAutoSize, WithEvents,
     {
         return [
             AfterSheet::class => function (AfterSheet $event) {
-                $lastCol = 'L';
+                $lastCol = 'N';
                 $lastRow = $event->sheet->getHighestRow();
 
                 // Style the header row
