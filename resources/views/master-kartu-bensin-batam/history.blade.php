@@ -17,6 +17,9 @@
         {{ session('success') }}
     </div>
     @endif
+    @error('history')
+    <div class="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{{ $message }}</div>
+    @enderror
 
     <!-- Card Info Header Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6">
@@ -231,6 +234,15 @@
                                 @if($log->tipe === 'bertambah' && ! $log->nomor_pranota)
                                 <a href="{{ route('master-kartu-bensin-batam.history.edit', [$card->id, $log->id]) }}#buat-pranota" class="text-xs font-semibold text-emerald-700 hover:underline">Buat Pranota</a>
                                 @endif
+                                @endcan
+                                @can('master-kartu-bensin-batam-delete')
+                                <form action="{{ route('master-kartu-bensin-batam.history.destroy', [$card->id, $log->id]) }}" method="POST" onsubmit="return confirm('Hapus riwayat ini? Saldo kartu dan riwayat berikutnya akan disesuaikan.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="inline-flex items-center gap-1 text-red-600 hover:text-red-800" aria-label="Hapus riwayat {{ $log->nomor_transaksi ?? $log->id }}">
+                                        <i class="fas fa-trash" aria-hidden="true"></i> Hapus
+                                    </button>
+                                </form>
                                 @endcan
                             </div>
                         </td>

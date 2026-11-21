@@ -266,6 +266,49 @@ class MasterKartuBensinBatamController extends Controller
             ->with('success', 'Riwayat kartu bensin berhasil diperbarui.');
     }
 
+    public function destroyHistory($id, $historyId)
+    {
+        DB::transaction(function () use ($id, $historyId) {
+            $card = MasterKartuBensinBatam::lockForUpdate()->findOrFail($id);
+            $log = $card->histories()->lockForUpdate()->findOrFail($historyId);
+
+            if ($log->tipe === 'berkurang' && (
+                ($log->nomor_transaksi && BiayaBensin::where('nomor_transaksi', $log->nomor_transaksi)->exists())
+                || (! $log->nomor_transaksi && str_starts_with((string) $log->keterangan, 'Pengisian bensin Kendaraan '))
+            )) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'history' => 'Riwayat pemakaian yang terhubung ke biaya bensin tidak dapat dihapus. Hapus atau ubah biaya bensin terkait terlebih dahulu.',
+                ]);
+            }
+
+            $delta = (int) round((float) $log->nominal * 100) * ($log->tipe === 'bertambah' ? -1 : 1);
+            $newSaldo = (int) round((float) $card->saldo * 100) + $delta;
+            if ($newSaldo < 0) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'history' => 'Riwayat ini tidak dapat dihapus karena saldo kartu akan menjadi negatif.',
+                ]);
+            }
+
+            $following = $card->histories()->where('id', '>', $log->id)->orderBy('id')->lockForUpdate()->get();
+            foreach ($following as $entry) {
+                $saldoSebelum = (int) round((float) $entry->saldo_sebelum * 100) + $delta;
+                $saldoSesudah = (int) round((float) $entry->saldo_sesudah * 100) + $delta;
+                if ($saldoSebelum < 0 || $saldoSesudah < 0) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'history' => 'Riwayat ini tidak dapat dihapus karena saldo transaksi berikutnya akan menjadi negatif.',
+                    ]);
+                }
+                $entry->update(['saldo_sebelum' => $saldoSebelum / 100, 'saldo_sesudah' => $saldoSesudah / 100]);
+            }
+
+            $log->delete();
+            $card->update(['saldo' => $newSaldo / 100, 'updated_by' => auth()->id()]);
+        });
+
+        return redirect()->route('master-kartu-bensin-batam.history', $id)
+            ->with('success', 'Riwayat kartu bensin berhasil dihapus.');
+    }
+
     public function topup(Request $request, $id)
     {
         $validated = $request->validate([

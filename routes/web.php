@@ -3587,6 +3587,9 @@ Route::middleware([
         Route::put('master-kartu-bensin-batam/{id}/history/{historyId}', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'updateHistory'])
             ->name('master-kartu-bensin-batam.history.update')
             ->middleware('can:master-kartu-bensin-batam-edit');
+        Route::delete('master-kartu-bensin-batam/{id}/history/{historyId}', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'destroyHistory'])
+            ->name('master-kartu-bensin-batam.history.destroy')
+            ->middleware('can:master-kartu-bensin-batam-delete');
         Route::post('master-kartu-bensin-batam/{id}/topup', [\App\Http\Controllers\MasterKartuBensinBatamController::class, 'topup'])
             ->name('master-kartu-bensin-batam.topup')
             ->middleware('can:master-kartu-bensin-batam-edit');
