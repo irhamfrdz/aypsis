@@ -108,9 +108,13 @@ class TagihanLoloBatamController extends Controller
 
         // Bongkaran Batam containers with LOLO = 1
         if ($sumber === 'all' || $sumber === 'bongkaran') {
-            $bongkaranQuery = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1);
+            $bongkaranQuery = SuratJalanBongkaranBatam::with(['manifest', 'kapal'])->where('menggunakan_lolo', 1);
             if ($kapalFilter) {
-                $bongkaranQuery->where('nama_kapal', $kapalFilter);
+                $bongkaranQuery->where(function ($query) use ($kapalFilter) {
+                    $query->where('nama_kapal', $kapalFilter)
+                        ->orWhereHas('manifest', fn ($manifest) => $manifest->where('nama_kapal', $kapalFilter))
+                        ->orWhereHas('kapal', fn ($kapal) => $kapal->where('nama_kapal', $kapalFilter));
+                });
             }
             if ($voyageFilter) {
                 $bongkaranQuery->where('no_voyage', $voyageFilter);
@@ -177,7 +181,7 @@ class TagihanLoloBatamController extends Controller
                     'total_tarif' => $totalTarif,
                     'formatted_total_tarif' => $totalTarif > 0 ? 'Rp '.number_format($totalTarif, 0, ',', '.') : '-',
                     'tipe_kontainer' => $b->tipe_kontainer ?? ($b->f_e ? strtoupper($b->f_e) : 'FULL'),
-                    'kapal' => $b->nama_kapal ?? '-',
+                    'kapal' => $b->nama_kapal ?: ($b->manifest?->nama_kapal ?: ($b->kapal?->nama_kapal ?: '-')),
                     'voyage' => $b->no_voyage ?? '-',
                     'supir' => $b->supir ?? '-',
                     'no_plat' => $b->no_plat ?? '-',
@@ -300,8 +304,14 @@ class TagihanLoloBatamController extends Controller
         );
 
         $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
-        $kapals = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
-        $voyages = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->when($kapalFilter, fn ($query) => $query->where('nama_kapal', $kapalFilter))->whereNotNull('no_voyage')->where('no_voyage', '!=', '')->distinct()->orderBy('no_voyage')->pluck('no_voyage');
+        $kapals = SuratJalanBongkaranBatam::with(['manifest', 'kapal'])->where('menggunakan_lolo', 1)->get()
+            ->map(fn ($suratJalan) => $suratJalan->nama_kapal ?: ($suratJalan->manifest?->nama_kapal ?: $suratJalan->kapal?->nama_kapal))
+            ->filter()->unique()->sort()->values();
+        $voyages = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)
+            ->when($kapalFilter, fn ($query) => $query->where(fn ($q) => $q->where('nama_kapal', $kapalFilter)
+                ->orWhereHas('manifest', fn ($manifest) => $manifest->where('nama_kapal', $kapalFilter))
+                ->orWhereHas('kapal', fn ($kapal) => $kapal->where('nama_kapal', $kapalFilter))))
+            ->whereNotNull('no_voyage')->where('no_voyage', '!=', '')->distinct()->orderBy('no_voyage')->pluck('no_voyage');
 
         // Generate automatic invoice number: 2 digit kode (LB) - 2 digit bulan - 2 digit tahun - 6 digit no urut
         $nomorTagihan = self::generateNomorPranota();
