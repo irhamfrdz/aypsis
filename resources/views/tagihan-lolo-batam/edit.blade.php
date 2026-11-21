@@ -380,12 +380,12 @@
             <td class="px-3 py-3">
                 <input type="text" name="items[${rowCount}][nomor_surat_jalan]" value="${nomorSj}" placeholder="No SJ..." class="w-full rounded-md border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500">
             </td>
-            <td class="px-3 py-3"><input type="date" name="items[${rowCount}][tanggal_lolo]" value="${tanggalLolo}" class="w-full rounded-md border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500"></td>
+            <td class="px-3 py-3"><div id="lolo_dates_${rowCount}" class="space-y-1"></div></td>
             <td class="px-3 py-3">
                 <input type="number" step="0.01" min="0" name="items[${rowCount}][tarif]" value="${tarif}" oninput="calcSubtotal(${rowCount})" required class="w-full rounded-md border-gray-300 text-xs text-right font-semibold text-emerald-700 focus:ring-indigo-500 focus:border-indigo-500">
             </td>
             <td class="px-3 py-3 text-center">
-                <input type="number" min="1" name="items[${rowCount}][jumlah]" value="${jumlah}" oninput="calcSubtotal(${rowCount})" required class="w-full rounded-md border-gray-300 text-xs text-center focus:ring-indigo-500 focus:border-indigo-500">
+                <input type="number" min="1" name="items[${rowCount}][jumlah]" value="${jumlah}" oninput="updateLoloDates(${rowCount}); calcSubtotal(${rowCount})" required class="w-full rounded-md border-gray-300 text-xs text-center focus:ring-indigo-500 focus:border-indigo-500">
             </td>
             <td class="px-3 py-3 text-right">
                 <span id="subtotal_display_${rowCount}" class="text-xs font-bold text-gray-800">Rp ${Number(tarif * jumlah).toLocaleString('id-ID')}</span>
@@ -398,8 +398,17 @@
         `;
 
         tbody.appendChild(tr);
+        updateLoloDates(rowCount, data && data.tanggal_lolo_list ? data.tanggal_lolo_list : (tanggalLolo ? [tanggalLolo] : []));
         reindexRows();
         calcSubtotal(rowCount);
+    }
+
+    function updateLoloDates(rowId, initialDates = null) {
+        const row = document.getElementById(`row_${rowId}`);
+        const count = Math.max(1, parseInt(row.querySelector(`input[name="items[${rowId}][jumlah]"]`).value, 10) || 1);
+        const container = document.getElementById(`lolo_dates_${rowId}`);
+        const dates = initialDates ?? Array.from(container.querySelectorAll('input')).map(input => input.value);
+        container.innerHTML = Array.from({length: count}, (_, i) => `<label class="block text-[11px]">LOLO ${i + 1}<input type="date" name="items[${rowId}][tanggal_lolo_list][]" value="${dates[i] || ''}" required class="block w-36 rounded-md border-gray-300 text-xs"></label>`).join('');
     }
 
     function removeRow(id) {

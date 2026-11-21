@@ -608,8 +608,18 @@ class TagihanLoloBatamController extends Controller
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
             'items.*.tanggal_lolo' => 'nullable|date',
+            'items.*.tanggal_lolo_list' => 'nullable|array',
+            'items.*.tanggal_lolo_list.*' => 'required|date',
             'items.*.keterangan' => 'nullable|string|max:255',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->input('items', []) as $index => $item) {
+                if (isset($item['tanggal_lolo_list']) && is_array($item['tanggal_lolo_list']) && count($item['tanggal_lolo_list']) !== (int) ($item['jumlah'] ?? 0)) {
+                    $validator->errors()->add("items.$index.tanggal_lolo_list", 'Jumlah tanggal LOLO harus sama dengan jumlah LOLO.');
+                }
+            }
+        });
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -683,7 +693,8 @@ class TagihanLoloBatamController extends Controller
                     'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
-                    'tanggal_lolo' => $item['tanggal_lolo'] ?? null,
+                    'tanggal_lolo' => ($item['tanggal_lolo_list'][0] ?? null) ?: ($item['tanggal_lolo'] ?? null),
+                    'tanggal_lolo_list' => $item['tanggal_lolo_list'] ?? (isset($item['tanggal_lolo']) ? [$item['tanggal_lolo']] : null),
                     'total' => $subtotal,
                     'keterangan' => $item['keterangan'] ?? null,
                     'created_at' => now(),
@@ -803,8 +814,18 @@ class TagihanLoloBatamController extends Controller
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
             'items.*.tanggal_lolo' => 'nullable|date',
+            'items.*.tanggal_lolo_list' => 'nullable|array',
+            'items.*.tanggal_lolo_list.*' => 'required|date',
             'items.*.keterangan' => 'nullable|string|max:255',
         ]);
+
+        $validator->after(function ($validator) use ($request) {
+            foreach ($request->input('items', []) as $index => $item) {
+                if (isset($item['tanggal_lolo_list']) && is_array($item['tanggal_lolo_list']) && count($item['tanggal_lolo_list']) !== (int) ($item['jumlah'] ?? 0)) {
+                    $validator->errors()->add("items.$index.tanggal_lolo_list", 'Jumlah tanggal LOLO harus sama dengan jumlah LOLO.');
+                }
+            }
+        });
 
         if ($validator->fails()) {
             return redirect()->back()->withErrors($validator)->withInput();
@@ -879,7 +900,8 @@ class TagihanLoloBatamController extends Controller
                     'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
-                    'tanggal_lolo' => $item['tanggal_lolo'] ?? null,
+                    'tanggal_lolo' => ($item['tanggal_lolo_list'][0] ?? null) ?: ($item['tanggal_lolo'] ?? null),
+                    'tanggal_lolo_list' => $item['tanggal_lolo_list'] ?? (isset($item['tanggal_lolo']) ? [$item['tanggal_lolo']] : null),
                     'total' => $subtotal,
                     'keterangan' => $item['keterangan'] ?? null,
                     'created_at' => now(),

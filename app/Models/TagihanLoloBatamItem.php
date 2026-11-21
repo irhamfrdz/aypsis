@@ -26,6 +26,7 @@ class TagihanLoloBatamItem extends Model
         'tarif',
         'jumlah',
         'tanggal_lolo',
+        'tanggal_lolo_list',
         'total',
         'tipe_operator',
         'operator',
@@ -37,6 +38,7 @@ class TagihanLoloBatamItem extends Model
         'tarif' => 'decimal:2',
         'jumlah' => 'integer',
         'tanggal_lolo' => 'date',
+        'tanggal_lolo_list' => 'array',
         'total' => 'decimal:2',
     ];
 

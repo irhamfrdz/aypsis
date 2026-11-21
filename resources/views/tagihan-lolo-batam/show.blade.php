@@ -143,7 +143,11 @@
                                     {{ ucfirst($item->sumber_data) }}
                                 </span>
                                 <span class="text-xs">{{ $item->nomor_surat_jalan ?: '-' }}</span>
-                                @if($item->tanggal_lolo)
+                                @if($item->tanggal_lolo_list)
+                                    @foreach($item->tanggal_lolo_list as $nomorLolo => $tanggalLolo)
+                                        <div class="text-xs text-gray-500 mt-1">LOLO {{ $nomorLolo + 1 }}: {{ \Carbon\Carbon::parse($tanggalLolo)->format('d/m/Y') }}</div>
+                                    @endforeach
+                                @elseif($item->tanggal_lolo)
                                     <div class="text-xs text-gray-500 mt-1">Tanggal LOLO: {{ $item->tanggal_lolo->format('d/m/Y') }}</div>
                                 @endif
                             </td>

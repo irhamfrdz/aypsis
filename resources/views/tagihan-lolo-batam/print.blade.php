@@ -355,7 +355,11 @@
                         <td>
                             {{ $item->nomor_surat_jalan ?: '-' }}
                             <span style="font-size: 7.5px; color: #555;">({{ ucfirst($item->sumber_data) }})</span>
-                            @if($item->tanggal_lolo)
+                            @if($item->tanggal_lolo_list)
+                                @foreach($item->tanggal_lolo_list as $nomorLolo => $tanggalLolo)
+                                    <br><span style="font-size: 7.5px; color: #555;">LOLO {{ $nomorLolo + 1 }}: {{ \Carbon\Carbon::parse($tanggalLolo)->format('d/m/Y') }}</span>
+                                @endforeach
+                            @elseif($item->tanggal_lolo)
                                 <br><span style="font-size: 7.5px; color: #555;">LOLO: {{ $item->tanggal_lolo->format('d/m/Y') }}</span>
                             @endif
                         </td>

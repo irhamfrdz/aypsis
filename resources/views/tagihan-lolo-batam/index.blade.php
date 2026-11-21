@@ -568,6 +568,14 @@
         document.getElementById('modalGrandTotal').innerText = 'Rp ' + formatNumber(total);
     }
 
+    function updateModalLoloDates(idx) {
+        const jumlah = Math.max(1, parseInt(document.getElementById('modal_item_jumlah_' + idx).value, 10) || 1);
+        const container = document.getElementById('modal_item_dates_' + idx);
+        const existing = Array.from(container.querySelectorAll('input')).map(input => input.value);
+        container.innerHTML = Array.from({length: jumlah}, (_, i) => `<label class="block text-[11px] text-gray-600">LOLO ${i + 1}<input type="date" name="items[${idx}][tanggal_lolo_list][]" value="${existing[i] || ''}" required class="block w-36 px-2 py-1.5 text-xs rounded-lg border border-gray-300"></label>`).join('');
+        recalculateModalItem();
+    }
+
     function openCreatePranotaModal() {
         const selectedCheckboxes = document.querySelectorAll('.container-checkbox:checked');
         if (selectedCheckboxes.length === 0) {
@@ -660,12 +668,12 @@
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${sumber === 'bongkaran' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'} mr-1.5 uppercase">${sumber}</span>
                         <span class="font-medium">${sj}</span>
                     </td>
-                    <td class="px-4 py-3"><input type="date" name="items[${idx}][tanggal_lolo]" class="w-36 px-2 py-1.5 text-xs rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"></td>
+                    <td class="px-4 py-3"><div id="modal_item_dates_${idx}" class="space-y-1.5"><label class="block text-[11px] text-gray-600">LOLO 1<input type="date" name="items[${idx}][tanggal_lolo_list][]" required class="block w-36 px-2 py-1.5 text-xs rounded-lg border border-gray-300"></label></div></td>
                     <td class="px-4 py-3">
                         ${opDisplayText}
                     </td>
                     <td class="px-3 py-3 text-center">
-                        <input type="number" name="items[${idx}][jumlah]" id="modal_item_jumlah_${idx}" value="1" min="1" step="1" required oninput="recalculateModalItem()" class="w-16 px-2 py-1.5 text-center text-xs rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                        <input type="number" name="items[${idx}][jumlah]" id="modal_item_jumlah_${idx}" value="1" min="1" step="1" required oninput="updateModalLoloDates(${idx})" class="w-16 px-2 py-1.5 text-center text-xs rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
                     </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-1">
