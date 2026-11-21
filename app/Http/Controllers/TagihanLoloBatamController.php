@@ -25,6 +25,8 @@ class TagihanLoloBatamController extends Controller
         $vendor = $request->get('vendor');
         $startDate = $request->get('start_date');
         $endDate = $request->get('end_date');
+        $kapalFilter = $request->get('kapal');
+        $voyageFilter = $request->get('voyage');
 
         // 1. INVOICE QUERY & STATS (Faktur Tab)
         $invoiceQuery = TagihanLoloBatam::with(['createdBy', 'updatedBy', 'items', 'operatorKaryawan'])->latest('tanggal_tagihan');
@@ -107,6 +109,12 @@ class TagihanLoloBatamController extends Controller
         // Bongkaran Batam containers with LOLO = 1
         if ($sumber === 'all' || $sumber === 'bongkaran') {
             $bongkaranQuery = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1);
+            if ($kapalFilter) {
+                $bongkaranQuery->where('nama_kapal', $kapalFilter);
+            }
+            if ($voyageFilter) {
+                $bongkaranQuery->where('no_voyage', $voyageFilter);
+            }
 
             if ($search && $activeTab !== 'faktur') {
                 $bongkaranQuery->where(function ($q) use ($search) {
@@ -186,7 +194,7 @@ class TagihanLoloBatamController extends Controller
         }
 
         // Langsir Batam containers with LOLO = 1
-        if ($sumber === 'all' || $sumber === 'langsir') {
+        if (($sumber === 'all' || $sumber === 'langsir') && ! $kapalFilter && ! $voyageFilter) {
             $langsirQuery = LangsirBatam::where('menggunakan_lolo', 1);
 
             if ($search && $activeTab !== 'faktur') {
@@ -292,7 +300,8 @@ class TagihanLoloBatamController extends Controller
         );
 
         $vendors = TagihanLoloBatam::select('vendor')->whereNotNull('vendor')->distinct()->pluck('vendor');
-        $kapals = SuratJalanBongkaranBatam::select('nama_kapal')->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->pluck('nama_kapal');
+        $kapals = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->whereNotNull('nama_kapal')->where('nama_kapal', '!=', '')->distinct()->orderBy('nama_kapal')->pluck('nama_kapal');
+        $voyages = SuratJalanBongkaranBatam::where('menggunakan_lolo', 1)->when($kapalFilter, fn ($query) => $query->where('nama_kapal', $kapalFilter))->whereNotNull('no_voyage')->where('no_voyage', '!=', '')->distinct()->orderBy('no_voyage')->pluck('no_voyage');
 
         // Generate automatic invoice number: 2 digit kode (LB) - 2 digit bulan - 2 digit tahun - 6 digit no urut
         $nomorTagihan = self::generateNomorPranota();
@@ -330,6 +339,9 @@ class TagihanLoloBatamController extends Controller
             'countBelumLunas',
             'vendors',
             'kapals',
+            'voyages',
+            'kapalFilter',
+            'voyageFilter',
             'nomorTagihan',
             'pricelists',
             'karyawanOperators'

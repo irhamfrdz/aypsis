@@ -111,6 +111,24 @@
                         <option value="langsir" {{ ($sumber ?? '') == 'langsir' ? 'selected' : '' }}>Langsir Batam</option>
                     </select>
                 </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Kapal</label>
+                    <select name="kapal" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="">Semua Kapal</option>
+                        @foreach($kapals as $namaKapal)
+                            <option value="{{ $namaKapal }}" {{ $kapalFilter === $namaKapal ? 'selected' : '' }}>{{ $namaKapal }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-gray-600 mb-1">Voyage</label>
+                    <select name="voyage" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white">
+                        <option value="">Semua Voyage</option>
+                        @foreach($voyages as $nomorVoyage)
+                            <option value="{{ $nomorVoyage }}" {{ $voyageFilter === $nomorVoyage ? 'selected' : '' }}>{{ $nomorVoyage }}</option>
+                        @endforeach
+                    </select>
+                </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status Pranota</label>
@@ -171,6 +189,8 @@
                                 <th class="px-4 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-4 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Sumber</th>
                                 <th class="px-4 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nomor Kontainer</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Nama Kapal</th>
+                                <th class="px-4 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider">Voyage</th>
                                 <th class="px-4 py-3.5 text-center text-xs font-bold text-gray-600 uppercase tracking-wider">Size</th>
                                 <th class="px-4 py-3.5 text-right text-xs font-bold text-gray-600 uppercase tracking-wider">Total Tarif</th>
                                 <th class="px-4 py-3.5 text-left text-xs font-bold text-gray-600 uppercase tracking-wider min-w-[230px]">Operator</th>
@@ -221,6 +241,8 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                     {{ $c->no_kontainer ?: '-' }}
                                 </td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">{{ $c->kapal ?: '-' }}</td>
+                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-700">{{ $c->voyage ?: '-' }}</td>
                                 <td class="px-4 py-4 whitespace-nowrap text-center text-sm font-semibold text-gray-800">
                                     {{ $c->display_size ?? ($c->size ? $c->size.'\'' : '20\'') }}
                                 </td>
@@ -307,7 +329,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                <td colspan="11" class="px-6 py-12 text-center text-gray-500">
                                     <i class="fas fa-boxes text-4xl text-gray-300 mb-3 block"></i>
                                     <p class="text-base font-semibold">Tidak ditemukan data kontainer LOLO Batam.</p>
                                     <p class="text-xs text-gray-400 mt-1">Data kontainer dari Surat Jalan Bongkaran Batam atau Langsir Batam yang menggunakan LOLO akan otomatis muncul di sini.</p>
