@@ -433,7 +433,9 @@
                                                 <th class="px-3 py-3 text-center">Size</th>
                                                 <th class="px-4 py-3 text-left">Sumber / No. SJ</th>
                                                 <th class="px-4 py-3 text-left min-w-[180px]">Operator</th>
-                                                <th class="px-4 py-3 text-right w-44">Total Tarif (Rp)</th>
+                                                <th class="px-3 py-3 text-center">Jumlah LOLO</th>
+                                                <th class="px-4 py-3 text-right w-44">Tarif per LOLO (Rp)</th>
+                                                <th class="px-4 py-3 text-right w-32">Subtotal (Rp)</th>
                                             </tr>
                                         </thead>
                                         <tbody id="modalItemsTableBody" class="divide-y divide-gray-200 bg-white text-xs">
@@ -441,7 +443,8 @@
                                         </tbody>
                                         <tfoot class="bg-gray-50/80 font-bold text-gray-800 border-t border-gray-200">
                                             <tr>
-                                                <td colspan="5" class="px-4 py-3.5 text-right text-xs uppercase tracking-wider text-gray-600">Total Tagihan:</td>
+                                                <td colspan="6" class="px-4 py-3.5 text-right text-xs uppercase tracking-wider text-gray-600">Total Tagihan:</td>
+                                                <td></td>
                                                 <td class="px-4 py-3.5 text-right text-base text-indigo-700 font-extrabold" id="modalGrandTotal">Rp 0</td>
                                             </tr>
                                         </tfoot>
@@ -549,13 +552,16 @@
         }
     }
 
-    function recalculateModalItem(idx) {
-        // Calculate Grand Total
+    function recalculateModalItem() {
         let total = 0;
         const allTarif = document.querySelectorAll('[id^="modal_item_tarif_"]');
         allTarif.forEach((el) => {
             const itemTarif = parseFloat(el.value) || 0;
-            total += itemTarif;
+            const idx = el.id.replace('modal_item_tarif_', '');
+            const jumlah = parseInt(document.getElementById('modal_item_jumlah_' + idx).value, 10) || 0;
+            const subtotal = itemTarif * jumlah;
+            document.getElementById('modal_item_subtotal_' + idx).innerText = 'Rp ' + formatNumber(subtotal);
+            total += subtotal;
         });
 
         document.getElementById('modalGrandTotal').innerText = 'Rp ' + formatNumber(total);
@@ -644,7 +650,6 @@
                         <input type="hidden" name="items[${idx}][nomor_surat_jalan]" value="${sj !== '-' ? sj : ''}">
                         <input type="hidden" name="items[${idx}][kegiatan]" value="LOLO ${sumber === 'bongkaran' ? 'Bongkaran' : 'Langsir'} Batam (${sj})">
                         <input type="hidden" name="items[${idx}][keterangan]" value="${kapal ? 'Kapal: ' + kapal : ''} ${voyage ? 'Voy: ' + voyage : ''}">
-                        <input type="hidden" name="items[${idx}][jumlah]" value="1">
                         <input type="hidden" name="items[${idx}][tipe_operator]" value="${opTipe}">
                         <input type="hidden" name="items[${idx}][operator_karyawan_id]" value="${opKaryawanId}">
                         <input type="hidden" name="items[${idx}][operator]" value="${itemOperatorName}">
@@ -657,6 +662,9 @@
                     <td class="px-4 py-3">
                         ${opDisplayText}
                     </td>
+                    <td class="px-3 py-3 text-center">
+                        <input type="number" name="items[${idx}][jumlah]" id="modal_item_jumlah_${idx}" value="1" min="1" step="1" required oninput="recalculateModalItem()" class="w-16 px-2 py-1.5 text-center text-xs rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500">
+                    </td>
                     <td class="px-4 py-3 text-right">
                         <div class="flex items-center justify-end gap-1">
                             <span class="text-xs text-gray-500 font-semibold">Rp</span>
@@ -665,11 +673,12 @@
                                    value="${tarif}" 
                                    min="0" 
                                    step="any"
-                                   oninput="recalculateModalItem(${idx})" 
+                                   oninput="recalculateModalItem()" 
                                    id="modal_item_tarif_${idx}" 
                                    class="w-32 px-2.5 py-1.5 text-right text-xs font-bold text-emerald-700 rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 bg-emerald-50/20">
                         </div>
                     </td>
+                    <td class="px-4 py-3 text-right font-bold text-indigo-700" id="modal_item_subtotal_${idx}">Rp ${formatNumber(tarif)}</td>
                 </tr>
             `;
             tableBody.insertAdjacentHTML('beforeend', rowHtml);
