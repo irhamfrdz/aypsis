@@ -355,6 +355,9 @@
                         <td>
                             {{ $item->nomor_surat_jalan ?: '-' }}
                             <span style="font-size: 7.5px; color: #555;">({{ ucfirst($item->sumber_data) }})</span>
+                            @if($item->tanggal_lolo)
+                                <br><span style="font-size: 7.5px; color: #555;">LOLO: {{ $item->tanggal_lolo->format('d/m/Y') }}</span>
+                            @endif
                         </td>
                         <td style="font-size: 8px;">
                             @if($item->tipe_operator === 'AYP')

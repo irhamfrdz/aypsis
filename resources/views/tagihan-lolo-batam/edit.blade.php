@@ -164,6 +164,7 @@
                             <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase w-28">Tipe</th>
                             <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase min-w-[200px]">Pilih Tarif LOLO Batam</th>
                             <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase min-w-[140px]">No. Surat Jalan</th>
+                            <th class="px-3 py-3 text-left text-xs font-bold text-gray-500 uppercase min-w-[140px]">Tanggal LOLO</th>
                             <th class="px-3 py-3 text-right text-xs font-bold text-gray-500 uppercase w-32">Tarif (Rp) <span class="text-red-500">*</span></th>
                             <th class="px-3 py-3 text-center text-xs font-bold text-gray-500 uppercase w-16">Qty</th>
                             <th class="px-3 py-3 text-right text-xs font-bold text-gray-500 uppercase w-36">Subtotal (Rp)</th>
@@ -327,6 +328,7 @@
         const bongkaranId = data && data.sumber_data === 'bongkaran' ? (data.id || data.surat_jalan_bongkaran_id) : (data && data.surat_jalan_bongkaran_id ? data.surat_jalan_bongkaran_id : '');
         const langsirId = data && data.sumber_data === 'langsir' ? (data.id || data.langsir_batam_id) : (data && data.langsir_batam_id ? data.langsir_batam_id : '');
         const nomorSj = data ? (data.nomor_surat_jalan || '') : '';
+        const tanggalLolo = data && data.tanggal_lolo ? String(data.tanggal_lolo).slice(0, 10) : '';
         const kegiatan = data ? (data.kegiatan || 'LOLO Batam') : 'LOLO Batam';
         let tarif = data && data.tarif !== undefined ? data.tarif : 0;
         let pricelistId = data && data.master_pricelist_lolo_batam_id ? data.master_pricelist_lolo_batam_id : '';
@@ -378,6 +380,7 @@
             <td class="px-3 py-3">
                 <input type="text" name="items[${rowCount}][nomor_surat_jalan]" value="${nomorSj}" placeholder="No SJ..." class="w-full rounded-md border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500">
             </td>
+            <td class="px-3 py-3"><input type="date" name="items[${rowCount}][tanggal_lolo]" value="${tanggalLolo}" class="w-full rounded-md border-gray-300 text-xs focus:ring-indigo-500 focus:border-indigo-500"></td>
             <td class="px-3 py-3">
                 <input type="number" step="0.01" min="0" name="items[${rowCount}][tarif]" value="${tarif}" oninput="calcSubtotal(${rowCount})" required class="w-full rounded-md border-gray-300 text-xs text-right font-semibold text-emerald-700 focus:ring-indigo-500 focus:border-indigo-500">
             </td>

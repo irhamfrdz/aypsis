@@ -25,6 +25,7 @@ class TagihanLoloBatamItem extends Model
         'kegiatan',
         'tarif',
         'jumlah',
+        'tanggal_lolo',
         'total',
         'tipe_operator',
         'operator',
@@ -35,6 +36,7 @@ class TagihanLoloBatamItem extends Model
     protected $casts = [
         'tarif' => 'decimal:2',
         'jumlah' => 'integer',
+        'tanggal_lolo' => 'date',
         'total' => 'decimal:2',
     ];
 

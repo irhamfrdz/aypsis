@@ -432,6 +432,7 @@
                                                 <th class="px-4 py-3 text-left">No. Kontainer</th>
                                                 <th class="px-3 py-3 text-center">Size</th>
                                                 <th class="px-4 py-3 text-left">Sumber / No. SJ</th>
+                                                <th class="px-4 py-3 text-left">Tanggal LOLO</th>
                                                 <th class="px-4 py-3 text-left min-w-[180px]">Operator</th>
                                                 <th class="px-3 py-3 text-center">Jumlah LOLO</th>
                                                 <th class="px-4 py-3 text-right w-44">Tarif per LOLO (Rp)</th>
@@ -443,7 +444,7 @@
                                         </tbody>
                                         <tfoot class="bg-gray-50/80 font-bold text-gray-800 border-t border-gray-200">
                                             <tr>
-                                                <td colspan="6" class="px-4 py-3.5 text-right text-xs uppercase tracking-wider text-gray-600">Total Tagihan:</td>
+                                                <td colspan="7" class="px-4 py-3.5 text-right text-xs uppercase tracking-wider text-gray-600">Total Tagihan:</td>
                                                 <td></td>
                                                 <td class="px-4 py-3.5 text-right text-base text-indigo-700 font-extrabold" id="modalGrandTotal">Rp 0</td>
                                             </tr>
@@ -659,6 +660,7 @@
                         <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold ${sumber === 'bongkaran' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800'} mr-1.5 uppercase">${sumber}</span>
                         <span class="font-medium">${sj}</span>
                     </td>
+                    <td class="px-4 py-3"><input type="date" name="items[${idx}][tanggal_lolo]" class="w-36 px-2 py-1.5 text-xs rounded-lg border border-gray-300 focus:ring-indigo-500 focus:border-indigo-500"></td>
                     <td class="px-4 py-3">
                         ${opDisplayText}
                     </td>

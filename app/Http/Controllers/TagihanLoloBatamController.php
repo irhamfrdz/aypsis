@@ -607,6 +607,7 @@ class TagihanLoloBatamController extends Controller
             'items.*.operator' => 'nullable|string|max:255',
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.tanggal_lolo' => 'nullable|date',
             'items.*.keterangan' => 'nullable|string|max:255',
         ]);
 
@@ -682,6 +683,7 @@ class TagihanLoloBatamController extends Controller
                     'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
+                    'tanggal_lolo' => $item['tanggal_lolo'] ?? null,
                     'total' => $subtotal,
                     'keterangan' => $item['keterangan'] ?? null,
                     'created_at' => now(),
@@ -800,6 +802,7 @@ class TagihanLoloBatamController extends Controller
             'items.*.operator' => 'nullable|string|max:255',
             'items.*.tarif' => 'required|numeric|min:0',
             'items.*.jumlah' => 'required|integer|min:1',
+            'items.*.tanggal_lolo' => 'nullable|date',
             'items.*.keterangan' => 'nullable|string|max:255',
         ]);
 
@@ -876,6 +879,7 @@ class TagihanLoloBatamController extends Controller
                     'operator_karyawan_id' => $itemOpKaryawanId,
                     'tarif' => $item['tarif'],
                     'jumlah' => $item['jumlah'],
+                    'tanggal_lolo' => $item['tanggal_lolo'] ?? null,
                     'total' => $subtotal,
                     'keterangan' => $item['keterangan'] ?? null,
                     'created_at' => now(),

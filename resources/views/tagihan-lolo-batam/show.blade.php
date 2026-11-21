@@ -143,6 +143,9 @@
                                     {{ ucfirst($item->sumber_data) }}
                                 </span>
                                 <span class="text-xs">{{ $item->nomor_surat_jalan ?: '-' }}</span>
+                                @if($item->tanggal_lolo)
+                                    <div class="text-xs text-gray-500 mt-1">Tanggal LOLO: {{ $item->tanggal_lolo->format('d/m/Y') }}</div>
+                                @endif
                             </td>
                             <td class="px-4 py-3.5 text-sm">
                                 @if($item->tipe_operator === 'AYP')
