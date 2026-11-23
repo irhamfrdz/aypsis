@@ -18,25 +18,27 @@
         <h2 class="text-lg font-semibold text-gray-800 mb-3">
             <i class="fas fa-box text-blue-600 mr-2"></i> Bekas Muatan
         </h2>
-        @if($manifestTerakhir)
-            <div class="font-medium text-gray-900">{{ $manifestTerakhir->nama_barang ?: '-' }}</div>
-            @foreach($manifestTerakhir->perincian_barang ?? [] as $barang)
-                <div class="mt-1 text-sm text-gray-600">
-                    Perincian: {{ $barang['nama_barang'] ?? '-' }}
-                    @if(isset($barang['jumlah']) || !empty($barang['satuan']))
-                        ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
-                    @endif
-                </div>
-            @endforeach
-            <p class="mt-2 text-sm text-gray-500">
-                Manifest {{ $manifestTerakhir->nomor_bl ?: '-' }}
-                &middot; {{ $manifestTerakhir->nama_kapal ?: '-' }}
-                &middot; Voyage {{ $manifestTerakhir->no_voyage ?: '-' }}
-                &middot; {{ $manifestTerakhir->tanggal_berangkat?->format('d/m/Y') ?? '-' }}
-            </p>
-        @else
+        @forelse($riwayatManifest as $manifest)
+            <div class="py-3 {{ !$loop->first ? 'border-t border-gray-200' : '' }}">
+                <div class="font-medium text-gray-900">{{ $manifest->nama_barang ?: '-' }}</div>
+                @foreach($manifest->perincian_barang ?? [] as $barang)
+                    <div class="mt-1 text-sm text-gray-600">
+                        Perincian: {{ $barang['nama_barang'] ?? '-' }}
+                        @if(isset($barang['jumlah']) || !empty($barang['satuan']))
+                            ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
+                        @endif
+                    </div>
+                @endforeach
+                <p class="mt-2 text-sm text-gray-500">
+                    Manifest {{ $manifest->nomor_bl ?: '-' }}
+                    &middot; {{ $manifest->nama_kapal ?: '-' }}
+                    &middot; Voyage {{ $manifest->no_voyage ?: '-' }}
+                    &middot; {{ $manifest->tanggal_berangkat?->format('d/m/Y') ?? '-' }}
+                </p>
+            </div>
+        @empty
             <p class="text-sm text-gray-500">Belum ada manifest untuk kontainer ini.</p>
-        @endif
+        @endforelse
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">

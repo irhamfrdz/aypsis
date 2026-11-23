@@ -37,10 +37,10 @@ class RekapPerbaikanKontainerController extends Controller
 
         $nomorKontainer = $request->nomor_kontainer;
 
-        $manifestTerakhir = Manifest::where('nomor_kontainer', $nomorKontainer)
+        $riwayatManifest = Manifest::where('nomor_kontainer', $nomorKontainer)
             ->orderByDesc('tanggal_berangkat')
             ->orderByDesc('id')
-            ->first();
+            ->get();
 
         // Fetch pranota perbaikan kontainer that contains this container number
         $pranotas = \App\Models\PranotaPerbaikanKontainer::where('items', 'like', '%'.$nomorKontainer.'%')
@@ -90,6 +90,6 @@ class RekapPerbaikanKontainerController extends Controller
             ]);
         }
 
-        return view('rekap-perbaikan-kontainer.show', compact('nomorKontainer', 'riwayatPerbaikan', 'manifestTerakhir'));
+        return view('rekap-perbaikan-kontainer.show', compact('nomorKontainer', 'riwayatPerbaikan', 'riwayatManifest'));
     }
 }
