@@ -103,6 +103,42 @@ class PayrollUangMakanNominalTetapTest extends TestCase
         return ['start_date' => '2026-10-12', 'end_date' => '2026-10-18', 'tipe_karyawan' => 'Karyawan'];
     }
 
+    public function test_payroll_uses_the_same_six_am_workday_as_attendance(): void
+    {
+        DB::table('absensis')->where('karyawan_id', 1)->delete();
+        foreach ([
+            ['2026-11-14 05:53:26', 'Masuk'], // Belongs to November 13.
+            ['2026-11-15 07:38:18', 'Pulang'],
+            ['2026-11-15 20:01:28', 'Masuk'],
+            ['2026-11-16 07:00:04', 'Pulang'],
+            ['2026-11-17 19:26:38', 'Masuk'],
+            ['2026-11-18 21:19:00', 'Masuk'],
+            ['2026-11-19 19:00:00', 'Masuk'],
+            ['2026-11-20 19:37:23', 'Masuk'],
+            ['2026-11-21 05:30:00', 'Pulang'], // Still November 20.
+            ['2026-11-21 06:00:00', 'Masuk'], // Outside the period.
+        ] as [$time, $type]) {
+            DB::table('absensis')->insert(['karyawan_id' => 1, 'waktu' => $time, 'tipe' => $type]);
+        }
+        $parameters = ['start_date' => '2026-11-14', 'end_date' => '2026-11-20', 'tipe_karyawan' => 'Karyawan'];
+        $controller = new PayrollController;
+        $view = $controller->uangMakan(Request::create('/', 'GET', $parameters + ['generate' => 1]));
+        $row = collect($view->getData()['payrolls'])->first(fn ($row) => $row['karyawan']->id === 1);
+        $this->assertSame(6, $row['total_kehadiran']);
+        $this->assertSame(['2026-11-15', '2026-11-16', '2026-11-17', '2026-11-18', '2026-11-19', '2026-11-20'], $row['dates_kehadiran']);
+
+        Excel::shouldReceive('download')->once()->andReturn(response('export'));
+        $controller->storeUangMakan(Request::create('/', 'POST', $parameters));
+        $this->assertEquals(6, PayrollUangMakan::where('karyawan_id', 1)->firstOrFail()->total_kehadiran);
+
+        DB::table('pranota_uang_makans')->insert(['id' => 1, 'nomor_pranota' => 'PUM-WORKDAY']);
+        $request = Request::create('/', 'POST', $parameters + [
+            'row_items' => [['key' => 'Karyawan_1', 'kehadiran' => '7 Hari', 'nominal_awal' => 350000]],
+        ]);
+        $refreshed = (new PranotaUangMakanController)->refreshAbsensi($request, 1)->getData(true)['data']['Karyawan_1'];
+        $this->assertSame('6 Hari', $refreshed['kehadiran']);
+    }
+
     public function test_preview_uses_fixed_master_amount_without_day_or_location_multiplier(): void
     {
         $view = (new PayrollController)->uangMakan(Request::create('/payroll/uang-makan', 'GET', $this->parameters() + ['generate' => 1]));

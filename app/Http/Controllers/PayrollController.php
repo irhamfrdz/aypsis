@@ -48,7 +48,8 @@ class PayrollController extends Controller
                     $query->where('cabang', $cabang);
                 }
                 $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                    $q->where('waktu', '>=', $startDate->copy()->startOfDay()->addHours(6))
+                        ->where('waktu', '<', $endDate->copy()->startOfDay()->addDay()->addHours(6))
                         ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($karyawans);
@@ -72,7 +73,8 @@ class PayrollController extends Controller
                     $queryNon->where('cabang', $cabang);
                 }
                 $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
-                    $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                    $q->where('waktu', '>=', $startDate->copy()->startOfDay()->addHours(6))
+                        ->where('waktu', '<', $endDate->copy()->startOfDay()->addDay()->addHours(6))
                         ->whereIn('tipe', ['Masuk', 'Pulang']);
                 }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
                 $allKaryawans = $allKaryawans->merge($nonKaryawans);
@@ -103,15 +105,15 @@ class PayrollController extends Controller
                     }
                 }
 
-                // Count each date with a clock-in or clock-out once
+                // Match the attendance page: each workday runs from 06:00 until 06:00 the next day.
                 $uniqueDaysDates = $k->absensi->filter(function ($abs) use ($isSatpam) {
                     if ($isSatpam) {
                         return true;
                     }
 
-                    return ! \Carbon\Carbon::parse($abs->waktu)->isSunday();
+                    return ! \Carbon\Carbon::parse($abs->waktu)->subHours(6)->isSunday();
                 })->map(function ($abs) {
-                    return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
+                    return \Carbon\Carbon::parse($abs->waktu)->subHours(6)->format('Y-m-d');
                 })->unique()->values();
                 $uniqueDays = $uniqueDaysDates->count();
 
@@ -242,7 +244,8 @@ class PayrollController extends Controller
                 $query->where('cabang', $cabang);
             }
             $karyawans = $query->with(['absensi' => function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                $q->where('waktu', '>=', $startDate->copy()->startOfDay()->addHours(6))
+                        ->where('waktu', '<', $endDate->copy()->startOfDay()->addDay()->addHours(6))
                     ->whereIn('tipe', ['Masuk', 'Pulang']);
             }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($karyawans);
@@ -266,7 +269,8 @@ class PayrollController extends Controller
                 $queryNon->where('cabang', $cabang);
             }
             $nonKaryawans = $queryNon->with(['absensi' => function ($q) use ($startDate, $endDate) {
-                $q->whereBetween('waktu', [$startDate->startOfDay(), $endDate->endOfDay()])
+                $q->where('waktu', '>=', $startDate->copy()->startOfDay()->addHours(6))
+                        ->where('waktu', '<', $endDate->copy()->startOfDay()->addDay()->addHours(6))
                     ->whereIn('tipe', ['Masuk', 'Pulang']);
             }, 'uangMakanTerbaru'])->orderBy('nama_lengkap', 'asc')->get();
             $allKaryawans = $allKaryawans->merge($nonKaryawans);
@@ -296,9 +300,9 @@ class PayrollController extends Controller
                     return true;
                 }
 
-                return ! \Carbon\Carbon::parse($abs->waktu)->isSunday();
+                return ! \Carbon\Carbon::parse($abs->waktu)->subHours(6)->isSunday();
             })->map(function ($abs) {
-                return \Carbon\Carbon::parse($abs->waktu)->format('Y-m-d');
+                return \Carbon\Carbon::parse($abs->waktu)->subHours(6)->format('Y-m-d');
             })->unique()->values();
             $uniqueDays = $uniqueDaysDates->count();
 
