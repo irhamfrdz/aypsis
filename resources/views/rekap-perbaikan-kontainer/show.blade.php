@@ -14,31 +14,50 @@
         </a>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-5">
-        <h2 class="text-lg font-semibold text-gray-800 mb-3">
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 overflow-hidden">
+        <h2 class="text-lg font-semibold text-gray-800 p-5 border-b border-gray-200 bg-gray-50">
             <i class="fas fa-box text-blue-600 mr-2"></i> Bekas Muatan
         </h2>
-        @forelse($riwayatManifest as $manifest)
-            <div class="py-3 {{ !$loop->first ? 'border-t border-gray-200' : '' }}">
-                <div class="font-medium text-gray-900">{{ $manifest->nama_barang ?: '-' }}</div>
-                @foreach($manifest->perincian_barang ?? [] as $barang)
-                    <div class="mt-1 text-sm text-gray-600">
-                        Perincian: {{ $barang['nama_barang'] ?? '-' }}
-                        @if(isset($barang['jumlah']) || !empty($barang['satuan']))
-                            ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
-                        @endif
-                    </div>
-                @endforeach
-                <p class="mt-2 text-sm text-gray-500">
-                    Manifest {{ $manifest->nomor_bl ?: '-' }}
-                    &middot; {{ $manifest->nama_kapal ?: '-' }}
-                    &middot; Voyage {{ $manifest->no_voyage ?: '-' }}
-                    &middot; {{ $manifest->tanggal_berangkat?->format('d/m/Y') ?? '-' }}
-                </p>
-            </div>
-        @empty
-            <p class="text-sm text-gray-500">Belum ada manifest untuk kontainer ini.</p>
-        @endforelse
+        <div class="overflow-x-auto">
+            <table class="min-w-full text-left text-sm divide-y divide-gray-200">
+                <thead class="bg-gray-50 text-xs font-semibold uppercase text-gray-500">
+                    <tr>
+                        <th scope="col" class="px-4 py-3">No</th>
+                        <th scope="col" class="px-4 py-3 min-w-64">Muatan / Perincian</th>
+                        <th scope="col" class="px-4 py-3 whitespace-nowrap">No. BL</th>
+                        <th scope="col" class="px-4 py-3 whitespace-nowrap">Kapal</th>
+                        <th scope="col" class="px-4 py-3 whitespace-nowrap">Voyage</th>
+                        <th scope="col" class="px-4 py-3 whitespace-nowrap">Tanggal Berangkat</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    @forelse($riwayatManifest as $manifest)
+                        <tr class="hover:bg-gray-50 align-top">
+                            <td class="px-4 py-3 text-gray-500">{{ $loop->iteration }}</td>
+                            <td class="px-4 py-3 text-gray-900">
+                                <div class="font-medium">{{ $manifest->nama_barang ?: '-' }}</div>
+                                @foreach($manifest->perincian_barang ?? [] as $barang)
+                                    <div class="mt-1 text-xs text-gray-600">
+                                        Perincian: {{ $barang['nama_barang'] ?? '-' }}
+                                        @if(isset($barang['jumlah']) || !empty($barang['satuan']))
+                                            ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </td>
+                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ $manifest->nomor_bl ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ $manifest->nama_kapal ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ $manifest->no_voyage ?: '-' }}</td>
+                            <td class="px-4 py-3 text-gray-600 whitespace-nowrap">{{ $manifest->tanggal_berangkat?->format('d/m/Y') ?? '-' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="6" class="px-4 py-8 text-center text-gray-500">Belum ada manifest untuk kontainer ini.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
