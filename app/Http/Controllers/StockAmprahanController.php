@@ -2200,21 +2200,28 @@ class StockAmprahanController extends Controller
                 'keterangan' => 'nullable|string',
                 'items' => 'required|array|min:1',
                 'items.*.id' => 'required|integer|distinct|exists:stock_amprahans,id',
+                'refresh_item_ids' => 'sometimes|array',
+                'refresh_item_ids.*' => 'integer|distinct|exists:stock_amprahans,id',
             ]);
 
             // Track old items to revert status if removed
             $oldItems = collect($pranota->items ?? [])->keyBy('id');
             $oldItemIds = $oldItems->keys()->map(fn ($itemId) => (int) $itemId)->all();
             $newItemIds = collect($data['items'])->pluck('id')->map(fn ($itemId) => (int) $itemId)->all();
+            $refreshItemIds = array_values(array_intersect(
+                array_map('intval', $data['refresh_item_ids'] ?? []),
+                $newItemIds
+            ));
 
             $removedIds = array_diff($oldItemIds, $newItemIds);
             $addedIds = array_diff($newItemIds, $oldItemIds);
+            $stockIdsToLoad = array_values(array_unique(array_merge($addedIds, $refreshItemIds)));
 
             DB::beginTransaction();
 
             $newStockItems = \App\Models\StockAmprahan::with('masterNamaBarangAmprahan')
                 ->withSum('usages', 'jumlah')
-                ->whereIn('id', $addedIds)
+                ->whereIn('id', $stockIdsToLoad)
                 ->lockForUpdate()
                 ->get()
                 ->keyBy('id');
@@ -2223,15 +2230,15 @@ class StockAmprahanController extends Controller
                 'batam' => 'KANTOR AYP BATAM',
                 default => $pranota->lokasi,
             };
-            foreach ($addedIds as $addedId) {
-                $stock = $newStockItems->get($addedId);
+            foreach ($stockIdsToLoad as $stockId) {
+                $stock = $newStockItems->get($stockId);
                 if (! $stock || $stock->lokasi !== $lokasiStock) {
-                    throw new \RuntimeException("Barang #{$addedId} tidak ditemukan di lokasi pranota ini.");
+                    throw new \RuntimeException("Barang #{$stockId} tidak ditemukan di lokasi pranota ini.");
                 }
             }
 
-            $updatedItems = collect($newItemIds)->map(function ($itemId) use ($oldItems, $newStockItems) {
-                if ($oldItems->has($itemId)) {
+            $updatedItems = collect($newItemIds)->map(function ($itemId) use ($oldItems, $newStockItems, $refreshItemIds) {
+                if ($oldItems->has($itemId) && ! in_array($itemId, $refreshItemIds, true)) {
                     return $oldItems->get($itemId);
                 }
 

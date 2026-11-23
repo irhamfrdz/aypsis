@@ -189,6 +189,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const selectedItems = @json($pranota->items ?? []);
+    const refreshedItemIds = new Set();
     const itemsBody = document.getElementById('pranota-items');
     const barangPanel = document.getElementById('pilihBarangPanel');
     const cariBarang = document.getElementById('cariBarang');
@@ -244,6 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     return;
                 }
                 selectedItems.splice(index, 1);
+                refreshedItemIds.add(Number(item.id));
                 renderItems();
                 if (!barangPanel.classList.contains('hidden')) searchAvailableItems(true);
             });
@@ -434,7 +436,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     penerima: penerima,
                     adjustment: adj,
                     keterangan: ket,
-                    items: selectedItems.map(item => ({id: item.id}))
+                    items: selectedItems.map(item => ({id: item.id})),
+                    refresh_item_ids: [...refreshedItemIds].filter(id => selectedItems.some(item => Number(item.id) === id))
                 })
             })
             .then(res => res.json())
