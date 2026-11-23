@@ -280,8 +280,9 @@ document.addEventListener('DOMContentLoaded', function() {
     function fillBiayaLolo() {
         const size = (document.getElementById('size_select')?.value || '').replace(/[^0-9]/g, '');
         if (Object.prototype.hasOwnProperty.call(tarifLoloBatam, size)) {
-            biayaLoloInput.value = new Intl.NumberFormat('id-ID').format(tarifLoloBatam[size]);
-            biayaLoloHint.textContent = 'Tarif Master Pricelist LOLO Batam untuk kontainer ' + size + ' FT.';
+            const tarifPerOperator = Number(tarifLoloBatam[size]);
+            biayaLoloInput.value = new Intl.NumberFormat('id-ID').format(tarifPerOperator * 2);
+            biayaLoloHint.textContent = '2 operator × Rp ' + new Intl.NumberFormat('id-ID').format(tarifPerOperator) + ' (tarif LOLO ' + size + ' FT).';
         } else {
             biayaLoloInput.value = '';
             biayaLoloHint.textContent = size ? 'Tarif untuk ukuran ini belum tersedia. Isi biaya secara manual.' : 'Pilih ukuran kontainer untuk mengisi tarif otomatis.';
