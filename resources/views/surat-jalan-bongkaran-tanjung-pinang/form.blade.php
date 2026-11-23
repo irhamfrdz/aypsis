@@ -8,7 +8,7 @@
 <div class="min-h-screen bg-slate-50 px-4 py-5 md:px-6">
 <div class="mx-auto max-w-5xl">
     <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-        <div><div class="text-xs font-semibold uppercase tracking-[.18em] text-teal-700">Operasional · Tanjung Pinang</div><h1 class="mt-1 text-2xl font-bold text-slate-900">{{ $editing ? 'Ubah' : 'Tambah' }} Surat Jalan Bongkaran</h1><p class="mt-1 text-sm text-slate-500">Lengkapi informasi kapal, muatan, dan tujuan.</p></div>
+        <div><div class="text-xs font-semibold uppercase tracking-[.18em] text-teal-700">Operasional · Tanjung Pinang</div><h1 class="mt-1 text-2xl font-bold text-slate-900">{{ $editing ? 'Ubah' : 'Tambah' }} Surat Jalan Bongkaran</h1><p class="mt-1 text-sm text-slate-500">Lengkapi informasi kapal dan muatan.</p></div>
         <a href="{{ $returnUrl }}" class="rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50">Kembali ke daftar</a>
     </div>
 
@@ -28,7 +28,6 @@
                 'nomor_surat_jalan' => 'Nomor Surat Jalan', 'tanggal_surat_jalan' => 'Tanggal Surat Jalan',
                 'nama_kapal' => 'Nama Kapal', 'no_voyage' => 'Nomor Voyage', 'no_bl' => 'Nomor BL',
                 'pengirim' => 'Pengirim', 'penerima' => 'Penerima', 'jenis_barang' => 'Jenis Barang',
-                'tujuan_pengambilan' => 'Tujuan Pengambilan', 'tujuan_pengiriman' => 'Tujuan Pengiriman',
                 'no_kontainer' => 'Nomor Kontainer', 'no_seal' => 'Nomor Seal', 'size' => 'Ukuran Kontainer',
                 'tipe_kontainer' => 'Tipe Kontainer', 'term' => 'Term', 'uang_jalan' => 'Biaya Uang Jalan (Rp)',
             ] as $field => $label)

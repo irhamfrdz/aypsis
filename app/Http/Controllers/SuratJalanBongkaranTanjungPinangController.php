@@ -348,8 +348,6 @@ class SuratJalanBongkaranTanjungPinangController extends Controller
             'pengirim' => ['nullable', 'string', 'max:255'],
             'penerima' => ['nullable', 'string', 'max:255'],
             'jenis_barang' => ['nullable', 'string', 'max:255'],
-            'tujuan_pengambilan' => ['nullable', 'string', 'max:255'],
-            'tujuan_pengiriman' => ['nullable', 'string', 'max:255'],
             'no_kontainer' => ['nullable', 'string', 'max:255'],
             'no_seal' => ['nullable', 'string', 'max:255'],
             'size' => ['nullable', 'string', 'max:255'],

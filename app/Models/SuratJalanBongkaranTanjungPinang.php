@@ -14,7 +14,7 @@ class SuratJalanBongkaranTanjungPinang extends Model
 
     protected $fillable = [
         'tanggal_surat_jalan', 'nomor_surat_jalan', 'nama_kapal', 'kapal_id', 'no_voyage', 'no_bl', 'bl_id', 'manifest_id',
-        'pengirim', 'penerima', 'jenis_barang', 'tujuan_pengambilan', 'tujuan_pengiriman',
+        'pengirim', 'penerima', 'jenis_barang',
         'no_kontainer', 'no_seal', 'size', 'tipe_kontainer', 'term', 'uang_jalan', 'aktifitas', 'input_by', 'input_date',
     ];
 
