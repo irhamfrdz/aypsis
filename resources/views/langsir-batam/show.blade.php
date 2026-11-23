@@ -148,6 +148,12 @@
                                 <div class="text-xs font-medium uppercase tracking-widest opacity-80 mb-1">Biaya Langsir</div>
                                 <div class="text-3xl font-black">Rp {{ number_format($langsir->biaya, 0, ',', '.') }}</div>
                             </div>
+                            @if($langsir->menggunakan_lolo)
+                                <div class="bg-indigo-50 text-indigo-900 rounded-xl p-5 border border-indigo-100">
+                                    <div class="text-xs font-medium uppercase tracking-widest mb-1">Biaya LOLO</div>
+                                    <div class="text-xl font-bold">Rp {{ number_format($langsir->biaya_lolo, 0, ',', '.') }}</div>
+                                </div>
+                            @endif
 
                             <div class="pt-2">
                                 <div class="text-[10px] text-gray-500 uppercase mb-1">Keterangan</div>

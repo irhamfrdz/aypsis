@@ -274,6 +274,22 @@ document.addEventListener('DOMContentLoaded', function() {
     const loloRadios = document.querySelectorAll('input[name="menggunakan_lolo"]');
     const loloFields = document.getElementById('lolo_operator_fields');
     const loloOperatorSelects = document.querySelectorAll('.lolo-operator-select');
+    const biayaLoloInput = document.getElementById('biaya_lolo');
+    const biayaLoloHint = document.getElementById('biaya_lolo_hint');
+    const tarifLoloBatam = @json($tarifLoloBatam);
+    function fillBiayaLolo() {
+        const size = (document.getElementById('size_select')?.value || '').replace(/[^0-9]/g, '');
+        if (Object.prototype.hasOwnProperty.call(tarifLoloBatam, size)) {
+            biayaLoloInput.value = new Intl.NumberFormat('id-ID').format(tarifLoloBatam[size]);
+            biayaLoloHint.textContent = 'Tarif Master Pricelist LOLO Batam untuk kontainer ' + size + ' FT.';
+        } else {
+            biayaLoloInput.value = '';
+            biayaLoloHint.textContent = size ? 'Tarif untuk ukuran ini belum tersedia. Isi biaya secara manual.' : 'Pilih ukuran kontainer untuk mengisi tarif otomatis.';
+        }
+    }
+    biayaLoloInput.addEventListener('input', function() {
+        this.value = formatRupiah(this.value.replace(/\D/g, ''));
+    });
     function toggleLoloOperators() {
         const enabled = document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya';
         loloFields.classList.toggle('hidden', !enabled);
@@ -282,7 +298,13 @@ document.addEventListener('DOMContentLoaded', function() {
             select.disabled = !enabled;
         });
     }
-    loloRadios.forEach(radio => radio.addEventListener('change', toggleLoloOperators));
+    loloRadios.forEach(radio => radio.addEventListener('change', () => {
+        toggleLoloOperators();
+        if (radio.checked && radio.value === 'ya') fillBiayaLolo();
+    }));
+    document.getElementById('size_select')?.addEventListener('change', () => {
+        if (document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya') fillBiayaLolo();
+    });
     toggleLoloOperators();
 
     // Money Formatting
@@ -370,6 +392,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
             kontainerList.classList.add('hidden');
             autoCalculateBiaya();
+            if (document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya') fillBiayaLolo();
             
             // Fetch Manifest History
             const manifestSection = document.getElementById('manifest_history_section');

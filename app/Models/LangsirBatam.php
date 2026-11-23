@@ -27,6 +27,7 @@ class LangsirBatam extends Model
         'no_chasis',
         'supir',
         'biaya',
+        'biaya_lolo',
         'keterangan',
         'status',
         'ob_dalam_pelabuhan',
@@ -39,6 +40,7 @@ class LangsirBatam extends Model
     protected $casts = [
         'tanggal' => 'date',
         'biaya' => 'decimal:2',
+        'biaya_lolo' => 'decimal:2',
         'ob_dalam_pelabuhan' => 'boolean',
         'menggunakan_lolo' => 'boolean',
     ];

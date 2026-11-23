@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Karyawan;
 use App\Models\LangsirBatam;
 use App\Models\MasterChasisBatam;
+use App\Models\MasterPricelistLoloBatam;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -100,7 +101,10 @@ class LangsirBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'pekerjaan']);
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisBatams', 'operatorLolos'));
+        $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+            ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (int) $tarif->tarif]);
+
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisBatams', 'operatorLolos', 'tarifLoloBatam'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -137,6 +141,7 @@ class LangsirBatamController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', '0'))]);
         $validated = $request->validate([
             'no_transaksi' => 'required|unique:langsir_batams,no_transaksi',
             'no_surat_jalan' => [
@@ -155,6 +160,7 @@ class LangsirBatamController extends Controller
             ...$this->chasisRules(true),
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
+            'biaya_lolo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
@@ -173,6 +179,7 @@ class LangsirBatamController extends Controller
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
         if (! $validated['menggunakan_lolo']) {
+            $validated['biaya_lolo'] = 0;
             $validated['operator_lolo_1_id'] = null;
             $validated['operator_lolo_2_id'] = null;
         }
@@ -529,7 +536,10 @@ class LangsirBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'pekerjaan']);
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisBatams', 'operatorLolos'));
+        $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+            ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (int) $tarif->tarif]);
+
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisBatams', 'operatorLolos', 'tarifLoloBatam'));
     }
 
     /**
@@ -538,6 +548,8 @@ class LangsirBatamController extends Controller
     public function update(Request $request, $id)
     {
         $langsir = LangsirBatam::findOrFail($id);
+
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', '0'))]);
 
         $validated = $request->validate([
             'no_surat_jalan' => [
@@ -556,6 +568,7 @@ class LangsirBatamController extends Controller
             ...$this->chasisRules(false),
             'supir' => 'nullable|string',
             'biaya' => 'required|numeric',
+            'biaya_lolo' => 'nullable|numeric|min:0',
             'keterangan' => 'nullable|string',
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
@@ -572,6 +585,7 @@ class LangsirBatamController extends Controller
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
         if (! $validated['menggunakan_lolo']) {
+            $validated['biaya_lolo'] = 0;
             $validated['operator_lolo_1_id'] = null;
             $validated['operator_lolo_2_id'] = null;
         }
