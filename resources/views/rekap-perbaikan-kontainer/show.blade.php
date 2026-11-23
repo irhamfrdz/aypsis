@@ -14,6 +14,31 @@
         </a>
     </div>
 
+    <div class="bg-white rounded-xl shadow-sm border border-gray-200 mb-6 p-5">
+        <h2 class="text-lg font-semibold text-gray-800 mb-3">
+            <i class="fas fa-box text-blue-600 mr-2"></i> Bekas Muatan
+        </h2>
+        @if($manifestTerakhir)
+            <div class="font-medium text-gray-900">{{ $manifestTerakhir->nama_barang ?: '-' }}</div>
+            @foreach($manifestTerakhir->perincian_barang ?? [] as $barang)
+                <div class="mt-1 text-sm text-gray-600">
+                    Perincian: {{ $barang['nama_barang'] ?? '-' }}
+                    @if(isset($barang['jumlah']) || !empty($barang['satuan']))
+                        ({{ $barang['jumlah'] ?? '-' }} {{ $barang['satuan'] ?? '' }})
+                    @endif
+                </div>
+            @endforeach
+            <p class="mt-2 text-sm text-gray-500">
+                Manifest {{ $manifestTerakhir->nomor_bl ?: '-' }}
+                &middot; {{ $manifestTerakhir->nama_kapal ?: '-' }}
+                &middot; Voyage {{ $manifestTerakhir->no_voyage ?: '-' }}
+                &middot; {{ $manifestTerakhir->tanggal_berangkat?->format('d/m/Y') ?? '-' }}
+            </p>
+        @else
+            <p class="text-sm text-gray-500">Belum ada manifest untuk kontainer ini.</p>
+        @endif
+    </div>
+
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="p-5 border-b border-gray-200 bg-gray-50">
             <h2 class="text-lg font-semibold text-gray-800 flex items-center">

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Kontainer;
+use App\Models\Manifest;
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
 
@@ -35,6 +36,11 @@ class RekapPerbaikanKontainerController extends Controller
         ]);
 
         $nomorKontainer = $request->nomor_kontainer;
+
+        $manifestTerakhir = Manifest::where('nomor_kontainer', $nomorKontainer)
+            ->orderByDesc('tanggal_berangkat')
+            ->orderByDesc('id')
+            ->first();
 
         // Fetch pranota perbaikan kontainer that contains this container number
         $pranotas = \App\Models\PranotaPerbaikanKontainer::where('items', 'like', '%'.$nomorKontainer.'%')
@@ -84,6 +90,6 @@ class RekapPerbaikanKontainerController extends Controller
             ]);
         }
 
-        return view('rekap-perbaikan-kontainer.show', compact('nomorKontainer', 'riwayatPerbaikan'));
+        return view('rekap-perbaikan-kontainer.show', compact('nomorKontainer', 'riwayatPerbaikan', 'manifestTerakhir'));
     }
 }
