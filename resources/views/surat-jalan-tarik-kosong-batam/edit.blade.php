@@ -262,6 +262,7 @@
                     </div>
                     @error('menggunakan_lolo')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
+                @include('surat-jalan-tarik-kosong-batam.partials.lolo-operator')
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
@@ -306,6 +307,25 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        const loloFields = document.getElementById('lolo_operator_fields');
+        const loloType = document.getElementById('tipe_operator_lolo');
+        const loloEmployee = document.getElementById('operator_lolo_karyawan_id');
+        const loloVendor = document.getElementById('operator_lolo_vendor');
+        function toggleLoloOperator() {
+            const enabled = document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === '1';
+            loloFields.classList.toggle('hidden', !enabled);
+            loloType.required = enabled;
+            loloType.disabled = !enabled;
+            loloEmployee.closest('div').classList.toggle('hidden', !enabled || loloType.value !== 'AYP');
+            loloVendor.closest('div').classList.toggle('hidden', !enabled || loloType.value !== 'VENDOR');
+            loloEmployee.required = enabled && loloType.value === 'AYP';
+            loloVendor.required = enabled && loloType.value === 'VENDOR';
+            loloEmployee.disabled = !loloEmployee.required;
+            loloVendor.disabled = !loloVendor.required;
+        }
+        document.querySelectorAll('input[name="menggunakan_lolo"]').forEach(radio => radio.addEventListener('change', toggleLoloOperator));
+        loloType.addEventListener('change', toggleLoloOperator);
+        toggleLoloOperator();
         flatpickr("#tanggal_surat_jalan", {
             altInput: true,
             altFormat: "d/m/Y",

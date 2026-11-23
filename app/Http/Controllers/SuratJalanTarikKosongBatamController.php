@@ -164,7 +164,16 @@ class SuratJalanTarikKosongBatamController extends Controller
         $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
 
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'gudangs'));
+        $operatorLolos = Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($query) {
+                $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                    ->orWhere('pekerjaan', 'like', '%CRANE%')
+                    ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'pekerjaan']);
+
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'gudangs', 'operatorLolos'));
     }
 
     public function store(Request $request)
@@ -183,6 +192,9 @@ class SuratJalanTarikKosongBatamController extends Controller
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
             'menggunakan_lolo' => 'required|boolean',
+            'tipe_operator_lolo' => 'required_if:menggunakan_lolo,1|nullable|in:AYP,VENDOR',
+            'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
+            'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -196,6 +208,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         $validated['input_by'] = Auth::id();
         $validated['input_date'] = now();
         $validated['lokasi'] = 'batam';
+        $this->normalizeLoloOperator($validated);
 
         SuratJalanTarikKosongBatam::create($validated);
 
@@ -312,7 +325,16 @@ class SuratJalanTarikKosongBatamController extends Controller
 
         $warehouses = \App\Models\Gudang::orderBy('nama_gudang')->pluck('nama_gudang');
 
-        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings'));
+        $operatorLolos = Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($query) {
+                $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                    ->orWhere('pekerjaan', 'like', '%CRANE%')
+                    ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'pekerjaan']);
+
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'operatorLolos'));
     }
 
     public function update(Request $request, $id)
@@ -333,6 +355,9 @@ class SuratJalanTarikKosongBatamController extends Controller
             'size' => 'nullable|string',
             'f_e' => 'nullable|string',
             'menggunakan_lolo' => 'required|boolean',
+            'tipe_operator_lolo' => 'required_if:menggunakan_lolo,1|nullable|in:AYP,VENDOR',
+            'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
+            'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
@@ -342,6 +367,7 @@ class SuratJalanTarikKosongBatamController extends Controller
         }
 
         $validated['status'] = $validated['status'] ?? $item->status ?? 'active';
+        $this->normalizeLoloOperator($validated);
         $item->update($validated);
 
         return redirect()->route('surat-jalan-tarik-kosong-batam.index')->with('success', 'Surat Jalan Tarik Kosong Batam berhasil diperbarui');
@@ -616,6 +642,19 @@ class SuratJalanTarikKosongBatamController extends Controller
                 'success' => false,
                 'message' => 'Terjadi kesalahan sistem: '.$e->getMessage(),
             ], 500);
+        }
+    }
+
+    private function normalizeLoloOperator(array &$validated): void
+    {
+        if (! $validated['menggunakan_lolo']) {
+            $validated['tipe_operator_lolo'] = null;
+            $validated['operator_lolo_karyawan_id'] = null;
+            $validated['operator_lolo_vendor'] = null;
+        } elseif ($validated['tipe_operator_lolo'] === 'AYP') {
+            $validated['operator_lolo_vendor'] = null;
+        } else {
+            $validated['operator_lolo_karyawan_id'] = null;
         }
     }
 }
