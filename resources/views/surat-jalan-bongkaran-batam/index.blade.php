@@ -327,7 +327,7 @@
                                                 <div class="py-1">
                                                     @if($sj->menggunakan_lolo)
                                                         @can('tagihan-lolo-batam-create')
-                                                        <a href="{{ route('tagihan-lolo-batam.create', ['bongkaran_ids' => $sj->id]) }}" 
+                                                        <a href="{{ route('tagihan-lolo-batam.create', ['bongkaran_ids' => $sj->id, 'tipe_operator' => $sj->tipe_operator_lolo ?: 'AYP', 'operator_karyawan_id' => $sj->operator_lolo_karyawan_id, 'operator' => $sj->operator_lolo_vendor]) }}"
                                                            class="group flex items-center px-3 py-2 text-xs text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900">
                                                             <svg class="mr-2 h-4 w-4 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -724,15 +724,39 @@
                             </label>
                             <div class="flex space-x-4">
                                 <label class="flex items-center">
-                                    <input type="radio" name="menggunakan_lolo" value="tidak" required
+                                    <input type="radio" name="menggunakan_lolo" value="tidak" onchange="toggleLoloOperator('create')" required
                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                                     <span class="ml-2 text-sm text-gray-700">Tidak</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="radio" name="menggunakan_lolo" value="ya" required
+                                    <input type="radio" name="menggunakan_lolo" value="ya" onchange="toggleLoloOperator('create')" required
                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                                     <span class="ml-2 text-sm text-gray-700">Ya</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <div id="create_lolo_operator_fields" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                            <div>
+                                <label for="create_tipe_operator_lolo" class="block text-sm font-medium text-gray-700 mb-1">Jenis Operator LOLO <span class="text-red-500">*</span></label>
+                                <select id="create_tipe_operator_lolo" name="tipe_operator_lolo" onchange="toggleLoloOperator('create')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Pilih jenis operator</option>
+                                    <option value="AYP">Operator AYP</option>
+                                    <option value="VENDOR">Vendor</option>
+                                </select>
+                            </div>
+                            <div id="create_lolo_karyawan_fields" class="hidden">
+                                <label for="create_operator_lolo_karyawan_id" class="block text-sm font-medium text-gray-700 mb-1">Nama Operator <span class="text-red-500">*</span></label>
+                                <select id="create_operator_lolo_karyawan_id" name="operator_lolo_karyawan_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Pilih operator</option>
+                                    @foreach($karyawanOperators as $operator)
+                                        <option value="{{ $operator->id }}">{{ $operator->nama_lengkap }}{{ $operator->pekerjaan ? ' ('.$operator->pekerjaan.')' : '' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="create_lolo_vendor_fields" class="hidden">
+                                <label for="create_operator_lolo_vendor" class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
+                                <input id="create_operator_lolo_vendor" name="operator_lolo_vendor" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ketik nama vendor">
                             </div>
                         </div>
 
@@ -1405,15 +1429,39 @@
                             </label>
                             <div class="flex space-x-4">
                                 <label class="flex items-center">
-                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_tidak" value="tidak" required
+                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_tidak" value="tidak" onchange="toggleLoloOperator('edit')" required
                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                                     <span class="ml-2 text-sm text-gray-700">Tidak</span>
                                 </label>
                                 <label class="flex items-center">
-                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_ya" value="ya" required
+                                    <input type="radio" name="menggunakan_lolo" id="edit_modal_menggunakan_lolo_ya" value="ya" onchange="toggleLoloOperator('edit')" required
                                            class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
                                     <span class="ml-2 text-sm text-gray-700">Ya</span>
                                 </label>
+                            </div>
+                        </div>
+
+                        <div id="edit_lolo_operator_fields" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg border border-indigo-200 bg-indigo-50 p-4">
+                            <div>
+                                <label for="edit_tipe_operator_lolo" class="block text-sm font-medium text-gray-700 mb-1">Jenis Operator LOLO <span class="text-red-500">*</span></label>
+                                <select id="edit_tipe_operator_lolo" name="tipe_operator_lolo" onchange="toggleLoloOperator('edit')" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Pilih jenis operator</option>
+                                    <option value="AYP">Operator AYP</option>
+                                    <option value="VENDOR">Vendor</option>
+                                </select>
+                            </div>
+                            <div id="edit_lolo_karyawan_fields" class="hidden">
+                                <label for="edit_operator_lolo_karyawan_id" class="block text-sm font-medium text-gray-700 mb-1">Nama Operator <span class="text-red-500">*</span></label>
+                                <select id="edit_operator_lolo_karyawan_id" name="operator_lolo_karyawan_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="">Pilih operator</option>
+                                    @foreach($karyawanOperators as $operator)
+                                        <option value="{{ $operator->id }}">{{ $operator->nama_lengkap }}{{ $operator->pekerjaan ? ' ('.$operator->pekerjaan.')' : '' }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div id="edit_lolo_vendor_fields" class="hidden">
+                                <label for="edit_operator_lolo_vendor" class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
+                                <input id="edit_operator_lolo_vendor" name="operator_lolo_vendor" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ketik nama vendor">
                             </div>
                         </div>
 
@@ -2407,6 +2455,18 @@ function handleFormSubmit(event) {
         showModalAlert('Field Wajib Diisi!', 'Pilihan Menggunakan LOLO harus dipilih (Ya atau Tidak).', 'error');
         return false;
     }
+    if (menggunakanLolo === 'ya' && !document.getElementById('create_tipe_operator_lolo').value) {
+        showModalAlert('Field Wajib Diisi!', 'Pilih jenis operator LOLO.', 'error');
+        return false;
+    }
+    if (menggunakanLolo === 'ya') {
+        const type = document.getElementById('create_tipe_operator_lolo').value;
+        const selectedOperator = type === 'AYP' ? document.getElementById('create_operator_lolo_karyawan_id').value : document.getElementById('create_operator_lolo_vendor').value.trim();
+        if (!selectedOperator) {
+            showModalAlert('Field Wajib Diisi!', 'Pilih atau isi nama operator LOLO.', 'error');
+            return false;
+        }
+    }
 
     // Validate Sumber Buntut
     const buntutAsal = document.querySelector('input[name="buntut_asal"]#modal_buntut_asal_ayp')?.checked ? 'AYP' : 'PB';
@@ -2629,6 +2689,10 @@ function closeModal() {
 
     // Reset Menggunakan LOLO
     document.querySelectorAll('#modalBuatSuratJalan input[name="menggunakan_lolo"]').forEach(r => r.checked = false);
+    document.getElementById('create_tipe_operator_lolo').value = '';
+    document.getElementById('create_operator_lolo_karyawan_id').value = '';
+    document.getElementById('create_operator_lolo_vendor').value = '';
+    toggleLoloOperator('create');
 
     // Remove any alerts
     const existingAlert = document.querySelector('.modal-alert');
@@ -2973,6 +3037,10 @@ function openEditModal(suratJalanId) {
                     const isLolo = (data.menggunakan_lolo == 1 || data.menggunakan_lolo === true || data.menggunakan_lolo === '1');
                     const loloRadio = document.querySelector(`#modalEditSuratJalan input[name="menggunakan_lolo"][value="${isLolo ? 'ya' : 'tidak'}"]`);
                     if (loloRadio) loloRadio.checked = true;
+                    document.getElementById('edit_tipe_operator_lolo').value = data.tipe_operator_lolo || '';
+                    document.getElementById('edit_operator_lolo_karyawan_id').value = data.operator_lolo_karyawan_id || '';
+                    document.getElementById('edit_operator_lolo_vendor').value = data.operator_lolo_vendor || '';
+                    toggleLoloOperator('edit');
                 }
                 
                 // Convert to integer to remove decimal places
@@ -3198,6 +3266,14 @@ function handleEditFormSubmit(event) {
     if (!editMenggunakanLolo) {
         showEditModalAlert('Field Wajib Diisi!', 'Pilihan Menggunakan LOLO harus dipilih (Ya atau Tidak).', 'error');
         return false;
+    }
+    if (editMenggunakanLolo === 'ya') {
+        const type = document.getElementById('edit_tipe_operator_lolo').value;
+        const selectedOperator = type === 'AYP' ? document.getElementById('edit_operator_lolo_karyawan_id').value : document.getElementById('edit_operator_lolo_vendor').value.trim();
+        if (!type || !selectedOperator) {
+            showEditModalAlert('Field Wajib Diisi!', 'Pilih atau isi operator LOLO.', 'error');
+            return false;
+        }
     }
     
     // Validate Sumber Buntut
@@ -3796,6 +3872,25 @@ function showBulkAlert(title, message, type = 'error') {
         </div>
     `;
     alertArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function toggleLoloOperator(mode) {
+    const modal = document.getElementById(mode === 'edit' ? 'modalEditSuratJalan' : 'modalBuatSuratJalan');
+    const enabled = modal.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya';
+    const fields = document.getElementById(`${mode}_lolo_operator_fields`);
+    const type = document.getElementById(`${mode}_tipe_operator_lolo`);
+    const employee = document.getElementById(`${mode}_operator_lolo_karyawan_id`);
+    const vendor = document.getElementById(`${mode}_operator_lolo_vendor`);
+
+    fields.classList.toggle('hidden', !enabled);
+    type.required = enabled;
+    employee.closest('div').classList.toggle('hidden', !enabled || type.value !== 'AYP');
+    vendor.closest('div').classList.toggle('hidden', !enabled || type.value !== 'VENDOR');
+    employee.required = enabled && type.value === 'AYP';
+    vendor.required = enabled && type.value === 'VENDOR';
+    employee.disabled = !employee.required;
+    vendor.disabled = !vendor.required;
+    type.disabled = !enabled;
 }
 
 function showBulkOverlay(title, message, type = 'error') {

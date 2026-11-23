@@ -374,6 +374,15 @@ class SuratJalanBongkaranBatamController extends Controller
 
         $chasisBatamList = \App\Models\MasterChasisBatam::orderBy('kode')->get(['id', 'kode', 'tipe']);
 
+        $karyawanOperators = \App\Models\Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($query) {
+                $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                    ->orWhere('pekerjaan', 'like', '%CRANE%')
+                    ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'pekerjaan']);
+
         // --- DASHBOARD STATS CALCULATION ---
         $statsQuery = Manifest::query();
         if ($selectedKapal) {
@@ -410,7 +419,7 @@ class SuratJalanBongkaranBatamController extends Controller
         ];
         // -----------------------------------
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats', 'buntutAypList', 'chasisBatamList'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanOperators', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats', 'buntutAypList', 'chasisBatamList'));
     }
 
     public function penarikanIndex(Request $request)
@@ -828,6 +837,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tanggal_surat_jalan' => 'required|date',
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
+                'tipe_operator_lolo' => 'required_if:menggunakan_lolo,ya|nullable|in:AYP,VENDOR',
+                'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
+                'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -898,6 +910,15 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['lokasi'] = 'batam';
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
         $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
+        if (! $validatedData['menggunakan_lolo']) {
+            $validatedData['tipe_operator_lolo'] = null;
+            $validatedData['operator_lolo_karyawan_id'] = null;
+            $validatedData['operator_lolo_vendor'] = null;
+        } elseif ($validatedData['tipe_operator_lolo'] === 'AYP') {
+            $validatedData['operator_lolo_vendor'] = null;
+        } else {
+            $validatedData['operator_lolo_karyawan_id'] = null;
+        }
         $validatedData['buntut_asal'] = $buntutAsal;
         $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
@@ -1438,6 +1459,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tanggal_surat_jalan' => 'required|date',
                 'lanjut_muat' => 'nullable|string|in:ya,tidak',
                 'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
+                'tipe_operator_lolo' => 'required_if:menggunakan_lolo,ya|nullable|in:AYP,VENDOR',
+                'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
+                'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -1507,6 +1531,15 @@ class SuratJalanBongkaranBatamController extends Controller
         try {
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
             $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
+            if (! $validatedData['menggunakan_lolo']) {
+                $validatedData['tipe_operator_lolo'] = null;
+                $validatedData['operator_lolo_karyawan_id'] = null;
+                $validatedData['operator_lolo_vendor'] = null;
+            } elseif ($validatedData['tipe_operator_lolo'] === 'AYP') {
+                $validatedData['operator_lolo_vendor'] = null;
+            } else {
+                $validatedData['operator_lolo_karyawan_id'] = null;
+            }
             $validatedData['buntut_asal'] = $buntutAsal;
             $validatedData['buntut_plat_kir'] = $request->buntut_plat_kir;
 
@@ -1774,6 +1807,9 @@ class SuratJalanBongkaranBatamController extends Controller
                 'lokasi' => $suratJalan->lokasi ?? '',
                 'f_e' => $suratJalan->f_e ?? 'Full',
                 'menggunakan_lolo' => $suratJalan->menggunakan_lolo ? 1 : 0,
+                'tipe_operator_lolo' => $suratJalan->tipe_operator_lolo,
+                'operator_lolo_karyawan_id' => $suratJalan->operator_lolo_karyawan_id,
+                'operator_lolo_vendor' => $suratJalan->operator_lolo_vendor,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch Surat Jalan data'], 500);
