@@ -21,6 +21,7 @@ class SuratJalanBongkaranBatam extends Model
         'tipe_operator_lolo',
         'operator_lolo_karyawan_id',
         'operator_lolo_vendor',
+        'biaya_lolo',
         'nomor_sj_sebelumnya',
         'nomor_surat_jalan',
         'kegiatan',
@@ -103,6 +104,7 @@ class SuratJalanBongkaranBatam extends Model
         'tidak_lembur_nginap' => 'boolean',
         'lanjut_muat' => 'boolean',
         'menggunakan_lolo' => 'boolean',
+        'biaya_lolo' => 'decimal:2',
     ];
 
     // Relationships

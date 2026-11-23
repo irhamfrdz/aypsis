@@ -6,6 +6,7 @@ use App\Exports\SuratJalanBongkaranTableExport;
 use App\Models\Manifest;
 use App\Models\MasterKapal;
 use App\Models\MasterKegiatan;
+use App\Models\MasterPricelistLoloBatam;
 use App\Models\SuratJalanBongkaranBatam;
 use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
@@ -223,7 +224,7 @@ class SuratJalanBongkaranBatamController extends Controller
 
         if ($mode === 'surat_jalan') {
             // Show Surat Jalan Bongkaran data
-            $query = SuratJalanBongkaranBatam::query()
+            $query = SuratJalanBongkaranBatam::query()->with('tagihanLoloItem')
                 ->where('surat_jalan_bongkaran_batams.lokasi', 'batam');
 
             // Filter by selected kapal and voyage if provided
@@ -283,6 +284,8 @@ class SuratJalanBongkaranBatamController extends Controller
                 ->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')
                 ->paginate(25);
+            $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+                ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (float) $tarif->tarif]);
             $manifests = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Manifest mode
         } else {
             // Show Manifest data - default mode
@@ -344,6 +347,7 @@ class SuratJalanBongkaranBatamController extends Controller
             $manifests = $query->orderByRaw(self::TIPE_KONTAINER_ORDER)
                 ->orderByRaw('ISNULL(manifests.nomor_urut), CAST(manifests.nomor_urut AS UNSIGNED) ASC, manifests.nomor_urut ASC')->paginate(25);
             $suratJalans = new LengthAwarePaginator([], 0, 25); // Empty paginated collection for Surat Jalan mode
+            $tarifLoloBatam = collect();
         }
 
         // Get data for modal form
@@ -419,7 +423,7 @@ class SuratJalanBongkaranBatamController extends Controller
         ];
         // -----------------------------------
 
-        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanOperators', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats', 'buntutAypList', 'chasisBatamList'));
+        return view('surat-jalan-bongkaran-batam.index', compact('suratJalans', 'manifests', 'karyawanSupirs', 'karyawanOperators', 'tujuanKegiatanUtamas', 'pricelistUangJalanBatams', 'masterKegiatans', 'terms', 'selectedKapal', 'selectedVoyage', 'gudangs', 'stats', 'buntutAypList', 'chasisBatamList', 'tarifLoloBatam'));
     }
 
     public function penarikanIndex(Request $request)
@@ -827,6 +831,7 @@ class SuratJalanBongkaranBatamController extends Controller
      */
     public function store(Request $request)
     {
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', ''))]);
         try {
             $validatedData = $request->validate([
                 'kapal_id' => 'nullable|integer',
@@ -840,6 +845,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tipe_operator_lolo' => 'required_if:menggunakan_lolo,ya|nullable|in:AYP,VENDOR',
                 'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
                 'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
+                'biaya_lolo' => 'nullable|numeric|min:0',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -911,6 +917,7 @@ class SuratJalanBongkaranBatamController extends Controller
         $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
         $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
         if (! $validatedData['menggunakan_lolo']) {
+            $validatedData['biaya_lolo'] = null;
             $validatedData['tipe_operator_lolo'] = null;
             $validatedData['operator_lolo_karyawan_id'] = null;
             $validatedData['operator_lolo_vendor'] = null;
@@ -1449,6 +1456,7 @@ class SuratJalanBongkaranBatamController extends Controller
      */
     public function update(Request $request, SuratJalanBongkaranBatam $suratJalanBongkaran)
     {
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', ''))]);
         try {
             $validatedData = $request->validate([
                 'kapal_id' => 'nullable|integer',
@@ -1462,6 +1470,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tipe_operator_lolo' => 'required_if:menggunakan_lolo,ya|nullable|in:AYP,VENDOR',
                 'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
                 'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
+                'biaya_lolo' => 'nullable|numeric|min:0',
                 'nomor_sj_sebelumnya' => 'required_if:lanjut_muat,ya|nullable|string|max:255',
                 'term' => 'nullable|string|max:255',
                 'ring' => 'nullable|string|max:255',
@@ -1532,6 +1541,7 @@ class SuratJalanBongkaranBatamController extends Controller
             $validatedData['lanjut_muat'] = ($request->lanjut_muat === 'ya');
             $validatedData['menggunakan_lolo'] = in_array(strtolower((string) $request->menggunakan_lolo), ['ya', '1', 'true'], true);
             if (! $validatedData['menggunakan_lolo']) {
+                $validatedData['biaya_lolo'] = null;
                 $validatedData['tipe_operator_lolo'] = null;
                 $validatedData['operator_lolo_karyawan_id'] = null;
                 $validatedData['operator_lolo_vendor'] = null;
@@ -1810,6 +1820,7 @@ class SuratJalanBongkaranBatamController extends Controller
                 'tipe_operator_lolo' => $suratJalan->tipe_operator_lolo,
                 'operator_lolo_karyawan_id' => $suratJalan->operator_lolo_karyawan_id,
                 'operator_lolo_vendor' => $suratJalan->operator_lolo_vendor,
+                'biaya_lolo' => $suratJalan->biaya_lolo,
             ]);
         } catch (\Exception $e) {
             return response()->json(['error' => 'Failed to fetch Surat Jalan data'], 500);

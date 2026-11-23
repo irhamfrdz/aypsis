@@ -307,6 +307,7 @@
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Container</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type (Manifest)</th>
                                 <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">LOLO</th>
+                                <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya LOLO</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Lokasi</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
                             </tr>
@@ -413,6 +414,29 @@
                                             </span>
                                         @endif
                                     </td>
+                                    <td class="px-4 py-3 text-right text-sm whitespace-nowrap text-gray-900">
+                                        @if($sj->menggunakan_lolo)
+                                            @php
+                                                preg_match('/(20|40|45)/', (string) $sj->size, $sizeMatch);
+                                                $tarifLolo = $tarifLoloBatam->get($sizeMatch[1] ?? '');
+                                                $tagihanLolo = $sj->tagihanLoloItem;
+                                            @endphp
+                                            @if($tagihanLolo)
+                                                <span class="font-semibold">Rp {{ number_format($tagihanLolo->total, 0, ',', '.') }}</span>
+                                                <span class="block text-xs text-gray-500">Tagihan</span>
+                                            @elseif($sj->biaya_lolo !== null)
+                                                <span class="font-semibold">Rp {{ number_format($sj->biaya_lolo, 0, ',', '.') }}</span>
+                                                <span class="block text-xs text-gray-500">Surat jalan</span>
+                                            @elseif($tarifLolo !== null)
+                                                <span class="font-semibold">Rp {{ number_format($tarifLolo, 0, ',', '.') }}</span>
+                                                <span class="block text-xs text-gray-500">Estimasi tarif</span>
+                                            @else
+                                                <span class="text-gray-400">Tarif belum tersedia</span>
+                                            @endif
+                                        @else
+                                            <span class="text-gray-400">-</span>
+                                        @endif
+                                    </td>
                                     <td class="px-4 py-3 text-sm text-gray-900">
                                         {{ $sj->lokasi ? ucfirst($sj->lokasi) : '-' }}
                                     </td>
@@ -420,7 +444,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="{{ $showKapalVoyage ? 12 : 10 }}" class="px-4 py-12 text-center">
+                                    <td colspan="{{ $showKapalVoyage ? 16 : 14 }}" class="px-4 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -757,6 +781,11 @@
                             <div id="create_lolo_vendor_fields" class="hidden">
                                 <label for="create_operator_lolo_vendor" class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
                                 <input id="create_operator_lolo_vendor" name="operator_lolo_vendor" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ketik nama vendor">
+                            </div>
+                            <div class="md:col-span-2">
+                                <label for="create_biaya_lolo" class="block text-sm font-medium text-gray-700 mb-1">Biaya LOLO</label>
+                                <div class="flex"><span class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-sm">Rp</span><input id="create_biaya_lolo" name="biaya_lolo" type="text" inputmode="numeric" class="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-sm" placeholder="0"></div>
+                                <p id="create_biaya_lolo_hint" class="mt-1 text-xs text-indigo-700">Tarif terisi otomatis berdasarkan ukuran kontainer.</p>
                             </div>
                         </div>
 
@@ -1463,6 +1492,11 @@
                                 <label for="edit_operator_lolo_vendor" class="block text-sm font-medium text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>
                                 <input id="edit_operator_lolo_vendor" name="operator_lolo_vendor" type="text" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm" placeholder="Ketik nama vendor">
                             </div>
+                            <div class="md:col-span-2">
+                                <label for="edit_biaya_lolo" class="block text-sm font-medium text-gray-700 mb-1">Biaya LOLO</label>
+                                <div class="flex"><span class="px-3 py-2 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-sm">Rp</span><input id="edit_biaya_lolo" name="biaya_lolo" type="text" inputmode="numeric" class="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-sm" placeholder="0"></div>
+                                <p id="edit_biaya_lolo_hint" class="mt-1 text-xs text-indigo-700">Tarif terisi otomatis berdasarkan ukuran kontainer.</p>
+                            </div>
                         </div>
 
                         <!-- Informasi Pengiriman -->
@@ -2076,6 +2110,7 @@ function buatSuratJalanManual() {
     document.getElementById('modal_no_kontainer').value = '';
     document.getElementById('modal_no_seal').value = '';
     document.getElementById('modal_size').value = '';
+    document.getElementById('create_biaya_lolo').value = '';
     document.getElementById('modal_jenis_barang').value = '';
     document.getElementById('modal_penerima').value = '';
     document.getElementById('modal_tujuan_alamat').value = '';
@@ -2155,6 +2190,7 @@ function buatSuratJalan(manifestId) {
                 if (normSize.includes('20')) sizeSelect.value = '20ft';
                 else if (normSize.includes('40')) sizeSelect.value = '40ft';
             }
+            sizeSelect.dispatchEvent(new Event('change'));
             document.getElementById('modal_pengirim').value = data.pengirim || '';
             document.getElementById('modal_penerima').value = data.penerima || data.pengirim || '';
             
@@ -2692,6 +2728,7 @@ function closeModal() {
     document.getElementById('create_tipe_operator_lolo').value = '';
     document.getElementById('create_operator_lolo_karyawan_id').value = '';
     document.getElementById('create_operator_lolo_vendor').value = '';
+    document.getElementById('create_biaya_lolo').value = '';
     toggleLoloOperator('create');
 
     // Remove any alerts
@@ -3040,6 +3077,7 @@ function openEditModal(suratJalanId) {
                     document.getElementById('edit_tipe_operator_lolo').value = data.tipe_operator_lolo || '';
                     document.getElementById('edit_operator_lolo_karyawan_id').value = data.operator_lolo_karyawan_id || '';
                     document.getElementById('edit_operator_lolo_vendor').value = data.operator_lolo_vendor || '';
+                    document.getElementById('edit_biaya_lolo').value = data.biaya_lolo === null || data.biaya_lolo === undefined ? '' : new Intl.NumberFormat('id-ID').format(Number(data.biaya_lolo));
                     toggleLoloOperator('edit');
                 }
                 
@@ -3873,6 +3911,33 @@ function showBulkAlert(title, message, type = 'error') {
     `;
     alertArea.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+const tarifLoloBongkaran = @json($tarifLoloBatam);
+function fillLoloCost(mode) {
+    const modal = document.getElementById(mode === 'create' ? 'modalBuatSuratJalan' : 'modalEditSuratJalan');
+    if (modal.querySelector('input[name="menggunakan_lolo"]:checked')?.value !== 'ya') return;
+    const size = (document.getElementById(mode === 'create' ? 'modal_size' : 'edit_modal_size').value.match(/20|40|45/) || [])[0];
+    const input = document.getElementById(`${mode}_biaya_lolo`);
+    const hint = document.getElementById(`${mode}_biaya_lolo_hint`);
+    if (size && Object.prototype.hasOwnProperty.call(tarifLoloBongkaran, size)) {
+        input.value = new Intl.NumberFormat('id-ID').format(tarifLoloBongkaran[size]);
+        hint.textContent = 'Tarif Master Pricelist LOLO Batam untuk kontainer ' + size + ' FT.';
+    } else {
+        input.value = '';
+        hint.textContent = size ? 'Tarif belum tersedia. Isi biaya secara manual.' : 'Pilih ukuran kontainer untuk mengisi tarif otomatis.';
+    }
+}
+['create', 'edit'].forEach(mode => {
+    const modal = document.getElementById(mode === 'create' ? 'modalBuatSuratJalan' : 'modalEditSuratJalan');
+    modal.querySelectorAll('input[name="menggunakan_lolo"]').forEach(radio => radio.addEventListener('change', () => {
+        if (radio.checked && radio.value === 'ya') fillLoloCost(mode);
+    }));
+    document.getElementById(mode === 'create' ? 'modal_size' : 'edit_modal_size').addEventListener('change', () => fillLoloCost(mode));
+    document.getElementById(`${mode}_biaya_lolo`).addEventListener('input', function() {
+        const digits = this.value.replace(/\D/g, '');
+        this.value = digits ? new Intl.NumberFormat('id-ID').format(Number(digits)) : '';
+    });
+});
 
 function toggleLoloOperator(mode) {
     const modal = document.getElementById(mode === 'edit' ? 'modalEditSuratJalan' : 'modalBuatSuratJalan');
