@@ -4,6 +4,7 @@
         $name = $item->namaStockBan->nama ?? '';
 
         return $name !== ''
+            && strtoupper(trim($name)) !== 'ACCU GS N200'
             && stripos($name, 'cat') === false
             && stripos($name, 'majun') === false
             && stripos($name, 'thinner') === false;

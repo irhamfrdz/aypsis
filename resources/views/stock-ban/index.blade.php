@@ -1571,6 +1571,10 @@
                     return $item->namaStockBan && stripos($item->namaStockBan->nama, 'thinner') !== false;
                 })->sum('qty');
 
+                $accuGsN200Qty = $stockLainLains->filter(function($item) {
+                    return strtoupper(trim($item->namaStockBan->nama ?? '')) === 'ACCU GS N200';
+                })->sum('qty');
+
                 $banDalamQty = $stockBanDalams->sum('qty');
                 $banPerutQty = $stockBanPeruts->sum('qty');
                 $lockKontainerQty = $stockLockKontainers->sum('qty');
@@ -1597,6 +1601,21 @@
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-3 mb-6">
+                <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-blue-500 hover:bg-blue-50/30"
+                     data-filter-name="ACCU GS N200" onclick="filterBarangLainnya(this.dataset.filterName, this)">
+                    <div class="flex items-center gap-3">
+                        <div class="flex-shrink-0 w-10 h-10 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600">
+                            <i class="fas fa-gears text-lg"></i>
+                        </div>
+                        <div class="min-w-0">
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-tight truncate">ACCU GS N200</p>
+                            <div class="flex items-baseline gap-1 mt-1">
+                                <span class="text-xl font-black text-gray-800">{{ $accuGsN200Qty }}</span>
+                                <span class="text-[10px] font-medium text-gray-400 uppercase">UNIT</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 @include('stock-ban.partials.other-stock-summary', ['stocks' => $stockLainLains])
                 @foreach($paintStats as $name => $data)
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 {{ stripos($name, 'hijau') !== false ? 'border-b-green-500 hover:bg-green-50/30' : (stripos($name, 'abu') !== false ? 'border-b-gray-400 hover:bg-gray-50/30' : (stripos($name, 'merah') !== false ? 'border-b-red-500 hover:bg-red-50/30' : (stripos($name, 'biru') !== false ? 'border-b-blue-500 hover:bg-blue-50/30' : (stripos($name, 'kuning') !== false ? 'border-b-yellow-400 hover:bg-yellow-50/30' : (stripos($name, 'hitam') !== false ? 'border-b-black hover:bg-gray-100/30' : 'border-b-purple-500 hover:bg-purple-50/30'))))) }}"
