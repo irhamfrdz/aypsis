@@ -137,6 +137,7 @@
                                 <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                        @include('langsir-batam.partials.lolo-operators', ['langsir' => null])
                     </div>
 
                     <!-- Section: Rute & Transport -->
@@ -281,6 +282,20 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    const loloRadios = document.querySelectorAll('input[name="menggunakan_lolo"]');
+    const loloFields = document.getElementById('lolo_operator_fields');
+    const loloOperatorSelects = document.querySelectorAll('.lolo-operator-select');
+    function toggleLoloOperators() {
+        const enabled = document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya';
+        loloFields.classList.toggle('hidden', !enabled);
+        loloOperatorSelects.forEach(select => {
+            select.required = enabled;
+            select.disabled = !enabled;
+        });
+    }
+    loloRadios.forEach(radio => radio.addEventListener('change', toggleLoloOperators));
+    toggleLoloOperators();
+
     // Money Formatting
     const biayaDisplay = document.getElementById('biaya_display');
     const biayaHidden = document.getElementById('biaya');

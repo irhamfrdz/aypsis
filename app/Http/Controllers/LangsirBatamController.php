@@ -91,7 +91,16 @@ class LangsirBatamController extends Controller
         $gudangs = \App\Models\Gudang::where('status', 'aktif')->orderBy('nama_gudang')->get();
         $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisBatams'));
+        $operatorLolos = Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($query) {
+                $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                    ->orWhere('pekerjaan', 'like', '%CRANE%')
+                    ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'pekerjaan']);
+
+        return view('langsir-batam.create', compact('no_transaksi', 'supirs', 'all_kontainers', 'locations', 'gudangs', 'chasisBatams', 'operatorLolos'));
     }
 
     public function getContainerManifestHistory(Request $request)
@@ -151,6 +160,8 @@ class LangsirBatamController extends Controller
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
             'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
+            'operator_lolo_1_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_2_id|exists:karyawans,id',
+            'operator_lolo_2_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_1_id|exists:karyawans,id',
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
             'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
@@ -161,6 +172,10 @@ class LangsirBatamController extends Controller
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
+        if (! $validated['menggunakan_lolo']) {
+            $validated['operator_lolo_1_id'] = null;
+            $validated['operator_lolo_2_id'] = null;
+        }
 
         if ($validated['ob_dalam_pelabuhan']) {
             $validated['dari'] = 'PELABUHAN';
@@ -505,7 +520,16 @@ class LangsirBatamController extends Controller
         $locations = ['SRIMAS', 'PELABUHAN', 'TPK/RTG'];
         $chasisBatams = MasterChasisBatam::orderBy('kode')->get(['id', 'kode']);
 
-        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisBatams'));
+        $operatorLolos = Karyawan::whereNull('tanggal_berhenti')
+            ->where(function ($query) {
+                $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                    ->orWhere('pekerjaan', 'like', '%CRANE%')
+                    ->orWhere('pekerjaan', 'like', '%ALAT BERAT%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get(['id', 'nama_lengkap', 'pekerjaan']);
+
+        return view('langsir-batam.edit', compact('langsir', 'supirs', 'all_kontainers', 'locations', 'chasisBatams', 'operatorLolos'));
     }
 
     /**
@@ -536,6 +560,8 @@ class LangsirBatamController extends Controller
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
+            'operator_lolo_1_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_2_id|exists:karyawans,id',
+            'operator_lolo_2_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_1_id|exists:karyawans,id',
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
             'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
@@ -545,6 +571,10 @@ class LangsirBatamController extends Controller
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
+        if (! $validated['menggunakan_lolo']) {
+            $validated['operator_lolo_1_id'] = null;
+            $validated['operator_lolo_2_id'] = null;
+        }
 
         if ($validated['ob_dalam_pelabuhan']) {
             $validated['dari'] = 'PELABUHAN';

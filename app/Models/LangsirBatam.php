@@ -31,6 +31,8 @@ class LangsirBatam extends Model
         'status',
         'ob_dalam_pelabuhan',
         'menggunakan_lolo',
+        'operator_lolo_1_id',
+        'operator_lolo_2_id',
         'input_by',
     ];
 
