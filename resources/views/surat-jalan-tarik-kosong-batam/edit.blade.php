@@ -247,13 +247,20 @@
                 </div>
 
                 <div class="md:col-span-2">
-                    <input type="hidden" name="menggunakan_lolo" value="0">
-                    <label for="menggunakan_lolo" class="inline-flex items-center gap-2 text-sm font-medium text-gray-700 cursor-pointer">
-                        <input type="checkbox" name="menggunakan_lolo" id="menggunakan_lolo" value="1"
-                               {{ old('menggunakan_lolo', $item->menggunakan_lolo) ? 'checked' : '' }}
-                               class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                        Menggunakan LOLO
-                    </label>
+                    <span class="block text-sm font-medium text-gray-700 mb-2">Menggunakan LOLO <span class="text-red-600">*</span></span>
+                    <div class="flex items-center gap-6">
+                        <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                            <input type="radio" name="menggunakan_lolo" value="0" required {{ (string) old('menggunakan_lolo', (int) $item->menggunakan_lolo) === '0' ? 'checked' : '' }}
+                                   class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            Tidak
+                        </label>
+                        <label class="inline-flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
+                            <input type="radio" name="menggunakan_lolo" value="1" required {{ (string) old('menggunakan_lolo', (int) $item->menggunakan_lolo) === '1' ? 'checked' : '' }}
+                                   class="h-4 w-4 border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                            Ya
+                        </label>
+                    </div>
+                    @error('menggunakan_lolo')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
                 </div>
 
                 <div>
