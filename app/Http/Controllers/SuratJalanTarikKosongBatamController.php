@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Karyawan;
+use App\Models\MasterPricelistLoloBatam;
 use App\Models\Mobil;
 use App\Models\SuratJalanTarikKosongBatam;
 use Illuminate\Http\Request;
@@ -173,7 +174,10 @@ class SuratJalanTarikKosongBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'pekerjaan']);
 
-        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'gudangs', 'operatorLolos'));
+        $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+            ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (int) $tarif->tarif]);
+
+        return view('surat-jalan-tarik-kosong-batam.create', compact('supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'gudangs', 'operatorLolos', 'tarifLoloBatam'));
     }
 
     public function store(Request $request)
@@ -336,7 +340,10 @@ class SuratJalanTarikKosongBatamController extends Controller
             ->orderBy('nama_lengkap')
             ->get(['id', 'nama_lengkap', 'pekerjaan']);
 
-        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'operatorLolos'));
+        $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+            ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (int) $tarif->tarif]);
+
+        return view('surat-jalan-tarik-kosong-batam.edit', compact('item', 'supirs', 'keneks', 'mobils', 'kontainers', 'locations', 'warehouses', 'pricelistRings', 'operatorLolos', 'tarifLoloBatam'));
     }
 
     public function update(Request $request, $id)

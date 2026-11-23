@@ -28,6 +28,7 @@
                    value="{{ old('biaya_lolo', $item?->biaya_lolo ? number_format($item->biaya_lolo, 0, ',', '.') : '0') }}"
                    class="currency w-full px-3 py-2 border border-gray-300 rounded-r-lg text-sm" placeholder="0">
         </div>
+        <p id="biaya_lolo_hint" class="mt-1 text-xs text-gray-500">Tarif terisi otomatis setelah ukuran kontainer dipilih.</p>
         @error('biaya_lolo')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
     </div>
 </div>

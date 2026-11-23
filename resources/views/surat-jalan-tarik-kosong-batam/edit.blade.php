@@ -311,6 +311,19 @@
         const loloType = document.getElementById('tipe_operator_lolo');
         const loloEmployee = document.getElementById('operator_lolo_karyawan_id');
         const loloVendor = document.getElementById('operator_lolo_vendor');
+        const biayaLolo = document.getElementById('biaya_lolo');
+        const biayaLoloHint = document.getElementById('biaya_lolo_hint');
+        const tarifLoloBatam = @json($tarifLoloBatam);
+        function fillBiayaLolo() {
+            const size = document.querySelector('select[name="size"]').value;
+            if (Object.prototype.hasOwnProperty.call(tarifLoloBatam, size)) {
+                biayaLolo.value = new Intl.NumberFormat('id-ID').format(tarifLoloBatam[size]);
+                biayaLoloHint.textContent = 'Tarif Master Pricelist LOLO Batam untuk kontainer ' + size + ' FT.';
+            } else {
+                biayaLolo.value = '';
+                biayaLoloHint.textContent = size ? 'Tarif LOLO untuk ukuran ini belum tersedia. Isi biaya secara manual.' : 'Pilih ukuran kontainer untuk mengisi tarif otomatis.';
+            }
+        }
         function toggleLoloOperator() {
             const enabled = document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === '1';
             loloFields.classList.toggle('hidden', !enabled);
@@ -323,7 +336,13 @@
             loloEmployee.disabled = !loloEmployee.required;
             loloVendor.disabled = !loloVendor.required;
         }
-        document.querySelectorAll('input[name="menggunakan_lolo"]').forEach(radio => radio.addEventListener('change', toggleLoloOperator));
+        document.querySelectorAll('input[name="menggunakan_lolo"]').forEach(radio => radio.addEventListener('change', () => {
+            toggleLoloOperator();
+            if (radio.checked && radio.value === '1') fillBiayaLolo();
+        }));
+        document.querySelector('select[name="size"]').addEventListener('change', () => {
+            if (document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === '1') fillBiayaLolo();
+        });
         loloType.addEventListener('change', toggleLoloOperator);
         toggleLoloOperator();
         flatpickr("#tanggal_surat_jalan", {
@@ -393,6 +412,7 @@
                 if (ukuran) {
                     sizeSelect.value = ukuran;
                     updateUangJalan();
+                    if (document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === '1') fillBiayaLolo();
                 }
 
                 dropdown.classList.add('hidden');
