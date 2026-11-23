@@ -178,6 +178,7 @@ class SuratJalanTarikKosongBatamController extends Controller
 
     public function store(Request $request)
     {
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', '0'))]);
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan',
             'tanggal_surat_jalan' => 'required|date',
@@ -195,6 +196,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'tipe_operator_lolo' => 'required_if:menggunakan_lolo,1|nullable|in:AYP,VENDOR',
             'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
             'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
+            'biaya_lolo' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
@@ -341,6 +343,8 @@ class SuratJalanTarikKosongBatamController extends Controller
     {
         $item = SuratJalanTarikKosongBatam::findOrFail($id);
 
+        $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', '0'))]);
+
         $validated = $request->validate([
             'no_surat_jalan' => 'required|unique:surat_jalan_tarik_kosong_batams,no_surat_jalan,'.$id,
             'tanggal_surat_jalan' => 'required|date',
@@ -358,6 +362,7 @@ class SuratJalanTarikKosongBatamController extends Controller
             'tipe_operator_lolo' => 'required_if:menggunakan_lolo,1|nullable|in:AYP,VENDOR',
             'operator_lolo_karyawan_id' => 'required_if:tipe_operator_lolo,AYP|nullable|exists:karyawans,id',
             'operator_lolo_vendor' => 'required_if:tipe_operator_lolo,VENDOR|nullable|string|max:255',
+            'biaya_lolo' => 'nullable|numeric|min:0',
             'status' => 'nullable|in:draft,active,completed,cancelled',
             'catatan' => 'nullable|string',
         ]);
@@ -648,6 +653,7 @@ class SuratJalanTarikKosongBatamController extends Controller
     private function normalizeLoloOperator(array &$validated): void
     {
         if (! $validated['menggunakan_lolo']) {
+            $validated['biaya_lolo'] = 0;
             $validated['tipe_operator_lolo'] = null;
             $validated['operator_lolo_karyawan_id'] = null;
             $validated['operator_lolo_vendor'] = null;

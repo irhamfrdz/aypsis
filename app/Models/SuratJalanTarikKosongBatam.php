@@ -25,6 +25,7 @@ class SuratJalanTarikKosongBatam extends Model
         'tipe_operator_lolo',
         'operator_lolo_karyawan_id',
         'operator_lolo_vendor',
+        'biaya_lolo',
         'uang_jalan',
         'status_pembayaran_uang_jalan',
         'input_by',
@@ -41,6 +42,7 @@ class SuratJalanTarikKosongBatam extends Model
         'input_date' => 'datetime',
         'uang_jalan' => 'decimal:2',
         'menggunakan_lolo' => 'boolean',
+        'biaya_lolo' => 'decimal:2',
     ];
 
     public function creator()

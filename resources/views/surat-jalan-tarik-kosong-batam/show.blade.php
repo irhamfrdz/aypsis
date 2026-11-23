@@ -111,6 +111,9 @@
                             <span class="text-2xl font-bold">Rp {{ number_format($item->uang_jalan, 0, ',', '.') }}</span>
                         </div>
                         <div class="mt-3 text-sm text-gray-700">Menggunakan LOLO: <span class="font-semibold">{{ $item->menggunakan_lolo ? 'Ya' : 'Tidak' }}</span></div>
+                        @if($item->menggunakan_lolo)
+                            <div class="mt-1 text-sm text-gray-700">Biaya LOLO: <span class="font-semibold">Rp {{ number_format($item->biaya_lolo, 0, ',', '.') }}</span></div>
+                        @endif
                     </section>
 
                     @if($item->catatan)
