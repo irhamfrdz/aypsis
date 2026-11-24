@@ -100,6 +100,8 @@ class AbsensiImport implements ToCollection
                 $type = $typeStr ?: 'Masuk';
                 $type = app(\App\Services\OvertimeCheckoutClassifier::class)->resolve($nik, $waktu, $type, $this->employees[$nik] ?? null);
 
+                $waktu = \App\Helpers\AttendanceTime::normalize($waktu, $type)->format('Y-m-d H:i:s');
+
                 $key = $nik.'_'.$waktu;
                 if (isset($existingLogs[$key])) {
                     continue; // Skip duplikat log persis

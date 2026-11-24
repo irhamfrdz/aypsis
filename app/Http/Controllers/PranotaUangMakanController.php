@@ -381,6 +381,14 @@ class PranotaUangMakanController extends Controller
         }
     }
 
+    public function exportExcel($id)
+    {
+        $pranota = PranotaUangMakan::with(['details.karyawan'])->findOrFail($id);
+        $filename = 'Pranota_Uang_Makan_'.preg_replace('/[^A-Za-z0-9_-]/', '_', $pranota->nomor_pranota).'_'.now()->format('Ymd_His').'.xlsx';
+
+        return Excel::download(new \App\Exports\PranotaUangMakanExport($pranota), $filename);
+    }
+
     public function exportAutoTransfer($id)
     {
         $pranota = PranotaUangMakan::with(['details.karyawan'])->findOrFail($id);

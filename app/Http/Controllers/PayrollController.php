@@ -169,9 +169,10 @@ class PayrollController extends Controller
 
         $allCabang = \App\Models\Karyawan::where('status', 'active')->whereNotNull('cabang')->where('cabang', '!=', '')->distinct()->pluck('cabang')->sort()->values();
 
-        // Riwayat Pranota Uang Makan (50 data terbaru)
+        // Riwayat pranota yang belum terhubung ke PUML (50 data terbaru)
         $riwayatPranota = \App\Models\PranotaUangMakan::with(['details.karyawan'])
             ->withCount('details')
+            ->whereNull('pranota_puml_id')
             ->orderBy('created_at', 'desc')
             ->limit(50)
             ->get();

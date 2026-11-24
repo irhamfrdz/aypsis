@@ -26,7 +26,7 @@
                 </div>
             </div>
             <div class="pm-header-actions flex flex-wrap items-center gap-3">
-                <button type="button" onclick="openRiwayatPranotaModal()" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm cursor-pointer">
+                <a href="{{ route('pranota-uang-makan.index') }}" class="inline-flex items-center px-4 py-2.5 bg-white border border-gray-300 text-gray-700 text-sm font-semibold rounded-lg hover:bg-gray-50 hover:text-blue-600 hover:border-blue-300 focus:outline-none transition-all duration-200 shadow-sm cursor-pointer">
                     <i class="fas fa-history text-blue-600 mr-2"></i>
                     Riwayat Pranota Uang Makan
                     @if(isset($riwayatPranota) && $riwayatPranota->count() > 0)
@@ -34,7 +34,7 @@
                             {{ $riwayatPranota->count() }}
                         </span>
                     @endif
-                </button>
+                </a>
                 <a href="{{ route('pranota-uang-makan.index') }}" class="inline-flex items-center px-4 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-semibold rounded-lg transition-all duration-200 shadow-sm" title="Lihat Halaman Lengkap Riwayat Pranota Uang Makan">
                     <i class="fas fa-list mr-2 text-gray-500"></i>
                     Semua Pranota

@@ -1,104 +1,96 @@
 @extends('layouts.app')
+@section('title', 'Riwayat Pranota Uang Makan')
+@section('page_title', 'Riwayat Pranota Uang Makan')
+
+@push('styles')
+<link rel="stylesheet" href="{{ asset('css/pranota-uang-makan-index.css') }}?v={{ filemtime(public_path('css/pranota-uang-makan-index.css')) }}">
+@endpush
 
 @section('content')
-<div class="px-4 sm:px-6 lg:px-8 py-8 w-full max-w-9xl mx-auto">
-    <div class="sm:flex sm:items-center sm:justify-between mb-8">
-        <div class="mb-4 sm:mb-0">
-            <h1 class="text-2xl md:text-3xl text-gray-800 font-bold">Riwayat Pranota Uang Makan</h1>
+@php
+    $totalKaryawan = $pranotas->sum(fn ($item) => $item->details->count());
+@endphp
+<div class="meal-history">
+    <header class="mh-header">
+        <div class="mh-heading">
+            <span class="mh-heading-icon"><i class="fa-solid fa-file-invoice" aria-hidden="true"></i></span>
+            <div><h1>Riwayat Pranota Uang Makan</h1><p>Kelola pranota uang makan yang belum terhubung ke PUML.</p></div>
         </div>
-        <div class="grid grid-flow-col sm:auto-cols-max justify-start sm:justify-end gap-2">
-            <a href="{{ route('payroll.uang-makan') }}" class="btn bg-white border-gray-200 hover:border-gray-300 text-indigo-500">
-                <svg class="w-4 h-4 fill-current opacity-50 shrink-0" viewBox="0 0 16 16">
-                    <path d="M15 7H9V1c0-.6-.4-1-1-1S7 .4 7 1v6H1c-.6 0-1 .4-1 1s.4 1 1 1h6v6c0 .6.4 1 1 1s1-.4 1-1V9h6c.6 0 1-.4 1-1s-.4-1-1-1z" />
-                </svg>
-                <span class="hidden xs:block ml-2">Buat Pranota Baru</span>
-            </a>
-        </div>
-    </div>
+        <a href="{{ route('payroll.uang-makan') }}" class="mh-button mh-primary"><i class="fa-solid fa-plus" aria-hidden="true"></i>Buat Pranota Baru</a>
+    </header>
 
     @if(session('success'))
-        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
-            <p>{{ session('success') }}</p>
-        </div>
+        <div class="mh-alert" role="alert"><i class="fa-solid fa-circle-check" aria-hidden="true"></i>{{ session('success') }}</div>
     @endif
 
-    <div class="bg-white shadow-lg rounded-sm border border-gray-200">
-        <div class="overflow-x-auto">
-            <table class="table-auto w-full">
-                <thead class="text-xs font-semibold uppercase text-gray-500 bg-gray-50 border-t border-b border-gray-200">
-                    <tr>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-left">Nomor Pranota</div>
-                        </th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-left">Tanggal</div>
-                        </th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-center">Jumlah Karyawan</div>
-                        </th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-right">Total Nominal</div>
-                        </th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-center">Status</div>
-                        </th>
-                        <th class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                            <div class="font-semibold text-center">Aksi</div>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="text-sm divide-y divide-gray-200">
+    <section class="mh-summary" aria-label="Ringkasan seluruh pranota belum terhubung ke PUML">
+        <article class="mh-stat"><span class="mh-stat-icon"><i class="fa-solid fa-file-lines" aria-hidden="true"></i></span><div><p>Total Pranota</p><strong>{{ number_format($pranotas->count(), 0, ',', '.') }} <small>Pranota</small></strong><span>Belum terhubung ke PUML</span></div></article>
+        <article class="mh-stat mh-money"><span class="mh-stat-icon"><i class="fa-solid fa-wallet" aria-hidden="true"></i></span><div><p>Total Nominal</p><strong>Rp {{ number_format($pranotas->sum('total_nominal'), 0, ',', '.') }}</strong><span>Akumulasi seluruh pranota</span></div></article>
+        <article class="mh-stat"><span class="mh-stat-icon"><i class="fa-solid fa-users" aria-hidden="true"></i></span><div><p>Total Data Karyawan</p><strong>{{ number_format($totalKaryawan, 0, ',', '.') }} <small>Data</small></strong><span>Akumulasi karyawan per pranota</span></div></article>
+    </section>
+
+    <section class="mh-panel" aria-label="Daftar pranota uang makan">
+        <div class="mh-toolbar">
+            <div><h2>Daftar Pranota</h2><p>Rincian dan dokumen uang makan karyawan.</p></div>
+            <label class="mh-search"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><span class="sr-only">Cari nomor pranota, tanggal, atau status</span><input id="mh-search" type="search" placeholder="Cari nomor, tanggal, atau status…" autocomplete="off"></label>
+        </div>
+        <div class="mh-table-scroll">
+            <table class="mh-table">
+                <thead><tr><th scope="col">No.</th><th scope="col">Nomor Pranota</th><th scope="col">Tanggal</th><th scope="col" class="mh-center">Karyawan</th><th scope="col" class="mh-right">Total Nominal</th><th scope="col">Status</th><th scope="col" class="mh-center">Aksi</th></tr></thead>
+                <tbody>
                     @forelse($pranotas as $pranota)
-                        <tr>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                                <div class="font-medium text-sky-500">{{ $pranota->nomor_pranota }}</div>
-                            </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap">
-                                <div>{{ $pranota->tanggal_pranota->format('d/m/Y') }}</div>
-                            </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center">
-                                <div class="font-medium text-gray-800">{{ $pranota->details->count() }} Orang</div>
-                            </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-right">
-                                <div class="font-medium text-green-600">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</div>
-                            </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center">
-                                <div class="inline-flex font-medium rounded-full text-center px-2.5 py-0.5 bg-yellow-100 text-yellow-600">{{ ucfirst($pranota->status) }}</div>
-                            </td>
-                            <td class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center w-px">
-                                <div class="space-x-1">
-                                    <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 rounded-lg transition-colors" title="Detail">
-                                        <i class="fas fa-eye text-sm"></i>
-                                    </a>
-                                    <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-amber-500 hover:text-amber-700 bg-amber-50 hover:bg-amber-100 rounded-lg transition-colors" title="Edit">
-                                        <i class="fas fa-pencil-alt text-sm"></i>
-                                    </a>
-                                    <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}?print=true" target="_blank" class="inline-flex items-center justify-center p-2 text-indigo-500 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 rounded-lg transition-colors" title="Cetak">
-                                        <i class="fas fa-print text-sm"></i>
-                                    </a>
-                                    <a href="{{ route('pranota-uang-makan.export-auto-transfer', $pranota->id) }}" class="inline-flex items-center justify-center p-2 text-green-500 hover:text-green-700 bg-green-50 hover:bg-green-100 rounded-lg transition-colors" title="Export Excel Auto Transfer">
-                                         <i class="fas fa-file-excel text-sm"></i>
-                                    </a>
-                                    <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus Pranota Uang Makan ini? Data detail yang terkait juga akan ikut terhapus.');">
+                        <tr data-mh-row data-search="{{ $pranota->nomor_pranota }} {{ $pranota->tanggal_pranota?->format('d/m/Y') }} {{ $pranota->status }}">
+                            <td class="mh-number">{{ $loop->iteration }}</td>
+                            <td><a class="mh-document" href="{{ route('pranota-uang-makan.show', $pranota->id) }}">{{ $pranota->nomor_pranota }}</a><span class="mh-caption">Pranota uang makan</span></td>
+                            <td><span class="mh-date"><i class="fa-regular fa-calendar" aria-hidden="true"></i>{{ $pranota->tanggal_pranota?->format('d/m/Y') ?? '—' }}</span></td>
+                            <td class="mh-center"><span class="mh-employees"><i class="fa-solid fa-users" aria-hidden="true"></i>{{ $pranota->details->count() }} Orang</span></td>
+                            <td class="mh-right mh-amount">Rp {{ number_format($pranota->total_nominal, 0, ',', '.') }}</td>
+                            <td><span class="mh-status {{ strtolower($pranota->status ?? '') === 'draft' ? 'mh-draft' : '' }}">{{ ucfirst($pranota->status ?? 'Tidak tersedia') }}</span></td>
+                            <td>
+                                <div class="mh-actions">
+                                    <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}" title="Lihat detail" aria-label="Lihat detail {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-eye" aria-hidden="true"></i></a>
+                                    <a href="{{ route('pranota-uang-makan.edit', $pranota->id) }}" title="Edit pranota" aria-label="Edit {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-pen-to-square" aria-hidden="true"></i></a>
+                                    <a href="{{ route('pranota-uang-makan.show', $pranota->id) }}?print=true" target="_blank" rel="noopener" title="Cetak pranota" aria-label="Cetak {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-print" aria-hidden="true"></i></a>
+                                    <a class="mh-export" href="{{ route('pranota-uang-makan.export-excel', $pranota->id) }}" title="Export Excel" aria-label="Export Excel {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-file-excel" aria-hidden="true"></i></a>
+                                    <a href="{{ route('pranota-uang-makan.export-auto-transfer', $pranota->id) }}" title="Export Excel Auto Transfer" aria-label="Export Auto Transfer {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i></a>
+                                    <form action="{{ route('pranota-uang-makan.destroy', $pranota->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus Pranota Uang Makan ini? Data detail yang terkait juga akan ikut terhapus.');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center justify-center p-2 text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg transition-colors" title="Hapus">
-                                            <i class="fas fa-trash text-sm"></i>
-                                        </button>
+                                        <button class="mh-delete" type="submit" title="Hapus pranota" aria-label="Hapus {{ $pranota->nomor_pranota }}"><i class="fa-solid fa-trash-can" aria-hidden="true"></i></button>
                                     </form>
                                 </div>
                             </td>
                         </tr>
                     @empty
-                        <tr>
-                            <td colspan="6" class="px-2 first:pl-5 last:pr-5 py-3 whitespace-nowrap text-center text-gray-500">
-                                Belum ada data Pranota Uang Makan.
-                            </td>
-                        </tr>
+                        <tr><td colspan="7"><div class="mh-empty"><i class="fa-regular fa-folder-open" aria-hidden="true"></i><h3>Belum ada pranota uang makan</h3><p>Pranota yang belum terhubung ke PUML akan ditampilkan di sini.</p><a href="{{ route('payroll.uang-makan') }}" class="mh-button mh-primary">Buat Pranota Baru</a></div></td></tr>
                     @endforelse
+                    <tr id="mh-no-results" hidden><td colspan="7"><div class="mh-empty"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><h3>Pranota tidak ditemukan</h3><p>Coba nomor pranota, tanggal, atau status lainnya.</p><button type="button" class="mh-button" id="mh-reset">Hapus pencarian</button></div></td></tr>
                 </tbody>
             </table>
         </div>
-    </div>
+        <footer class="mh-footer"><span id="mh-count" role="status" aria-live="polite">Menampilkan {{ $pranotas->count() }} dari {{ $pranotas->count() }} pranota</span><span><i class="fa-solid fa-circle-info" aria-hidden="true"></i>Hanya pranota yang belum terhubung ke PUML</span></footer>
+    </section>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+(() => {
+    const input = document.getElementById('mh-search');
+    const rows = Array.from(document.querySelectorAll('[data-mh-row]'));
+    const filter = () => {
+        const query = input.value.trim().toLocaleLowerCase('id-ID');
+        let count = 0;
+        rows.forEach(row => {
+            const visible = row.dataset.search.toLocaleLowerCase('id-ID').includes(query);
+            row.hidden = !visible;
+            if (visible) count++;
+        });
+        document.getElementById('mh-no-results').hidden = !rows.length || count > 0;
+        document.getElementById('mh-count').textContent = 'Menampilkan ' + count + ' dari ' + rows.length + ' pranota';
+    };
+    input.addEventListener('input', filter);
+    document.getElementById('mh-reset').addEventListener('click', () => { input.value = ''; filter(); input.focus(); });
+})();
+</script>
+@endpush

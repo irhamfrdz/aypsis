@@ -101,6 +101,12 @@ class Absensi extends Model
      */
     protected static function booted()
     {
+        static::saving(function ($absensi) {
+            if ($absensi->waktu !== null && ($absensi->isDirty('waktu') || $absensi->isDirty('tipe'))) {
+                $absensi->waktu = \App\Helpers\AttendanceTime::normalize($absensi->waktu, (string) $absensi->tipe);
+            }
+        });
+
         static::created(function ($absensi) {
             // Kirim notifikasi hanya ke user 'adit' dan 'kiky'
             $users = \App\Models\User::whereIn('username', ['adit', 'kiky'])->get();

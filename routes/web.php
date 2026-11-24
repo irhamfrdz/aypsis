@@ -7959,6 +7959,7 @@ Route::middleware(['auth',
     Route::get('/payroll', [\App\Http\Controllers\PayrollController::class, 'index'])->name('payroll.index')->middleware('can:payroll-view');
     Route::get('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'uangMakan'])->name('payroll.uang-makan')->middleware('can:payroll-view');
     Route::post('/payroll/uang-makan', [\App\Http\Controllers\PayrollController::class, 'storeUangMakan'])->name('payroll.uang-makan.store')->middleware('can:payroll-view');
+    Route::get('pranota-uang-makan/{id}/export-excel', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportExcel'])->name('pranota-uang-makan.export-excel')->middleware('can:payroll-view');
     Route::get('pranota-uang-makan/{id}/export-auto-transfer', [\App\Http\Controllers\PranotaUangMakanController::class, 'exportAutoTransfer'])->name('pranota-uang-makan.export-auto-transfer')->middleware('can:payroll-view');
     Route::post('pranota-uang-makan/{id}/refresh-absensi', [\App\Http\Controllers\PranotaUangMakanController::class, 'refreshAbsensi'])->name('pranota-uang-makan.refresh-absensi')->middleware('can:payroll-view');
 

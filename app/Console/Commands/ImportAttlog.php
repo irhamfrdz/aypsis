@@ -116,6 +116,15 @@ class ImportAttlog extends Command
 
             $karyawan_id = $karyawans[$nik] ?? null;
 
+            $logTime = \App\Helpers\AttendanceTime::normalize($logTime, $type)->format('Y-m-d H:i:s');
+
+            if (isset($deletedLogs[$nik.'_'.$logTime])) {
+                $skipped++;
+                $bar->advance();
+
+                continue;
+            }
+
             $chunk[] = [
                 'nik' => $nik,
                 'waktu' => $logTime,
