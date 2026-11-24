@@ -108,7 +108,7 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp {{ number_format($item->grand_total_bersih, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-right">Rp {{ number_format($item->supirDetails->isNotEmpty() ? $item->supirDetails->sum('grand_total') : $item->grand_total_bersih, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     @if($item->status === 'draft')
                                         <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Draft</span>

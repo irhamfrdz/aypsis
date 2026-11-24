@@ -30,7 +30,7 @@ class PranotaUangRitController extends Controller
             ]);
         }
 
-        $query = PranotaUangRit::with(['suratJalan', 'creator', 'approver']);
+        $query = PranotaUangRit::with(['suratJalan', 'creator', 'approver', 'supirDetails']);
 
         // Filter by search
         if ($request->filled('search')) {
@@ -551,12 +551,14 @@ class PranotaUangRitController extends Controller
                     $supirTotals[$targetKey]['bpjs'] = floatval($details['bpjs'] ?? 0);
                     $supirTotals[$targetKey]['adjustment'] = floatval($details['adjustment'] ?? 0);
                     $supirTotals[$targetKey]['absen'] = intval($details['absen'] ?? 0);
-
-                    $totalHutangKeseluruhan += $supirTotals[$targetKey]['hutang'];
-                    $totalTabunganKeseluruhan += $supirTotals[$targetKey]['tabungan'];
-                    $totalBpjsKeseluruhan += $supirTotals[$targetKey]['bpjs'];
-                    $totalAdjustmentKeseluruhan += $supirTotals[$targetKey]['adjustment'];
                 }
+            }
+
+            foreach ($supirTotals as $totals) {
+                $totalHutangKeseluruhan += $totals['hutang'];
+                $totalTabunganKeseluruhan += $totals['tabungan'];
+                $totalBpjsKeseluruhan += $totals['bpjs'];
+                $totalAdjustmentKeseluruhan += $totals['adjustment'];
             }
 
             $grandTotalBersih = $totalUangSupirKeseluruhan - $totalHutangKeseluruhan - $totalTabunganKeseluruhan - $totalBpjsKeseluruhan + $totalAdjustmentKeseluruhan;
@@ -691,6 +693,10 @@ class PranotaUangRitController extends Controller
                     }
                 }
             }
+
+            $pranotaUangRit->update([
+                'grand_total_bersih' => PranotaUangRitSupirDetail::where('no_pranota', $nomorPranota)->sum('grand_total'),
+            ]);
 
             // Simpan detail per surat jalan (untuk tracking)
             foreach ($selectedData as $suratJalanId => $data) {
