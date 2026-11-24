@@ -42,6 +42,15 @@ class UangJalanApprovalController extends Controller
 
             $model = $pengajuan->jenis_surat_jalan === 'bongkaran' ? SuratJalanBongkaran::class : SuratJalan::class;
             $suratJalan = $model::whereKey($pengajuan->surat_jalan_id)->lockForUpdate()->firstOrFail();
+            if (trim((string) $suratJalan->supir) !== trim((string) $pengajuan->supir)) {
+                throw ValidationException::withMessages(['pengajuan' => 'Supir pada surat jalan sekarang berbeda dari pengajuan. Tolak pengajuan ini dan minta pengajuan baru.']);
+            }
+            if ($pengajuan->jenis_surat_jalan === 'biasa' && $suratJalan->is_supir_customer) {
+                throw ValidationException::withMessages(['pengajuan' => 'Surat jalan sekarang menggunakan supir customer, sehingga uang jalan tidak dapat dibuat.']);
+            }
+            if ($pengajuan->jenis_surat_jalan === 'biasa' && in_array($suratJalan->status, ['cancelled', 'draft'], true)) {
+                throw ValidationException::withMessages(['pengajuan' => 'Surat jalan berstatus '.$suratJalan->status.' dan belum dapat dibuatkan uang jalan.']);
+            }
             if ($service->tugasBerjalan($suratJalan->supir)->count() < 2) {
                 $pengajuan->update([
                     'status' => 'cancelled',
@@ -51,10 +60,6 @@ class UangJalanApprovalController extends Controller
 
                 return false;
             }
-            if ($suratJalan->supir !== $pengajuan->supir || ($pengajuan->jenis_surat_jalan === 'biasa' && ($suratJalan->is_supir_customer || in_array($suratJalan->status, ['cancelled', 'draft'])))) {
-                throw ValidationException::withMessages(['pengajuan' => 'Data supir pada surat jalan berubah. Tolak pengajuan ini dan minta pengajuan baru.']);
-            }
-
             $uangJalan = $service->buatUangJalan($suratJalan, $pengajuan->jenis_surat_jalan, $pengajuan->data_uang_jalan, $pengajuan->requested_by, true);
             $pengajuan->update([
                 'status' => 'approved',
