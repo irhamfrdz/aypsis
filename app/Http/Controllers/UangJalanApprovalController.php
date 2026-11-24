@@ -48,8 +48,8 @@ class UangJalanApprovalController extends Controller
             if ($pengajuan->jenis_surat_jalan === 'biasa' && $suratJalan->is_supir_customer) {
                 throw ValidationException::withMessages(['pengajuan' => 'Surat jalan sekarang menggunakan supir customer, sehingga uang jalan tidak dapat dibuat.']);
             }
-            if ($pengajuan->jenis_surat_jalan === 'biasa' && in_array($suratJalan->status, ['cancelled', 'draft'], true)) {
-                throw ValidationException::withMessages(['pengajuan' => 'Surat jalan berstatus '.$suratJalan->status.' dan belum dapat dibuatkan uang jalan.']);
+            if ($pengajuan->jenis_surat_jalan === 'biasa' && $suratJalan->status === 'cancelled') {
+                throw ValidationException::withMessages(['pengajuan' => 'Surat jalan dibatalkan dan tidak dapat dibuatkan uang jalan.']);
             }
             if ($service->tugasBerjalan($suratJalan->supir)->count() < 2) {
                 $pengajuan->update([

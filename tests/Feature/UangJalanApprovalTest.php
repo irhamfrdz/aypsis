@@ -117,6 +117,7 @@ class UangJalanApprovalTest extends TestCase
         $this->buatSuratJalan('SJ-1');
         $this->buatSuratJalan('SJ-2');
         $target = $this->buatSuratJalan('SJ-3', 'belum_ada');
+        DB::table('surat_jalans')->where('id', $target)->update(['status' => 'draft']);
         $service = new UangJalanApprovalService;
 
         app(UangJalanController::class)->store(Request::create('/uang-jalan', 'POST', $this->formData($target)), $service);
@@ -131,6 +132,7 @@ class UangJalanApprovalTest extends TestCase
 
         $this->assertSame(1, DB::table('uang_jalans')->count());
         $this->assertDatabaseHas('surat_jalans', ['id' => $target, 'status_pembayaran_uang_jalan' => 'sudah_masuk_uang_jalan']);
+        $this->assertDatabaseHas('surat_jalans', ['id' => $target, 'status' => 'draft']);
         $this->assertDatabaseHas('uang_jalan_approval_requests', ['id' => $pengajuan->id, 'status' => 'approved']);
     }
 
