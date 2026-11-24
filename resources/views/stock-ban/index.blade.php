@@ -278,7 +278,7 @@
                     $banPerBuntut = [];
                     $banPerAlatBerat = [];
                     
-                    foreach($stockBans->where('status', 'Terpakai') as $ban) {
+                    foreach($stockBanMobils->where('status', 'Terpakai') as $ban) {
                         if ($ban->alat_berat_id && $ban->alatBerat) {
                             $name = $ban->alatBerat->nama;
                             if(!isset($banPerAlatBerat[$name])) $banPerAlatBerat[$name] = 0;
@@ -352,13 +352,23 @@
                             <span class="text-xs font-medium text-blue-600 uppercase">Total Ban</span>
                             <i class="fas fa-circle-notch text-blue-400 text-lg"></i>
                         </div>
-                        <div class="text-2xl font-bold text-blue-900">{{ $stockBans->count() }}</div>
+                        <div class="text-2xl font-bold text-blue-900">{{ $stockBanMobils->count() }}</div>
                         <p class="text-xs text-blue-600 mt-1">Unit</p>
                     </div>
                     
+                    <!-- Ban Luar Valmet -->
+                    <div id="card-valmet" onclick="setCardFilter('valmet', false)" class="cursor-pointer bg-gradient-to-br from-slate-50 to-slate-100 border border-slate-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-xs font-medium text-slate-600 uppercase">Ban Luar Valmet</span>
+                            <i class="fas fa-tractor text-slate-400 text-lg"></i>
+                        </div>
+                        <div class="text-2xl font-bold text-slate-900">{{ $stockBanValmets->count() }}</div>
+                        <p class="text-xs text-slate-600 mt-1">Unit Valmet</p>
+                    </div>
+
                     <!-- Ban Stok -->
                     @php
-                        $banStok = $stockBans->where('status', 'Stok')->count();
+                        $banStok = $stockBanMobils->where('status', 'Stok')->count();
                     @endphp
                     <div id="card-stok" onclick="setCardFilter('stok', false)" class="cursor-pointer bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -371,7 +381,7 @@
                     
                     <!-- Ban Terpakai -->
                     @php
-                        $banTerpakai = $stockBans->where('status', 'Terpakai')->count();
+                        $banTerpakai = $stockBanMobils->where('status', 'Terpakai')->count();
                     @endphp
                     <div id="card-terpakai" onclick="setCardFilter('terpakai', false)" class="cursor-pointer bg-gradient-to-br from-purple-50 to-purple-100 border border-purple-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -384,7 +394,7 @@
                     
                     <!-- Ban Sedang Dimasak -->
                     @php
-                        $banSedangDimasak = $stockBans->where('status', 'Sedang Dimasak')->count();
+                        $banSedangDimasak = $stockBanMobils->where('status', 'Sedang Dimasak')->count();
                     @endphp
                     <div id="card-sedang-dimasak" onclick="setCardFilter('sedang-dimasak', false)" class="cursor-pointer bg-gradient-to-br from-orange-50 to-orange-100 border border-orange-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -397,7 +407,7 @@
 
                     <!-- Ban Dikirim Ke Batam -->
                     @php
-                        $banDikirim = $stockBans->where('status', 'Dikirim Ke Batam')->count();
+                        $banDikirim = $stockBanMobils->where('status', 'Dikirim Ke Batam')->count();
                     @endphp
                     <div id="card-dikirim" onclick="setCardFilter('dikirim', false)" class="cursor-pointer bg-gradient-to-br from-cyan-50 to-cyan-100 border border-cyan-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -410,7 +420,7 @@
 
                     <!-- Ban Dikirim Ke Tanjung Pinang -->
                     @php
-                        $banDikirimTP = $stockBans->where('status', 'Dikirim Ke Tanjung Pinang')->count();
+                        $banDikirimTP = $stockBanMobils->where('status', 'Dikirim Ke Tanjung Pinang')->count();
                     @endphp
                     <div id="card-dikirim-tp" onclick="setCardFilter('dikirim-tp', false)" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -423,7 +433,7 @@
                     
                     <!-- Ban Asli -->
                     @php
-                        $banAsli = $stockBans->where('kondisi', 'asli')->count();
+                        $banAsli = $stockBanMobils->where('kondisi', 'asli')->count();
                     @endphp
                     <div id="card-asli" onclick="setCardFilter('asli', false)" class="cursor-pointer bg-gradient-to-br from-emerald-50 to-emerald-100 border border-emerald-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -436,7 +446,7 @@
                     
                     <!-- Ban Kanisir -->
                     @php
-                        $banKanisir = $stockBans->where('kondisi', 'kanisir')->where('status', 'Stok')
+                        $banKanisir = $stockBanMobils->where('kondisi', 'kanisir')->where('status', 'Stok')
                             ->filter(fn ($ban) => stripos($ban->lokasi ?? '', 'Ruko 10') !== false)->count();
                     @endphp
                     <div id="card-kanisir" onclick="setCardFilter('kanisir', false)" class="cursor-pointer bg-gradient-to-br from-yellow-50 to-yellow-100 border border-yellow-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
@@ -450,7 +460,7 @@
                     
                     <!-- Ban Afkir -->
                     @php
-                        $banAfkir = $stockBans->where('kondisi', 'afkir')->whereIn('status', ['Stok', 'Rusak'])->count();
+                        $banAfkir = $stockBanMobils->where('kondisi', 'afkir')->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-afkir" onclick="setCardFilter('afkir', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -463,7 +473,7 @@
 
                     <!-- Ban Dikembalikan -->
                     @php
-                        $banDikembalikan = $stockBans->where('status', 'Dikembalikan')->count();
+                        $banDikembalikan = $stockBanMobils->where('status', 'Dikembalikan')->count();
                     @endphp
                     <div id="card-dikembalikan" onclick="setCardFilter('dikembalikan', false)" class="cursor-pointer bg-gradient-to-br from-rose-50 to-rose-100 border border-rose-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -476,7 +486,7 @@
 
                     <!-- Garasi Pluit -->
                     @php
-                        $garasiPluit = $stockBans->filter(function($ban) {
+                        $garasiPluit = $stockBanMobils->filter(function($ban) {
                             return stripos($ban->lokasi, 'Garasi Pluit') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
@@ -491,7 +501,7 @@
 
                     <!-- Ruko 10 -->
                     @php
-                        $ruko10 = $stockBans->filter(function($ban) {
+                        $ruko10 = $stockBanMobils->filter(function($ban) {
                             return stripos($ban->lokasi, 'Ruko 10') !== false && $ban->status === 'Stok';
                         })->count();
                     @endphp
@@ -506,7 +516,7 @@
 
                     <!-- Ban Asli Stok -->
                     @php
-                        $banAsliStok = $stockBans->where('kondisi', 'asli')->where('status', 'Stok')->count();
+                        $banAsliStok = $stockBanMobils->where('kondisi', 'asli')->where('status', 'Stok')->count();
                     @endphp
                     <div id="card-asli-stok" onclick="setCardFilter('asli-stok', false)" class="cursor-pointer bg-gradient-to-br from-teal-50 to-teal-100 border border-teal-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -519,7 +529,7 @@
 
                     <!-- Ban Dijual -->
                     @php
-                        $banDijual = $stockBans->where('status', 'Dijual')->count();
+                        $banDijual = $stockBanMobils->where('status', 'Dijual')->count();
                     @endphp
                     <div id="card-dijual" onclick="setCardFilter('dijual', false)" class="cursor-pointer bg-gradient-to-br from-amber-50 to-amber-100 border border-amber-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -531,7 +541,7 @@
                     </div>
 
                     @php
-                        $rusakStok = $stockBans->where('kondisi', 'rusak')->whereIn('status', ['Stok', 'Rusak'])->count();
+                        $rusakStok = $stockBanMobils->where('kondisi', 'rusak')->whereIn('status', ['Stok', 'Rusak'])->count();
                     @endphp
                     <div id="card-rusak-stok" onclick="setCardFilter('rusak-stok', false)" class="cursor-pointer bg-gradient-to-br from-red-50 to-red-100 border border-red-200 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -545,7 +555,7 @@
 
                     <!-- Ban Hilang -->
                     @php
-                        $banHilang = $stockBans->where('status', 'Hilang')->count();
+                        $banHilang = $stockBanMobils->where('status', 'Hilang')->count();
                     @endphp
                     <div id="card-hilang" onclick="setCardFilter('hilang', false)" class="cursor-pointer bg-gradient-to-br from-gray-50 to-gray-200 border border-gray-300 rounded-lg p-4 shadow-sm hover:shadow-md transition card-filter">
                         <div class="flex items-center justify-between mb-2">
@@ -592,7 +602,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($stockBans as $ban)
-                            <tr class="hover:bg-gray-50">
+                            <tr class="hover:bg-gray-50" data-valmet="{{ $stockBanValmets->contains('id', $ban->id) ? '1' : '0' }}">
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($ban->status == 'Stok' && $ban->kondisi != 'afkir')
                                     <input type="checkbox" name="ids[]" value="{{ $ban->id }}" 
@@ -842,6 +852,7 @@
                 <div class="md:hidden space-y-4">
                     @forelse($stockBans as $ban)
                     <div class="mobile-card bg-white rounded-xl border border-gray-100 shadow-sm p-4 overflow-hidden" 
+                         data-valmet="{{ $stockBanValmets->contains('id', $ban->id) ? '1' : '0' }}"
                          data-status="{{ strtolower($ban->status) }}" 
                          data-kondisi="{{ strtolower($ban->kondisi) }}"
                          data-lokasi="{{ strtolower($ban->lokasi ?? '') }}">
@@ -2999,7 +3010,7 @@
             card.classList.remove('active-filter', 'ring-2');
             
             // Remove specific color rings
-            card.classList.remove('ring-blue-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400', 'ring-amber-400');
+            card.classList.remove('ring-blue-400', 'ring-slate-400', 'ring-green-400', 'ring-purple-400', 'ring-emerald-400', 'ring-yellow-400', 'ring-red-400', 'ring-indigo-400', 'ring-orange-400', 'ring-teal-400', 'ring-cyan-400', 'ring-rose-400', 'ring-amber-400');
         });
 
         const cardId = isBatam ? 'card-batam-' + filterType : 'card-' + filterType;
@@ -3010,6 +3021,7 @@
             // Add specific color ring based on type
             const colorMap = {
                 'total': 'ring-blue-400',
+                'valmet': 'ring-slate-400',
                 'stok': 'ring-green-400',
                 'terpakai': 'ring-purple-400',
                 'sedang-dimasak': 'ring-orange-400',
@@ -3368,6 +3380,11 @@
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
                 }
 
+                if (activeTab.id === 'tab-ban-luar') {
+                    const isValmet = row.getAttribute('data-valmet') === '1';
+                    filterMatch = filterMatch && (currentCardFilter === 'valmet' ? isValmet : !isValmet);
+                }
+
                 if ((textMatch || searchTerm === '') && filterMatch) {
                     row.style.display = '';
                     const numberCell = row.querySelector('.row-number');
@@ -3415,6 +3432,11 @@
                     else if (currentCardFilter === 'dijual') filterMatch = status === 'dijual';
                     else if (currentCardFilter === 'rusak-stok') filterMatch = kondisi === 'rusak' && (status === 'stok' || status === 'rusak');
                     else if (currentCardFilter === 'hilang') filterMatch = status === 'hilang';
+                }
+
+                if (activeTab.id === 'tab-ban-luar') {
+                    const isValmet = card.getAttribute('data-valmet') === '1';
+                    filterMatch = filterMatch && (currentCardFilter === 'valmet' ? isValmet : !isValmet);
                 }
 
                 if ((textMatch || searchTerm === '') && filterMatch) {
@@ -3478,6 +3500,7 @@
         
         // Expose performSearch to external calls (if needed)
         window.performSearch = performSearch;
+        performSearch();
     })();
 
     // Masak Return Functions
