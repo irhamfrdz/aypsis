@@ -59,19 +59,23 @@ class MasterRumusBpjsTipeTest extends TestCase
                 'jenis' => ['jkn'],
                 'group_name' => ['JKN-KIS-TUNAI, JKN-KIS-KANTOR'],
                 'tipe' => ['Karyawan'],
+                'nominal_dpp' => ['5000000.50'],
             ]));
 
             $records = MasterRumusBpjs::all();
             $this->assertCount(2, $records);
             $this->assertSame(['Karyawan', 'Karyawan'], $records->pluck('tipe')->all());
+            $this->assertSame(['5000000.50', '5000000.50'], $records->pluck('nominal_dpp')->all());
 
             $controller->update(Request::create('/', 'PUT', [
                 'group_name' => 'JKN-KIS-TUNAI, JKN-KIS-KANTOR',
                 'existing_ids' => $records->pluck('id')->implode(','),
                 'tipe' => 'Non Karyawan',
+                'nominal_dpp' => '6000000',
             ]), $records->first()->id);
 
             $this->assertSame(['Non Karyawan', 'Non Karyawan'], MasterRumusBpjs::pluck('tipe')->all());
+            $this->assertSame(['6000000.00', '6000000.00'], MasterRumusBpjs::pluck('nominal_dpp')->all());
         });
     }
 

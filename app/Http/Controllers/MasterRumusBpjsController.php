@@ -16,7 +16,7 @@ class MasterRumusBpjsController extends Controller
         $this->middleware('auth');
         $this->middleware('permission:master-rumus-bpjs-view')->only(['index']);
         $this->middleware('permission:master-rumus-bpjs-create')->only(['store']);
-        $this->middleware('permission:master-rumus-bpjs-update')->only(['update', 'discountEmployees', 'saveDiscountExclusions']);
+        $this->middleware('permission:master-rumus-bpjs-update')->only(['update', 'bulkUpdate', 'discountEmployees', 'saveDiscountExclusions']);
         $this->middleware('permission:master-rumus-bpjs-delete')->only(['destroy']);
     }
 
@@ -24,8 +24,132 @@ class MasterRumusBpjsController extends Controller
     {
         $rumusJkn = MasterRumusBpjs::where('jenis', 'jkn')->get();
         $rumusJamsostek = MasterRumusBpjs::where('jenis', 'jamsostek')->get();
+        $bulkValues = [];
+        foreach (['dpp_jkn', 'dpp_bp_jamsostek'] as $field) {
+            $values = collect();
+            foreach ([Karyawan::class, KaryawanTidakTetap::class] as $model) {
+                $values = $values->concat($model::query()->whereNotNull($field)->distinct()->pluck($field));
+            }
+            $formulaValues = $field === 'dpp_jkn'
+                ? $rumusJkn->pluck('nominal_dpp')
+                : $rumusJamsostek->flatMap(fn ($rumus) => collect($rumus->hutang_tiers ?? [])->pluck('dpp'));
+            $bulkValues[$field] = $this->bulkValueOptions($values->concat($formulaValues));
+        }
+        foreach (['jp_max_age', 'jp_max_dpp'] as $field) {
+            $bulkValues[$field] = $this->bulkValueOptions($rumusJamsostek->pluck($field), $field === 'jp_max_age');
+        }
 
-        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek'));
+        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'bulkValues'));
+    }
+
+    private function bulkValueOptions($values, bool $age = false): array
+    {
+        return $values->map(fn ($value) => $this->normalizeBulkValue($value))
+            ->filter(fn ($value) => $value !== null && (float) $value >= 0
+                && (float) $value <= ($age ? 150 : 9999999999999.99)
+                && (! $age || floor((float) $value) === (float) $value))
+            ->unique()->sort(fn ($a, $b) => (float) $a <=> (float) $b)
+            ->map(fn ($value) => [
+                'value' => $age ? (string) (int) $value : $value,
+                'label' => $age ? ((int) $value).' tahun' : 'Rp '.number_format((float) $value, 2, ',', '.'),
+            ])->values()->all();
+    }
+
+    public function bulkUpdate(Request $request)
+    {
+        $data = $request->validate([
+            'field' => 'required|in:dpp_jkn,dpp_bp_jamsostek,jp_max_age,jp_max_dpp',
+            'old_value' => 'required|numeric|min:0|max:9999999999999.99',
+            'new_value' => 'required|numeric|min:0|max:9999999999999.99',
+        ]);
+        $field = $data['field'];
+        if ($field === 'jp_max_age') {
+            $request->validate([
+                'old_value' => 'integer|max:150',
+                'new_value' => 'integer|max:150',
+            ]);
+        } else {
+            $request->validate([
+                'old_value' => 'decimal:0,2',
+                'new_value' => 'decimal:0,2',
+            ]);
+        }
+
+        $old = number_format((float) $data['old_value'], 2, '.', '');
+        $new = number_format((float) $data['new_value'], 2, '.', '');
+        if ($old === $new) {
+            throw ValidationException::withMessages(['new_value' => 'Nilai baru harus berbeda dari nilai lama.']);
+        }
+
+        $models = in_array($field, ['dpp_jkn', 'dpp_bp_jamsostek'], true)
+            ? [Karyawan::class => 'karyawan', KaryawanTidakTetap::class => 'karyawan tidak tetap', MasterRumusBpjs::class => 'rumus BPJS']
+            : [MasterRumusBpjs::class => 'rumus BPJS'];
+
+        $counts = DB::transaction(function () use ($models, $field, $old, $new) {
+            $counts = [];
+            foreach ($models as $model => $label) {
+                $counts[$label] = 0;
+                $targetField = $model === MasterRumusBpjs::class
+                    ? match ($field) {
+                        'dpp_jkn' => 'nominal_dpp',
+                        'dpp_bp_jamsostek' => 'hutang_tiers',
+                        default => $field,
+                    } : $field;
+                $query = $model::query()->whereNotNull($targetField);
+                if ($model === MasterRumusBpjs::class) {
+                    $query->where('jenis', $field === 'dpp_jkn' ? 'jkn' : 'jamsostek');
+                }
+                $query->lockForUpdate()->chunkById(200, function ($records) use (&$counts, $label, $field, $targetField, $old, $new) {
+                    foreach ($records as $record) {
+                        if ($targetField === 'hutang_tiers') {
+                            $tiers = $record->hutang_tiers;
+                            if (! is_array($tiers)) {
+                                continue;
+                            }
+                            $changed = false;
+                            foreach ($tiers as &$tier) {
+                                if (is_array($tier) && isset($tier['dpp']) && $this->normalizeBulkValue($tier['dpp']) === $old) {
+                                    $tier['dpp'] = (float) $new;
+                                    $changed = true;
+                                }
+                            }
+                            unset($tier);
+                            if (! $changed) {
+                                continue;
+                            }
+                            $record->hutang_tiers = $tiers;
+                        } else {
+                            if ($this->normalizeBulkValue($record->getRawOriginal($targetField)) !== $old) {
+                                continue;
+                            }
+                            $record->{$targetField} = $field === 'jp_max_age' ? (int) $new : $new;
+                        }
+                        $record->save();
+                        $counts[$label]++;
+                    }
+                });
+            }
+
+            return $counts;
+        });
+
+        $summary = collect($counts)->map(fn ($count, $label) => "$count $label")->implode(', ');
+
+        return redirect()->route('master-rumus-bpjs.index')
+            ->with('success', 'Perubahan massal selesai: '.$summary.' diperbarui.');
+    }
+
+    private function normalizeBulkValue($value): ?string
+    {
+        $value = preg_replace('/\s+/', '', (string) $value);
+        $value = preg_replace('/^Rp\.?/i', '', $value);
+        // Employee DPP columns can contain Indonesian currency formatting.
+        if (preg_match('/^\d{1,3}(\.\d{3})+(,\d{1,2})?$/', $value)) {
+            $value = str_replace('.', '', $value);
+        }
+        $value = str_replace(',', '.', $value);
+
+        return is_numeric($value) ? number_format((float) $value, 2, '.', '') : null;
     }
 
     private function discountRecords(Request $request, $id)
@@ -131,6 +255,8 @@ class MasterRumusBpjsController extends Controller
         $request->validate([
             'jenis' => 'required|array',
             'jenis.*' => 'required|in:jkn,jamsostek',
+            'nominal_dpp' => 'nullable|array',
+            'nominal_dpp.*' => 'nullable|numeric|min:0|max:9999999999999.99',
             'group_name' => 'required|array',
             'tipe' => 'required|array',
             'tipe.*' => 'required|string|max:255',
@@ -196,6 +322,7 @@ class MasterRumusBpjsController extends Controller
                 foreach ($groupNames as $gName) {
                     MasterRumusBpjs::create([
                         'jenis' => $jenis,
+                        'nominal_dpp' => $jenis === 'jkn' ? ($request->nominal_dpp[$key] ?? null) : null,
                         'group_name' => $gName,
                         'tipe' => $request->tipe[$key],
                         'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
@@ -233,6 +360,7 @@ class MasterRumusBpjsController extends Controller
             'cabang_bpjs' => 'nullable|string|max:255',
             'tipe_rumus' => 'nullable|in:nominal,persentase',
             'nilai' => 'nullable|numeric|min:0',
+            'nominal_dpp' => 'nullable|numeric|min:0|max:9999999999999.99',
             'tunjangan_persen' => 'nullable|numeric|min:0',
             'hutang_persen' => 'nullable|numeric|min:0',
             'hutang_tiers' => 'nullable|string',
@@ -254,6 +382,9 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
 
         $dataToUpdate = [];
+        if ($request->has('nominal_dpp')) {
+            $dataToUpdate['nominal_dpp'] = $request->nominal_dpp;
+        }
         if ($request->has('tipe')) {
             $dataToUpdate['tipe'] = $request->tipe;
         }

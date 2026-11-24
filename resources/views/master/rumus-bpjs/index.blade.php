@@ -12,6 +12,13 @@
             <h1 class="text-2xl font-bold text-gray-900">Master Rumus BPJS</h1>
             <p class="text-sm text-gray-500 mt-0.5">Kelola rumus perhitungan iuran BPJS per group</p>
         </div>
+        <div class="flex flex-wrap items-center gap-2">
+        @can('master-rumus-bpjs-update')
+        <button type="button" onclick="document.getElementById('bulk-update-panel').classList.toggle('hidden')"
+                class="inline-flex items-center gap-2 bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 px-5 rounded-lg text-sm">
+            <i class="fas fa-pen-to-square"></i> Ubah Massal Data BPJS
+        </button>
+        @endcan
         <button type="button" onclick="openModal()"
                 class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2.5 px-5 rounded-lg shadow-sm transition duration-200 text-sm">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -19,7 +26,65 @@
             </svg>
             Tambah Rumus
         </button>
+        </div>
     </div>
+
+    @can('master-rumus-bpjs-update')
+    <div id="bulk-update-panel" class="{{ old('field') ? '' : 'hidden' }} bg-white rounded-xl border border-amber-200 p-6 space-y-4">
+        <h3 class="font-semibold text-gray-800">Ubah Massal Data BPJS</h3>
+        <p class="text-sm text-gray-600">DPP diperbarui pada karyawan, karyawan tidak tetap, dan master rumus dengan nilai lama yang sama. DPP JKN memperbarui Nominal DPP rumus JKN; DPP BP Jamsostek memperbarui DPP pada tabel hutang rumus Jamsostek. Batas usia dan maksimal DPP JP diperbarui pada master rumus BP Jamsostek. Data dengan nilai lain tetap.</p>
+        <form method="POST" action="{{ route('master-rumus-bpjs.bulk-update') }}" class="space-y-4"
+              onsubmit="return confirm('Terapkan perubahan massal ' + this.elements.field.options[this.elements.field.selectedIndex].text + ' dari ' + this.elements.old_value.value + ' menjadi ' + this.elements.new_value.value + '? Semua data dengan nilai lama yang sama akan diperbarui.');">
+            @csrf
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="bulk_field" class="block text-sm font-medium mb-1">Data yang diubah</label>
+                    <select id="bulk_field" name="field" required class="w-full rounded-lg border-gray-300"
+                            onchange="refreshBulkOldValues()">
+                        <option value="dpp_jkn">Nominal DPP JKN (Rp) — Karyawan &amp; Rumus</option>
+                        <option value="dpp_bp_jamsostek">Nominal DPP BP Jamsostek (Rp) — Karyawan &amp; Rumus</option>
+                        <option value="jp_max_age">Batas Usia JP (Thn) — Rumus BPJS</option>
+                        <option value="jp_max_dpp">Maksimal DPP JP (Rp) — Rumus BPJS</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="bulk_old_value" class="block text-sm font-medium mb-1">Nilai saat ini</label>
+                    <select id="bulk_old_value" name="old_value" required class="w-full rounded-lg border-gray-300"></select>
+                    <p class="text-xs text-gray-500 mt-1">Diambil otomatis dari data karyawan dan rumus. Pilih nilai yang ingin diganti.</p>
+                </div>
+                <div>
+                    <label for="bulk_new_value" class="block text-sm font-medium mb-1">Nilai baru</label>
+                    <input id="bulk_new_value" name="new_value" type="number" required min="0" max="9999999999999.99" step="0.01" placeholder="Contoh: 3000000" value="{{ old('new_value') }}" class="w-full rounded-lg border-gray-300">
+                </div>
+            </div>
+            <p class="text-xs text-gray-500">Isi nilai baru tanpa pemisah ribuan, misalnya 3000000 untuk Rp 3.000.000.</p>
+            <button id="bulk_submit" type="submit" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg text-sm">Terapkan Perubahan Massal</button>
+        </form>
+    </div>
+    <script>
+        const bulkValueOptions = @json($bulkValues);
+        function refreshBulkOldValues(selectedValue = '') {
+            const field = document.getElementById('bulk_field').value;
+            const select = document.getElementById('bulk_old_value');
+            const options = bulkValueOptions[field] || [];
+            select.replaceChildren();
+            if (options.length !== 1) {
+                select.add(new Option(options.length ? 'Pilih nilai saat ini' : 'Belum ada nilai tersedia', ''));
+            }
+            options.forEach(option => select.add(new Option(option.label, option.value)));
+            if (selectedValue !== '' && options.some(option => option.value === selectedValue)) {
+                select.value = selectedValue;
+            }
+            select.disabled = options.length === 0;
+            document.getElementById('bulk_submit').disabled = options.length === 0;
+            const input = document.getElementById('bulk_new_value');
+            input.step = field === 'jp_max_age' ? '1' : '0.01';
+            input.max = field === 'jp_max_age' ? '150' : '9999999999999.99';
+        }
+        document.getElementById('bulk_field').value = @json(old('field', 'dpp_jkn'));
+        refreshBulkOldValues(@json(old('old_value', '')));
+    </script>
+    @endcan
 
     @if(session('success'))
         <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-lg" role="alert">
@@ -636,6 +701,11 @@
 
                         {{-- JKN Fields (hanya muncul saat jenis = jkn) --}}
                         <div class="jkn-fields">
+                            <div class="mb-4">
+                                <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nominal DPP (Rp)</label>
+                                <input type="number" name="nominal_dpp[]" step="0.01" min="0" max="9999999999999.99" placeholder="0"
+                                       class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm text-right font-mono">
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tunjangan (%)</label>
@@ -920,6 +990,11 @@
 
                     {{-- JKN Fields Edit (hanya muncul saat jenis = jkn) --}}
                     <div id="edit_jkn_fields">
+                        <div class="mb-4">
+                            <label for="edit_nominal_dpp" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Nominal DPP (Rp)</label>
+                            <input type="number" id="edit_nominal_dpp" name="nominal_dpp" step="0.01" min="0" max="9999999999999.99" placeholder="0"
+                                   class="form-input w-full border-gray-300 rounded-lg shadow-sm text-sm text-right font-mono">
+                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="edit_tunjangan_persen_jkn" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tunjangan (%)</label>
@@ -1198,6 +1273,7 @@
         firstRow.querySelector('input[name="tipe[]"]').value = '';
         firstRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         firstRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
+        firstRow.querySelector('input[name="nominal_dpp[]"]').value = '';
         firstRow.querySelector('input[name="biaya_persen[]"]').value = '';
         firstRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
         firstRow.querySelector('input[name="jht_biaya[]"]').value = '';
@@ -1256,6 +1332,7 @@
         newRow.querySelector('input[name="tipe[]"]').value = '';
         newRow.querySelector('input[name="cabang_bpjs[]"]').value = '';
         newRow.querySelector('input[name="tunjangan_persen[]"]').value = '';
+        newRow.querySelector('input[name="nominal_dpp[]"]').value = '';
         newRow.querySelector('input[name="biaya_persen[]"]').value = '';
         newRow.querySelector('textarea[name="keterangan_custom[]"]').value = '';
         newRow.querySelector('input[name="jht_biaya[]"]').value = '';
@@ -1361,6 +1438,7 @@
 
         // Populate JKN fields
         document.getElementById('edit_tunjangan_persen_jkn').value = data.tunjangan_persen || '';
+        document.getElementById('edit_nominal_dpp').value = data.nominal_dpp ?? '';
         document.getElementById('edit_hutang_persen_jkn').value   = data.hutang_persen || '';
         document.getElementById('edit_biaya_persen_jkn').value    = data.biaya_persen || '';
 

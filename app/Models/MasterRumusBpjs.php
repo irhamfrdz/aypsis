@@ -20,6 +20,7 @@ class MasterRumusBpjs extends Model
         'cabang_bpjs',
         'tipe_rumus',
         'nilai',
+        'nominal_dpp',
         'tunjangan_persen',
         'hutang_persen',
         'hutang_tiers',
@@ -42,6 +43,7 @@ class MasterRumusBpjs extends Model
     ];
 
     protected $casts = [
+        'nominal_dpp' => 'decimal:2',
         'diskon_pengecualian' => 'array',
         'hutang_tiers' => 'array',
         'jp_max_dpp' => 'decimal:2',
