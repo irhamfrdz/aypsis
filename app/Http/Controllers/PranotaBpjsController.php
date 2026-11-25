@@ -101,7 +101,7 @@ class PranotaBpjsController extends Controller
         $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
             ->get([
-                'id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn',
+                'id', 'nik', 'nama_lengkap', 'created_at', 'ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
                 'cabang_bpjs', 'tanggal_lahir', 'penempatan', 'cabang', 'posisi', 'divisi', 'grup', 'is_special_case', 'tanggal_berhenti',
             ])
@@ -120,7 +120,7 @@ class PranotaBpjsController extends Controller
         $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
             ->get([
-                'id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
+                'id', 'nik', 'nama_lengkap', 'created_at', 'nik_ktp', 'no_ketenagakerjaan', 'jkn',
                 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek',
                 'cabang_bpjs', 'penempatan', 'cabang', 'divisi', 'pekerjaan', 'group', 'is_special_case', 'tanggal_berhenti',
             ])
@@ -350,7 +350,7 @@ class PranotaBpjsController extends Controller
 
         $karyawanTetap = Karyawan::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'grup', 'posisi', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti', 'tanggal_lahir'])
+            ->get(['id', 'nik', 'nama_lengkap', 'created_at', 'ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'grup', 'posisi', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti', 'tanggal_lahir'])
             ->map(function ($k) {
                 $k->unique_id = 'Karyawan_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\Karyawan';
@@ -366,7 +366,7 @@ class PranotaBpjsController extends Controller
 
         $karyawanTidakTetap = KaryawanTidakTetap::where(fn ($query) => $query->whereNull('tanggal_berhenti')->orWhere('is_special_case', true))
             ->orderBy('nama_lengkap')
-            ->get(['id', 'nik', 'nama_lengkap', 'nik_ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'group', 'pekerjaan', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti'])
+            ->get(['id', 'nik', 'nama_lengkap', 'created_at', 'nik_ktp', 'no_ketenagakerjaan', 'jkn', 'cabang', 'penempatan', 'group', 'pekerjaan', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'dpp_jkn', 'dpp_bp_jamsostek', 'cabang_bpjs', 'is_special_case', 'tanggal_berhenti'])
             ->map(function ($k) {
                 $k->unique_id = 'KaryawanTidakTetap_'.$k->id;
                 $k->tipe_karyawan = 'App\\Models\\KaryawanTidakTetap';

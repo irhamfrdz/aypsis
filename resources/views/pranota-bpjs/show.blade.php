@@ -198,6 +198,9 @@
                                 <td class="border border-gray-200 p-3 text-center">{{ $index + 1 }}</td>
                                 <td class="border border-gray-200 p-3" style="min-width:220px">
                                     <span class="font-semibold">{{ $detail->karyawan_pranota->nama_lengkap ?? '-' }}</span>
+                                    @if($employee?->created_at && (int) $employee->created_at->format('n') === (int) $pranota_bpj->periode_bulan && (int) $employee->created_at->format('Y') === (int) $pranota_bpj->periode_tahun)
+                                        <span class="bpjs-new-badge" title="Data karyawan baru dibuat pada periode pranota ini">NEW</span>
+                                    @endif
                                     @if($detail->karyawan_pranota?->tanggal_berhenti)<span class="ml-1 rounded bg-red-100 px-2 py-1 text-red-800">Sudah Berhenti</span>@endif
                                     @if($detail->tipe_karyawan === 'App\Models\KaryawanTidakTetap')<span class="ml-1 rounded bg-amber-100 px-2 py-1 text-amber-800">Tidak Tetap</span>@endif
                                     <div class="mt-1 text-gray-500">NIK: {{ $detail->karyawan_pranota?->nik ?? '-' }}</div>

@@ -14,7 +14,7 @@
 
 @section('content')
 @include('pranota-bpjs.partials.ui-styles')
-<div class="bpjs-workspace px-4 sm:px-6 lg:px-8 py-6 w-full max-w-[96rem] mx-auto space-y-6">
+<div class="bpjs-workspace bpjs-form-workspace px-4 sm:px-6 lg:px-8 py-6 w-full max-w-[96rem] mx-auto space-y-6">
 
     {{-- ── Page Header ──────────────────────────────────────────────────────── --}}
     <div class="bpjs-page-header flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
@@ -200,7 +200,9 @@
                         <p class="text-[11px] text-gray-500">Tabel perhitungan rinci iuran JKN, Jamsostek PPU & BPU</p>
                     </div>
                 </div>
-                <div class="flex items-center gap-2">
+                <details class="bpjs-extra-actions">
+                    <summary>Opsi lainnya</summary>
+                    <div class="flex items-center gap-2">
                     <button type="button" id="btn-refresh-bpjs" title="Ambil data BPJS terbaru, hitung ulang tabel, dan tambahkan karyawan baru"
                         class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 text-xs font-semibold rounded-lg transition-all">
                         <i class="fas fa-sync-alt text-xs" aria-hidden="true"></i>
@@ -216,9 +218,30 @@
                         <i class="fas fa-plus text-xs"></i>
                         Tambah Baris
                     </button>
-                </div>
+                    </div>
+                </details>
             </div>
 
+            <div id="bpjs-employee-picker" class="px-6 py-4 border-b border-gray-200 space-y-3">
+                <p class="bpjs-picker-title text-sm font-semibold text-gray-800">Pilih karyawan</p>
+                <p class="text-xs text-gray-500">Pilih Group BPJS, centang karyawan, lalu tambahkan ke rincian sebelum menyimpan pranota.</p>
+                <div class="bpjs-picker-fields">
+                <div>
+                <label for="employee-picker-group" class="text-xs font-semibold text-gray-700">Group BPJS</label>
+                <select id="employee-picker-group" class="block w-full sm:w-80 rounded-lg border-gray-300 text-sm">
+                    <option value="">-- Pilih Group BPJS --</option>
+                </select>
+                </div>
+                <div>
+                <label for="employee-picker-search" class="text-xs font-semibold text-gray-700">Cari karyawan</label>
+                <input id="employee-picker-search" type="search" placeholder="Cari nama / NIK dalam Group" aria-label="Cari karyawan dalam Group" class="block w-full sm:w-80 rounded-lg border-gray-300 text-sm">
+                </div>
+                </div>
+                <label class="flex items-center gap-2 text-xs"><input id="employee-picker-all" type="checkbox"> Pilih semua yang ditampilkan</label>
+                <div id="employee-picker-list" class="max-h-64 overflow-auto space-y-2" aria-label="Daftar karyawan dalam Group"></div>
+                <p id="employee-picker-status" role="status" aria-live="polite" class="text-xs text-gray-600"></p>
+                <button id="employee-picker-add" type="button" disabled class="px-4 py-2 bg-indigo-600 text-white text-xs font-semibold rounded-lg disabled:opacity-50">Tambahkan Karyawan Terpilih</button>
+            </div>
             <p id="bpjs-refresh-status" hidden role="status" aria-live="polite" class="px-6 py-2 text-xs text-gray-600"></p>
             {{-- ── Filter & Search Bar ───────────────────────────────────────── --}}
             <div class="px-6 py-3 bg-slate-50/80 border-b border-gray-200 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
@@ -458,6 +481,7 @@
 <script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-new-employee.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-new-employee.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-saved.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-saved.js')) }}"></script>
@@ -1416,6 +1440,103 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     btnAdd.addEventListener('click', () => addRow(null));
+
+    const picker = document.getElementById('bpjs-employee-picker');
+    const pickerGroup = document.getElementById('employee-picker-group');
+    const pickerSearch = document.getElementById('employee-picker-search');
+    const pickerList = document.getElementById('employee-picker-list');
+    const pickerAll = document.getElementById('employee-picker-all');
+    const pickerAdd = document.getElementById('employee-picker-add');
+    const pickerStatus = document.getElementById('employee-picker-status');
+    const pickedEmployees = new Set();
+
+    function pickerCandidates() {
+        const existing = new Set(Array.from(container.querySelectorAll('tr.detail-row')).map(row => row.dataset.uniqueId));
+        return pickerGroup.value ? karyawans.filter(employee =>
+            !existing.has(employee.unique_id)
+            && BpjsMasterFilters.matches(employee, rumusBpjs, pickerGroup.value)) : [];
+    }
+
+    function renderEmployeePicker() {
+        updateNewEmployeeBadges();
+        const group = pickerGroup.value;
+        pickerGroup.replaceChildren(new Option('-- Pilih Group BPJS --', ''));
+        BpjsMasterFilters.options(rumusBpjs, 'group_name').forEach(value => pickerGroup.add(new Option(value, value)));
+        pickerGroup.value = group;
+        const candidates = pickerCandidates();
+        const allowed = new Set(candidates.map(employee => employee.unique_id));
+        pickedEmployees.forEach(id => { if (!allowed.has(id)) pickedEmployees.delete(id); });
+        const search = pickerSearch.value.trim().toLocaleLowerCase('id');
+        const visible = candidates.filter(employee => `${employee.nama_lengkap} ${employee.nik || ''}`.toLocaleLowerCase('id').includes(search));
+        pickerList.replaceChildren();
+        visible.forEach(employee => {
+            const label = document.createElement('label');
+            label.className = 'flex items-center gap-2 text-sm text-gray-700';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = pickedEmployees.has(employee.unique_id);
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) pickedEmployees.add(employee.unique_id);
+                else pickedEmployees.delete(employee.unique_id);
+                renderEmployeePicker();
+            });
+            label.append(checkbox, document.createTextNode(`${employee.nama_lengkap} — ${employee.nik || '-'} (${employee.tipe_label})`));
+            if (isNewEmployee(employee)) label.append(BpjsNewEmployee.badge());
+            pickerList.append(label);
+        });
+        pickerAll.disabled = !visible.length;
+        pickerAll.checked = visible.length > 0 && visible.every(employee => pickedEmployees.has(employee.unique_id));
+        pickerAll.indeterminate = !pickerAll.checked && visible.some(employee => pickedEmployees.has(employee.unique_id));
+        pickerAll.onchange = () => {
+            visible.forEach(employee => {
+                if (pickerAll.checked) pickedEmployees.add(employee.unique_id);
+                else pickedEmployees.delete(employee.unique_id);
+            });
+            renderEmployeePicker();
+        };
+        pickerAdd.disabled = !pickedEmployees.size;
+        pickerStatus.textContent = !pickerGroup.value ? 'Pilih Group BPJS terlebih dahulu.'
+            : `${visible.length} karyawan tersedia, ${pickedEmployees.size} dipilih. Karyawan yang sudah ada dalam rincian tidak ditampilkan.`;
+    }
+
+    pickerGroup.addEventListener('change', () => { pickedEmployees.clear(); renderEmployeePicker(); });
+    function isNewEmployee(employee) {
+        return BpjsNewEmployee.matches(employee, document.getElementById('periode_bulan').value, document.getElementById('periode_tahun').value);
+    }
+
+    function updateNewEmployeeBadges() {
+        container.querySelectorAll('tr.detail-row').forEach(row => {
+            row.querySelectorAll('.bpjs-new-badge').forEach(badge => badge.remove());
+            const employee = karyawans.find(employee => employee.unique_id === row.dataset.uniqueId);
+            if (!isNewEmployee(employee)) return;
+            const target = row.querySelector('.employee-name')?.parentElement || row.querySelector('.nik-display');
+            target?.append(BpjsNewEmployee.badge());
+        });
+    }
+    ['periode_bulan', 'periode_tahun'].forEach(id => document.getElementById(id).addEventListener('change', renderEmployeePicker));
+    container.addEventListener('change', () => queueMicrotask(updateNewEmployeeBadges));
+    pickerSearch.addEventListener('input', renderEmployeePicker);
+    pickerAdd.addEventListener('click', async () => {
+        if (isGenerating || isRefreshing) return;
+        const employees = pickerCandidates().filter(employee => pickedEmployees.has(employee.unique_id));
+        if (!employees.length) return;
+        isGenerating = true;
+        picker.inert = true;
+        container.inert = true;
+        try {
+            await processBpjsBatch(employees, employee => addRow(employee.unique_id, true));
+            pickedEmployees.clear();
+            resetAllFilters();
+        } finally {
+            isGenerating = false;
+            picker.inert = false;
+            container.inert = false;
+            applyFilter();
+            renderEmployeePicker();
+        }
+    });
+    new MutationObserver(renderEmployeePicker).observe(container, { childList: true });
+    renderEmployeePicker();
 
     // Bersihkan format angka Indonesia sebelum submit
     document.getElementById('pranota-form').addEventListener('submit', function(event) {
