@@ -34,7 +34,7 @@ class PranotaObMuatTemasTest extends TestCase
             $table->string('nomor_kontainer');
             $table->string('nama_kapal');
             $table->string('no_voyage');
-            $table->string('ke');
+            $table->string('ke')->nullable();
             $table->boolean('sudah_ob');
         });
         Schema::create('tagihan_ob', function (Blueprint $table) {
@@ -98,6 +98,109 @@ class PranotaObMuatTemasTest extends TestCase
             'keterangan' => 'OB Muat Temas - TEMAS JKT - Pricelist #1',
             'created_at' => now(), 'updated_at' => now(),
         ]);
+    }
+
+    private function prepareCancellation(): void
+    {
+        auth()->user()->setRelation('permissions', collect([
+            new \App\Models\Permission(['name' => 'ob-view']),
+        ]));
+        Schema::create('audit_logs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('auditable_id');
+            foreach (['user_name', 'auditable_type', 'action', 'module', 'description', 'old_values', 'new_values', 'ip_address', 'user_agent', 'url'] as $column) {
+                $table->text($column)->nullable();
+            }
+            $table->timestamp('created_at')->nullable();
+        });
+        Schema::table('naik_kapal', function (Blueprint $table) {
+            $table->text('catatan_ob')->nullable();
+            $table->date('tanggal_ob')->nullable();
+            $table->string('asal_kontainer')->nullable();
+            $table->unsignedBigInteger('supir_id')->nullable();
+            $table->boolean('is_tl')->default(true);
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
+        });
+        foreach (['bls', 'manifests'] as $name) {
+            Schema::create($name, function (Blueprint $table) {
+                $table->id();
+                $table->string('nomor_kontainer');
+                $table->string('nama_kapal');
+                $table->string('no_voyage');
+            });
+        }
+        foreach (['kontainers', 'stock_kontainers'] as $name) {
+            Schema::create($name, function (Blueprint $table) {
+                $table->id();
+                $table->string('nomor_seri_gabungan');
+                $table->unsignedBigInteger('gudangs_id')->nullable();
+                $table->timestamps();
+            });
+        }
+        Schema::create('history_kontainers', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_kontainer');
+            $table->string('jenis_kegiatan');
+            $table->date('tanggal_kegiatan');
+            $table->unsignedBigInteger('gudang_id');
+            $table->text('keterangan');
+            $table->timestamps();
+        });
+        foreach ([1, 2, 3, 4, 5] as $id) {
+            $this->container($id);
+            DB::table('naik_kapal')->where('id', $id)->update([
+                'catatan_ob' => 'OB Muat Temas - Surat Jalan: SC 0011687',
+                'tanggal_ob' => '2026-10-01', 'asal_kontainer' => 'DEPO',
+            ]);
+        }
+        DB::table('naik_kapal')->where('id', 2)->update(['no_voyage' => '002']);
+        DB::table('naik_kapal')->where('id', 3)->update(['catatan_ob' => 'OB biasa']);
+        DB::table('naik_kapal')->where('id', 5)->update(['nama_kapal' => 'KAPAL LAIN']);
+    }
+
+    public function test_bulk_cancellation_preserves_other_voyages_activities_and_history(): void
+    {
+        $this->prepareCancellation();
+        DB::table('kontainers')->insert(['nomor_seri_gabungan' => 'TEST1', 'gudangs_id' => 9]);
+        foreach ([
+            ['tanggal_kegiatan' => '2026-09-30', 'gudang_id' => 3, 'keterangan' => 'History sebelumnya'],
+            ['tanggal_kegiatan' => '2026-10-01', 'gudang_id' => 9, 'keterangan' => 'OB Muat Temas: DEPO -> TEMAS JKT. Surat Jalan: SC 0011687. Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001'],
+            ['tanggal_kegiatan' => '2026-09-29', 'gudang_id' => 4, 'keterangan' => 'OB Muat Temas: DEPO -> TEMAS JKT. Surat Jalan: LAIN. Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 002'],
+        ] as $history) {
+            DB::table('history_kontainers')->insert($history + ['nomor_kontainer' => 'TEST1', 'jenis_kegiatan' => 'Pindahan Gudang']);
+        }
+        $payload = ['nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'kegiatan' => 'muat_temas'];
+        $this->postJson(route('ob.cancel-muat-temas-voyage'), $payload)->assertOk()->assertJsonPath('success', true);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 1, 'sudah_ob' => false, 'is_tl' => false, 'tanggal_ob' => null]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 2, 'sudah_ob' => true]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 3, 'sudah_ob' => true]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 4, 'sudah_ob' => false, 'is_tl' => false]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 5, 'sudah_ob' => true]);
+        $this->assertDatabaseMissing('tagihan_ob', ['id' => 1]);
+        $this->assertDatabaseMissing('tagihan_ob', ['id' => 4]);
+        $this->assertDatabaseCount('history_kontainers', 2);
+        $this->assertDatabaseHas('kontainers', ['nomor_seri_gabungan' => 'TEST1', 'gudangs_id' => 3]);
+        $this->postJson(route('ob.cancel-muat-temas-voyage'), $payload)->assertOk();
+        $this->assertDatabaseCount('history_kontainers', 2);
+    }
+
+    public function test_bulk_cancellation_rejects_billed_containers_without_partial_changes(): void
+    {
+        $this->prepareCancellation();
+        $this->postJson(route('pranota-ob-muat-temas.store'), $this->payload([1]))->assertOk();
+        $this->postJson(route('ob.cancel-muat-temas-voyage'), [
+            'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'kegiatan' => 'muat_temas',
+        ])->assertUnprocessable();
+        $this->assertDatabaseHas('naik_kapal', ['id' => 1, 'sudah_ob' => true]);
+        $this->assertDatabaseCount('tagihan_ob', 5);
+        $this->postJson(route('ob.cancel-muat-temas-voyage'), ['kegiatan' => 'muat_temas'])->assertUnprocessable();
+        Gate::define('ob-view', fn () => false);
+        auth()->user()->setRelation('permissions', collect());
+        $this->postJson(route('ob.cancel-muat-temas-voyage'), [
+            'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'kegiatan' => 'muat_temas',
+        ])->assertForbidden();
     }
 
     private function payload(array $ids): array

@@ -1702,7 +1702,90 @@ class ObController extends Controller
     }
 
     /**
-     * Unmark container from OB status
+     * Cancel OB Muat Temas for the selected ship and voyage atomically.
+     */
+    public function cancelMuatTemasVoyage(Request $request)
+    {
+        abort_unless(Auth::user()->can('ob-view'), 403);
+        $validated = $request->validate([
+            'nama_kapal' => 'required|string|max:255',
+            'no_voyage' => 'required|string|max:255',
+            'kegiatan' => 'required|in:muat_temas',
+        ]);
+
+        $count = DB::transaction(function () use ($validated) {
+            $records = NaikKapal::where('nama_kapal', $validated['nama_kapal'])
+                ->where('no_voyage', $validated['no_voyage'])
+                ->where('sudah_ob', true)
+                ->where('catatan_ob', 'like', 'OB Muat Temas - Surat Jalan: %')
+                ->lockForUpdate()->get();
+            $tagihans = TagihanOb::whereIn('naik_kapal_id', $records->modelKeys())
+                ->where('kegiatan', 'MUAT TEMAS')->lockForUpdate()->get();
+
+            foreach ($tagihans as $tagihan) {
+                if ($tagihan->pranotaMuatTemasItem()->exists()
+                    || $tagihan->pranotaObItem()->exists()
+                    || $tagihan->pranotaObAntarGudangItem()->exists()) {
+                    throw ValidationException::withMessages([
+                        'kapal' => 'Pembatalan ditolak: ada tagihan OB Temas yang sudah masuk pranota. Keluarkan dari pranota terlebih dahulu.',
+                    ]);
+                }
+            }
+
+            foreach ($records as $record) {
+                // Match the complete movement description, never all history of a container.
+                $suratJalan = substr($record->catatan_ob, strlen('OB Muat Temas - Surat Jalan: '));
+                $supir = $record->supir;
+                $description = 'OB Muat Temas: '.$record->asal_kontainer.' -> '.$record->ke
+                    .'. Surat Jalan: '.$suratJalan
+                    .'. Supir: '.($supir?->nama_panggilan ?: $supir?->nama_lengkap)
+                    .'. Kapal: '.$record->nama_kapal.'. Voyage: '.$record->no_voyage;
+                // Driver names may have changed since OB; use the billing snapshot as well.
+                $descriptions = [$description];
+                foreach ($tagihans->where('naik_kapal_id', $record->id) as $tagihan) {
+                    $descriptions[] = 'OB Muat Temas: '.$record->asal_kontainer.' -> '.$record->ke
+                        .'. Surat Jalan: '.$tagihan->nomor_surat_jalan
+                        .'. Supir: '.$tagihan->nama_supir
+                        .'. Kapal: '.$record->nama_kapal.'. Voyage: '.$record->no_voyage;
+                }
+                HistoryKontainer::where('nomor_kontainer', $record->nomor_kontainer)
+                    ->whereDate('tanggal_kegiatan', $record->tanggal_ob->toDateString())
+                    ->where('jenis_kegiatan', 'Pindahan Gudang')
+                    ->whereIn('keterangan', $descriptions)->get()
+                    ->each(fn ($history) => $history->delete());
+
+                foreach ([Bl::class, Manifest::class] as $model) {
+                    $query = $model::where('nomor_kontainer', $record->nomor_kontainer)
+                        ->where('nama_kapal', $record->nama_kapal)->where('no_voyage', $record->no_voyage);
+                    if ($record->prospek_id) {
+                        $query->where('prospek_id', $record->prospek_id);
+                    }
+                    if ($record->jenis_barang) {
+                        $query->where('nama_barang', $record->jenis_barang);
+                    }
+                    $query->delete();
+                }
+                $record->forceFill([
+                    'sudah_ob' => false, 'is_tl' => false, 'supir_id' => null,
+                    'tanggal_ob' => null, 'catatan_ob' => null, 'ke' => null,
+                    'updated_by' => Auth::id(),
+                ])->save();
+                if ($record->prospek) {
+                    $record->prospek->update(['status' => Prospek::STATUS_AKTIF]);
+                }
+            }
+            foreach ($tagihans as $tagihan) {
+                $tagihan->delete();
+            }
+
+            return $records->count();
+        });
+
+        return response()->json(['success' => true, 'message' => $count.' OB Muat Temas berhasil dibatalkan beserta history pergerakan terkait.']);
+    }
+
+    /**
+     * Unmark container from OB status.
      */
     public function unmarkOB(Request $request)
     {

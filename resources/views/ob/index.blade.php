@@ -189,6 +189,11 @@
                     <i class="fas fa-sync-alt md:mr-2"></i><span class="hidden md:inline">Refresh Data</span>
                 </button>
                 @if(request('kegiatan') === 'muat_temas')
+                    @if($namaKapal && $noVoyage)
+                        <button type="button" onclick="cancelMuatTemasVoyage(this)" class="bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white px-3 py-2 rounded-md text-xs md:text-sm">
+                            <i class="fas fa-undo mr-1"></i>Batalkan Semua OB Temas
+                        </button>
+                    @endif
                     <a href="{{ route('pranota-ob.index') }}" class="bg-teal-600 hover:bg-teal-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">Pranota OB</a>
                 @endif
                 <a href="{{ route('ob.print', array_merge(['nama_kapal' => $namaKapal, 'no_voyage' => $noVoyage], request()->only(['status_ob', 'tipe_kontainer', 'kegiatan', 'gudang_id', 'show_all']))) }}" target="_blank" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-xs md:text-sm">
@@ -2296,6 +2301,32 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
         btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
     });
 });
+
+async function cancelMuatTemasVoyage(button) {
+    const kapal = @json($namaKapal);
+    const voyage = @json($noVoyage);
+    if (!confirm(`Batalkan SEMUA OB Muat Temas kapal ${kapal}, voyage ${voyage}? Status OB/TL, tagihan, BL/manifest terkait, dan history pergerakan OB Temas akan dihapus. Berlaku untuk seluruh data kapal/voyage ini, termasuk yang tidak tampil akibat filter.`)) return;
+    button.disabled = true;
+    try {
+        const response = await fetch(@json(route('ob.cancel-muat-temas-voyage', [], false)), {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+            },
+            body: JSON.stringify({ nama_kapal: kapal, no_voyage: voyage, kegiatan: 'muat_temas' })
+        });
+        const data = await response.json();
+        if (!response.ok || !data.success) throw new Error(data.message || 'Gagal membatalkan OB Temas');
+        localStorage.removeItem(storageKey);
+        showNotification(data.message, 'success');
+        setTimeout(() => window.location.reload(), 1000);
+    } catch (error) {
+        showNotification(error.message, 'error');
+        button.disabled = false;
+    }
+}
 
 function unmarkOB(type, id) {
     if (confirm('Apakah Anda yakin ingin membatalkan status OB kontainer ini?')) {

@@ -6435,6 +6435,9 @@ Route::middleware(['auth'])->group(function () {
     Route::post('ob/process-tl-bongkar-voyage', [\App\Http\Controllers\ObController::class, 'processTLBongkarVoyage'])
         ->name('ob.process-tl-bongkar-voyage')
         ->middleware('can:ob-view');
+    Route::post('ob/cancel-muat-temas-voyage', [\App\Http\Controllers\ObController::class, 'cancelMuatTemasVoyage'])
+        ->name('ob.cancel-muat-temas-voyage')
+        ->middleware('can:ob-view');
     Route::post('ob/unmark-ob', [\App\Http\Controllers\ObController::class, 'unmarkOB'])
         ->name('ob.unmark-ob')
         ->middleware('can:ob-view');
