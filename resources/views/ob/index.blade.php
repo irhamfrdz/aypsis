@@ -1297,7 +1297,6 @@
                         <p class="mt-1 text-xs text-blue-800">Uang supir Rp125.000 per kontainer. Dua kontainer 20 ft: total Rp250.000.</p>
                         <div id="obPasanganWrapper" class="hidden mt-2">
                             <label for="obPasanganId" class="block text-xs mb-1">Kontainer pasangan (20 ft) *</label>
-                            <input id="obPasanganSearch" type="search" placeholder="Cari nomor kontainer..." class="w-full border rounded p-1.5 text-xs mb-1" oninput="filterObPasangan()">
                             <select id="obPasanganId" class="w-full border rounded p-1.5 text-xs" disabled>
                                 <option value="">Pilih kontainer pasangan</option>
                             </select>
@@ -2337,7 +2336,6 @@ async function loadObMobilPanjang(type, id, isGanti) {
     wrapper.classList.add('hidden');
     document.getElementById('obMobilPanjang').checked = false;
     document.getElementById('obPasanganId').innerHTML = '<option value="">Pilih kontainer pasangan</option>';
-    document.getElementById('obPasanganSearch').value = '';
     toggleObMobilPanjang();
     if (isGanti || @json(request('kegiatan') !== 'muat_temas') || type !== 'naik_kapal') return;
     try {
@@ -2361,12 +2359,23 @@ function toggleObMobilPanjang() {
     document.getElementById('obPasanganId').disabled = !active;
     document.getElementById('obPasanganId').required = active;
     if (!active) document.getElementById('obPasanganId').value = '';
-}
-
-function filterObPasangan() {
-    const query = document.getElementById('obPasanganSearch').value.trim().toUpperCase();
-    for (const option of document.getElementById('obPasanganId').options) {
-        option.hidden = !!option.value && !option.text.toUpperCase().includes(query);
+    if (typeof jQuery !== 'undefined' && jQuery.fn.select2) {
+        const select = jQuery('#obPasanganId');
+        if (active && !select.hasClass('select2-hidden-accessible')) {
+            select.select2({
+                dropdownParent: jQuery('#supirModal'),
+                width: '100%',
+                placeholder: 'Cari dan pilih kontainer pasangan',
+                allowClear: true,
+                minimumResultsForSearch: 0,
+                language: {
+                    noResults: () => 'Kontainer tidak ditemukan',
+                    searching: () => 'Mencari kontainer...'
+                }
+            });
+        }
+        if (!active && select.hasClass('select2-hidden-accessible')) select.select2('close');
+        select.trigger('change.select2');
     }
 }
 
