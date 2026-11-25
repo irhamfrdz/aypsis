@@ -42,7 +42,14 @@
             const type = normalize(employee.tipe_bp_jamsostek);
             const branch = normalize(employee.cabang_bpjs);
             if (!group) return null;
-            let candidates = records.filter(record => record.jenis === 'jamsostek' && compact(record.group_name) === group);
+            const identity = employee.unique_id || (employee.id ? (String(employee.tipe_karyawan || '').endsWith('KaryawanTidakTetap') ? 'KaryawanTidakTetap_' : 'Karyawan_') + employee.id : '');
+            const choose = items => {
+                const personal = items.filter(record => record.employee_targets?.includes(identity));
+                const eligible = personal.length ? personal : items;
+                return eligible.length === 1 ? eligible[0] : null;
+            };
+            let candidates = records.filter(record => record.jenis === 'jamsostek' && compact(record.group_name) === group
+                && (!record.employee_targets?.length || record.employee_targets.includes(identity)));
             if (type) {
                 const typed = candidates.filter(record => normalize(record.tipe) === type);
                 candidates = typed.length ? typed : candidates.filter(record => !normalize(record.tipe)
@@ -51,13 +58,16 @@
             } else if (new Set(candidates.map(record => normalize(record.tipe))).size > 1) {
                 return null;
             }
+            const personal = candidates.filter(record => record.employee_targets?.includes(identity)
+                && (!normalize(record.cabang_bpjs) || normalize(record.cabang_bpjs) === branch));
+            if (personal.length) return choose(personal);
             if (branch) {
                 const exactBranch = candidates.filter(record => normalize(record.cabang_bpjs) === branch);
-                if (exactBranch.length) return exactBranch.length === 1 ? exactBranch[0] : null;
+                if (exactBranch.length) return choose(exactBranch);
             }
             const general = candidates.filter(record => !normalize(record.cabang_bpjs));
-            if (general.length) return general.length === 1 ? general[0] : null;
-            return !branch && candidates.length === 1 ? candidates[0] : null;
+            if (general.length) return choose(general);
+            return !branch ? choose(candidates) : null;
         },
         calculateNonCrew(record, dppValue, employee = null) {
             const dpp = parseAmount(dppValue);

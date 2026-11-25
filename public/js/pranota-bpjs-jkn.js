@@ -9,6 +9,11 @@
         if (type) {
             candidates = candidates.filter(record => compact(record.tipe) === type);
         }
+        const identity = employee.unique_id || (employee.id ? (String(employee.tipe_karyawan || '').endsWith('KaryawanTidakTetap') ? 'KaryawanTidakTetap_' : 'Karyawan_') + employee.id : '');
+        candidates = candidates.filter(record => !record.employee_targets?.length || (record.employee_targets.includes(identity)
+            && (!record.cabang_bpjs || compact(record.cabang_bpjs) === compact(employee.cabang_bpjs))));
+        const personal = candidates.filter(record => record.employee_targets?.includes(identity));
+        if (personal.length) candidates = personal;
         // Never choose another type just because it appears first in the master.
         return candidates.length === 1 ? candidates[0] : null;
     }
@@ -22,7 +27,7 @@
             return { contribution: dpp, debt: 0 };
         }
         if (!record) return { contribution: 0, debt: 0 };
-        if (record.bpjs_active_fields?.includes('nominal_dpp') && record.nominal_dpp !== null) {
+        if ((record.bpjs_active_fields?.includes('nominal_dpp') || record.employee_targets?.length) && record.nominal_dpp != null) {
             dpp = Number(record.nominal_dpp);
         }
         const tunjangan = parseFloat(record.tunjangan_persen) || 0;

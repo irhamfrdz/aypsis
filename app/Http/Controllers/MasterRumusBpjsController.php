@@ -42,7 +42,9 @@ class MasterRumusBpjsController extends Controller
         \App\Services\BpjsEffectiveValues::attach($rumusJkn);
         \App\Services\BpjsEffectiveValues::attach($rumusJamsostek);
 
-        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'bulkValues'));
+        $formulaEmployees = \App\Services\BpjsFormulaEmployees::catalog();
+
+        return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'bulkValues', 'formulaEmployees'));
     }
 
     private function bulkValueOptions($values, bool $age = false): array
@@ -193,7 +195,9 @@ class MasterRumusBpjsController extends Controller
                 $group = $compact($employee->group_bp_jamsostek);
                 $type = $normalize($employee->tipe_bp_jamsostek);
                 $branch = $normalize($employee->cabang_bpjs);
-                $candidates = $allRules->filter(fn ($record) => $compact($record->group_name) === $group);
+                $identity = class_basename($class).'_'.$employee->id;
+                $candidates = $allRules->filter(fn ($record) => $compact($record->group_name) === $group
+                    && (empty($record->employee_targets) || in_array($identity, $record->employee_targets, true)));
                 if ($type !== '') {
                     $typed = $candidates->filter(fn ($record) => $normalize($record->tipe) === $type);
                     $category = in_array($type, ['CREW', 'BPU-CREW'], true) ? 'bpu_crew' : (str_contains($group, 'PPU') ? 'ppu' : 'bpu_non_crew');
@@ -204,6 +208,11 @@ class MasterRumusBpjsController extends Controller
                 $exact = $branch !== '' ? $candidates->filter(fn ($record) => $normalize($record->cabang_bpjs) === $branch) : collect();
                 $general = $candidates->filter(fn ($record) => ! $record->cabang_bpjs);
                 $resolved = $exact->isNotEmpty() ? $exact : ($general->isNotEmpty() ? $general : ($branch === '' ? $candidates : collect()));
+                $personal = $candidates->filter(fn ($record) => in_array($identity, $record->employee_targets ?? [], true)
+                    && (! $record->cabang_bpjs || $normalize($record->cabang_bpjs) === $branch));
+                if ($personal->isNotEmpty()) {
+                    $resolved = $personal;
+                }
                 if ($resolved->count() !== 1 || ! in_array($resolved->first()->id, $targetIds, true)) {
                     continue;
                 }
@@ -266,6 +275,8 @@ class MasterRumusBpjsController extends Controller
         }
 
         $request->validate([
+            'employee_targets' => 'nullable|array',
+            'employee_targets.*' => 'nullable|json',
             'jenis' => 'required|array',
             'jenis.*' => 'required|in:jkn,jamsostek',
             'nominal_dpp' => 'nullable|array',
@@ -333,8 +344,10 @@ class MasterRumusBpjsController extends Controller
                         }
                     }
 
+                    $targets = \App\Services\BpjsFormulaEmployees::validateTargets($request->input('employee_targets.'.$key), $jenis, $groupNames, $request->tipe[$key], $request->cabang_bpjs[$key] ?? null);
                     foreach ($groupNames as $gName) {
                         $createdRumus = MasterRumusBpjs::create([
+                            'employee_targets' => $targets ?: null,
                             'jenis' => $jenis,
                             'nominal_dpp' => $jenis === 'jkn' ? ($request->nominal_dpp[$key] ?? null) : null,
                             'group_name' => $gName,
@@ -384,6 +397,7 @@ class MasterRumusBpjsController extends Controller
     public function update(Request $request, $id)
     {
         $request->validate([
+            'employee_targets' => 'nullable|json',
             'jenis' => 'sometimes|required|in:jkn,jamsostek',
             'dpp_from' => 'nullable|required_with:dpp_until|date_format:Y-m-d',
             'dpp_until' => 'nullable|required_with:dpp_from|date_format:Y-m-d|after_or_equal:dpp_from',
@@ -417,6 +431,12 @@ class MasterRumusBpjsController extends Controller
         $rumus = MasterRumusBpjs::findOrFail($id);
 
         $dataToUpdate = [];
+        if ($request->has('employee_targets')) {
+            $groups = $request->input('group_name', $rumus->group_name);
+            $groups = is_array($groups) ? $groups : explode(',', $groups);
+            $targets = \App\Services\BpjsFormulaEmployees::validateTargets($request->employee_targets, $request->input('jenis', $rumus->jenis), $groups, $request->input('tipe', $rumus->tipe), $request->input('cabang_bpjs', $rumus->cabang_bpjs));
+            $dataToUpdate['employee_targets'] = $targets ?: null;
+        }
         if ($request->has('nominal_dpp')) {
             $dataToUpdate['nominal_dpp'] = $request->nominal_dpp;
         }
@@ -561,7 +581,13 @@ class MasterRumusBpjsController extends Controller
         } else {
             // Update all existing_ids (e.g. diskon AJAX)
             if ($dataToUpdate) {
-                MasterRumusBpjs::whereIn('id', $existingIds)->update($dataToUpdate);
+                $queryData = $dataToUpdate;
+                foreach (['employee_targets', 'hutang_tiers'] as $column) {
+                    if (isset($queryData[$column]) && is_array($queryData[$column])) {
+                        $queryData[$column] = json_encode($queryData[$column]);
+                    }
+                }
+                MasterRumusBpjs::whereIn('id', $existingIds)->update($queryData);
             }
         }
 

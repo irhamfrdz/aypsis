@@ -107,6 +107,32 @@ class MasterRumusBpjsTipeTest extends TestCase
         ]), 1);
     }
 
+    public function test_personal_formula_saves_distinct_employee_types_and_rejects_another_group(): void
+    {
+        foreach (['karyawans', 'karyawan_tidak_tetaps'] as $table) {
+            Schema::create($table, function (Blueprint $table) {
+                $table->id();
+                foreach (['nik', 'nama_lengkap', 'group_jkn', 'group_bp_jamsostek', 'tipe_jkn', 'tipe_bp_jamsostek', 'cabang_bpjs'] as $column) {
+                    $table->string($column)->nullable();
+                }
+            });
+            DB::table($table)->insert(['id' => 1, 'nama_lengkap' => 'Anggota', 'group_jkn' => 'JKN-KIS', 'tipe_jkn' => 'KANTOR']);
+            DB::table($table)->insert(['id' => 2, 'nama_lengkap' => 'Lain', 'group_jkn' => 'GROUP LAIN', 'tipe_jkn' => 'KANTOR']);
+        }
+        $data = ['jenis' => ['jkn'], 'group_name' => ['JKN-KIS'], 'tipe' => ['KANTOR'],
+            'employee_targets' => [json_encode(['Karyawan_1', 'KaryawanTidakTetap_1'])]];
+        MasterRumusBpjs::withoutEvents(fn () => (new MasterRumusBpjsController)->store(Request::create('/', 'POST', $data)));
+        $this->assertSame(['Karyawan_1', 'KaryawanTidakTetap_1'], MasterRumusBpjs::first()->employee_targets);
+        $data['employee_targets'] = [json_encode(['Karyawan_2'])];
+        try {
+            (new MasterRumusBpjsController)->store(Request::create('/', 'POST', $data));
+            $this->fail('An employee from another group must be rejected');
+        } catch (ValidationException $exception) {
+            $this->assertArrayHasKey('employee_targets', $exception->errors());
+            $this->assertSame(1, MasterRumusBpjs::count());
+        }
+    }
+
     public function test_diskon_update_can_omit_tipe_for_legacy_records(): void
     {
         $record = MasterRumusBpjs::withoutEvents(fn () => MasterRumusBpjs::create([

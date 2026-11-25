@@ -282,6 +282,7 @@
     @php
         $groupRows = function($collection) {
             return $collection->groupBy(function($item) {
+                if (!empty($item->employee_targets)) return 'personal_'.$item->id;
                 $cabang = trim(strtoupper($item->cabang_bpjs ?? ''));
                 if ($cabang !== '') {
                     return 'cabang_' . json_encode([$cabang, $item->tipe]);
@@ -334,10 +335,12 @@
                             <td class="px-4 py-3 text-center text-gray-400 text-xs">{{ $loop->iteration }}</td>
                             <td class="px-4 py-3 font-semibold text-gray-800">
                                 <div class="flex flex-wrap gap-1 items-center">
+                                    @if(!empty($item->employee_targets))<span class="text-xs text-indigo-600">Khusus {{ count($item->employee_targets) }} karyawan</span>@endif
                                     @foreach($groupNames as $gName)
                                         <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                                             {{ $gName }}
                                         </span>
+
                                     @endforeach
                                 </div>
                             </td>
@@ -430,7 +433,8 @@
                             <td class="px-4 py-3 font-semibold text-gray-800">
                                 <div class="space-y-1">
                                     <div class="flex flex-wrap gap-1 items-center">
-                                        @foreach($groupNames as $gName)
+                                        @if(!empty($item->employee_targets))<span class="text-xs text-indigo-600">Khusus {{ count($item->employee_targets) }} karyawan</span>@endif
+                                    @foreach($groupNames as $gName)
                                             <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                                                 {{ $gName }}
                                             </span>
@@ -576,7 +580,8 @@
                             <td class="px-3 py-3 font-semibold text-gray-800">
                                 <div class="space-y-1">
                                     <div class="flex flex-wrap gap-1 items-center">
-                                        @foreach($groupNames as $gName)
+                                        @if(!empty($item->employee_targets))<span class="text-xs text-indigo-600">Khusus {{ count($item->employee_targets) }} karyawan</span>@endif
+                                    @foreach($groupNames as $gName)
                                             <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                                                 {{ $gName }}
                                             </span>
@@ -728,7 +733,8 @@
                             <td class="px-3 py-3 font-semibold text-gray-800">
                                 <div class="space-y-1">
                                     <div class="flex flex-wrap gap-1 items-center">
-                                        @foreach($groupNames as $gName)
+                                        @if(!empty($item->employee_targets))<span class="text-xs text-indigo-600">Khusus {{ count($item->employee_targets) }} karyawan</span>@endif
+                                    @foreach($groupNames as $gName)
                                             <span class="inline-flex items-center font-bold text-gray-800 text-xs bg-gray-100 border border-gray-200 px-2 py-0.5 rounded shadow-2xs">
                                                 {{ $gName }}
                                             </span>
@@ -856,10 +862,9 @@
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                                    Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(pisahkan dengan koma jika lebih dari satu)</span>
+                                    Nama Group
                                 </label>
-                                <input type="text" name="group_name[]" class="group-name-input form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                       required placeholder="Masukkan nama group" oninput="toggleJamsostekFields(this)">
+                                <select name="group_name[]" class="group-name-input form-select w-full border-gray-300 rounded-lg shadow-sm text-sm" required onchange="toggleJamsostekFields(this); refreshFormulaEmployees(this.closest('.bpjs-row'));"><option value="">Pilih Group</option></select>
                             </div>
                             <div>
                                 <label class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
@@ -875,6 +880,7 @@
                             </div>
                         </div>
 
+                        @include('master.rumus-bpjs.partials.employee-scope', ['editing' => false])
                         {{-- JKN Fields (hanya muncul saat jenis = jkn) --}}
                         <div class="jkn-fields">
                             <div class="mb-4">
@@ -1217,10 +1223,9 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
                             <label for="edit_group_name" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">
-                                Nama Group <span class="text-[11px] text-gray-400 font-normal lowercase">(pisahkan dengan koma jika lebih dari satu)</span>
+                                Nama Group
                             </label>
-                            <input type="text" id="edit_group_name" name="group_name" class="group-name-input form-input w-full border-gray-300 rounded-lg shadow-sm text-sm"
-                                   required placeholder="Masukkan nama group" oninput="toggleEditJamsostekFields(this)">
+                            <select id="edit_group_name" name="group_name" class="group-name-input form-select w-full border-gray-300 rounded-lg shadow-sm text-sm" required onchange="toggleEditJamsostekFields(this); refreshFormulaEmployees(document.getElementById('editForm'));"><option value="">Pilih Group</option></select>
                         </div>
                         <div>
                             <label for="edit_tipe" class="block text-xs font-semibold text-gray-600 mb-1.5 uppercase tracking-wide">Tipe <span class="text-red-500">*</span></label>
@@ -1358,6 +1363,7 @@
                         </div>
                     </div>
 
+                    @include('master.rumus-bpjs.partials.employee-scope', ['editing' => true])
                     {{-- Diskon (edit) --}}
                     <div class="rounded-lg border border-gray-200 p-3 mb-4 space-y-2">
                         <p class="text-xs font-semibold">Masa berlaku DPP / tabel DPP</p>
@@ -1456,6 +1462,81 @@
         return (input?.value || '').split(',').map(name => name.trim().toUpperCase()).filter(Boolean);
     }
 
+    const formulaEmployeeCatalog = @json($formulaEmployees ?? []);
+    const formulaGroupCatalog = {
+        jkn: @json($rumusJkn->pluck('group_name')->unique()->values()),
+        jamsostek: @json($rumusJamsostek->pluck('group_name')->unique()->values())
+    };
+    const normalizeFormulaValue = value => String(value || '').trim().replace(/\s+/g, ' ').toUpperCase();
+
+    function populateFormulaGroups(row, existingGroup = '') {
+        const editing = row.id === 'editForm';
+        const jenis = row.querySelector(editing ? '#edit_jenis' : '[name="jenis[]"]').value;
+        const select = row.querySelector('.group-name-input');
+        const previous = existingGroup || select.value;
+        const column = jenis === 'jkn' ? 'group_jkn' : 'group_bp_jamsostek';
+        const groups = new Set([...formulaGroupCatalog[jenis], ...formulaEmployeeCatalog.map(employee => employee[column])].map(normalizeFormulaValue).filter(Boolean));
+        if (existingGroup) groups.add(existingGroup);
+        select.replaceChildren(new Option('-- Pilih Group --', ''));
+        [...groups].sort((a, b) => a.localeCompare(b, 'id')).forEach(group => select.add(new Option(group, group)));
+        select.value = [...select.options].some(option => option.value === previous) ? previous : '';
+        refreshFormulaEmployees(row);
+    }
+
+    function refreshFormulaEmployees(row) {
+        if (!row) return;
+        const editing = row.id === 'editForm';
+        const scope = row.querySelector('.formula-employee-scope');
+        if (!scope) return;
+        const jenis = row.querySelector(editing ? '#edit_jenis' : '[name="jenis[]"]').value;
+        const groups = getSelectedGroupNames(row.querySelector('.group-name-input')).map(normalizeFormulaValue);
+        const type = normalizeFormulaValue(row.querySelector(editing ? '#edit_tipe' : '[name="tipe[]"]').value);
+        const branch = normalizeFormulaValue(row.querySelector(editing ? '#edit_cabang_bpjs' : '[name="cabang_bpjs[]"]').value);
+        const mode = scope.querySelector('.formula-scope-mode').value;
+        const payload = scope.querySelector('.formula-targets');
+        const selected = new Set(JSON.parse(payload.value || '[]'));
+        const candidates = formulaEmployeeCatalog.filter(employee =>
+            groups.includes(normalizeFormulaValue(employee[jenis === 'jkn' ? 'group_jkn' : 'group_bp_jamsostek']))
+            && (!type || normalizeFormulaValue(employee[jenis === 'jkn' ? 'tipe_jkn' : 'tipe_bp_jamsostek']) === type)
+            && (!branch || normalizeFormulaValue(employee.cabang_bpjs) === branch));
+        const allowed = new Set(candidates.map(employee => employee.unique_id));
+        selected.forEach(id => { if (!allowed.has(id)) selected.delete(id); });
+        if (mode === 'all') selected.clear();
+        payload.value = JSON.stringify([...selected]);
+        scope.querySelector('.formula-employee-picker').classList.toggle('hidden', mode !== 'selected');
+        const search = normalizeFormulaValue(scope.querySelector('.formula-employee-search').value);
+        const list = scope.querySelector('.formula-employee-list');
+        list.replaceChildren();
+        candidates.filter(employee => normalizeFormulaValue(`${employee.nama_lengkap} ${employee.nik}`).includes(search)).forEach(employee => {
+            const label = document.createElement('label');
+            label.className = 'flex gap-2 items-center text-sm';
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.checked = selected.has(employee.unique_id);
+            checkbox.onchange = () => {
+                if (checkbox.checked) selected.add(employee.unique_id); else selected.delete(employee.unique_id);
+                payload.value = JSON.stringify([...selected]);
+                refreshFormulaEmployees(row);
+            };
+            label.append(checkbox, document.createTextNode(`${employee.nama_lengkap} — ${employee.nik || '-'} (${employee.tipe_label})`));
+            list.append(label);
+        });
+        scope.querySelector('.formula-employee-count').textContent = `${candidates.length} karyawan tersedia · ${selected.size} dipilih`;
+    }
+    document.addEventListener('input', event => {
+        const row = event.target.closest('.bpjs-row') || (event.target.closest('#editForm') ? document.getElementById('editForm') : null);
+        if (row && ['tipe[]', 'cabang_bpjs[]', 'tipe', 'cabang_bpjs'].includes(event.target.name)) refreshFormulaEmployees(row);
+    });
+    ['createForm', 'editForm'].forEach(id => document.getElementById(id).addEventListener('submit', event => {
+        for (const scope of event.currentTarget.querySelectorAll('.formula-employee-scope')) {
+            if (scope.querySelector('.formula-scope-mode').value === 'selected' && !JSON.parse(scope.querySelector('.formula-targets').value || '[]').length) {
+                event.preventDefault();
+                alert('Pilih minimal satu karyawan untuk rumus khusus.');
+                return;
+            }
+        }
+    }));
+
     // ── Modal Open/Close ──────────────────────────────────────────────────────
 
     function openModal() {
@@ -1467,6 +1548,8 @@
         const jenisSelect = firstRow.querySelector('select[name="jenis[]"]');
         jenisSelect.value = 'jkn';
 
+        firstRow.querySelector('.formula-targets').value = '[]';
+        firstRow.querySelector('.formula-scope-mode').value = 'all';
         const groupSelect = firstRow.querySelector('.group-name-input');
         groupSelect.value = '';
 
@@ -1524,6 +1607,8 @@
         const rows = container.querySelectorAll('.bpjs-row');
         const firstRow = rows[0];
         const newRow = firstRow.cloneNode(true);
+        newRow.querySelector('.formula-targets').value = '[]';
+        newRow.querySelector('.formula-scope-mode').value = 'all';
 
         const jenisSelect = newRow.querySelector('select[name="jenis[]"]');
         jenisSelect.value = 'jkn';
@@ -1601,6 +1686,7 @@
             ? groupNames
             : (data.group_name ? [data.group_name] : []);
 
+        populateFormulaGroups(document.getElementById('editForm'), selectedGroups.join(', '));
         editGroupSelect.value = selectedGroups.join(', ');
 
         document.getElementById('edit_tipe').value = data.tipe || '';
@@ -1657,6 +1743,10 @@
         }
 
         syncEditFormulaFields();
+        const scope = document.querySelector('#editForm .formula-employee-scope');
+        scope.querySelector('.formula-targets').value = JSON.stringify(data.employee_targets || []);
+        scope.querySelector('.formula-scope-mode').value = data.employee_targets?.length ? 'selected' : 'all';
+        refreshFormulaEmployees(document.getElementById('editForm'));
         document.getElementById('editModal').classList.remove('hidden');
     }
 
@@ -1880,6 +1970,7 @@
     /** Toggle antara JKN fields dan Jamsostek fields (Create modal) */
     function toggleJenisFields(select) {
         const row = select.closest('.bpjs-row');
+        populateFormulaGroups(row);
         const jknFields = row.querySelector('.jkn-fields');
         const bpuCrewFields = row.querySelector('.bpu-crew-fields');
         const rateFields = row.querySelector('.jamsostek-rate-fields');
@@ -1901,6 +1992,7 @@
     function toggleEditJenisFields(select) {
         const isJamsostek = select.value === 'jamsostek';
         const editGroupSelect = document.getElementById('edit_group_name');
+        populateFormulaGroups(document.getElementById('editForm'));
 
         document.getElementById('edit_jkn_fields')?.classList.toggle('hidden', isJamsostek);
         if (!isJamsostek) {

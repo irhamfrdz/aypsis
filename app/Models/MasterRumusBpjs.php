@@ -14,6 +14,7 @@ class MasterRumusBpjs extends Model
     protected $table = 'master_rumus_bpjs';
 
     protected $fillable = [
+        'employee_targets',
         'jenis',
         'group_name',
         'tipe',
@@ -43,6 +44,7 @@ class MasterRumusBpjs extends Model
     ];
 
     protected $casts = [
+        'employee_targets' => 'array',
         'nominal_dpp' => 'decimal:2',
         'diskon_pengecualian' => 'array',
         'hutang_tiers' => 'array',
