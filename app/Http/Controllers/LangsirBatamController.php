@@ -143,7 +143,6 @@ class LangsirBatamController extends Controller
     {
         $request->merge(['biaya_lolo' => str_replace('.', '', (string) $request->input('biaya_lolo', '0'))]);
         $validated = $request->validate([
-            'no_transaksi' => 'required|unique:langsir_batams,no_transaksi',
             'no_surat_jalan' => [
                 'nullable',
                 'string',
@@ -193,7 +192,8 @@ class LangsirBatamController extends Controller
             }
         }
 
-        $langsir = LangsirBatam::create($validated);
+        $langsir = LangsirBatam::createWithAutomaticNumber($validated);
+        $validated['no_transaksi'] = $langsir->no_transaksi;
 
         if ($request->filled('no_kontainer') && $request->filled('gudang_tujuan_id')) {
             $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $request->no_kontainer)
@@ -409,10 +409,7 @@ class LangsirBatamController extends Controller
                     continue;
                 }
 
-                $noTransaksi = LangsirBatam::generateNoTransaksi();
-
                 $dataInsert = [
-                    'no_transaksi' => $noTransaksi,
                     'no_surat_jalan' => ! empty($row['no_surat_jalan']) ? trim($row['no_surat_jalan']) : null,
                     'tanggal' => $row['tanggal'],
                     'no_kontainer' => $row['no_kontainer'],
@@ -434,7 +431,8 @@ class LangsirBatamController extends Controller
                     'input_by' => Auth::id(),
                 ];
 
-                LangsirBatam::create($dataInsert);
+                $langsir = LangsirBatam::createWithAutomaticNumber($dataInsert);
+                $dataInsert['no_transaksi'] = $langsir->no_transaksi;
 
                 // Update Stock Kontainer if exists
                 $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $dataInsert['no_kontainer'])
