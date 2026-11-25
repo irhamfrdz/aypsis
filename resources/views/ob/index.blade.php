@@ -2288,7 +2288,7 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
             return;
         }
         endpoint = @json(route('ob.mark-mobil-panjang', [], false));
-        requestData = { ...requestData, type: recordType, id: recordId, pasangan_id: pasanganId };
+        requestData = { ...requestData, type: recordType, id: recordId, pasangan_id: pasanganId, kegiatan: @json(request('kegiatan')) };
     }
 
     // Send AJAX request
@@ -2339,9 +2339,9 @@ async function loadObMobilPanjang(type, id, isGanti) {
     document.getElementById('obPasanganId').innerHTML = '<option value="">Pilih kontainer pasangan</option>';
     document.getElementById('obPasanganSearch').value = '';
     toggleObMobilPanjang();
-    if (isGanti || @json(request('kegiatan') === 'muat_temas')) return;
+    if (isGanti || @json(request('kegiatan') !== 'muat_temas') || type !== 'naik_kapal') return;
     try {
-        const url = @json(route('ob.mobil-panjang-candidates', [], false)) + '?' + new URLSearchParams({type, id});
+        const url = @json(route('ob.mobil-panjang-candidates', [], false)) + '?' + new URLSearchParams({type, id, kegiatan: 'muat_temas'});
         const response = await fetch(url, {headers: {'Accept': 'application/json'}});
         if (!response.ok) throw new Error('Pilihan mobil panjang tidak dapat dimuat.');
         const data = await response.json();

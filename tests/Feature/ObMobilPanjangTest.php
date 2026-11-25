@@ -90,102 +90,125 @@ class ObMobilPanjangTest extends TestCase
         return ['type' => 'bl', 'id' => 1, 'pasangan_id' => 2, 'supir_id' => 1, 'ke_gudang_id' => 1];
     }
 
-    public function test_pair_marks_both_containers_and_records_both_movements(): void
+    public function test_other_activities_and_bl_are_rejected(): void
     {
-        $this->postJson(route('ob.mark-mobil-panjang'), $this->payload())->assertOk()->assertJsonPath('success', true);
-        foreach ([1 => 2, 2 => 1] as $id => $partner) {
-            $this->assertDatabaseHas('bls', ['id' => $id, 'sudah_ob' => true, 'ob_mobil_panjang' => true, 'ob_pasangan_id' => $partner, 'supir_id' => 1, 'ke' => 'MERATUS JKT']);
-            $this->assertDatabaseHas('kontainers', ['nomor_seri_gabungan' => 'TEST'.$id, 'gudangs_id' => 1]);
-            $this->assertDatabaseHas('history_kontainers', ['nomor_kontainer' => 'TEST'.$id, 'gudang_id' => 1]);
+        foreach (['muat', 'bongkar', null] as $kegiatan) {
+            $payload = array_replace($this->payload(), ['type' => 'naik_kapal', 'kegiatan' => $kegiatan]);
+            $this->postJson(route('ob.mark-mobil-panjang'), $payload)->assertUnprocessable()->assertJsonValidationErrors('kegiatan');
+            $this->getJson(route('ob.mobil-panjang-candidates', ['type' => 'naik_kapal', 'id' => 1, 'kegiatan' => $kegiatan]))->assertUnprocessable();
         }
-        $this->assertDatabaseHas('bls', ['id' => 3, 'sudah_ob' => false]);
-        $this->assertDatabaseCount('history_kontainers', 2);
-        $this->postJson(route('ob.mark-mobil-panjang'), $this->payload())->assertUnprocessable();
-        $this->assertDatabaseCount('history_kontainers', 2);
-        $this->assertSame(250000, ObMobilPanjangService::BIAYA_PER_KONTAINER * 2);
-    }
-
-    public function test_invalid_pair_is_rejected_before_any_changes(): void
-    {
-        foreach ([['size_kontainer' => '40'], ['no_voyage' => '002'], ['nama_kapal' => 'KAPAL LAIN'], ['nomor_kontainer' => 'TEST1'], ['sudah_ob' => true]] as $change) {
-            DB::table('bls')->where('id', 2)->update(['size_kontainer' => '20', 'no_voyage' => '001', 'nama_kapal' => 'KAPAL UJI', 'nomor_kontainer' => 'TEST2', 'sudah_ob' => false]);
-            DB::table('bls')->where('id', 2)->update($change);
-            $this->postJson(route('ob.mark-mobil-panjang'), $this->payload())->assertUnprocessable();
-            $this->assertDatabaseHas('bls', ['id' => 1, 'sudah_ob' => false]);
-            $this->assertDatabaseCount('history_kontainers', 0);
-        }
-    }
-
-    public function test_pranota_keeps_125000_per_container_even_if_request_has_different_cost(): void
-    {
-        Schema::create('master_pricelist_ob', function (Blueprint $table) {
-            $table->id();
-            $table->string('size_kontainer');
-            $table->string('status_kontainer');
-            $table->decimal('biaya');
-        });
-        Schema::create('tagihan_ob', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('naik_kapal_id')->nullable();
-            $table->string('kegiatan');
-        });
-        Schema::create('pranota_obs', function (Blueprint $table) {
-            $table->id();
-            foreach (['nomor_pranota', 'nama_kapal', 'no_voyage', 'tanggal_ob', 'nomor_accurate', 'keterangan', 'items'] as $column) {
-                $table->text($column)->nullable();
-            }
-            $table->decimal('adjustment')->default(0);
-            $table->unsignedBigInteger('created_by');
-            $table->timestamps();
-        });
-        Schema::create('pranota_ob_items', function (Blueprint $table) {
-            $table->id();
-            foreach (['pranota_ob_id', 'item_id', 'created_by'] as $column) {
-                $table->unsignedBigInteger($column);
-            }
-            foreach (['item_type', 'nomor_kontainer', 'nama_barang', 'supir', 'size', 'status'] as $column) {
-                $table->string($column)->nullable();
-            }
-            $table->decimal('biaya');
-            $table->timestamps();
-        });
-        $this->postJson(route('ob.mark-mobil-panjang'), $this->payload())->assertOk();
-        $this->postJson(route('ob.masuk-pranota'), [
-            'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001',
-            'nomor_pranota' => 'POB-UJI-001', 'tanggal_ob' => '2026-11-25',
-            'items' => [
-                ['id' => 1, 'type' => 'bl', 'biaya' => 1],
-                ['id' => 2, 'type' => 'bl', 'biaya' => 999999],
-            ],
-        ])->assertOk()->assertJsonPath('success', true);
-        $this->assertEquals(250000, DB::table('pranota_ob_items')->sum('biaya'));
-        $items = json_decode(DB::table('pranota_obs')->value('items'), true);
-        $this->assertSame([125000, 125000], array_column($items, 'biaya'));
-    }
-
-    public function test_second_container_failure_rolls_back_first_container(): void
-    {
-        try {
-            app(ObMobilPanjangService::class)->process('bl', [1, 2], function ($record) {
-                if ($record->id === 2) {
-                    throw ValidationException::withMessages(['pair' => 'Gagal memproses pasangan']);
-                }
-                DB::table('bls')->where('id', $record->id)->update(['sudah_ob' => true]);
-            });
-            $this->fail('Failure should abort the entire pair.');
-        } catch (ValidationException $e) {
-            $this->assertDatabaseHas('bls', ['id' => 1, 'sudah_ob' => false, 'ob_mobil_panjang' => false]);
-        }
-    }
-
-    public function test_candidates_and_permission_are_checked(): void
-    {
-        DB::table('bls')->where('id', 3)->update(['no_voyage' => 'OTHER']);
-        $this->getJson(route('ob.mobil-panjang-candidates', ['type' => 'bl', 'id' => 1]))
-            ->assertOk()->assertJsonPath('eligible', true)->assertJsonCount(1, 'candidates')->assertJsonPath('candidates.0.id', 2);
-        $this->postJson(route('ob.mark-mobil-panjang'), array_replace($this->payload(), ['pasangan_id' => 1]))->assertUnprocessable();
+        $this->postJson(route('ob.mark-mobil-panjang'), $this->payload() + ['kegiatan' => 'muat_temas'])->assertUnprocessable()->assertJsonValidationErrors('type');
+        $this->assertDatabaseHas('bls', ['id' => 1, 'sudah_ob' => false]);
         auth()->user()->setRelation('permissions', collect());
         Gate::define('ob-view', fn () => false);
         $this->postJson(route('ob.mark-mobil-panjang'), $this->payload())->assertForbidden();
+    }
+
+    public function test_pair_validation_and_atomic_rollback(): void
+    {
+        foreach ([1, 2] as $id) {
+            DB::table('naik_kapal')->insert(['id' => $id, 'nomor_kontainer' => 'TEST'.$id, 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'size_kontainer' => '20']);
+        }
+        foreach ([['size_kontainer' => '40'], ['no_voyage' => '002'], ['nama_kapal' => 'OTHER'], ['nomor_kontainer' => 'TEST1'], ['sudah_ob' => true]] as $change) {
+            DB::table('naik_kapal')->where('id', 2)->update(array_replace(['size_kontainer' => '20', 'no_voyage' => '001', 'nama_kapal' => 'KAPAL UJI', 'nomor_kontainer' => 'TEST2', 'sudah_ob' => false], $change));
+            try {
+                app(ObMobilPanjangService::class)->process('naik_kapal', [1, 2], fn () => $this->fail('Invalid pair must not be processed.'));
+                $this->fail('Invalid pair must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('pasangan_id', $e->errors());
+            }
+        }
+        DB::table('naik_kapal')->where('id', 2)->update(['sudah_ob' => false]);
+        try {
+            app(ObMobilPanjangService::class)->process('naik_kapal', [1, 2], function ($record) {
+                if ($record->id === 2) throw ValidationException::withMessages(['pair' => 'Gagal']);
+                DB::table('naik_kapal')->where('id', $record->id)->update(['sudah_ob' => true]);
+            });
+            $this->fail('Failure must abort the pair.');
+        } catch (ValidationException $e) {
+            $this->assertDatabaseHas('naik_kapal', ['id' => 1, 'sudah_ob' => false, 'ob_mobil_panjang' => false]);
+        }
+    }
+
+    public function test_muat_temas_pair_creates_125000_bills_and_matching_movement_history(): void
+    {
+        Schema::table('naik_kapal', function (Blueprint $table) {
+            $table->string('asal_kontainer')->nullable();
+            $table->string('jenis_barang')->nullable();
+        });
+        Schema::table('karyawans', function (Blueprint $table) {
+            $table->string('nama_panggilan')->nullable();
+            $table->string('nama_lengkap')->nullable();
+        });
+        DB::table('karyawans')->where('id', 1)->update(['nama_panggilan' => 'SUPIR UJI']);
+        Schema::create('tagihan_ob', function (Blueprint $table) {
+            $table->id();
+            foreach (['naik_kapal_id', 'created_by'] as $column) $table->unsignedBigInteger($column);
+            foreach (['kapal', 'voyage', 'kegiatan', 'nomor_kontainer', 'size_kontainer', 'nama_supir', 'barang', 'status_kontainer', 'keterangan'] as $column) $table->text($column);
+            $table->dateTime('tanggal_ob');
+            $table->boolean('is_combo');
+            $table->decimal('biaya');
+            $table->timestamps();
+        });
+        Schema::create('audit_logs', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('user_id')->nullable();
+            $table->unsignedBigInteger('auditable_id');
+            foreach (['user_name', 'auditable_type', 'action', 'module', 'description', 'old_values', 'new_values', 'ip_address', 'user_agent', 'url'] as $column) $table->text($column)->nullable();
+            $table->timestamp('created_at')->nullable();
+        });
+        foreach ([1, 2] as $id) {
+            DB::table('naik_kapal')->insert([
+                'id' => $id, 'nomor_kontainer' => 'TEMAS'.$id, 'nama_kapal' => 'KAPAL UJI',
+                'no_voyage' => '001', 'size_kontainer' => '20', 'tipe_kontainer' => 'FCL',
+                'asal_kontainer' => 'DEPO', 'jenis_barang' => 'BARANG UJI',
+            ]);
+        }
+        // Isolate the existing muat handler; exercise real pair, Temas billing, and history logic.
+        $this->getJson(route('ob.mobil-panjang-candidates', ['type' => 'naik_kapal', 'id' => 1, 'kegiatan' => 'muat_temas']))
+            ->assertOk()->assertJsonPath('eligible', true)->assertJsonCount(1, 'candidates');
+        $controller = \Mockery::mock(\App\Http\Controllers\ObController::class)->makePartial();
+        $controller->shouldReceive('markAsOB')->twice()->andReturnUsing(function ($request) {
+            $record = \App\Models\NaikKapal::findOrFail($request->naik_kapal_id);
+            DB::table('naik_kapal')->where('id', $record->id)->update([
+                'sudah_ob' => true, 'supir_id' => $request->supir_id, 'tanggal_ob' => now(), 'ke' => 'MERATUS JKT',
+            ]);
+            \App\Models\HistoryKontainer::create([
+                'nomor_kontainer' => $record->nomor_kontainer, 'tipe_kontainer' => 'stock',
+                'jenis_kegiatan' => 'Masuk', 'tanggal_kegiatan' => now(), 'gudang_id' => 1,
+                'keterangan' => 'Masuk via OB Muat ke Kapal: KAPAL UJI. Voyage: 001', 'created_by' => 1,
+            ]);
+            return response()->json(['success' => true]);
+        });
+        app()->instance(\App\Http\Controllers\ObController::class, $controller);
+        $this->postJson(route('ob.mark-mobil-panjang'), array_replace($this->payload(), [
+            'type' => 'naik_kapal', 'kegiatan' => 'muat_temas',
+        ]))->assertOk()->assertJsonPath('success', true);
+        $this->assertDatabaseCount('tagihan_ob', 2);
+        $this->assertEquals(250000, DB::table('tagihan_ob')->sum('biaya'));
+        foreach ([1, 2] as $id) {
+            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000]);
+            $this->assertDatabaseHas('naik_kapal', ['id' => $id, 'sudah_ob' => true, 'ob_mobil_panjang' => true]);
+            $this->assertDatabaseHas('history_kontainers', [
+                'nomor_kontainer' => 'TEMAS'.$id, 'jenis_kegiatan' => 'Pindahan Gudang',
+                'keterangan' => 'OB Muat Temas: DEPO -> MERATUS JKT. Surat Jalan: . Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001',
+            ]);
+        }
+        Schema::create('pranota_ob_items', function (Blueprint $table) {
+            $table->id();
+            $table->string('item_type');
+            $table->unsignedBigInteger('item_id');
+        });
+        Schema::create('pranota_ob_antar_gudang_items', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('tagihan_ob_id');
+        });
+        (require database_path('migrations/2026_10_09_000004_create_pranota_ob_muat_temas_tables.php'))->up();
+        $this->postJson(route('pranota-ob-muat-temas.store'), [
+            'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001',
+            'nomor_pranota' => 'PMT-11-26-000001', 'tanggal_ob' => '2026-11-25',
+            'items' => [['id' => 1, 'type' => 'naik_kapal'], ['id' => 2, 'type' => 'naik_kapal']],
+        ])->assertOk()->assertJsonPath('success', true);
+        $this->assertDatabaseHas('pranota_ob_muat_temas', ['nominal' => 250000, 'grand_total' => 250000]);
     }
 }
