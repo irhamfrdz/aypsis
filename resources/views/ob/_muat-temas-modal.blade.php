@@ -62,7 +62,7 @@
                         <input type="checkbox" id="muatTemasMobilPanjang" class="rounded border-gray-300 text-teal-600" onchange="updateMuatTemasBiaya()">
                         Menggunakan mobil panjang
                     </label>
-                    <p class="text-xs text-gray-500 mt-1">Rp125.000 per kontainer. Dua kontainer 20 ft: total Rp250.000.</p>
+                    <p class="text-xs text-gray-500 mt-1">Rp250.000 per kontainer. Dua kontainer 20 ft: total Rp500.000.</p>
                 </div>
                 <div id="muatTemasPasanganSection" class="hidden">
                     <div id="obPasanganWrapper" class="hidden">
@@ -76,7 +76,7 @@
                 <div>
                     <label for="muatTemasBiaya" class="block text-sm font-medium text-gray-700 mb-1">Biaya OB</label>
                     <input type="text" id="muatTemasBiaya" readonly class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" placeholder="Pilih pricelist untuk menampilkan biaya OB">
-                    <p class="text-xs text-gray-500 mt-1">Tarif tujuan Temas dan Meratus Rp325.000 per kontainer. Mobil panjang Rp125.000 per kontainer.</p>
+                    <p class="text-xs text-gray-500 mt-1">Tarif tujuan Temas dan Meratus Rp325.000 per kontainer. Mobil panjang Rp250.000 per kontainer.</p>
                 </div>
                 <p id="muatTemasError" class="hidden text-sm text-red-600" role="alert"></p>
                 <div class="flex justify-end gap-2 pt-4">

@@ -842,7 +842,7 @@ class ObController extends Controller
             }
         });
 
-        return response()->json(['success' => true, 'message' => 'Dua kontainer berhasil OB Muat Temas. Uang supir Rp125.000 per kontainer, total Rp250.000.']);
+        return response()->json(['success' => true, 'message' => 'Dua kontainer berhasil OB Muat Temas. Uang supir Rp250.000 per kontainer, total Rp500.000.']);
     }
 
     public function markAsOB(Request $request)

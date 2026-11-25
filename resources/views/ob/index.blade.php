@@ -2548,7 +2548,7 @@ function updateMuatTemasMobilPanjang() {
 function updateMuatTemasBiaya() {
     toggleObMobilPanjang();
     if (document.getElementById('muatTemasMobilPanjang').checked) {
-        document.getElementById('muatTemasBiaya').value = 'Rp 125.000 / kontainer (total Rp 250.000)';
+        document.getElementById('muatTemasBiaya').value = 'Rp 250.000 / kontainer (total Rp 500.000)';
         return;
     }
     const option = document.getElementById('muatTemasPricelist').selectedOptions[0];

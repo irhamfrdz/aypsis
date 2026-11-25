@@ -8,7 +8,7 @@ use Illuminate\Validation\ValidationException;
 
 class ObMobilPanjangService
 {
-    public const BIAYA_PER_KONTAINER = 125000;
+    public const BIAYA_PER_KONTAINER = 250000;
 
     public const BIAYA_REGULER_MUAT_TEMAS = 325000;
 

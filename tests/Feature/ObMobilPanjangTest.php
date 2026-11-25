@@ -130,7 +130,7 @@ class ObMobilPanjangTest extends TestCase
         }
     }
 
-    public function test_muat_temas_pair_creates_125000_bills_and_matching_movement_history(): void
+    public function test_muat_temas_pair_creates_250000_bills_and_matching_movement_history(): void
     {
         Schema::table('naik_kapal', function (Blueprint $table) {
             $table->string('asal_kontainer')->nullable();
@@ -208,9 +208,9 @@ class ObMobilPanjangTest extends TestCase
         $this->assertDatabaseCount('tagihan_ob', 0);
         $this->postJson(route('ob.process-tl'), $payload)->assertOk()->assertJsonPath('success', true);
         $this->assertDatabaseCount('tagihan_ob', 2);
-        $this->assertEquals(250000, DB::table('tagihan_ob')->sum('biaya'));
+        $this->assertEquals(500000, DB::table('tagihan_ob')->sum('biaya'));
         foreach ([1, 2] as $id) {
-            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000, 'nomor_surat_jalan' => null, 'tanggal_ob' => '2026-11-24']);
+            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 250000, 'nomor_surat_jalan' => null, 'tanggal_ob' => '2026-11-24']);
             $this->assertDatabaseHas('naik_kapal', ['id' => $id, 'sudah_ob' => true, 'ob_mobil_panjang' => true]);
             $this->assertDatabaseHas('history_kontainers', [
                 'nomor_kontainer' => 'TEMAS'.$id, 'jenis_kegiatan' => 'Pindahan Gudang',
@@ -232,7 +232,7 @@ class ObMobilPanjangTest extends TestCase
             'nomor_pranota' => 'PMT-11-26-000001', 'tanggal_ob' => '2026-11-25',
             'items' => [['id' => 1, 'type' => 'naik_kapal'], ['id' => 2, 'type' => 'naik_kapal']],
         ])->assertOk()->assertJsonPath('success', true);
-        $this->assertDatabaseHas('pranota_ob_muat_temas', ['nominal' => 250000, 'grand_total' => 250000]);
+        $this->assertDatabaseHas('pranota_ob_muat_temas', ['nominal' => 500000, 'grand_total' => 500000]);
         DB::table('naik_kapal')->insert(['id' => 3, 'nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'size_kontainer' => '20', 'tipe_kontainer' => 'FCL']);
         DB::table('manifests')->insert(['nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001']);
         DB::table('gudangs')->where('id', 2)->update(['nama_gudang' => 'MERATUS JKT']);
