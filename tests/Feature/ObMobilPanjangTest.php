@@ -235,8 +235,11 @@ class ObMobilPanjangTest extends TestCase
         $this->assertDatabaseHas('pranota_ob_muat_temas', ['nominal' => 250000, 'grand_total' => 250000]);
         DB::table('naik_kapal')->insert(['id' => 3, 'nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'size_kontainer' => '20', 'tipe_kontainer' => 'FCL']);
         DB::table('manifests')->insert(['nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001']);
-        $this->postJson(route('ob.process-tl'), array_replace($payload, ['naik_kapal_id' => 3, 'pasangan_id' => null, 'is_ckls_mobil_panjang' => false]))->assertOk();
+        DB::table('gudangs')->where('id', 2)->update(['nama_gudang' => 'MERATUS JKT']);
+        DB::table('master_pricelist_ob_antar_gudang')->insert(['id' => 2, 'gudang_tujuan_id' => 2, 'size_kontainer' => '20ft', 'status_kontainer' => 'full', 'biaya' => 300000]);
+        $this->postJson(route('ob.process-tl'), array_replace($payload, ['naik_kapal_id' => 3, 'pasangan_id' => null, 'is_ckls_mobil_panjang' => false, 'gudang_tujuan_id' => 2, 'pricelist_id' => 2]))->assertOk();
         $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => 3, 'biaya' => 300000, 'is_combo' => false]);
-        $this->assertDatabaseHas('naik_kapal', ['id' => 3, 'sudah_ob' => true, 'ob_mobil_panjang' => false]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 3, 'sudah_ob' => true, 'ob_mobil_panjang' => false, 'ke' => 'MERATUS JKT']);
+        $this->assertDatabaseHas('history_kontainers', ['nomor_kontainer' => 'TEST3', 'gudang_id' => 2]);
     }
 }

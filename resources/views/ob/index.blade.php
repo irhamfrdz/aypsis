@@ -2522,7 +2522,7 @@ function filterMuatTemasPricelists() {
         ? 'Pilih gudang tujuan terlebih dahulu.'
         : !status
         ? 'Pilih status kontainer terlebih dahulu.'
-        : (available ? 'Tarif dari Pricelist OB Antar Gudang dengan tujuan Temas.' : 'Tidak ada pricelist Temas untuk ukuran dan status kontainer ini.');
+        : (available ? 'Tarif dari Pricelist OB Antar Gudang sesuai gudang tujuan.' : 'Tidak ada pricelist untuk gudang tujuan, ukuran, dan status kontainer ini.');
 }
 
 function updateMuatTemasMobilPanjang() {

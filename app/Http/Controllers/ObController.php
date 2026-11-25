@@ -480,7 +480,9 @@ class ObController extends Controller
 
         $temasPricelists = $kegiatan === 'muat_temas'
             ? MasterPricelistObAntarGudang::with('gudangTujuan')
-                ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
+                ->whereHas('gudangTujuan', fn ($query) => $query->where(fn ($names) => $names
+                    ->whereRaw('LOWER(nama_gudang) LIKE ?', ['%temas%'])
+                    ->orWhereRaw('LOWER(nama_gudang) LIKE ?', ['%meratus%'])))
                 ->orderBy('size_kontainer')->orderBy('biaya')->get()
             : collect();
         $temasGudangs = $kegiatan === 'muat_temas'
@@ -3074,12 +3076,14 @@ class ObController extends Controller
                 ->whereKey($validated['pricelist_id'])
                 ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
                 ->where('size_kontainer', $size.'ft')
-                ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
+                ->whereHas('gudangTujuan', fn ($query) => $query->where(fn ($names) => $names
+                    ->whereRaw('LOWER(nama_gudang) LIKE ?', ['%temas%'])
+                    ->orWhereRaw('LOWER(nama_gudang) LIKE ?', ['%meratus%'])))
                 ->where(fn ($query) => $query->where('status_kontainer', $validated['status_kontainer'])->orWhereNull('status_kontainer'))
                 ->first();
             if (! $temasPricelist) {
                 throw ValidationException::withMessages([
-                    'pricelist_id' => 'Pilih pricelist tujuan Temas yang sesuai ukuran dan status kontainer.',
+                    'pricelist_id' => 'Pilih pricelist tujuan Temas atau Meratus yang sesuai gudang, ukuran, dan status kontainer.',
                 ]);
             }
             $nomorSuratJalan = trim($validated['nomor_surat_jalan']);

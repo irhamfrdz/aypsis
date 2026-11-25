@@ -44,13 +44,13 @@
                     <label for="muatTemasGudangTujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
                     <select id="muatTemasGudangTujuan" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="filterMuatTemasPricelists()">
                         <option value="">--Pilih Gudang Tujuan--</option>
-                        @foreach($temasPricelists->pluck('gudangTujuan')->filter()->unique('id')->sortBy('nama_gudang') as $gudang)
+                        @foreach($temasGudangs->filter(fn ($gudang) => str_contains(strtolower($gudang->nama_gudang), 'temas') || str_contains(strtolower($gudang->nama_gudang), 'meratus')) as $gudang)
                             <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div>
-                    <label for="muatTemasPricelist" class="block text-sm font-medium text-gray-700 mb-1">Pricelist OB Tujuan Temas <span class="text-red-500">*</span></label>
+                    <label for="muatTemasPricelist" class="block text-sm font-medium text-gray-700 mb-1">Pricelist OB Tujuan Temas / Meratus <span class="text-red-500">*</span></label>
                     <select id="muatTemasPricelist" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="updateMuatTemasBiaya()">
                         <option value="">--Pilih Pricelist OB--</option>
                         @foreach($temasPricelists as $pricelist)
