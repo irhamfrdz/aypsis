@@ -3188,7 +3188,7 @@ class ObController extends Controller
                     'nama_supir' => $temasSupir->nama_panggilan ?: $temasSupir->nama_lengkap,
                     'barang' => $naikKapal->jenis_barang ?? '-',
                     'status_kontainer' => $request->status_kontainer,
-                    'biaya' => $pairedMobilPanjang ? ObMobilPanjangService::BIAYA_PER_KONTAINER : $temasPricelist->biaya,
+                    'biaya' => $pairedMobilPanjang ? ObMobilPanjangService::BIAYA_PER_KONTAINER : ObMobilPanjangService::BIAYA_REGULER_MUAT_TEMAS,
                     'is_ckls_mobil_panjang' => $pairedMobilPanjang,
                     'is_combo' => $pairedMobilPanjang,
                     'naik_kapal_id' => $naikKapal->id,

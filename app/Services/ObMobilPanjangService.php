@@ -10,6 +10,8 @@ class ObMobilPanjangService
 {
     public const BIAYA_PER_KONTAINER = 125000;
 
+    public const BIAYA_REGULER_MUAT_TEMAS = 325000;
+
     public function process(string $type, array $ids, callable $mark): void
     {
         if ($type !== 'naik_kapal') {
