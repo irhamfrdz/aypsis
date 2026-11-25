@@ -6411,6 +6411,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('ob/select', [\App\Http\Controllers\ObController::class, 'selectShipVoyage'])
         ->name('ob.select')
         ->middleware('can:ob-view');
+    Route::get('ob/mobil-panjang-candidates', [\App\Http\Controllers\ObController::class, 'mobilPanjangCandidates'])
+        ->name('ob.mobil-panjang-candidates')->middleware('can:ob-view');
+    Route::post('ob/mark-mobil-panjang', [\App\Http\Controllers\ObController::class, 'markMobilPanjang'])
+        ->name('ob.mark-mobil-panjang')->middleware('can:ob-view');
     Route::post('ob/mark-as-ob', [\App\Http\Controllers\ObController::class, 'markAsOB'])
         ->name('ob.mark-as-ob')
         ->middleware('can:ob-view');

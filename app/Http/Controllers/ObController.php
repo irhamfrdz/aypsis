@@ -16,6 +16,7 @@ use App\Models\PranotaOb;
 use App\Models\Prospek;
 use App\Models\StockKontainer;
 use App\Models\TagihanOb;
+use App\Services\ObMobilPanjangService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -282,7 +283,7 @@ class ObController extends Controller
 
                 // STEP 2: Set biaya berdasarkan status yang sudah ditentukan
                 $key = $status.'|'.($sizeStr ?? '');
-                $bl->biaya = isset($priceMap[$key]) ? $priceMap[$key] : null;
+                $bl->biaya = $bl->ob_mobil_panjang && $bl->sudah_ob ? ObMobilPanjangService::BIAYA_PER_KONTAINER : ($priceMap[$key] ?? null);
                 $bl->detected_status = $status;
             }
 
@@ -434,7 +435,7 @@ class ObController extends Controller
 
             // STEP 2: Set biaya berdasarkan status yang sudah ditentukan
             $key = $status.'|'.($sizeStr ?? '');
-            $nk->biaya = isset($priceMap[$key]) ? $priceMap[$key] : null;
+            $nk->biaya = $nk->ob_mobil_panjang && $nk->sudah_ob ? ObMobilPanjangService::BIAYA_PER_KONTAINER : ($priceMap[$key] ?? null);
             $nk->detected_status = $status;
         }
 
@@ -797,6 +798,45 @@ class ObController extends Controller
     /**
      * Mark container as OB with selected supir
      */
+    public function mobilPanjangCandidates(Request $request)
+    {
+        abort_unless(Auth::user()->can('ob-view'), 403);
+        $data = $request->validate(['type' => 'required|in:bl,naik_kapal', 'id' => 'required|integer']);
+        $model = $data['type'] === 'bl' ? Bl::class : NaikKapal::class;
+        $record = $model::findOrFail($data['id']);
+        $eligible = fn ($row) => preg_replace('/\s+/', '', str_ireplace('ft', '', (string) $row->size_kontainer)) === '20'
+            && ! $row->sudah_ob && trim((string) $row->nomor_kontainer)
+            && strtoupper(trim((string) $row->tipe_kontainer)) !== 'CARGO'
+            && ! str_contains(strtoupper($row->nomor_kontainer), 'CARGO');
+        $candidates = $model::where('nama_kapal', $record->nama_kapal)->where('no_voyage', $record->no_voyage)
+            ->where('sudah_ob', false)->where('id', '!=', $record->id)->orderBy('nomor_kontainer')->get()
+            ->filter($eligible)->filter(fn ($row) => strcasecmp(trim($row->nomor_kontainer), trim($record->nomor_kontainer)) !== 0)
+            ->map(fn ($row) => ['id' => $row->id, 'nomor_kontainer' => $row->nomor_kontainer])->values();
+
+        return response()->json(['eligible' => (bool) $eligible($record), 'candidates' => $candidates]);
+    }
+
+    public function markMobilPanjang(Request $request, ObMobilPanjangService $service)
+    {
+        abort_unless(Auth::user()->can('ob-view'), 403);
+        $data = $request->validate([
+            'type' => 'required|in:bl,naik_kapal', 'id' => 'required|integer',
+            'pasangan_id' => 'required|integer|different:id',
+            'supir_id' => 'required|exists:karyawans,id', 'ke_gudang_id' => 'required|exists:gudangs,id',
+            'catatan' => 'nullable|string', 'retur_barang' => 'nullable|string',
+        ]);
+        $service->process($data['type'], [$data['id'], $data['pasangan_id']], function ($record) use ($data) {
+            $payload = $data + ['bl_id' => $record->id, 'naik_kapal_id' => $record->id, 'mobil_panjang_pair' => true];
+            $subRequest = Request::create('/ob/mark-mobil-panjang', 'POST', $payload);
+            $response = $data['type'] === 'bl' ? $this->markAsOBBl($subRequest) : $this->markAsOB($subRequest);
+            if (! $response->getData(true)['success']) {
+                throw ValidationException::withMessages(['pasangan_id' => $response->getData(true)['message']]);
+            }
+        });
+
+        return response()->json(['success' => true, 'message' => 'Dua kontainer berhasil OB mobil panjang. Uang supir Rp125.000 per kontainer, total Rp250.000.']);
+    }
+
     public function markAsOB(Request $request)
     {
         $user = Auth::user();
@@ -1541,6 +1581,9 @@ class ObController extends Controller
                 }
             } catch (\Exception $e) {
                 \Log::warning('Failed to update gudangs_id or history: '.$e->getMessage());
+                if ($request->boolean('mobil_panjang_pair')) {
+                    throw $e;
+                }
             }
 
             // Update retur_barang di surat_jalans based on nomor_kontainer
@@ -1681,6 +1724,10 @@ class ObController extends Controller
 
             // Reset OB status
             $bl->sudah_ob = false;
+            if ($bl->ob_mobil_panjang) {
+                $bl->ob_mobil_panjang = false;
+                $bl->ob_pasangan_id = null;
+            }
             $bl->supir_id = null;
             $bl->tanggal_ob = null;
             $bl->catatan_ob = null;
@@ -1840,6 +1887,10 @@ class ObController extends Controller
 
             // Reset OB status di naik_kapal
             $naikKapal->sudah_ob = false;
+            if ($naikKapal->ob_mobil_panjang) {
+                $naikKapal->ob_mobil_panjang = false;
+                $naikKapal->ob_pasangan_id = null;
+            }
             $naikKapal->supir_id = null;
             $naikKapal->tanggal_ob = null;
             $naikKapal->catatan_ob = null;
@@ -2044,7 +2095,10 @@ class ObController extends Controller
                             $itemsToSave[$idx]['status'] = $isEmptyByName ? 'empty' : 'full';
                         } else {
                             // Use biaya from request if provided, otherwise from DB
-                            $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null);
+                            $itemsToSave[$idx]['biaya'] = ! empty($bl->ob_mobil_panjang)
+                                ? ObMobilPanjangService::BIAYA_PER_KONTAINER
+                                : (isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($bl->biaya ?? null));
+                            $itemsToSave[$idx]['ob_mobil_panjang'] = ! empty($bl->ob_mobil_panjang);
 
                             // Recalculate status from biaya to ensure accuracy
                             $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);
@@ -2092,7 +2146,10 @@ class ObController extends Controller
                             $itemsToSave[$idx]['status'] = $isEmptyByNameNK ? 'empty' : 'full';
                         } else {
                             // Use biaya from request if provided, otherwise from DB
-                            $itemsToSave[$idx]['biaya'] = isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null);
+                            $itemsToSave[$idx]['biaya'] = ! empty($nk->ob_mobil_panjang)
+                                ? ObMobilPanjangService::BIAYA_PER_KONTAINER
+                                : (isset($it['biaya']) && $it['biaya'] !== '' ? $it['biaya'] : ($nk->biaya ?? null));
+                            $itemsToSave[$idx]['ob_mobil_panjang'] = ! empty($nk->ob_mobil_panjang);
 
                             // Recalculate status from biaya to ensure accuracy
                             $biaya = (int) ($itemsToSave[$idx]['biaya'] ?? 0);

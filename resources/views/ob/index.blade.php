@@ -1289,6 +1289,21 @@
                 </div>
 
                 <div class="mb-3">
+                    <div id="obMobilPanjangWrapper" class="hidden mb-3 rounded-md border border-blue-200 bg-blue-50 p-3">
+                        <label class="flex items-center gap-2 text-xs font-medium text-blue-900">
+                            <input type="checkbox" id="obMobilPanjang" class="rounded border-gray-300" onchange="toggleObMobilPanjang()">
+                            Menggunakan mobil panjang / combo
+                        </label>
+                        <p class="mt-1 text-xs text-blue-800">Uang supir Rp125.000 per kontainer. Dua kontainer 20 ft: total Rp250.000.</p>
+                        <div id="obPasanganWrapper" class="hidden mt-2">
+                            <label for="obPasanganId" class="block text-xs mb-1">Kontainer pasangan (20 ft) *</label>
+                            <input id="obPasanganSearch" type="search" placeholder="Cari nomor kontainer..." class="w-full border rounded p-1.5 text-xs mb-1" oninput="filterObPasangan()">
+                            <select id="obPasanganId" class="w-full border rounded p-1.5 text-xs" disabled>
+                                <option value="">Pilih kontainer pasangan</option>
+                            </select>
+                            <p class="text-xs mt-1">Kedua kontainer diproses dengan supir dan tujuan yang sama.</p>
+                        </div>
+                    </div>
                     <label for="catatan" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Catatan (Opsional)
                     </label>
@@ -1729,6 +1744,7 @@ function showNotification(message, type) {
 }
 
 function openSupirModal(type, id, isGanti = false) {
+    loadObMobilPanjang(type, id, isGanti);
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
     document.getElementById('is_ganti_supir').value = isGanti ? '1' : '0';
@@ -2263,6 +2279,18 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
         };
     }
     
+    if (!isGantiSupir && document.getElementById('obMobilPanjang').checked) {
+        const pasanganId = document.getElementById('obPasanganId').value;
+        if (!pasanganId) {
+            showNotification('Pilih kontainer pasangan terlebih dahulu.', 'error');
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
+            return;
+        }
+        endpoint = @json(route('ob.mark-mobil-panjang', [], false));
+        requestData = { ...requestData, type: recordType, id: recordId, pasangan_id: pasanganId };
+    }
+
     // Send AJAX request
     fetch(endpoint, {
         method: 'POST',
@@ -2301,6 +2329,46 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
         btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
     });
 });
+
+let obMobilPanjangLoadId = 0;
+async function loadObMobilPanjang(type, id, isGanti) {
+    const loadId = ++obMobilPanjangLoadId;
+    const wrapper = document.getElementById('obMobilPanjangWrapper');
+    wrapper.classList.add('hidden');
+    document.getElementById('obMobilPanjang').checked = false;
+    document.getElementById('obPasanganId').innerHTML = '<option value="">Pilih kontainer pasangan</option>';
+    document.getElementById('obPasanganSearch').value = '';
+    toggleObMobilPanjang();
+    if (isGanti || @json(request('kegiatan') === 'muat_temas')) return;
+    try {
+        const url = @json(route('ob.mobil-panjang-candidates', [], false)) + '?' + new URLSearchParams({type, id});
+        const response = await fetch(url, {headers: {'Accept': 'application/json'}});
+        if (!response.ok) throw new Error('Pilihan mobil panjang tidak dapat dimuat.');
+        const data = await response.json();
+        if (loadId !== obMobilPanjangLoadId) return;
+        for (const candidate of data.candidates) {
+            document.getElementById('obPasanganId').add(new Option(candidate.nomor_kontainer, candidate.id));
+        }
+        wrapper.classList.toggle('hidden', !data.eligible);
+    } catch (error) {
+        if (loadId === obMobilPanjangLoadId) showNotification(error.message, 'error');
+    }
+}
+
+function toggleObMobilPanjang() {
+    const active = document.getElementById('obMobilPanjang').checked;
+    document.getElementById('obPasanganWrapper').classList.toggle('hidden', !active);
+    document.getElementById('obPasanganId').disabled = !active;
+    document.getElementById('obPasanganId').required = active;
+    if (!active) document.getElementById('obPasanganId').value = '';
+}
+
+function filterObPasangan() {
+    const query = document.getElementById('obPasanganSearch').value.trim().toUpperCase();
+    for (const option of document.getElementById('obPasanganId').options) {
+        option.hidden = !!option.value && !option.text.toUpperCase().includes(query);
+    }
+}
 
 async function cancelMuatTemasVoyage(button) {
     const kapal = @json($namaKapal);
