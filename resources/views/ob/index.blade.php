@@ -2504,20 +2504,23 @@ document.getElementById('muatTemasGudangAsal')?.addEventListener('change', funct
 });
 
 function filterMuatTemasPricelists() {
+    const tujuan = document.getElementById('muatTemasGudangTujuan').value;
     const size = document.getElementById('muatTemasForm').dataset.size;
     const status = document.getElementById('muatTemasStatus').value;
     const select = document.getElementById('muatTemasPricelist');
     let available = 0;
     Array.from(select.options).forEach(option => {
         if (!option.value) return;
-        const eligible = !!status && option.dataset.size === size && (!option.dataset.status || option.dataset.status === status);
+        const eligible = !!tujuan && !!status && option.dataset.gudangTujuan === tujuan && option.dataset.size === size && (!option.dataset.status || option.dataset.status === status);
         option.hidden = !eligible;
         option.disabled = !eligible;
         if (eligible) available++;
     });
     if (select.selectedOptions[0]?.disabled) select.value = '';
     updateMuatTemasBiaya();
-    document.getElementById('muatTemasPricelistStatus').textContent = !status
+    document.getElementById('muatTemasPricelistStatus').textContent = !tujuan
+        ? 'Pilih gudang tujuan terlebih dahulu.'
+        : !status
         ? 'Pilih status kontainer terlebih dahulu.'
         : (available ? 'Tarif dari Pricelist OB Antar Gudang dengan tujuan Temas.' : 'Tidak ada pricelist Temas untuk ukuran dan status kontainer ini.');
 }
@@ -2564,6 +2567,7 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 kegiatan: 'muat_temas',
                 tanggal_ob: document.getElementById('muatTemasTanggal').value,
                 gudang_asal_id: document.getElementById('muatTemasGudangAsal').value,
+                gudang_tujuan_id: document.getElementById('muatTemasGudangTujuan').value,
                 supir_id: document.getElementById('muatTemasSupir').value,
                 nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,

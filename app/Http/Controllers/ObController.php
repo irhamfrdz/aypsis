@@ -826,6 +826,7 @@ class ObController extends Controller
             'status_kontainer' => 'required|in:full,empty',
             'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
             'gudang_asal_id' => 'required|integer|exists:gudangs,id',
+            'gudang_tujuan_id' => 'required|integer|exists:gudangs,id',
             'supir_id' => 'required|integer|exists:karyawans,id',
         ]);
         $service->process('naik_kapal', [$data['id'], $data['pasangan_id']], function ($record) use ($data) {
@@ -3057,6 +3058,7 @@ class ObController extends Controller
                 'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
                 'is_ckls_mobil_panjang' => 'sometimes|boolean',
                 'gudang_asal_id' => 'required|integer|exists:gudangs,id',
+                'gudang_tujuan_id' => 'required|integer|exists:gudangs,id',
                 'supir_id' => [
                     'required',
                     'integer',
@@ -3070,6 +3072,7 @@ class ObController extends Controller
             $size = preg_replace('/\s+/', '', str_ireplace('ft', '', $naikKapal->size_kontainer));
             $temasPricelist = MasterPricelistObAntarGudang::with('gudangTujuan')
                 ->whereKey($validated['pricelist_id'])
+                ->where('gudang_tujuan_id', $validated['gudang_tujuan_id'])
                 ->where('size_kontainer', $size.'ft')
                 ->whereHas('gudangTujuan', fn ($query) => $query->where('nama_gudang', 'like', '%temas%'))
                 ->where(fn ($query) => $query->where('status_kontainer', $validated['status_kontainer'])->orWhereNull('status_kontainer'))

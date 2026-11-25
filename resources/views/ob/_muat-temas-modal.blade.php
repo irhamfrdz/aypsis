@@ -41,11 +41,20 @@
                     </select>
                 </div>
                 <div>
+                    <label for="muatTemasGudangTujuan" class="block text-sm font-medium text-gray-700 mb-1">Gudang Tujuan <span class="text-red-500">*</span></label>
+                    <select id="muatTemasGudangTujuan" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="filterMuatTemasPricelists()">
+                        <option value="">--Pilih Gudang Tujuan--</option>
+                        @foreach($temasPricelists->pluck('gudangTujuan')->filter()->unique('id')->sortBy('nama_gudang') as $gudang)
+                            <option value="{{ $gudang->id }}">{{ $gudang->nama_gudang }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div>
                     <label for="muatTemasPricelist" class="block text-sm font-medium text-gray-700 mb-1">Pricelist OB Tujuan Temas <span class="text-red-500">*</span></label>
                     <select id="muatTemasPricelist" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="updateMuatTemasBiaya()">
                         <option value="">--Pilih Pricelist OB--</option>
                         @foreach($temasPricelists as $pricelist)
-                            <option value="{{ $pricelist->id }}" data-size="{{ str_replace('ft', '', $pricelist->size_kontainer) }}" data-status="{{ $pricelist->status_kontainer ?? '' }}" data-biaya="{{ $pricelist->biaya }}">
+                            <option value="{{ $pricelist->id }}" data-gudang-tujuan="{{ $pricelist->gudang_tujuan_id }}" data-size="{{ str_replace('ft', '', $pricelist->size_kontainer) }}" data-status="{{ $pricelist->status_kontainer ?? '' }}" data-biaya="{{ $pricelist->biaya }}">
                                 {{ $pricelist->gudangTujuan->nama_gudang }} - {{ $pricelist->size_kontainer_label }} - {{ $pricelist->status_service_label }}{{ $pricelist->status_kontainer_label ? ' - '.$pricelist->status_kontainer_label : '' }} - {{ $pricelist->formatted_biaya }}
                             </option>
                         @endforeach

@@ -197,12 +197,15 @@ class ObMobilPanjangTest extends TestCase
         $payload = [
             'naik_kapal_id' => 1, 'pasangan_id' => 2, 'kegiatan' => 'muat_temas',
             'tanggal_ob' => '2026-11-24', 'nomor_surat_jalan' => 'SC 123',
-            'status_kontainer' => 'full', 'pricelist_id' => 1, 'gudang_asal_id' => 1,
+            'status_kontainer' => 'full', 'pricelist_id' => 1, 'gudang_asal_id' => 1, 'gudang_tujuan_id' => 1,
             'supir_id' => 1, 'is_ckls_mobil_panjang' => true,
         ];
         $this->getJson(route('ob.mobil-panjang-candidates', ['type' => 'naik_kapal', 'id' => 1, 'kegiatan' => 'muat_temas']))
             ->assertOk()->assertJsonPath('eligible', true)->assertJsonCount(1, 'candidates');
         $this->postJson(route('ob.process-tl'), array_replace($payload, ['pasangan_id' => null]))->assertUnprocessable();
+        DB::table('gudangs')->insert(['id' => 2, 'nama_gudang' => 'TEMAS LAIN']);
+        $this->postJson(route('ob.process-tl'), array_replace($payload, ['gudang_tujuan_id' => 2]))->assertUnprocessable();
+        $this->assertDatabaseCount('tagihan_ob', 0);
         $this->postJson(route('ob.process-tl'), $payload)->assertOk()->assertJsonPath('success', true);
         $this->assertDatabaseCount('tagihan_ob', 2);
         $this->assertEquals(250000, DB::table('tagihan_ob')->sum('biaya'));
