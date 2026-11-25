@@ -57,7 +57,16 @@
                         <input type="checkbox" id="muatTemasMobilPanjang" class="rounded border-gray-300 text-teal-600" onchange="updateMuatTemasBiaya()">
                         Menggunakan mobil panjang
                     </label>
-                    <p class="text-xs text-gray-500 mt-1">Jika dicentang, biaya OB menjadi Rp 250.000.</p>
+                    <p class="text-xs text-gray-500 mt-1">Rp125.000 per kontainer. Dua kontainer 20 ft: total Rp250.000.</p>
+                </div>
+                <div id="muatTemasPasanganSection" class="hidden">
+                    <div id="obPasanganWrapper" class="hidden">
+                        <label for="obPasanganId" class="block text-sm font-medium text-gray-700 mb-1">Kontainer pasangan (20 ft) <span class="text-red-500">*</span></label>
+                        <select id="obPasanganId" disabled class="w-full border border-gray-300 rounded-md px-3 py-2">
+                            <option value="">Pilih kontainer pasangan</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Kedua kontainer memakai tanggal OB, gudang asal, nomor surat jalan, supir, status, dan pricelist yang sama.</p>
+                    </div>
                 </div>
                 <div>
                     <label for="muatTemasBiaya" class="block text-sm font-medium text-gray-700 mb-1">Biaya OB</label>

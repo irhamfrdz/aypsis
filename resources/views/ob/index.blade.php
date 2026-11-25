@@ -1289,20 +1289,6 @@
                 </div>
 
                 <div class="mb-3">
-                    <div id="obMobilPanjangWrapper" class="hidden mb-3 rounded-md border border-blue-200 bg-blue-50 p-3">
-                        <label class="flex items-center gap-2 text-xs font-medium text-blue-900">
-                            <input type="checkbox" id="obMobilPanjang" class="rounded border-gray-300" onchange="toggleObMobilPanjang()">
-                            Menggunakan mobil panjang / combo
-                        </label>
-                        <p class="mt-1 text-xs text-blue-800">Uang supir Rp125.000 per kontainer. Dua kontainer 20 ft: total Rp250.000.</p>
-                        <div id="obPasanganWrapper" class="hidden mt-2">
-                            <label for="obPasanganId" class="block text-xs mb-1">Kontainer pasangan (20 ft) *</label>
-                            <select id="obPasanganId" class="w-full border rounded p-1.5 text-xs" disabled>
-                                <option value="">Pilih kontainer pasangan</option>
-                            </select>
-                            <p class="text-xs mt-1">Kedua kontainer diproses dengan supir dan tujuan yang sama.</p>
-                        </div>
-                    </div>
                     <label for="catatan" class="block text-xs font-medium text-gray-700 mb-1.5">
                         Catatan (Opsional)
                     </label>
@@ -1743,7 +1729,6 @@ function showNotification(message, type) {
 }
 
 function openSupirModal(type, id, isGanti = false) {
-    loadObMobilPanjang(type, id, isGanti);
     document.getElementById('record_type').value = type;
     document.getElementById('record_id').value = id;
     document.getElementById('is_ganti_supir').value = isGanti ? '1' : '0';
@@ -2278,18 +2263,6 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
         };
     }
     
-    if (!isGantiSupir && document.getElementById('obMobilPanjang').checked) {
-        const pasanganId = document.getElementById('obPasanganId').value;
-        if (!pasanganId) {
-            showNotification('Pilih kontainer pasangan terlebih dahulu.', 'error');
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<i class="fas fa-check mr-2"></i>Tandai Sudah OB';
-            return;
-        }
-        endpoint = @json(route('ob.mark-mobil-panjang', [], false));
-        requestData = { ...requestData, type: recordType, id: recordId, pasangan_id: pasanganId, kegiatan: @json(request('kegiatan')) };
-    }
-
     // Send AJAX request
     fetch(endpoint, {
         method: 'POST',
@@ -2332,12 +2305,12 @@ document.getElementById('formMarkOB').addEventListener('submit', async function(
 let obMobilPanjangLoadId = 0;
 async function loadObMobilPanjang(type, id, isGanti) {
     const loadId = ++obMobilPanjangLoadId;
-    const wrapper = document.getElementById('obMobilPanjangWrapper');
+    const wrapper = document.getElementById('muatTemasPasanganSection');
     wrapper.classList.add('hidden');
-    document.getElementById('obMobilPanjang').checked = false;
+    document.getElementById('muatTemasMobilPanjang').checked = false;
     document.getElementById('obPasanganId').innerHTML = '<option value="">Pilih kontainer pasangan</option>';
     toggleObMobilPanjang();
-    if (isGanti || @json(request('kegiatan') !== 'muat_temas') || type !== 'naik_kapal') return;
+    if (isGanti || type !== 'naik_kapal') return;
     try {
         const url = @json(route('ob.mobil-panjang-candidates', [], false)) + '?' + new URLSearchParams({type, id, kegiatan: 'muat_temas'});
         const response = await fetch(url, {headers: {'Accept': 'application/json'}});
@@ -2348,13 +2321,14 @@ async function loadObMobilPanjang(type, id, isGanti) {
             document.getElementById('obPasanganId').add(new Option(candidate.nomor_kontainer, candidate.id));
         }
         wrapper.classList.toggle('hidden', !data.eligible);
+        document.getElementById('muatTemasMobilPanjang').disabled = !data.eligible;
     } catch (error) {
         if (loadId === obMobilPanjangLoadId) showNotification(error.message, 'error');
     }
 }
 
 function toggleObMobilPanjang() {
-    const active = document.getElementById('obMobilPanjang').checked;
+    const active = document.getElementById('muatTemasMobilPanjang').checked;
     document.getElementById('obPasanganWrapper').classList.toggle('hidden', !active);
     document.getElementById('obPasanganId').disabled = !active;
     document.getElementById('obPasanganId').required = active;
@@ -2363,7 +2337,7 @@ function toggleObMobilPanjang() {
         const select = jQuery('#obPasanganId');
         if (active && !select.hasClass('select2-hidden-accessible')) {
             select.select2({
-                dropdownParent: jQuery('#supirModal'),
+                dropdownParent: jQuery('#muatTemasModal'),
                 width: '100%',
                 placeholder: 'Cari dan pilih kontainer pasangan',
                 allowClear: true,
@@ -2469,6 +2443,7 @@ function openMuatTemasModal(naikKapalId) {
     document.getElementById('muatTemasModal').classList.remove('hidden');
     document.getElementById('muatTemasTanggal').focus();
     updateMuatTemasGudangAsal();
+    loadObMobilPanjang('naik_kapal', naikKapalId, false);
 }
 
 function closeMuatTemasModal() {
@@ -2549,13 +2524,15 @@ function filterMuatTemasPricelists() {
 
 function updateMuatTemasMobilPanjang() {
     const option = document.getElementById('muatTemasSupir').selectedOptions[0];
-    document.getElementById('muatTemasMobilPanjang').checked = option?.dataset.mobilPanjang === '1';
+    const checkbox = document.getElementById('muatTemasMobilPanjang');
+    checkbox.checked = !checkbox.disabled && option?.dataset.mobilPanjang === '1';
     updateMuatTemasBiaya();
 }
 
 function updateMuatTemasBiaya() {
+    toggleObMobilPanjang();
     if (document.getElementById('muatTemasMobilPanjang').checked) {
-        document.getElementById('muatTemasBiaya').value = 'Rp 250.000';
+        document.getElementById('muatTemasBiaya').value = 'Rp 125.000 / kontainer (total Rp 250.000)';
         return;
     }
     const option = document.getElementById('muatTemasPricelist').selectedOptions[0];
@@ -2591,7 +2568,8 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,
                 pricelist_id: document.getElementById('muatTemasPricelist').value,
-                is_ckls_mobil_panjang: document.getElementById('muatTemasMobilPanjang').checked
+                is_ckls_mobil_panjang: document.getElementById('muatTemasMobilPanjang').checked,
+                pasangan_id: document.getElementById('obPasanganId').value || null
             })
         });
         const data = await response.json();

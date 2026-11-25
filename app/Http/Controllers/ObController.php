@@ -821,26 +821,25 @@ class ObController extends Controller
         abort_unless(Auth::user()->can('ob-view'), 403);
         $data = $request->validate([
             'type' => 'required|in:naik_kapal', 'id' => 'required|integer',
-            'pasangan_id' => 'required|integer|different:id',
-            'supir_id' => 'required|exists:karyawans,id', 'ke_gudang_id' => 'required|exists:gudangs,id',
-            'catatan' => 'nullable|string', 'retur_barang' => 'nullable|string',
-            'kegiatan' => 'required|in:muat_temas',
+            'pasangan_id' => 'required|integer|different:id', 'kegiatan' => 'required|in:muat_temas',
+            'tanggal_ob' => 'required|date', 'nomor_surat_jalan' => 'required|string|max:255',
+            'status_kontainer' => 'required|in:full,empty',
+            'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
+            'gudang_asal_id' => 'required|integer|exists:gudangs,id',
+            'supir_id' => 'required|integer|exists:karyawans,id',
         ]);
-        $service->process($data['type'], [$data['id'], $data['pasangan_id']], function ($record) use ($data) {
+        $service->process('naik_kapal', [$data['id'], $data['pasangan_id']], function ($record) use ($data) {
             if (TagihanOb::where('naik_kapal_id', $record->id)->where('kegiatan', 'MUAT TEMAS')->exists()) {
                 throw ValidationException::withMessages(['pasangan_id' => 'Kontainer sudah memiliki tagihan OB Muat Temas.']);
             }
-            $historyBefore = HistoryKontainer::where('nomor_kontainer', $record->nomor_kontainer)->max('id');
-            $payload = $data + ['bl_id' => $record->id, 'naik_kapal_id' => $record->id, 'mobil_panjang_pair' => true];
-            $subRequest = Request::create('/ob/mark-mobil-panjang', 'POST', $payload);
-            $response = $this->markAsOB($subRequest);
+            $payload = array_replace($data, ['naik_kapal_id' => $record->id, 'is_ckls_mobil_panjang' => true]);
+            $response = $this->processTL(Request::create('/ob/process-tl', 'POST', $payload), true);
             if (! $response->getData(true)['success']) {
                 throw ValidationException::withMessages(['pasangan_id' => $response->getData(true)['message']]);
             }
-            app(ObMobilPanjangService::class)->recordTemas($record->fresh(), $historyBefore ?? 0);
         });
 
-        return response()->json(['success' => true, 'message' => 'Dua kontainer berhasil OB mobil panjang. Uang supir Rp125.000 per kontainer, total Rp250.000.']);
+        return response()->json(['success' => true, 'message' => 'Dua kontainer berhasil OB Muat Temas. Uang supir Rp125.000 per kontainer, total Rp250.000.']);
     }
 
     public function markAsOB(Request $request)
@@ -3035,7 +3034,7 @@ class ObController extends Controller
     /**
      * Process TL (Tanda Langsung) - Copy naik_kapal to BL and mark as OB
      */
-    public function processTL(Request $request)
+    public function processTL(Request $request, bool $pairedMobilPanjang = false)
     {
         $user = Auth::user();
 
@@ -3044,6 +3043,9 @@ class ObController extends Controller
             'kegiatan' => 'nullable|in:muat,muat_temas',
         ]);
         $isMuatTemas = $request->input('kegiatan') === 'muat_temas';
+        if ($isMuatTemas && $request->boolean('is_ckls_mobil_panjang') && ! $pairedMobilPanjang) {
+            return $this->markMobilPanjang($request->merge(['type' => 'naik_kapal', 'id' => $request->naik_kapal_id]), app(ObMobilPanjangService::class));
+        }
         $temasPricelist = null;
         $nomorSuratJalan = null;
         $temasSupir = null;
@@ -3179,8 +3181,9 @@ class ObController extends Controller
                     'nama_supir' => $temasSupir->nama_panggilan ?: $temasSupir->nama_lengkap,
                     'barang' => $naikKapal->jenis_barang ?? '-',
                     'status_kontainer' => $request->status_kontainer,
-                    'biaya' => $request->boolean('is_ckls_mobil_panjang') ? 250000 : $temasPricelist->biaya,
-                    'is_ckls_mobil_panjang' => $request->boolean('is_ckls_mobil_panjang'),
+                    'biaya' => $pairedMobilPanjang ? ObMobilPanjangService::BIAYA_PER_KONTAINER : $temasPricelist->biaya,
+                    'is_ckls_mobil_panjang' => $pairedMobilPanjang,
+                    'is_combo' => $pairedMobilPanjang,
                     'naik_kapal_id' => $naikKapal->id,
                     'nomor_surat_jalan' => $nomorSuratJalan,
                     'gudang_asal_id' => $validated['gudang_asal_id'],

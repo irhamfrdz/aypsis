@@ -164,34 +164,54 @@ class ObMobilPanjangTest extends TestCase
                 'asal_kontainer' => 'DEPO', 'jenis_barang' => 'BARANG UJI',
             ]);
         }
-        // Isolate the existing muat handler; exercise real pair, Temas billing, and history logic.
+        Schema::table('karyawans', function (Blueprint $table) {
+            $table->string('divisi')->default('SUPIR');
+            $table->date('tanggal_berhenti')->nullable();
+        });
+        Schema::table('bls', fn (Blueprint $table) => $table->string('asal_kontainer')->nullable());
+        Schema::table('history_kontainers', fn (Blueprint $table) => $table->unsignedBigInteger('asal_gudang_id')->nullable());
+        Schema::table('tagihan_ob', function (Blueprint $table) {
+            $table->string('nomor_surat_jalan')->nullable();
+            $table->unsignedBigInteger('gudang_asal_id')->nullable();
+            $table->boolean('is_ckls_mobil_panjang')->default(false);
+        });
+        DB::table('gudangs')->where('id', 1)->update(['nama_gudang' => 'TEMAS JKT']);
+        Schema::create('master_pricelist_ob_antar_gudang', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('gudang_tujuan_id');
+            $table->string('size_kontainer');
+            $table->string('status_kontainer');
+            $table->decimal('biaya');
+        });
+        DB::table('master_pricelist_ob_antar_gudang')->insert(['id' => 1, 'gudang_tujuan_id' => 1, 'size_kontainer' => '20ft', 'status_kontainer' => 'full', 'biaya' => 300000]);
+        Schema::create('manifests', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_kontainer');
+            $table->string('nama_kapal');
+            $table->string('no_voyage');
+        });
+        foreach ([1, 2] as $id) {
+            DB::table('bls')->where('id', $id)->update(['nomor_kontainer' => 'TEMAS'.$id]);
+            DB::table('manifests')->insert(['nomor_kontainer' => 'TEMAS'.$id, 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001']);
+        }
+        $payload = [
+            'naik_kapal_id' => 1, 'pasangan_id' => 2, 'kegiatan' => 'muat_temas',
+            'tanggal_ob' => '2026-11-24', 'nomor_surat_jalan' => 'SC 123',
+            'status_kontainer' => 'full', 'pricelist_id' => 1, 'gudang_asal_id' => 1,
+            'supir_id' => 1, 'is_ckls_mobil_panjang' => true,
+        ];
         $this->getJson(route('ob.mobil-panjang-candidates', ['type' => 'naik_kapal', 'id' => 1, 'kegiatan' => 'muat_temas']))
             ->assertOk()->assertJsonPath('eligible', true)->assertJsonCount(1, 'candidates');
-        $controller = \Mockery::mock(\App\Http\Controllers\ObController::class)->makePartial();
-        $controller->shouldReceive('markAsOB')->twice()->andReturnUsing(function ($request) {
-            $record = \App\Models\NaikKapal::findOrFail($request->naik_kapal_id);
-            DB::table('naik_kapal')->where('id', $record->id)->update([
-                'sudah_ob' => true, 'supir_id' => $request->supir_id, 'tanggal_ob' => now(), 'ke' => 'MERATUS JKT',
-            ]);
-            \App\Models\HistoryKontainer::create([
-                'nomor_kontainer' => $record->nomor_kontainer, 'tipe_kontainer' => 'stock',
-                'jenis_kegiatan' => 'Masuk', 'tanggal_kegiatan' => now(), 'gudang_id' => 1,
-                'keterangan' => 'Masuk via OB Muat ke Kapal: KAPAL UJI. Voyage: 001', 'created_by' => 1,
-            ]);
-            return response()->json(['success' => true]);
-        });
-        app()->instance(\App\Http\Controllers\ObController::class, $controller);
-        $this->postJson(route('ob.mark-mobil-panjang'), array_replace($this->payload(), [
-            'type' => 'naik_kapal', 'kegiatan' => 'muat_temas',
-        ]))->assertOk()->assertJsonPath('success', true);
+        $this->postJson(route('ob.process-tl'), array_replace($payload, ['pasangan_id' => null]))->assertUnprocessable();
+        $this->postJson(route('ob.process-tl'), $payload)->assertOk()->assertJsonPath('success', true);
         $this->assertDatabaseCount('tagihan_ob', 2);
         $this->assertEquals(250000, DB::table('tagihan_ob')->sum('biaya'));
         foreach ([1, 2] as $id) {
-            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000]);
+            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000, 'nomor_surat_jalan' => 'SC 123', 'tanggal_ob' => '2026-11-24']);
             $this->assertDatabaseHas('naik_kapal', ['id' => $id, 'sudah_ob' => true, 'ob_mobil_panjang' => true]);
             $this->assertDatabaseHas('history_kontainers', [
                 'nomor_kontainer' => 'TEMAS'.$id, 'jenis_kegiatan' => 'Pindahan Gudang',
-                'keterangan' => 'OB Muat Temas: DEPO -> MERATUS JKT. Surat Jalan: . Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001',
+                'keterangan' => 'OB Muat Temas: TEMAS JKT -> TEMAS JKT. Surat Jalan: SC 123. Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001',
             ]);
         }
         Schema::create('pranota_ob_items', function (Blueprint $table) {
@@ -210,5 +230,10 @@ class ObMobilPanjangTest extends TestCase
             'items' => [['id' => 1, 'type' => 'naik_kapal'], ['id' => 2, 'type' => 'naik_kapal']],
         ])->assertOk()->assertJsonPath('success', true);
         $this->assertDatabaseHas('pranota_ob_muat_temas', ['nominal' => 250000, 'grand_total' => 250000]);
+        DB::table('naik_kapal')->insert(['id' => 3, 'nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001', 'size_kontainer' => '20', 'tipe_kontainer' => 'FCL']);
+        DB::table('manifests')->insert(['nomor_kontainer' => 'TEST3', 'nama_kapal' => 'KAPAL UJI', 'no_voyage' => '001']);
+        $this->postJson(route('ob.process-tl'), array_replace($payload, ['naik_kapal_id' => 3, 'pasangan_id' => null, 'is_ckls_mobil_panjang' => false]))->assertOk();
+        $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => 3, 'biaya' => 300000, 'is_combo' => false]);
+        $this->assertDatabaseHas('naik_kapal', ['id' => 3, 'sudah_ob' => true, 'ob_mobil_panjang' => false]);
     }
 }
