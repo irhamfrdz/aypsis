@@ -39,6 +39,9 @@ class MasterRumusBpjsController extends Controller
             $bulkValues[$field] = $this->bulkValueOptions($rumusJamsostek->pluck($field), $field === 'jp_max_age');
         }
 
+        \App\Services\BpjsEffectiveValues::attach($rumusJkn);
+        \App\Services\BpjsEffectiveValues::attach($rumusJamsostek);
+
         return view('master.rumus-bpjs.index', compact('rumusJkn', 'rumusJamsostek', 'bulkValues'));
     }
 
@@ -59,6 +62,8 @@ class MasterRumusBpjsController extends Controller
     {
         $data = $request->validate([
             'field' => 'required|in:dpp_jkn,dpp_bp_jamsostek,jp_max_age,jp_max_dpp',
+            'dpp_from' => 'nullable|required_with:dpp_until|date_format:Y-m-d',
+            'dpp_until' => 'nullable|required_with:dpp_from|date_format:Y-m-d|after_or_equal:dpp_from',
             'old_value' => 'required|numeric|min:0|max:9999999999999.99',
             'new_value' => 'required|numeric|min:0|max:9999999999999.99',
         ]);
@@ -85,7 +90,7 @@ class MasterRumusBpjsController extends Controller
             ? [Karyawan::class => 'karyawan', KaryawanTidakTetap::class => 'karyawan tidak tetap', MasterRumusBpjs::class => 'rumus BPJS']
             : [MasterRumusBpjs::class => 'rumus BPJS'];
 
-        $counts = DB::transaction(function () use ($models, $field, $old, $new) {
+        $counts = DB::transaction(function () use ($models, $field, $old, $new, $request) {
             $counts = [];
             foreach ($models as $model => $label) {
                 $counts[$label] = 0;
@@ -99,7 +104,7 @@ class MasterRumusBpjsController extends Controller
                 if ($model === MasterRumusBpjs::class) {
                     $query->where('jenis', $field === 'dpp_jkn' ? 'jkn' : 'jamsostek');
                 }
-                $query->lockForUpdate()->chunkById(200, function ($records) use (&$counts, $label, $field, $targetField, $old, $new) {
+                $query->lockForUpdate()->chunkById(200, function ($records) use (&$counts, $label, $field, $targetField, $old, $new, $request) {
                     foreach ($records as $record) {
                         if ($targetField === 'hutang_tiers') {
                             $tiers = $record->hutang_tiers;
@@ -124,7 +129,11 @@ class MasterRumusBpjsController extends Controller
                             }
                             $record->{$targetField} = $field === 'jp_max_age' ? (int) $new : $new;
                         }
-                        $record->save();
+                        if ($request->filled('dpp_from')) {
+                            \App\Services\BpjsEffectiveValues::schedule($record, $field, $request->dpp_from, $request->dpp_until, [$targetField => $record->{$targetField}]);
+                        } else {
+                            $record->save();
+                        }
                         $counts[$label]++;
                     }
                 });
@@ -250,6 +259,10 @@ class MasterRumusBpjsController extends Controller
         foreach (array_keys((array) $request->input('jenis', [])) as $key) {
             $tipeRules["tipe.$key"] = 'required|string|max:255';
             $tipeRules["group_name.$key"] = 'required';
+            foreach (['dpp', 'diskon'] as $component) {
+                $tipeRules["{$component}_from.$key"] = "nullable|required_with:{$component}_until.$key|date_format:Y-m-d";
+                $tipeRules["{$component}_until.$key"] = "nullable|required_with:{$component}_from.$key|date_format:Y-m-d|after_or_equal:{$component}_from.$key";
+            }
         }
 
         $request->validate([
@@ -296,56 +309,74 @@ class MasterRumusBpjsController extends Controller
             'jp_max_age.*' => 'nullable|integer|min:0',
         ] + $tipeRules);
 
-        foreach ($request->jenis as $key => $jenis) {
-            $rawGroupNames = $request->group_name[$key] ?? [];
-            if (is_string($rawGroupNames)) {
-                $rawGroupNames = explode(',', $rawGroupNames);
-            }
-            $groupNames = array_values(array_filter(array_map('trim', (array) $rawGroupNames)));
+        DB::transaction(function () use ($request) {
+            foreach ($request->jenis as $key => $jenis) {
+                $rawGroupNames = $request->group_name[$key] ?? [];
+                if (is_string($rawGroupNames)) {
+                    $rawGroupNames = explode(',', $rawGroupNames);
+                }
+                $groupNames = array_values(array_filter(array_map('trim', (array) $rawGroupNames)));
 
-            if (! empty($groupNames)) {
-                // Decode hutang_tiers JSON dari hidden input
-                $tiersRaw = $request->hutang_tiers[$key] ?? null;
-                $tiers = null;
-                if ($tiersRaw) {
-                    $decoded = json_decode($tiersRaw, true);
-                    // Filter tier kosong
-                    if (is_array($decoded)) {
-                        \Illuminate\Support\Facades\Validator::make(['tiers' => $decoded], [
-                            'tiers.*.potongan_tanpa_diskon' => 'nullable|numeric|min:0|max:9999999999999.99',
-                        ])->validate();
-                        $tiers = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
-                        $tiers = count($tiers) ? $tiers : null;
+                if (! empty($groupNames)) {
+                    // Decode hutang_tiers JSON dari hidden input
+                    $tiersRaw = $request->hutang_tiers[$key] ?? null;
+                    $tiers = null;
+                    if ($tiersRaw) {
+                        $decoded = json_decode($tiersRaw, true);
+                        // Filter tier kosong
+                        if (is_array($decoded)) {
+                            \Illuminate\Support\Facades\Validator::make(['tiers' => $decoded], [
+                                'tiers.*.potongan_tanpa_diskon' => 'nullable|numeric|min:0|max:9999999999999.99',
+                            ])->validate();
+                            $tiers = array_values(array_filter($decoded, fn ($t) => ! empty($t['dpp']) || ! empty($t['potongan'])));
+                            $tiers = count($tiers) ? $tiers : null;
+                        }
+                    }
+
+                    foreach ($groupNames as $gName) {
+                        $createdRumus = MasterRumusBpjs::create([
+                            'jenis' => $jenis,
+                            'nominal_dpp' => $jenis === 'jkn' ? ($request->nominal_dpp[$key] ?? null) : null,
+                            'group_name' => $gName,
+                            'tipe' => $request->tipe[$key],
+                            'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
+                            'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
+                            'hutang_persen' => $request->hutang_persen[$key] ?? null,
+                            'hutang_tiers' => $tiers,
+                            'biaya_persen' => $request->biaya_persen[$key] ?? null,
+                            'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
+                            'diskon_status' => $request->diskon_status[$key] ?? 'tidak_ada',
+                            'diskon_tipe' => $request->diskon_tipe[$key] ?? 'persen',
+                            'diskon_nilai' => ($request->diskon_status[$key] ?? 'tidak_ada') === 'ada' ? ($request->diskon_nilai[$key] ?? 0) : 0,
+                            'jht_biaya' => $request->jht_biaya[$key] ?? null,
+                            'jht_hutang' => $request->jht_hutang[$key] ?? null,
+                            'jkk_tunjangan' => $request->jkk_tunjangan[$key] ?? null,
+                            'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
+                            'jp_biaya' => $request->jp_biaya[$key] ?? null,
+                            'jp_hutang' => $request->jp_hutang[$key] ?? null,
+                            'jp_max_dpp' => $request->jp_max_dpp[$key] ?? null,
+                            'jp_max_age' => $request->jp_max_age[$key] ?? null,
+                        ]);
+                        foreach (['dpp' => ['nominal_dpp', 'hutang_tiers', 'jp_max_dpp'], 'diskon' => ['diskon_status', 'diskon_tipe', 'diskon_nilai']] as $component => $fields) {
+                            $from = $request->input($component.'_from.'.$key);
+                            if ($from) {
+                                $values = array_intersect_key($createdRumus->attributesToArray(), array_flip($fields));
+                                $historyKey = $component === 'dpp' ? ($jenis === 'jkn' ? 'dpp_jkn' : 'dpp_bp_jamsostek') : 'diskon';
+                                \App\Services\BpjsEffectiveValues::schedule($createdRumus, $historyKey, $from, $request->input($component.'_until.'.$key), $values);
+                                foreach ($fields as $field) {
+                                    $createdRumus->{$field} = match ($field) {
+                                        'diskon_status' => 'tidak_ada', 'diskon_tipe' => 'persen', 'diskon_nilai' => 0, default => null
+                                    };
+                                }
+                                $createdRumus->save();
+                            }
+                        }
+
                     }
                 }
-
-                foreach ($groupNames as $gName) {
-                    MasterRumusBpjs::create([
-                        'jenis' => $jenis,
-                        'nominal_dpp' => $jenis === 'jkn' ? ($request->nominal_dpp[$key] ?? null) : null,
-                        'group_name' => $gName,
-                        'tipe' => $request->tipe[$key],
-                        'cabang_bpjs' => $request->cabang_bpjs[$key] ?? null,
-                        'tunjangan_persen' => $request->tunjangan_persen[$key] ?? null,
-                        'hutang_persen' => $request->hutang_persen[$key] ?? null,
-                        'hutang_tiers' => $tiers,
-                        'biaya_persen' => $request->biaya_persen[$key] ?? null,
-                        'keterangan_custom' => $request->keterangan_custom[$key] ?? null,
-                        'diskon_status' => $request->diskon_status[$key] ?? 'tidak_ada',
-                        'diskon_tipe' => $request->diskon_tipe[$key] ?? 'persen',
-                        'diskon_nilai' => ($request->diskon_status[$key] ?? 'tidak_ada') === 'ada' ? ($request->diskon_nilai[$key] ?? 0) : 0,
-                        'jht_biaya' => $request->jht_biaya[$key] ?? null,
-                        'jht_hutang' => $request->jht_hutang[$key] ?? null,
-                        'jkk_tunjangan' => $request->jkk_tunjangan[$key] ?? null,
-                        'jkm_tunjangan' => $request->jkm_tunjangan[$key] ?? null,
-                        'jp_biaya' => $request->jp_biaya[$key] ?? null,
-                        'jp_hutang' => $request->jp_hutang[$key] ?? null,
-                        'jp_max_dpp' => $request->jp_max_dpp[$key] ?? null,
-                        'jp_max_age' => $request->jp_max_age[$key] ?? null,
-                    ]);
-                }
             }
-        }
+
+        });
 
         return redirect()->route('master-rumus-bpjs.index')->with('success', 'Data rumus berhasil ditambahkan.');
     }
@@ -354,6 +385,10 @@ class MasterRumusBpjsController extends Controller
     {
         $request->validate([
             'jenis' => 'sometimes|required|in:jkn,jamsostek',
+            'dpp_from' => 'nullable|required_with:dpp_until|date_format:Y-m-d',
+            'dpp_until' => 'nullable|required_with:dpp_from|date_format:Y-m-d|after_or_equal:dpp_from',
+            'diskon_from' => 'nullable|required_with:diskon_until|date_format:Y-m-d',
+            'diskon_until' => 'nullable|required_with:diskon_from|date_format:Y-m-d|after_or_equal:diskon_from',
             'group_name' => 'sometimes|required',
             'existing_ids' => 'nullable|string',
             'tipe' => 'required_with:group_name|string|max:255',
@@ -469,6 +504,30 @@ class MasterRumusBpjsController extends Controller
             $existingIds = [$rumus->id];
         }
 
+        $scheduled = [];
+        if ($request->filled('dpp_from')) {
+            $keys = ['nominal_dpp', 'hutang_tiers', 'jp_max_dpp'];
+            $scheduled['dpp'] = array_intersect_key($dataToUpdate, array_flip($keys));
+            $dataToUpdate = array_diff_key($dataToUpdate, array_flip($keys));
+        }
+        if ($request->filled('diskon_from')) {
+            $keys = ['diskon_status', 'diskon_tipe', 'diskon_nilai'];
+            $scheduled['diskon'] = array_intersect_key($dataToUpdate, array_flip($keys));
+            $dataToUpdate = array_diff_key($dataToUpdate, array_flip($keys));
+        }
+        if ($scheduled) {
+            DB::transaction(function () use ($existingIds, $scheduled, $request) {
+                foreach (MasterRumusBpjs::whereIn('id', $existingIds)->lockForUpdate()->get() as $target) {
+                    foreach ($scheduled as $component => $values) {
+                        if ($values) {
+                            $key = $component === 'dpp' ? ($target->jenis === 'jkn' ? 'dpp_jkn' : 'dpp_bp_jamsostek') : 'diskon';
+                            \App\Services\BpjsEffectiveValues::schedule($target, $key, $request->input($component.'_from'), $request->input($component.'_until'), $values);
+                        }
+                    }
+                }
+            });
+        }
+
         // Handle group_name (bisa string atau array multi-pilihan)
         if ($request->has('group_name')) {
             $rawGroupNames = $request->group_name;
@@ -501,7 +560,9 @@ class MasterRumusBpjsController extends Controller
             }
         } else {
             // Update all existing_ids (e.g. diskon AJAX)
-            MasterRumusBpjs::whereIn('id', $existingIds)->update($dataToUpdate);
+            if ($dataToUpdate) {
+                MasterRumusBpjs::whereIn('id', $existingIds)->update($dataToUpdate);
+            }
         }
 
         if ($request->ajax() || $request->wantsJson()) {

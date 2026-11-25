@@ -18,6 +18,7 @@ class MasterRumusBpjsDiscountTest extends TestCase
         parent::setUp();
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
+        (require database_path('migrations/2026_11_25_160000_create_bpjs_effective_values_table.php'))->up();
         Schema::create('master_rumus_bpjs', function (Blueprint $table) {
             $table->id();
             foreach ((new MasterRumusBpjs)->getFillable() as $field) {
@@ -71,6 +72,19 @@ class MasterRumusBpjsDiscountTest extends TestCase
             $this->assertSame([], MasterRumusBpjs::find(1)->diskon_pengecualian);
             $this->assertSame(['KaryawanTidakTetap_2'], MasterRumusBpjs::find(2)->diskon_pengecualian);
         });
+    }
+
+    public function test_discount_schedule_preserves_base_values_and_can_have_independent_dates(): void
+    {
+        (new MasterRumusBpjsController)->update(Request::create('/', 'PUT', [
+            'existing_ids' => '1,2', 'diskon_status' => 'ada', 'diskon_tipe' => 'persen', 'diskon_nilai' => 25,
+            'diskon_from' => '2026-12-01', 'diskon_until' => '2026-12-31',
+        ]), 1);
+        $this->assertEquals(50, MasterRumusBpjs::find(1)->diskon_nilai);
+        $this->assertEquals(50, MasterRumusBpjs::find(2)->diskon_nilai);
+        $this->assertSame(2, DB::table('bpjs_effective_values')->count());
+        $value = json_decode(DB::table('bpjs_effective_values')->value('values'), true);
+        $this->assertEquals(25, $value['diskon_nilai']);
     }
 
     public function test_rejects_employees_outside_group_or_type_and_unrelated_formula_ids(): void

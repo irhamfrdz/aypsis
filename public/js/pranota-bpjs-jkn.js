@@ -22,6 +22,9 @@
             return { contribution: dpp, debt: 0 };
         }
         if (!record) return { contribution: 0, debt: 0 };
+        if (record.bpjs_active_fields?.includes('nominal_dpp') && record.nominal_dpp !== null) {
+            dpp = Number(record.nominal_dpp);
+        }
         const tunjangan = parseFloat(record.tunjangan_persen) || 0;
         const biaya = parseFloat(record.biaya_persen) || 0;
         const hutang = parseFloat(record.hutang_persen) || 0;

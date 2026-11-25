@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Exports\PranotaBpjsTemplateExport;
 use App\Models\Karyawan;
 use App\Models\KaryawanTidakTetap;
 use App\Models\PranotaBpjsDetail;
 use App\Models\PranotaBpjsHeader;
-use App\Exports\PranotaBpjsTemplateExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -139,7 +139,9 @@ class PranotaBpjsController extends Controller
 
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
 
+        \App\Services\BpjsEffectiveValues::attach($karyawans);
         $rumusBpjs = \App\Models\MasterRumusBpjs::all();
+        \App\Services\BpjsEffectiveValues::attach($rumusBpjs);
 
         if ($refreshPranota) {
             $existing = $refreshPranota->details()->get()->map(fn ($detail) => class_basename($detail->tipe_karyawan).'_'.$detail->karyawan_id);
@@ -337,6 +339,7 @@ class PranotaBpjsController extends Controller
     public function exportExcel(PranotaBpjsHeader $pranota_bpj)
     {
         $pranota_bpj->load('details.karyawan', 'createdBy');
+
         return (new PranotaBpjsTemplateExport($pranota_bpj))->toResponse(request());
     }
 
@@ -383,7 +386,11 @@ class PranotaBpjsController extends Controller
 
         $karyawans = $karyawanTetap->concat($karyawanTidakTetap)->sortBy('nama_lengkap')->values();
 
+        \App\Services\BpjsEffectiveValues::attach($karyawans);
         $rumusBpjs = $pranota_bpj->snapshot_rumus ?? \App\Models\MasterRumusBpjs::all();
+        if ($pranota_bpj->snapshot_rumus === null) {
+            \App\Services\BpjsEffectiveValues::attach($rumusBpjs);
+        }
 
         // Keep saved employees available even if they have left or were removed from the master.
         $savedEmployees = $pranota_bpj->details->map(fn ($detail) => $detail->snapshot_bpjs['karyawan'] ?? null)->filter();

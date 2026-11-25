@@ -19,6 +19,7 @@ class MasterRumusBpjsBulkUpdateTest extends TestCase
         parent::setUp();
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
+        (require database_path('migrations/2026_11_25_160000_create_bpjs_effective_values_table.php'))->up();
         foreach (['karyawans', 'karyawan_tidak_tetaps', 'master_rumus_bpjs'] as $name) {
             Schema::create($name, function (Blueprint $table) {
                 $table->id();
@@ -40,6 +41,74 @@ class MasterRumusBpjsBulkUpdateTest extends TestCase
         return (new MasterRumusBpjsController)->bulkUpdate(Request::create('/', 'POST', [
             'field' => $field, 'old_value' => $old, 'new_value' => $new,
         ]));
+    }
+
+    public function test_dated_dpp_creates_history_for_both_employee_types_and_formula_without_overwriting_base(): void
+    {
+        foreach (['karyawans', 'karyawan_tidak_tetaps'] as $table) {
+            DB::table($table)->insert(['dpp_jkn' => '2200000']);
+        }
+        DB::table('master_rumus_bpjs')->insert(['jenis' => 'jkn', 'nominal_dpp' => 2200000]);
+        (new MasterRumusBpjsController)->bulkUpdate(Request::create('/', 'POST', [
+            'field' => 'dpp_jkn', 'old_value' => '2200000', 'new_value' => '3000000',
+            'dpp_from' => '2026-12-01', 'dpp_until' => '2027-03-31',
+        ]));
+        $this->assertSame(3, DB::table('bpjs_effective_values')->count());
+        $this->assertSame('2200000', DB::table('karyawans')->value('dpp_jkn'));
+        $this->assertSame('2200000', DB::table('karyawan_tidak_tetaps')->value('dpp_jkn'));
+        $this->assertEquals(2200000, DB::table('master_rumus_bpjs')->value('nominal_dpp'));
+        $records = Karyawan::all();
+        \App\Services\BpjsEffectiveValues::attach($records);
+        $this->assertEquals(3000000, $records->first()->bpjs_effective_values[0]['values']['dpp_jkn']);
+        try {
+            (new MasterRumusBpjsController)->bulkUpdate(Request::create('/', 'POST', [
+                'field' => 'dpp_jkn', 'old_value' => '2200000', 'new_value' => '4000000',
+                'dpp_from' => '2027-03-31', 'dpp_until' => '2027-05-01',
+            ]));
+            $this->fail('Overlapping ranges must be rejected');
+        } catch (ValidationException $exception) {
+            $this->assertSame(3, DB::table('bpjs_effective_values')->count());
+        }
+    }
+
+    public function test_dated_dpp_rejects_incomplete_or_reversed_dates(): void
+    {
+        foreach ([['dpp_from' => '2026-12-01'], ['dpp_from' => '2026-12-01', 'dpp_until' => '2026-11-30']] as $dates) {
+            try {
+                (new MasterRumusBpjsController)->bulkUpdate(Request::create('/', 'POST', $dates + [
+                    'field' => 'dpp_jkn', 'old_value' => '2200000', 'new_value' => '3000000',
+                ]));
+                $this->fail('Invalid dates must be rejected');
+            } catch (ValidationException $exception) {
+                $this->assertSame(0, DB::table('bpjs_effective_values')->count());
+            }
+        }
+    }
+
+    public function test_master_view_renders_schedule_inputs_and_history(): void
+    {
+        \Illuminate\Support\Facades\Gate::before(fn () => true);
+        $layout = tempnam(sys_get_temp_dir(), 'bpjs-layout-');
+        file_put_contents($layout, "@yield('content')\n@stack('scripts')");
+        \Illuminate\Support\Facades\View::composer('layouts.app', fn ($view) => $view->setPath($layout));
+        $formula = new MasterRumusBpjs(['jenis' => 'jkn', 'group_name' => 'JKN-KIS', 'tipe' => 'KANTOR']);
+        $formula->id = 1;
+        $formula->setAttribute('bpjs_effective_values', [[
+            'component' => 'dpp_jkn', 'valid_from' => '2026-12-01', 'valid_until' => '2027-03-31',
+            'values' => ['nominal_dpp' => 3000000],
+        ]]);
+        try {
+            $html = view('master.rumus-bpjs.index', [
+                'rumusJkn' => collect([$formula]), 'rumusJamsostek' => collect(), 'bulkValues' => [],
+                'errors' => new \Illuminate\Support\ViewErrorBag,
+            ])->render();
+            $this->assertStringContainsString('Riwayat masa berlaku DPP dan diskon', $html);
+            $this->assertStringContainsString('2027-03-31', $html);
+            $this->assertStringContainsString('name="diskon_from"', $html);
+            $this->assertStringContainsString('name="dpp_from[]"', $html);
+        } finally {
+            unlink($layout);
+        }
     }
 
     public function test_current_value_options_combine_employees_and_formulas_without_duplicates(): void

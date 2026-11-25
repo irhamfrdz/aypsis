@@ -19,6 +19,7 @@ class MasterRumusBpjsTipeTest extends TestCase
 
         config(['database.default' => 'sqlite', 'database.connections.sqlite.database' => ':memory:']);
         DB::purge('sqlite');
+        (require database_path('migrations/2026_11_25_160000_create_bpjs_effective_values_table.php'))->up();
         Schema::create('master_rumus_bpjs', function (Blueprint $table) {
             $table->id();
             foreach ((new MasterRumusBpjs)->getFillable() as $column) {
@@ -49,6 +50,24 @@ class MasterRumusBpjsTipeTest extends TestCase
             $this->assertArrayHasKey('tipe.1', $exception->errors());
             $this->assertSame(0, MasterRumusBpjs::count());
         }
+    }
+
+    public function test_create_schedules_dpp_and_discount_with_separate_dates(): void
+    {
+        MasterRumusBpjs::withoutEvents(function () {
+            (new MasterRumusBpjsController)->store(Request::create('/', 'POST', [
+                'jenis' => ['jkn'], 'group_name' => ['JKN-KIS'], 'tipe' => ['KANTOR'],
+                'nominal_dpp' => ['3000000'], 'dpp_from' => ['2026-12-01'], 'dpp_until' => ['2027-03-31'],
+                'diskon_status' => ['ada'], 'diskon_tipe' => ['persen'], 'diskon_nilai' => ['25'],
+                'diskon_from' => ['2027-01-01'], 'diskon_until' => ['2027-02-28'],
+            ]));
+        });
+        $record = MasterRumusBpjs::first();
+        $this->assertNull($record->nominal_dpp);
+        $this->assertSame('tidak_ada', $record->diskon_status);
+        $this->assertSame(2, DB::table('bpjs_effective_values')->count());
+        $schedule = DB::table('bpjs_effective_values')->where('component', 'dpp_jkn')->first();
+        $this->assertEquals(3000000, json_decode($schedule->values, true)['nominal_dpp']);
     }
 
     public function test_tipe_is_saved_for_all_selected_groups_and_updated(): void

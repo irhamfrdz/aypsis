@@ -36,6 +36,8 @@
         <form method="POST" action="{{ route('master-rumus-bpjs.bulk-update') }}" class="space-y-4"
               onsubmit="return confirm('Terapkan perubahan massal ' + this.elements.field.options[this.elements.field.selectedIndex].text + ' dari ' + this.elements.old_value.value + ' menjadi ' + this.elements.new_value.value + '? Semua data dengan nilai lama yang sama akan diperbarui.');">
             @csrf
+            <input type="hidden" id="bulk_dpp_from" name="dpp_from">
+            <input type="hidden" id="bulk_dpp_until" name="dpp_until">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                     <label for="bulk_field" class="block text-sm font-medium mb-1">Data yang diubah</label>
@@ -47,23 +49,65 @@
                         <option value="jp_max_dpp">Maksimal DPP JP (Rp) — Rumus BPJS</option>
                     </select>
                 </div>
-                <div>
+                <div id="bulk-current-single">
                     <label for="bulk_old_value" class="block text-sm font-medium mb-1">Nilai saat ini</label>
                     <select id="bulk_old_value" name="old_value" required class="w-full rounded-lg border-gray-300"></select>
                     <p class="text-xs text-gray-500 mt-1">Diambil otomatis dari data karyawan dan rumus. Pilih nilai yang ingin diganti.</p>
                 </div>
-                <div>
+                <div id="bulk-new-single">
                     <label for="bulk_new_value" class="block text-sm font-medium mb-1">Nilai baru</label>
                     <input id="bulk_new_value" name="new_value" type="number" required min="0" max="9999999999999.99" step="0.01" placeholder="Contoh: 3000000" value="{{ old('new_value') }}" class="w-full rounded-lg border-gray-300">
                 </div>
             </div>
-            <p class="text-xs text-gray-500">Isi nilai baru tanpa pemisah ribuan, misalnya 3000000 untuk Rp 3.000.000.</p>
+            <div id="bulk-dpp-navigation" hidden class="flex flex-wrap items-center justify-between gap-3">
+                <span id="bulk-dpp-position" role="status" aria-live="polite" class="text-sm text-gray-500"></span>
+                <div class="flex gap-2">
+                    <button id="bulk-dpp-prev" type="button" aria-controls="bulk-dpp-rows" class="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-40">Sebelumnya</button>
+                    <button id="bulk-dpp-next" type="button" aria-controls="bulk-dpp-rows" class="rounded-lg border border-gray-300 px-3 py-2 text-sm disabled:opacity-40">Berikutnya</button>
+                </div>
+            </div>
+            <div id="bulk-dpp-rows" role="region" aria-label="Slider nominal DPP" tabindex="0"></div>
+            <p class="text-xs text-gray-500">Isi nominal tanpa pemisah ribuan. Isi kedua tanggal untuk menjadwalkan nilai sementara; kosongkan keduanya untuk mengganti nilai dasar. Perhitungan mengikuti tanggal akhir bulan periode pranota.</p>
             <button id="bulk_submit" type="submit" class="bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg text-sm">Terapkan Perubahan Massal</button>
         </form>
     </div>
+    <style>
+        #bulk-dpp-rows { display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding: 0; overscroll-behavior-x: contain; padding-bottom: 10px; }
+        #bulk-dpp-rows[hidden], #bulk-dpp-navigation[hidden] { display: none; }
+        #bulk-dpp-rows > div { flex: 0 0 100%; min-width: 0; scroll-snap-align: start; scroll-snap-stop: always; }
+        @media (min-width: 640px) { #bulk-dpp-rows > div { flex-basis: calc((100% - 16px) / 2); } }
+        @media (min-width: 1024px) { #bulk-dpp-rows > div { flex-basis: calc((100% - 48px) / 4); } }
+        #bulk-dpp-rows:focus-visible { outline: 2px solid #d97706; outline-offset: 3px; border-radius: 8px; }
+    </style>
     <script>
         const bulkValueOptions = @json($bulkValues);
+        const dppSlider = document.getElementById('bulk-dpp-rows');
+        const dppPrevious = document.getElementById('bulk-dpp-prev');
+        const dppNext = document.getElementById('bulk-dpp-next');
+        function updateDppPosition() {
+            const count = dppSlider.querySelectorAll('[data-dpp-slide]').length;
+            const width = dppSlider.firstElementChild?.getBoundingClientRect().width || dppSlider.clientWidth;
+            const index = Math.max(0, Math.min(count - 1, Math.round(dppSlider.scrollLeft / (width + 16))));
+            const visible = Math.max(1, Math.round((dppSlider.clientWidth + 16) / (width + 16)));
+            document.getElementById('bulk-dpp-position').textContent = count ? `Nominal ${index + 1}–${Math.min(count, index + visible)} dari ${count} · Geser untuk melihat nominal lainnya` : 'Belum ada nilai DPP tersedia';
+            dppPrevious.disabled = !count || dppSlider.scrollLeft <= 1;
+            dppNext.disabled = !count || dppSlider.scrollLeft + dppSlider.clientWidth >= dppSlider.scrollWidth - 1;
+        }
+        function moveDppSlide(direction) {
+            dppSlider.scrollBy({ left: direction * (dppSlider.clientWidth + 16), behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'instant' : 'smooth' });
+        }
+        dppPrevious.addEventListener('click', () => moveDppSlide(-1));
+        dppNext.addEventListener('click', () => moveDppSlide(1));
+        dppSlider.addEventListener('scroll', updateDppPosition, { passive: true });
+        dppSlider.addEventListener('keydown', event => {
+            if (event.target !== dppSlider || !['ArrowLeft', 'ArrowRight'].includes(event.key)) return;
+            event.preventDefault();
+            moveDppSlide(event.key === 'ArrowRight' ? 1 : -1);
+        });
+        window.addEventListener('resize', updateDppPosition);
         function refreshBulkOldValues(selectedValue = '') {
+            document.getElementById('bulk_dpp_from').value = '';
+            document.getElementById('bulk_dpp_until').value = '';
             const field = document.getElementById('bulk_field').value;
             const select = document.getElementById('bulk_old_value');
             const options = bulkValueOptions[field] || [];
@@ -80,11 +124,143 @@
             const input = document.getElementById('bulk_new_value');
             input.step = field === 'jp_max_age' ? '1' : '0.01';
             input.max = field === 'jp_max_age' ? '150' : '9999999999999.99';
+            const isDpp = field !== 'jp_max_age';
+            document.getElementById('bulk-current-single').hidden = isDpp;
+            document.getElementById('bulk-new-single').hidden = isDpp;
+            document.getElementById('bulk_submit').hidden = isDpp;
+            const rows = document.getElementById('bulk-dpp-rows');
+            rows.replaceChildren();
+            rows.hidden = !isDpp;
+            document.getElementById('bulk-dpp-navigation').hidden = !isDpp;
+            rows.scrollLeft = 0;
+            // Values are copied into the existing endpoint fields only when a row is applied.
+            select.disabled = isDpp || !options.length;
+            input.disabled = isDpp;
+            if (isDpp) {
+                if (!options.length) {
+                    rows.textContent = 'Belum ada nilai DPP tersedia.';
+                    updateDppPosition();
+                    return;
+                }
+                options.forEach((option, index) => {
+                    const row = document.createElement('div');
+                    row.dataset.dppSlide = index;
+                    row.setAttribute('role', 'group');
+                    row.setAttribute('aria-label', `Nominal ${index + 1} dari ${options.length}`);
+                    row.className = 'grid grid-cols-1 gap-4 rounded-lg border border-gray-200 bg-gray-50 p-4';
+                    const currentLabel = document.createElement('label');
+                    currentLabel.className = 'block text-sm font-medium';
+                    currentLabel.textContent = 'Nilai saat ini';
+                    const current = document.createElement('input');
+                    current.type = 'text';
+                    current.readOnly = true;
+                    current.value = option.label;
+                    current.className = 'mt-1 w-full rounded-lg border-gray-300 bg-gray-100';
+                    currentLabel.append(current);
+                    const newLabel = document.createElement('label');
+                    newLabel.className = 'block text-sm font-medium';
+                    newLabel.textContent = 'Nilai baru (Rp)';
+                    const replacement = document.createElement('input');
+                    replacement.type = 'number';
+                    replacement.min = '0';
+                    replacement.max = '9999999999999.99';
+                    replacement.step = '0.01';
+                    replacement.required = true;
+                    replacement.value = selectedValue === option.value ? @json(old('new_value')) ?? option.value : option.value;
+                    replacement.className = 'mt-1 w-full rounded-lg border-gray-300';
+                    replacement.id = 'bulk-dpp-new-' + index;
+                    newLabel.append(replacement);
+                    const dates = document.createElement('div');
+                    dates.className = 'space-y-2';
+                    const dateInputs = ['Berlaku dari', 'Berlaku sampai'].map(text => {
+                        const label = document.createElement('label');
+                        label.className = 'block text-xs font-medium text-gray-600';
+                        label.textContent = text;
+                        const date = document.createElement('input');
+                        date.type = 'date';
+                        date.className = 'mt-1 w-full rounded-lg border-gray-300 text-sm';
+                        label.append(date);
+                        dates.append(label);
+                        return date;
+                    });
+                    dateInputs[0].value = selectedValue === option.value ? @json(old('dpp_from', '')) : '';
+                    dateInputs[1].value = selectedValue === option.value ? @json(old('dpp_until', '')) : '';
+                    const action = document.createElement('div');
+                    action.className = 'flex items-end';
+                    const button = document.createElement('button');
+                    button.type = 'button';
+                    button.textContent = 'Terapkan';
+                    button.className = 'bg-amber-600 hover:bg-amber-700 disabled:opacity-50 text-white font-semibold px-4 py-2 rounded-lg text-sm';
+                    const updateButton = () => { button.disabled = !replacement.validity.valid || Number(replacement.value) === Number(option.value); };
+                    replacement.addEventListener('input', updateButton);
+                    updateButton();
+                    button.addEventListener('click', () => {
+                        if (!replacement.reportValidity()) return;
+                        if (Boolean(dateInputs[0].value) !== Boolean(dateInputs[1].value) || (dateInputs[0].value && dateInputs[1].value < dateInputs[0].value)) {
+                            alert('Isi tanggal dari dan sampai dengan rentang yang benar.');
+                            return;
+                        }
+                        document.getElementById('bulk_dpp_from').value = dateInputs[0].value;
+                        document.getElementById('bulk_dpp_until').value = dateInputs[1].value;
+                        select.disabled = false;
+                        input.disabled = false;
+                        select.value = option.value;
+                        input.value = replacement.value;
+                        try { input.form.requestSubmit(); }
+                        finally { select.disabled = true; input.disabled = true; }
+                    });
+                    action.append(button);
+                    row.append(currentLabel, newLabel, dates, action);
+                    rows.append(row);
+                });
+                updateDppPosition();
+            }
         }
         document.getElementById('bulk_field').value = @json(old('field', 'dpp_jkn'));
         refreshBulkOldValues(@json(old('old_value', '')));
     </script>
     @endcan
+
+    @php
+        $scheduledFormulas = $rumusJkn->concat($rumusJamsostek)->filter(fn ($formula) => !empty($formula->bpjs_effective_values));
+    @endphp
+    @if($scheduledFormulas->isNotEmpty())
+    <details class="bg-white rounded-xl border border-gray-200 p-4">
+        <summary class="cursor-pointer font-semibold text-sm text-gray-700">Riwayat masa berlaku DPP dan diskon</summary>
+        <p class="text-xs text-gray-500 mt-2">Jadwal dipakai berdasarkan tanggal akhir bulan periode pranota. Di luar rentang, nilai dasar digunakan.</p>
+        <div class="overflow-x-auto mt-3">
+            <table class="w-full text-sm text-left">
+                <thead><tr class="border-b"><th class="p-2">Group / Tipe</th><th class="p-2">Variabel</th><th class="p-2">Dari</th><th class="p-2">Sampai</th><th class="p-2">Nilai terjadwal</th></tr></thead>
+                <tbody>
+                @foreach($scheduledFormulas as $formula)
+                    @foreach($formula->bpjs_effective_values as $entry)
+                    <tr class="border-b border-gray-100">
+                        <td class="p-2">{{ $formula->group_name }} / {{ $formula->tipe }}</td>
+                        <td class="p-2">{{ $entry['component'] === 'diskon' ? 'Diskon' : 'DPP' }}</td>
+                        <td class="p-2 whitespace-nowrap">{{ $entry['valid_from'] }}</td><td class="p-2 whitespace-nowrap">{{ $entry['valid_until'] }}</td>
+                        <td class="p-2">
+                        @foreach($entry['values'] as $key => $value)
+                            @if($key === 'hutang_tiers')
+                                @foreach($value ?? [] as $tier)
+                                    <div>DPP: Rp {{ number_format((float) ($tier['dpp'] ?? 0), 2, ',', '.') }}</div>
+                                @endforeach
+                            @elseif(in_array($key, ['nominal_dpp', 'jp_max_dpp']))
+                                <div>{{ $key === 'jp_max_dpp' ? 'Maksimal DPP JP' : 'DPP' }}: Rp {{ number_format((float) $value, 2, ',', '.') }}</div>
+                            @elseif($key === 'diskon_nilai')
+                                <div>Diskon: {{ number_format((float) $value, 2, ',', '.') }} {{ ($entry['values']['diskon_tipe'] ?? '') === 'persen' ? '%' : 'Rp' }}</div>
+                            @elseif($key === 'diskon_status')
+                                <div>{{ $value === 'ada' ? 'Ada diskon' : 'Tanpa diskon' }}</div>
+                            @endif
+                        @endforeach
+                        </td>
+                    </tr>
+                    @endforeach
+                @endforeach
+                </tbody>
+            </table>
+        </div>
+    </details>
+    @endif
 
     @if(session('success'))
         <div class="flex items-center gap-3 bg-emerald-50 border border-emerald-300 text-emerald-800 px-4 py-3 rounded-lg" role="alert">
@@ -895,8 +1071,19 @@
                         </div>
 
                         {{-- Diskon Section (BPU-CREW & Non BPU-CREW) --}}
+                        <div class="border border-gray-200 rounded-lg p-3 mb-4">
+                            <p class="text-xs font-semibold mb-2">Masa berlaku DPP / tabel DPP (opsional)</p>
+                            <div class="grid grid-cols-2 gap-3">
+                                <label class="text-xs">Berlaku dari<input type="date" name="dpp_from[]" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                                <label class="text-xs">Berlaku sampai<input type="date" name="dpp_until[]" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                            </div>
+                        </div>
                         <div class="diskon-section hidden mb-4 bg-amber-50/80 border border-amber-200 rounded-xl p-3.5">
                             <label class="block text-xs font-bold text-amber-800 mb-2 uppercase tracking-wide">Variabel Diskon</label>
+                            <div class="grid grid-cols-2 gap-3 mb-3">
+                                <label class="text-xs">Berlaku dari<input type="date" name="diskon_from[]" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                                <label class="text-xs">Berlaku sampai<input type="date" name="diskon_until[]" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                            </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                                 <div>
                                     <label class="block text-xs font-semibold text-gray-600 mb-1">Status Diskon</label>
@@ -1172,8 +1359,21 @@
                     </div>
 
                     {{-- Diskon (edit) --}}
+                    <div class="rounded-lg border border-gray-200 p-3 mb-4 space-y-2">
+                        <p class="text-xs font-semibold">Masa berlaku DPP / tabel DPP</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <label class="text-xs">Berlaku dari<input type="date" id="edit_dpp_from" name="dpp_from" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                            <label class="text-xs">Berlaku sampai<input type="date" id="edit_dpp_until" name="dpp_until" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                        </div>
+                        <p class="text-xs text-gray-500">Isi kedua tanggal untuk menyimpan perubahan DPP sebagai jadwal. Kosongkan untuk mengubah nilai dasar.</p>
+                    </div>
                     <div id="edit_diskon_section" class="hidden bg-amber-50/80 border border-amber-200 rounded-xl p-3.5 mb-4">
                         <label class="block text-xs font-bold text-amber-800 mb-2 uppercase tracking-wide">Variabel Diskon</label>
+                        <div class="grid grid-cols-2 gap-3 mb-3">
+                            <label class="text-xs">Berlaku dari<input type="date" id="edit_diskon_from" name="diskon_from" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                            <label class="text-xs">Berlaku sampai<input type="date" id="edit_diskon_until" name="diskon_until" class="block w-full rounded-lg border-gray-300 mt-1"></label>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">Isi kedua tanggal untuk menjadwalkan diskon; kosongkan untuk mengubah diskon dasar.</p>
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                             <div>
                                 <label for="edit_diskon_status" class="block text-xs font-semibold text-gray-600 mb-1">Status</label>
@@ -1285,6 +1485,7 @@
         firstRow.querySelector('input[name="jp_max_dpp[]"]').value = '';
         firstRow.querySelector('input[name="jp_max_age[]"]').value = '';
         firstRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
+        firstRow.querySelectorAll('input[type="date"]').forEach(input => { input.value = ''; });
         firstRow.querySelector('input[name="diskon_nilai[]"]').value = '';
         firstRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
         toggleDiskonInputs(firstRow.querySelector('select[name="diskon_status[]"]'));
@@ -1344,6 +1545,7 @@
         newRow.querySelector('input[name="jp_max_dpp[]"]').value = '';
         newRow.querySelector('input[name="jp_max_age[]"]').value = '';
         newRow.querySelector('select[name="diskon_status[]"]').value = 'tidak_ada';
+        newRow.querySelectorAll('input[type="date"]').forEach(input => { input.value = ''; });
         newRow.querySelector('input[name="diskon_nilai[]"]').value = '';
         newRow.querySelector('select[name="diskon_tipe[]"]').value = 'persen';
         toggleDiskonInputs(newRow.querySelector('select[name="diskon_status[]"]'));
@@ -1415,6 +1617,7 @@
         document.getElementById('edit_jp_max_dpp').value = data.jp_max_dpp ? parseFloat(data.jp_max_dpp) : '';
         document.getElementById('edit_jp_max_age').value = data.jp_max_age ? parseInt(data.jp_max_age) : '';
         document.getElementById('edit_diskon_status').value = data.diskon_status || 'tidak_ada';
+        ['dpp_from', 'dpp_until', 'diskon_from', 'diskon_until'].forEach(key => { document.getElementById('edit_' + key).value = ''; });
         document.getElementById('edit_diskon_nilai').value = data.diskon_nilai ? parseFloat(data.diskon_nilai) : '';
         document.getElementById('edit_diskon_tipe').value = data.diskon_tipe || 'persen';
         toggleEditDiskonInputs(document.getElementById('edit_diskon_status'));

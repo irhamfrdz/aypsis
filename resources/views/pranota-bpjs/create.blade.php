@@ -481,6 +481,7 @@
 <script src="{{ asset('js/pranota-bpjs-batch.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-batch.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-submit.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-submit.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-refresh.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-refresh.js')) }}"></script>
+<script src="{{ asset('js/bpjs-effective-values.js') }}?v={{ filemtime(public_path('js/bpjs-effective-values.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-new-employee.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-new-employee.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
@@ -500,9 +501,13 @@ document.addEventListener('DOMContentLoaded', async function() {
     const filterStatusBadge = document.getElementById('filter-status-badge');
     const filterCountText = document.getElementById('filter-count-text');
     
+    function resolvePeriodValues(records) {
+        const date = BpjsEffectiveValues.date(document.getElementById('periode_bulan').value, document.getElementById('periode_tahun').value);
+        return records.map(record => BpjsEffectiveValues.resolve(record, date));
+    }
     // Convert karyawans to JSON for select options
-    let karyawans = @json($karyawans);
-    let rumusBpjs = @json($rumusBpjs);
+    let karyawans = resolvePeriodValues(@json($karyawans));
+    let rumusBpjs = resolvePeriodValues(@json($rumusBpjs));
     const existingDetails = @json($editPranota?->details ?? []);
     let rowCount = 0;
     let isGenerating = false;
@@ -1513,7 +1518,12 @@ document.addEventListener('DOMContentLoaded', async function() {
             target?.append(BpjsNewEmployee.badge());
         });
     }
-    ['periode_bulan', 'periode_tahun'].forEach(id => document.getElementById(id).addEventListener('change', renderEmployeePicker));
+    ['periode_bulan', 'periode_tahun'].forEach(id => document.getElementById(id).addEventListener('change', () => {
+        karyawans = resolvePeriodValues(karyawans);
+        rumusBpjs = resolvePeriodValues(rumusBpjs);
+        container.querySelectorAll('tr.detail-row').forEach(row => row.refreshBpjs?.());
+        renderEmployeePicker();
+    }));
     container.addEventListener('change', () => queueMicrotask(updateNewEmployeeBadges));
     pickerSearch.addEventListener('input', renderEmployeePicker);
     pickerAdd.addEventListener('click', async () => {
@@ -1558,8 +1568,8 @@ document.addEventListener('DOMContentLoaded', async function() {
             const data = await loadBpjsData({
                 url: @json($refreshPranota ? route('pranota-bpjs.refresh-data', $refreshPranota->id) : route('pranota-bpjs.create')),
             });
-            karyawans = data.karyawans;
-            rumusBpjs = data.rumusBpjs;
+            karyawans = resolvePeriodValues(data.karyawans);
+            rumusBpjs = resolvePeriodValues(data.rumusBpjs);
             return karyawans.filter(k => k.group_jkn || k.group_bp_jamsostek || k.cabang_bpjs);
         }, k => addRow(k.unique_id, true));
         if (generated) {
@@ -1592,8 +1602,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 rows: Array.from(container.querySelectorAll('tr.detail-row')),
                 addEmployee(employee) { addRow(employee.unique_id, true); },
                 applyData(data) {
-                    karyawans = data.karyawans;
-                    rumusBpjs = data.rumusBpjs;
+                    karyawans = resolvePeriodValues(data.karyawans);
+                    rumusBpjs = resolvePeriodValues(data.rumusBpjs);
                     container.querySelectorAll('.select-karyawan').forEach(select => {
                         const selected = select.value;
                         const previousOption = select.selectedOptions[0]?.cloneNode(true);
