@@ -152,6 +152,10 @@
                                 <div class="bg-indigo-50 text-indigo-900 rounded-xl p-5 border border-indigo-100">
                                     <div class="text-xs font-medium uppercase tracking-widest mb-1">Biaya LOLO</div>
                                     <div class="text-xl font-bold">Rp {{ number_format($langsir->biaya_lolo, 0, ',', '.') }}</div>
+                                    <div class="mt-2 text-sm">Jenis operator: {{ $langsir->tipe_operator_lolo === 'VENDOR' ? 'Vendor' : 'Operator AYP' }}</div>
+                                    @if($langsir->tipe_operator_lolo === 'VENDOR')
+                                        <div class="text-sm">{{ $langsir->operator_lolo_vendor }}</div>
+                                    @endif
                                 </div>
                             @endif
 

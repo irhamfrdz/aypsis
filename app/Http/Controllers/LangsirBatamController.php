@@ -65,7 +65,10 @@ class LangsirBatamController extends Controller
             $containerSizes[strtoupper(trim($no))] = strtoupper($normalizedSize);
         }
 
-        return view('langsir-batam.index', compact('langsirs', 'search', 'tanggal_dari', 'tanggal_sampai', 'containerSizes'));
+        $tarifLoloBatam = MasterPricelistLoloBatam::aktif()->orderByDesc('id')->get(['size', 'tarif'])
+            ->unique('size')->mapWithKeys(fn ($tarif) => [(string) $tarif->size => (int) $tarif->tarif]);
+
+        return view('langsir-batam.index', compact('langsirs', 'search', 'tanggal_dari', 'tanggal_sampai', 'containerSizes', 'tarifLoloBatam'));
     }
 
     /**
@@ -165,8 +168,7 @@ class LangsirBatamController extends Controller
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'gudang_tujuan_id' => 'required|exists:gudangs,id',
             'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
-            'operator_lolo_1_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_2_id|exists:karyawans,id',
-            'operator_lolo_2_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_1_id|exists:karyawans,id',
+            ...$this->loloOperatorRules($request),
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
             'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
@@ -177,6 +179,7 @@ class LangsirBatamController extends Controller
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
+        $this->normalizeLoloOperator($validated);
         if (! $validated['menggunakan_lolo']) {
             $validated['biaya_lolo'] = 0;
             $validated['operator_lolo_1_id'] = null;
@@ -409,6 +412,46 @@ class LangsirBatamController extends Controller
                     continue;
                 }
 
+                $usesLolo = in_array($rawLolo, ['ya', '1', 'true'], true);
+                $operatorIds = [];
+                $biayaLolo = 0;
+                if ($usesLolo) {
+                    foreach ([1, 2] as $operatorNumber) {
+                        $name = trim((string) ($row['operator_lolo_'.$operatorNumber] ?? ''));
+                        $matches = $name === '' ? collect() : Karyawan::whereNull('tanggal_berhenti')
+                            ->where(fn ($query) => $query->where('pekerjaan', 'like', '%FORKLIFT%')
+                                ->orWhere('pekerjaan', 'like', '%CRANE%')->orWhere('pekerjaan', 'like', '%ALAT BERAT%'))
+                            ->where(fn ($query) => $query->whereRaw('LOWER(TRIM(nama_lengkap)) = ?', [mb_strtolower($name)])
+                                ->orWhereRaw('LOWER(TRIM(nama_panggilan)) = ?', [mb_strtolower($name)]))->pluck('id');
+                        if ($matches->count() !== 1) {
+                            $errors[] = "Baris {$rowNumber}: Operator LOLO {$operatorNumber} wajib diisi dengan nama operator aktif yang cocok tepat satu karyawan (Forklift/Crane/Alat Berat).";
+                            continue 2;
+                        }
+                        $operatorIds[$operatorNumber] = $matches->first();
+                    }
+                    if ($operatorIds[1] === $operatorIds[2]) {
+                        $errors[] = "Baris {$rowNumber}: Operator LOLO 1 dan 2 harus berbeda.";
+                        continue;
+                    }
+                    $rawBiaya = trim((string) ($row['biaya_lolo'] ?? ''));
+                    if ($rawBiaya === '') {
+                        $size = preg_replace('/[^0-9]/', '', $row['size']);
+                        $tarif = MasterPricelistLoloBatam::aktif()->where('size', $size)->orderByDesc('id')->value('tarif');
+                        if ($tarif === null) {
+                            $errors[] = "Baris {$rowNumber}: Tarif LOLO ukuran {$size} belum tersedia. Isi Biaya LOLO secara manual.";
+                            continue;
+                        }
+                        $biayaLolo = (float) $tarif * 2;
+                    } else {
+                        $amount = str_ireplace(['Rp', '.', ' '], '', $rawBiaya);
+                        if (! ctype_digit($amount)) {
+                            $errors[] = "Baris {$rowNumber}: Biaya LOLO harus berupa angka rupiah nol atau lebih.";
+                            continue;
+                        }
+                        $biayaLolo = (float) $amount;
+                    }
+                }
+
                 $dataInsert = [
                     'no_surat_jalan' => ! empty($row['no_surat_jalan']) ? trim($row['no_surat_jalan']) : null,
                     'tanggal' => $row['tanggal'],
@@ -427,7 +470,11 @@ class LangsirBatamController extends Controller
                     'keterangan' => $row['keterangan'] ?? null,
                     'status' => strtoupper(trim($row['status'] ?? 'FULL')),
                     'ob_dalam_pelabuhan' => $obDalamPelabuhan,
-                    'menggunakan_lolo' => in_array(strtolower((string) ($row['menggunakan_lolo'] ?? '')), ['ya', '1', 'true'], true),
+                    'menggunakan_lolo' => $usesLolo,
+                    'operator_lolo_1_id' => $operatorIds[1] ?? null,
+                    'operator_lolo_2_id' => $operatorIds[2] ?? null,
+                    'tipe_operator_lolo' => $usesLolo ? 'AYP' : null,
+                    'biaya_lolo' => $biayaLolo,
                     'input_by' => Auth::id(),
                 ];
 
@@ -571,8 +618,7 @@ class LangsirBatamController extends Controller
             'status' => 'required|string',
             'ob_dalam_pelabuhan' => 'nullable|boolean',
             'menggunakan_lolo' => 'required|in:ya,tidak,1,0,true,false',
-            'operator_lolo_1_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_2_id|exists:karyawans,id',
-            'operator_lolo_2_id' => 'required_if:menggunakan_lolo,ya|nullable|different:operator_lolo_1_id|exists:karyawans,id',
+            ...$this->loloOperatorRules($request),
         ], [
             'no_surat_jalan.unique' => 'Nomor Surat Jalan sudah terdaftar.',
             'menggunakan_lolo.required' => 'Pilihan Menggunakan LOLO wajib dipilih (Ya atau Tidak).',
@@ -582,6 +628,7 @@ class LangsirBatamController extends Controller
         $this->resolveChasis($validated);
         $validated['ob_dalam_pelabuhan'] = $request->has('ob_dalam_pelabuhan');
         $validated['menggunakan_lolo'] = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
+        $this->normalizeLoloOperator($validated);
         if (! $validated['menggunakan_lolo']) {
             $validated['biaya_lolo'] = 0;
             $validated['operator_lolo_1_id'] = null;
@@ -664,6 +711,34 @@ class LangsirBatamController extends Controller
         }
 
         return redirect()->route('langsir-batam.index')->with('success', count($request->ids).' Data Langsir Batam berhasil dihapus.');
+    }
+
+    private function loloOperatorRules(Request $request): array
+    {
+        $usesLolo = in_array(strtolower((string) $request->input('menggunakan_lolo')), ['ya', '1', 'true'], true);
+        $ayp = $usesLolo && $request->input('tipe_operator_lolo') === 'AYP';
+        $vendor = $usesLolo && $request->input('tipe_operator_lolo') === 'VENDOR';
+
+        return [
+            'tipe_operator_lolo' => [Rule::requiredIf($usesLolo), 'nullable', 'in:AYP,VENDOR'],
+            'operator_lolo_vendor' => [Rule::requiredIf($vendor), 'nullable', 'string', 'max:255'],
+            'operator_lolo_1_id' => [Rule::requiredIf($ayp), 'nullable', 'different:operator_lolo_2_id', 'exists:karyawans,id'],
+            'operator_lolo_2_id' => [Rule::requiredIf($ayp), 'nullable', 'different:operator_lolo_1_id', 'exists:karyawans,id'],
+        ];
+    }
+
+    private function normalizeLoloOperator(array &$validated): void
+    {
+        if (! $validated['menggunakan_lolo']) {
+            $validated['tipe_operator_lolo'] = null;
+            $validated['operator_lolo_vendor'] = null;
+        } elseif ($validated['tipe_operator_lolo'] === 'VENDOR') {
+            $validated['operator_lolo_vendor'] = trim($validated['operator_lolo_vendor']);
+            $validated['operator_lolo_1_id'] = null;
+            $validated['operator_lolo_2_id'] = null;
+        } else {
+            $validated['operator_lolo_vendor'] = null;
+        }
     }
 
     private function chasisRules(bool $required): array

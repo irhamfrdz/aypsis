@@ -22,6 +22,7 @@ class LangsirBatamNumberTest extends TestCase
             $table->timestamps();
             $table->softDeletes();
         });
+        (require database_path('migrations/2026_11_25_140000_add_operator_type_to_langsir_batams.php'))->up();
     }
 
     protected function tearDown(): void
@@ -105,5 +106,27 @@ class LangsirBatamNumberTest extends TestCase
         $this->assertSame(302, $response->getStatusCode());
         $this->assertDatabaseHas('langsir_batams', ['no_transaksi' => 'LNG-20261125-0185', 'no_kontainer' => 'TEST123']);
         $this->assertStringContainsString('[No Transaksi: LNG-20261125-0185]', DB::table('history_kontainers')->value('keterangan'));
+        Schema::create('karyawans', fn (Blueprint $table) => $table->id());
+        DB::table('karyawans')->insert([['id' => 10], ['id' => 11]]);
+        $vendorRequest = \Illuminate\Http\Request::create('/langsir-batam', 'POST', array_replace($request->all(), [
+            'menggunakan_lolo' => 'ya', 'tipe_operator_lolo' => 'VENDOR', 'operator_lolo_vendor' => 'PT LOLO BATAM',
+            'no_kontainer' => 'VENDOR123', 'biaya_lolo' => '100.000',
+        ]));
+        \Illuminate\Database\Eloquent\Model::withoutEvents(fn () => app(\App\Http\Controllers\LangsirBatamController::class)->store($vendorRequest));
+        $this->assertDatabaseHas('langsir_batams', ['no_kontainer' => 'VENDOR123', 'tipe_operator_lolo' => 'VENDOR', 'operator_lolo_vendor' => 'PT LOLO BATAM', 'operator_lolo_1_id' => null, 'operator_lolo_2_id' => null, 'biaya_lolo' => 100000]);
+        $aypRequest = \Illuminate\Http\Request::create('/langsir-batam', 'POST', array_replace($request->all(), [
+            'menggunakan_lolo' => 'ya', 'tipe_operator_lolo' => 'AYP', 'no_kontainer' => 'AYP123',
+            'operator_lolo_1_id' => 10, 'operator_lolo_2_id' => 11,
+        ]));
+        \Illuminate\Database\Eloquent\Model::withoutEvents(fn () => app(\App\Http\Controllers\LangsirBatamController::class)->store($aypRequest));
+        $this->assertDatabaseHas('langsir_batams', ['no_kontainer' => 'AYP123', 'tipe_operator_lolo' => 'AYP', 'operator_lolo_1_id' => 10, 'operator_lolo_2_id' => 11, 'operator_lolo_vendor' => null]);
+        foreach ([['tipe_operator_lolo' => null], ['tipe_operator_lolo' => 'VENDOR', 'operator_lolo_vendor' => ''], ['tipe_operator_lolo' => 'AYP'], ['tipe_operator_lolo' => 'AYP', 'operator_lolo_1_id' => 10, 'operator_lolo_2_id' => 10]] as $invalid) {
+            try {
+                app(\App\Http\Controllers\LangsirBatamController::class)->store(\Illuminate\Http\Request::create('/', 'POST', array_replace($request->all(), ['menggunakan_lolo' => 'ya'], $invalid)));
+                $this->fail('Incomplete operator selection should be rejected.');
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                $this->assertNotEmpty($e->errors());
+            }
+        }
     }
 }

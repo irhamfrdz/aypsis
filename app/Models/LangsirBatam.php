@@ -35,6 +35,8 @@ class LangsirBatam extends Model
         'menggunakan_lolo',
         'operator_lolo_1_id',
         'operator_lolo_2_id',
+        'tipe_operator_lolo',
+        'operator_lolo_vendor',
         'input_by',
     ];
 

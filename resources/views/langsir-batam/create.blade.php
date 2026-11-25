@@ -290,6 +290,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const biayaLoloHint = document.getElementById('biaya_lolo_hint');
     const tarifLoloBatam = @json($tarifLoloBatam);
     function fillBiayaLolo() {
+        if (document.getElementById('tipe_operator_lolo').value === 'VENDOR') {
+            biayaLoloInput.value = '';
+            biayaLoloHint.textContent = 'Isi total biaya LOLO vendor secara manual.';
+            return;
+        }
         const size = (document.getElementById('size_select')?.value || '').replace(/[^0-9]/g, '');
         if (Object.prototype.hasOwnProperty.call(tarifLoloBatam, size)) {
             const tarifPerOperator = Number(tarifLoloBatam[size]);
@@ -305,10 +310,19 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     function toggleLoloOperators() {
         const enabled = document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya';
+        const type = document.getElementById('tipe_operator_lolo');
+        const vendor = document.getElementById('operator_lolo_vendor');
+        type.required = enabled;
+        type.disabled = !enabled;
+        vendor.required = enabled && type.value === 'VENDOR';
+        vendor.disabled = !vendor.required;
+        biayaLoloHint.textContent = vendor.required ? 'Isi total biaya LOLO vendor secara manual.' : 'Total biaya dua operator terisi otomatis berdasarkan ukuran kontainer.';
+        document.getElementById('lolo_ayp_fields').classList.toggle('hidden', !enabled || type.value !== 'AYP');
+        document.getElementById('lolo_vendor_fields').classList.toggle('hidden', !vendor.required);
         loloFields.classList.toggle('hidden', !enabled);
         loloOperatorSelects.forEach(select => {
-            select.required = enabled;
-            select.disabled = !enabled;
+            select.required = enabled && type.value === 'AYP';
+            select.disabled = !select.required;
         });
     }
     loloRadios.forEach(radio => radio.addEventListener('change', () => {
@@ -317,6 +331,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }));
     document.getElementById('size_select')?.addEventListener('change', () => {
         if (document.querySelector('input[name="menggunakan_lolo"]:checked')?.value === 'ya') fillBiayaLolo();
+    });
+    document.getElementById('tipe_operator_lolo').addEventListener('change', () => {
+        toggleLoloOperators();
+        fillBiayaLolo();
     });
     toggleLoloOperators();
 
