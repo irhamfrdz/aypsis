@@ -412,7 +412,7 @@
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
                             SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya;BUDI;AGUS;
                         </div>
-                        <p class="mt-1">Jika LOLO Ya, isi dua nama operator aktif yang berbeda (nama lengkap atau panggilan). Biaya LOLO boleh kosong untuk otomatis tarif ukuran ? 2 operator. Jika Tidak, ketiga kolom terakhir boleh kosong; format lama 17 kolom tetap diterima untuk Tidak.</p>
+                        <p class="mt-1">Jika LOLO Ya, kedua nama operator bersifat opsional (nama lengkap atau panggilan). Jika keduanya diisi, gunakan operator aktif yang berbeda. Biaya LOLO boleh kosong untuk otomatis tarif ukuran ? 2 operator. Jika Tidak, ketiga kolom terakhir boleh kosong; format lama 17 kolom tetap diterima untuk Tidak.</p>
                         <p class="mt-1">AYP: isi kode dari Master Chasis Batam. PB: isi nomor chasis secara manual.</p>
                     </div>
                 </div>
@@ -649,8 +649,8 @@ function parseBulkData() {
             const operator2 = loloVal === 'Ya' ? (cols[18] || '') : '';
             let biayaLolo = loloVal === 'Ya' ? (cols[19] || '') : '0';
             if (loloVal === 'Ya') {
-                if (!operator1 || !operator2 || operator1.toLowerCase() === operator2.toLowerCase()) {
-                    formatErrors.push(`Baris ${lineIndex + 1}: isi dua nama operator LOLO yang berbeda pada kolom 18 dan 19.`);
+                if (operator1 && operator2 && operator1.toLowerCase() === operator2.toLowerCase()) {
+                    formatErrors.push(`Baris ${lineIndex + 1}: operator LOLO pada kolom 18 dan 19 harus berbeda jika keduanya diisi.`);
                     return;
                 }
                 if (!biayaLolo) {

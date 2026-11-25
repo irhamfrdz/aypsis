@@ -418,18 +418,21 @@ class LangsirBatamController extends Controller
                 if ($usesLolo) {
                     foreach ([1, 2] as $operatorNumber) {
                         $name = trim((string) ($row['operator_lolo_'.$operatorNumber] ?? ''));
-                        $matches = $name === '' ? collect() : Karyawan::whereNull('tanggal_berhenti')
+                        if ($name === '') {
+                            continue;
+                        }
+                        $matches = Karyawan::whereNull('tanggal_berhenti')
                             ->where(fn ($query) => $query->where('pekerjaan', 'like', '%FORKLIFT%')
                                 ->orWhere('pekerjaan', 'like', '%CRANE%')->orWhere('pekerjaan', 'like', '%ALAT BERAT%'))
                             ->where(fn ($query) => $query->whereRaw('LOWER(TRIM(nama_lengkap)) = ?', [mb_strtolower($name)])
                                 ->orWhereRaw('LOWER(TRIM(nama_panggilan)) = ?', [mb_strtolower($name)]))->pluck('id');
                         if ($matches->count() !== 1) {
-                            $errors[] = "Baris {$rowNumber}: Operator LOLO {$operatorNumber} wajib diisi dengan nama operator aktif yang cocok tepat satu karyawan (Forklift/Crane/Alat Berat).";
+                            $errors[] = "Baris {$rowNumber}: Operator LOLO {$operatorNumber} harus menggunakan nama operator aktif yang cocok tepat satu karyawan (Forklift/Crane/Alat Berat).";
                             continue 2;
                         }
                         $operatorIds[$operatorNumber] = $matches->first();
                     }
-                    if ($operatorIds[1] === $operatorIds[2]) {
+                    if (isset($operatorIds[1], $operatorIds[2]) && $operatorIds[1] === $operatorIds[2]) {
                         $errors[] = "Baris {$rowNumber}: Operator LOLO 1 dan 2 harus berbeda.";
                         continue;
                     }
@@ -722,8 +725,8 @@ class LangsirBatamController extends Controller
         return [
             'tipe_operator_lolo' => [Rule::requiredIf($usesLolo), 'nullable', 'in:AYP,VENDOR'],
             'operator_lolo_vendor' => [Rule::requiredIf($vendor), 'nullable', 'string', 'max:255'],
-            'operator_lolo_1_id' => [Rule::requiredIf($ayp), 'nullable', 'different:operator_lolo_2_id', 'exists:karyawans,id'],
-            'operator_lolo_2_id' => [Rule::requiredIf($ayp), 'nullable', 'different:operator_lolo_1_id', 'exists:karyawans,id'],
+            'operator_lolo_1_id' => ['nullable', 'different:operator_lolo_2_id', 'exists:karyawans,id'],
+            'operator_lolo_2_id' => ['nullable', 'different:operator_lolo_1_id', 'exists:karyawans,id'],
         ];
     }
 

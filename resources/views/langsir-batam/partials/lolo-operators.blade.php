@@ -14,7 +14,7 @@
         @php($field = 'operator_lolo_'.$number.'_id')
         <div>
             <label for="{{ $field }}" class="block text-xs font-semibold text-gray-700 mb-1 uppercase tracking-wider">
-                Operator {{ $number }} <span class="text-red-500">*</span>
+                Operator {{ $number }} (opsional)
             </label>
             <select name="{{ $field }}" id="{{ $field }}" class="lolo-operator-select w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500">
                 <option value="">Pilih operator {{ $number }}</option>
@@ -27,7 +27,7 @@
             @error($field)<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
         </div>
     @endforeach
-    <p class="text-xs text-indigo-700">Pilih dua operator yang berbeda.</p>
+    <p class="text-xs text-indigo-700">Kedua operator boleh dikosongkan. Jika keduanya diisi, pilih operator yang berbeda.</p>
     </div>
     <div id="lolo_vendor_fields" class="hidden">
         <label for="operator_lolo_vendor" class="block text-xs font-semibold text-gray-700 mb-1">Nama Vendor <span class="text-red-500">*</span></label>

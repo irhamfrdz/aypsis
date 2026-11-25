@@ -309,8 +309,8 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('lolo_vendor_fields').classList.toggle('hidden', !vendor.required);
         loloFields.classList.toggle('hidden', !enabled);
         loloOperatorSelects.forEach(select => {
-            select.required = enabled && type.value === 'AYP';
-            select.disabled = !select.required;
+            select.required = false;
+            select.disabled = !(enabled && type.value === 'AYP');
         });
     }
     loloRadios.forEach(radio => radio.addEventListener('change', () => {
