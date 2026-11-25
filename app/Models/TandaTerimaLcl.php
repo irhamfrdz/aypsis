@@ -111,6 +111,11 @@ class TandaTerimaLcl extends Model
         return $this->hasMany(TandaTerimaLclItem::class, 'tanda_terima_lcl_id');
     }
 
+    public function scopeUnstuffed($query)
+    {
+        return $query->whereDoesntHave('kontainerPivot', fn ($pivot) => $pivot->assigned());
+    }
+
     // Kontainer pivot relationship
     public function kontainerPivot(): HasMany
     {

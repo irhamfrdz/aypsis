@@ -28,6 +28,11 @@ class TandaTerimaLclKontainerPivot extends Model
         'assigned_at' => 'datetime',
     ];
 
+    public function scopeAssigned($query)
+    {
+        return $query->whereNotNull('nomor_kontainer')->whereRaw("TRIM(nomor_kontainer) <> ''");
+    }
+
     // Relationships
     public function tandaTerima(): BelongsTo
     {

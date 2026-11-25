@@ -1636,8 +1636,8 @@ class TandaTerimaLclController extends Controller
         // Get statistics
         $stats = [
             'total_containers' => $batchPage->total(),
-            'total_lcl_stuffed' => TandaTerimaLclKontainerPivot::count(),
-            'total_lcl_unstuffed' => TandaTerimaLcl::doesntHave('kontainerPivot')->count(),
+            'total_lcl_stuffed' => TandaTerimaLclKontainerPivot::assigned()->count(),
+            'total_lcl_unstuffed' => TandaTerimaLcl::unstuffed()->count(),
         ];
 
         // Get master tujuan kirim for dropdown
@@ -1683,7 +1683,7 @@ class TandaTerimaLclController extends Controller
         $validated = $request->validate(['search' => ['nullable', 'string', 'max:100']]);
         $search = trim((string) ($validated['search'] ?? ''));
         $rows = TandaTerimaLcl::with('items')
-            ->doesntHave('kontainerPivot')
+            ->unstuffed()
             ->when($search !== '', fn ($query) => $query->where(function ($query) use ($search) {
                 $query->where('nomor_tanda_terima', 'like', '%'.$search.'%')
                     ->orWhere('nama_penerima', 'like', '%'.$search.'%')
@@ -1743,7 +1743,7 @@ class TandaTerimaLclController extends Controller
             $notFound = [];
 
             foreach ($tandaTerimaIds as $id) {
-                $tandaTerima = TandaTerimaLcl::find($id);
+                $tandaTerima = TandaTerimaLcl::lockForUpdate()->find($id);
 
                 if (! $tandaTerima) {
                     $notFound[] = "ID-{$id}";
@@ -1752,21 +1752,23 @@ class TandaTerimaLclController extends Controller
                 }
 
                 // Cek apakah LCL sudah di-stuffing sebelumnya
-                $existingPivot = $tandaTerima->kontainerPivot()->first();
+                $existingPivot = $tandaTerima->kontainerPivot()->assigned()->first();
                 if ($existingPivot) {
                     $alreadyStuffed[] = ($tandaTerima->nomor_tanda_terima ?? "TT-LCL-{$id}")." (sudah di kontainer {$existingPivot->nomor_kontainer})";
 
                     continue;
                 }
 
-                // Create pivot entry
-                $tandaTerima->kontainerPivot()->create([
+                // Reuse an empty assignment rather than creating a duplicate pivot.
+                $pivot = $tandaTerima->kontainerPivot()->orderBy('id')->first()
+                    ?? $tandaTerima->kontainerPivot()->make();
+                $pivot->fill([
                     'nomor_kontainer' => $request->nomor_kontainer,
                     'size_kontainer' => $request->size_kontainer,
                     'tipe_kontainer' => $request->tipe_kontainer,
                     'assigned_at' => now(),
                     'assigned_by' => Auth::id(),
-                ]);
+                ])->save();
 
                 $stuffedCount++;
             }
