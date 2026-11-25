@@ -410,9 +410,9 @@
                     <div class="mt-2 text-xs text-emerald-700">
                         <strong>Contoh Baris Data:</strong>
                         <div class="bg-emerald-100/60 rounded px-2.5 py-1.5 mt-1 font-mono text-[11px] text-emerald-950 break-all select-all border border-emerald-200">
-                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya;BUDI;AGUS;
+                            SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya;BUDI
                         </div>
-                        <p class="mt-1">Jika LOLO Ya, kedua nama operator bersifat opsional (nama lengkap atau panggilan). Jika keduanya diisi, gunakan operator aktif yang berbeda. Biaya LOLO boleh kosong untuk otomatis tarif ukuran dikali jumlah operator yang diisi. Jika Tidak, ketiga kolom terakhir boleh kosong; format lama 17 kolom tetap diterima untuk Tidak.</p>
+                        <p class="mt-1">Jika LOLO Ya, kedua nama operator bersifat opsional (nama lengkap atau panggilan). Jika keduanya diisi, gunakan operator aktif yang berbeda. Biaya LOLO boleh kosong untuk otomatis tarif ukuran dikali jumlah operator yang diisi. Kolom 18?20 boleh kosong atau tidak disertakan jika berada di akhir baris. Untuk satu operator, cukup isi sampai kolom 18.</p>
                         <p class="mt-1">AYP: isi kode dari Master Chasis Batam. PB: isi nomor chasis secara manual.</p>
                     </div>
                 </div>
@@ -420,7 +420,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Data Langsir <span class="text-red-500">*</span>
                     </label>
-                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya;BUDI;AGUS;"></textarea>
+                    <textarea id="bulkTextarea" rows="10" class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm font-mono focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan data di sini...&#10;SJ-12345;2026-06-27;CONT123;20FT;SEAL01;PELABUHAN;BATU AMPAR;Gudang A;ANDI;B1234XX;500000;FULL;Tidak;Cepat;AYP;KIR12345;Ya;BUDI"></textarea>
                 </div>
                 <div class="flex items-center gap-3 mb-4">
                     <button type="button" onclick="parseBulkData()" class="inline-flex items-center px-4 py-2 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-sm font-medium rounded-lg transition-colors duration-200">
@@ -598,8 +598,8 @@ function parseBulkData() {
     lines.forEach((line, lineIndex) => {
         if (!line.trim()) return;
         const cols = line.split(';').map(c => c.trim());
-        if (![17, 20].includes(cols.length)) {
-            formatErrors.push(`Baris ${lineIndex + 1}: harus berisi 20 kolom (17 kolom hanya untuk LOLO Tidak).`);
+        if (cols.length < 17 || cols.length > 20) {
+            formatErrors.push(`Baris ${lineIndex + 1}: harus berisi 17 sampai 20 kolom. Operator 1, Operator 2, dan Biaya LOLO bersifat opsional.`);
             return;
         }
         {
