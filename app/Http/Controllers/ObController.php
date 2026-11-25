@@ -824,7 +824,7 @@ class ObController extends Controller
         $data = $request->validate([
             'type' => 'required|in:naik_kapal', 'id' => 'required|integer',
             'pasangan_id' => 'required|integer|different:id', 'kegiatan' => 'required|in:muat_temas',
-            'tanggal_ob' => 'required|date', 'nomor_surat_jalan' => 'required|string|max:255',
+            'tanggal_ob' => 'required|date', 'nomor_surat_jalan' => 'nullable|string|max:255',
             'status_kontainer' => 'required|in:full,empty',
             'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
             'gudang_asal_id' => 'required|integer|exists:gudangs,id',
@@ -3055,7 +3055,7 @@ class ObController extends Controller
         if ($isMuatTemas) {
             $validated = $request->validate([
                 'tanggal_ob' => 'required|date',
-                'nomor_surat_jalan' => 'required|string|max:255',
+                'nomor_surat_jalan' => 'nullable|string|max:255',
                 'status_kontainer' => 'required|in:full,empty',
                 'pricelist_id' => 'required|integer|exists:master_pricelist_ob_antar_gudang,id',
                 'is_ckls_mobil_panjang' => 'sometimes|boolean',
@@ -3086,7 +3086,7 @@ class ObController extends Controller
                     'pricelist_id' => 'Pilih pricelist tujuan Temas atau Meratus yang sesuai gudang, ukuran, dan status kontainer.',
                 ]);
             }
-            $nomorSuratJalan = trim($validated['nomor_surat_jalan']);
+            $nomorSuratJalan = trim($validated['nomor_surat_jalan'] ?? '') ?: null;
         }
 
         try {

@@ -20,10 +20,6 @@
                     <p id="muatTemasGudangStatus" class="text-xs text-gray-500 mt-1" role="status">Gudang asal mengikuti riwayat kontainer sampai tanggal OB yang dipilih.</p>
                 </div>
                 <div>
-                    <label for="muatTemasSuratJalan" class="block text-sm font-medium text-gray-700 mb-1">Nomor Surat Jalan <span class="text-red-500">*</span></label>
-                    <input type="text" id="muatTemasSuratJalan" required maxlength="255" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="Masukkan nomor surat jalan manual, contoh: SC 0011687">
-                </div>
-                <div>
                     <label for="muatTemasSupir" class="block text-sm font-medium text-gray-700 mb-1">Supir <span class="text-red-500">*</span></label>
                     <select id="muatTemasSupir" required class="w-full px-3 py-2 border border-gray-300 rounded-md" onchange="updateMuatTemasMobilPanjang()">
                         <option value="">--Pilih Supir--</option>
@@ -74,7 +70,7 @@
                         <select id="obPasanganId" disabled class="w-full border border-gray-300 rounded-md px-3 py-2">
                             <option value="">Pilih kontainer pasangan</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Kedua kontainer memakai tanggal OB, gudang asal, nomor surat jalan, supir, status, dan pricelist yang sama.</p>
+                        <p class="text-xs text-gray-500 mt-1">Kedua kontainer memakai tanggal OB, gudang asal, gudang tujuan, supir, status, dan pricelist yang sama.</p>
                     </div>
                 </div>
                 <div>

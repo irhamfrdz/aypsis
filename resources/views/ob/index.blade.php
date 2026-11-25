@@ -2569,7 +2569,6 @@ document.getElementById('muatTemasForm')?.addEventListener('submit', async funct
                 gudang_asal_id: document.getElementById('muatTemasGudangAsal').value,
                 gudang_tujuan_id: document.getElementById('muatTemasGudangTujuan').value,
                 supir_id: document.getElementById('muatTemasSupir').value,
-                nomor_surat_jalan: document.getElementById('muatTemasSuratJalan').value.trim(),
                 status_kontainer: document.getElementById('muatTemasStatus').value,
                 pricelist_id: document.getElementById('muatTemasPricelist').value,
                 is_ckls_mobil_panjang: document.getElementById('muatTemasMobilPanjang').checked,

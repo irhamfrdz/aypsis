@@ -196,7 +196,7 @@ class ObMobilPanjangTest extends TestCase
         }
         $payload = [
             'naik_kapal_id' => 1, 'pasangan_id' => 2, 'kegiatan' => 'muat_temas',
-            'tanggal_ob' => '2026-11-24', 'nomor_surat_jalan' => 'SC 123',
+            'tanggal_ob' => '2026-11-24',
             'status_kontainer' => 'full', 'pricelist_id' => 1, 'gudang_asal_id' => 1, 'gudang_tujuan_id' => 1,
             'supir_id' => 1, 'is_ckls_mobil_panjang' => true,
         ];
@@ -210,11 +210,11 @@ class ObMobilPanjangTest extends TestCase
         $this->assertDatabaseCount('tagihan_ob', 2);
         $this->assertEquals(250000, DB::table('tagihan_ob')->sum('biaya'));
         foreach ([1, 2] as $id) {
-            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000, 'nomor_surat_jalan' => 'SC 123', 'tanggal_ob' => '2026-11-24']);
+            $this->assertDatabaseHas('tagihan_ob', ['naik_kapal_id' => $id, 'kegiatan' => 'MUAT TEMAS', 'biaya' => 125000, 'nomor_surat_jalan' => null, 'tanggal_ob' => '2026-11-24']);
             $this->assertDatabaseHas('naik_kapal', ['id' => $id, 'sudah_ob' => true, 'ob_mobil_panjang' => true]);
             $this->assertDatabaseHas('history_kontainers', [
                 'nomor_kontainer' => 'TEMAS'.$id, 'jenis_kegiatan' => 'Pindahan Gudang',
-                'keterangan' => 'OB Muat Temas: TEMAS JKT -> TEMAS JKT. Surat Jalan: SC 123. Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001',
+                'keterangan' => 'OB Muat Temas: TEMAS JKT -> TEMAS JKT. Surat Jalan: . Supir: SUPIR UJI. Kapal: KAPAL UJI. Voyage: 001',
             ]);
         }
         Schema::create('pranota_ob_items', function (Blueprint $table) {
