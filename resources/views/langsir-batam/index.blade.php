@@ -302,7 +302,7 @@
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Konfirmasi Hapus</h3>
             <p class="text-sm text-gray-500 mb-1">
-                Apakah Anda yakin ingin menghapus data langsir
+                Apakah Anda yakin ingin menghapus permanen data langsir
             </p>
             <p class="text-sm font-semibold text-gray-900 mb-4">
                 <span id="deleteItemName"></span>?
@@ -342,7 +342,7 @@
             <p class="text-base font-bold text-red-600 mb-2">
                 <span id="bulkDeleteModalCount">0</span> data langsir yang dipilih?
             </p>
-            <p class="text-xs text-gray-400 mb-4">Data dan riwayat pergerakan terkait akan dihapus.</p>
+            <p class="text-xs text-gray-400 mb-4">Data dan riwayat pergerakan terkait akan dihapus permanen dan tidak dapat dipulihkan.</p>
             <div class="flex gap-3 justify-center">
                 <button type="button" 
                         onclick="closeBulkDeleteModal()"

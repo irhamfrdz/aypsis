@@ -66,6 +66,21 @@ class LangsirBatam extends Model
         return $this->hasOne(TagihanLoloBatamItem::class, 'langsir_batam_id');
     }
 
+    public function deletePermanently(bool $onlyDeleted = false): bool
+    {
+        return $this->getConnection()->transaction(function () use ($onlyDeleted) {
+            $record = self::withTrashed()->whereKey($this->id)->lockForUpdate()->firstOrFail();
+            if ($onlyDeleted && ! $record->trashed()) {
+                return false;
+            }
+            HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$record->no_transaksi}]%")
+                ->get()->each(fn ($history) => $history->delete());
+            $record->forceDelete();
+
+            return true;
+        });
+    }
+
     public static function generateNoTransaksi(bool $lock = false)
     {
         $date = now()->format('Ymd');

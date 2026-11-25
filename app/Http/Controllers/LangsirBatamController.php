@@ -642,10 +642,7 @@ class LangsirBatamController extends Controller
     {
         $langsir = LangsirBatam::findOrFail($id);
 
-        // Delete HistoryKontainer
-        \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->delete();
-
-        $langsir->delete();
+        $langsir->deletePermanently();
 
         return redirect()->route('langsir-batam.index')->with('success', 'Data Langsir Batam berhasil dihapus.');
     }
@@ -663,8 +660,7 @@ class LangsirBatamController extends Controller
         $langsirs = LangsirBatam::whereIn('id', $request->ids)->get();
 
         foreach ($langsirs as $langsir) {
-            \App\Models\HistoryKontainer::where('keterangan', 'like', "%[No Transaksi: {$langsir->no_transaksi}]%")->delete();
-            $langsir->delete();
+            $langsir->deletePermanently();
         }
 
         return redirect()->route('langsir-batam.index')->with('success', count($request->ids).' Data Langsir Batam berhasil dihapus.');
