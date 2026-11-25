@@ -444,7 +444,7 @@ class LangsirBatamController extends Controller
                             $errors[] = "Baris {$rowNumber}: Tarif LOLO ukuran {$size} belum tersedia. Isi Biaya LOLO secara manual.";
                             continue;
                         }
-                        $biayaLolo = (float) $tarif * 2;
+                        $biayaLolo = (float) $tarif * count($operatorIds);
                     } else {
                         $amount = str_ireplace(['Rp', '.', ' '], '', $rawBiaya);
                         if (! ctype_digit($amount)) {

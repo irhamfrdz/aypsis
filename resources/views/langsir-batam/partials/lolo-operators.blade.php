@@ -42,7 +42,7 @@
                    value="{{ old('biaya_lolo', $langsir?->biaya_lolo ? number_format($langsir->biaya_lolo, 0, ',', '.') : '0') }}"
                    class="w-full px-3 py-2 border border-gray-300 rounded-r-lg text-sm" placeholder="0">
         </div>
-        <p id="biaya_lolo_hint" class="mt-1 text-xs text-indigo-700">Total biaya dua operator terisi otomatis berdasarkan ukuran kontainer.</p>
+        <p id="biaya_lolo_hint" class="mt-1 text-xs text-indigo-700">Biaya otomatis sesuai jumlah operator yang dipilih dan ukuran kontainer.</p>
         @error('biaya_lolo')<p class="mt-1 text-xs text-red-600">{{ $message }}</p>@enderror
     </div>
 </div>

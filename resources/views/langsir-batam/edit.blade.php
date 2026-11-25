@@ -286,7 +286,8 @@ document.addEventListener('DOMContentLoaded', function() {
         const size = (document.getElementById('size_select')?.value || '').replace(/[^0-9]/g, '');
         if (Object.prototype.hasOwnProperty.call(tarifLoloBatam, size)) {
             const tarifPerOperator = Number(tarifLoloBatam[size]);
-            biayaLoloInput.value = new Intl.NumberFormat('id-ID').format(tarifPerOperator * 2);
+            const jumlahOperator = Array.from(loloOperatorSelects).filter(select => select.value).length;
+            biayaLoloInput.value = new Intl.NumberFormat('id-ID').format(tarifPerOperator * jumlahOperator);
             biayaLoloHint.textContent = '2 operator × Rp ' + new Intl.NumberFormat('id-ID').format(tarifPerOperator) + ' (tarif LOLO ' + size + ' FT).';
         } else {
             biayaLoloInput.value = '';
@@ -304,7 +305,7 @@ document.addEventListener('DOMContentLoaded', function() {
         type.disabled = !enabled;
         vendor.required = enabled && type.value === 'VENDOR';
         vendor.disabled = !vendor.required;
-        biayaLoloHint.textContent = vendor.required ? 'Isi total biaya LOLO vendor secara manual.' : 'Total biaya dua operator terisi otomatis berdasarkan ukuran kontainer.';
+        biayaLoloHint.textContent = vendor.required ? 'Isi total biaya LOLO vendor secara manual.' : 'Biaya otomatis sesuai jumlah operator yang dipilih dan ukuran kontainer.';
         document.getElementById('lolo_ayp_fields').classList.toggle('hidden', !enabled || type.value !== 'AYP');
         document.getElementById('lolo_vendor_fields').classList.toggle('hidden', !vendor.required);
         loloFields.classList.toggle('hidden', !enabled);
@@ -324,6 +325,7 @@ document.addEventListener('DOMContentLoaded', function() {
         toggleLoloOperators();
         fillBiayaLolo();
     });
+    loloOperatorSelects.forEach(select => select.addEventListener('change', fillBiayaLolo));
     toggleLoloOperators();
 
     // Money Formatting
