@@ -1983,6 +1983,19 @@ function openPranotaModal() {
 
     let totalBiaya = 0;
     
+    // Group containers by driver, then order container numbers within each driver.
+    const driverName = item => String(item.supir || '').trim();
+    const collator = new Intl.Collator('id-ID', { sensitivity: 'base', numeric: true });
+    selectedItems.sort((a, b) => {
+        const driverA = driverName(a);
+        const driverB = driverName(b);
+        const missingA = !driverA || driverA === '-';
+        const missingB = !driverB || driverB === '-';
+        if (missingA !== missingB) return missingA ? 1 : -1;
+        return collator.compare(driverA, driverB)
+            || collator.compare(a.nomor_kontainer || '', b.nomor_kontainer || '');
+    });
+
     // Add all items to table
     selectedItems.forEach((item, index) => {
         const row = document.createElement('tr');
