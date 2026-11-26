@@ -1,6 +1,26 @@
 <style>
 .bpjs-new-badge { display: inline-flex; align-items: center; flex-shrink: 0; margin-left: 5px; padding: 2px 6px; border: 1px solid #a7f3d0; border-radius: 4px; background: #ecfdf5; color: #047857; font-size: 9px; font-weight: 700; line-height: 1.4; letter-spacing: .04em; vertical-align: middle; }
 @media screen {
+    .bpjs-form-workspace { font-size: 14px; line-height: 1.6; }
+    .bpjs-form-workspace #pranota-form > .bg-white > div:first-child { background: #f1f5f9 !important; padding-top: 18px; padding-bottom: 18px; }
+    .bpjs-form-workspace h2 { font-size: 16px; color: #0f172a; }
+    .bpjs-form-workspace #pranota-form input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]),
+    .bpjs-form-workspace #pranota-form select,
+    .bpjs-form-workspace #pranota-form textarea { border: 1px solid #cbd5e1; background-color: #fff; padding: 10px 12px; }
+    .bpjs-form-workspace #pranota-form label { color: #334155; }
+    .bpjs-form-workspace #pranota-form select:disabled { background: #f1f5f9; color: #64748b; cursor: not-allowed; }
+    .bpjs-form-workspace #bpjs-employee-picker { background: #f8fafc !important; }
+    .bpjs-form-workspace .bpjs-picker-title { font-size: 16px; }
+    .bpjs-step-number { display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; margin-right: 5px; border-radius: 50%; color: #fff; background: #0f766e; font-size: 12px; font-weight: 700; }
+    .bpjs-picker-hint { padding: 10px 14px; border-left: 3px solid #0d9488; background: #f0fdfa; color: #115e59; font-size: 13px; }
+    .bpjs-form-workspace #employee-picker-reset { color: #b91c1c; border-color: #fecaca; background: #fff; white-space: normal; }
+    .bpjs-form-workspace #employee-picker-reset:hover { background: #fff1f2; }
+    .bpjs-form-workspace #employee-picker-list > label { font-size: 14px; padding: 14px 8px; }
+    .bpjs-form-workspace #employee-picker-list > label:has(input:checked) { background: #ccfbf1; color: #134e4a; border-radius: 6px; }
+    .bpjs-form-workspace #employee-picker-list input, .bpjs-form-workspace #employee-picker-all { width: 18px; height: 18px; }
+    .bpjs-form-workspace #employee-picker-status { font-size: 13px; font-weight: 600; color: #334155; }
+    .bpjs-form-workspace #tabel-detail thead th { padding-top: 14px; padding-bottom: 14px; }
+    .bpjs-form-workspace #tabel-detail tbody input { min-width: 95px; }
     /* Shared, restrained presentation for list, form, and detail screens. */
     .bpjs-workspace.bpjs-workspace > .bpjs-page-header { padding: 4px 0 20px; border: 0; border-bottom: 1px solid #e2e8f0; border-radius: 0; box-shadow: none; background: transparent; }
     .bpjs-workspace.bpjs-workspace .bpjs-page-header h1 { font-size: 22px; font-weight: 650; letter-spacing: -.025em; }
@@ -22,7 +42,7 @@
     .bpjs-extra-actions[open] > div { display: flex; flex-direction: column; align-items: stretch; gap: 8px; padding: 12px; margin-top: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
     .bpjs-extra-actions button { box-shadow: none; }
     .bpjs-form-workspace #bpjs-employee-picker { padding: 20px 24px; background: #fff; }
-    .bpjs-picker-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; max-width: 800px; }
+    .bpjs-picker-fields { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; max-width: 1200px; }
     .bpjs-picker-fields label { display: block; margin-bottom: 6px; }
     .bpjs-form-workspace .bpjs-picker-fields input,
     .bpjs-form-workspace .bpjs-picker-fields select { width: 100%; min-height: 40px; margin: 0; font-size: 13px; }

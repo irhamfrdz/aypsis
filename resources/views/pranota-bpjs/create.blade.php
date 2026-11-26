@@ -223,20 +223,32 @@
             </div>
 
             <div id="bpjs-employee-picker" class="px-6 py-4 border-b border-gray-200 space-y-3">
-                <p class="bpjs-picker-title text-sm font-semibold text-gray-800">Pilih karyawan</p>
-                <p class="text-xs text-gray-500">Pilih Group BPJS, centang karyawan, lalu tambahkan ke rincian sebelum menyimpan pranota.</p>
+                <div class="flex items-center justify-between gap-3">
+                    <p class="bpjs-picker-title text-sm font-semibold text-gray-800">Pilih dan tambahkan karyawan</p>
+                    <button id="employee-picker-reset" type="button" title="Kosongkan semua rincian karyawan dan mulai pemilihan dari awal" class="px-3 py-2 border border-gray-300 rounded-lg text-xs font-semibold text-gray-700 hover:bg-gray-100">Reset Alur &amp; Kosongkan Tabel</button>
+                </div>
+                <p class="text-xs text-gray-500">Pilih JKN atau JAMSOSTEK, pilih Group BPJS, centang karyawan, lalu tambahkan ke rincian.</p>
                 <div class="bpjs-picker-fields">
                 <div>
-                <label for="employee-picker-group" class="text-xs font-semibold text-gray-700">Group BPJS</label>
-                <select id="employee-picker-group" class="block w-full sm:w-80 rounded-lg border-gray-300 text-sm">
+                <label for="employee-picker-jenis" class="text-xs font-semibold text-gray-700"><span class="bpjs-step-number">1</span> Pilih jenis BPJS</label>
+                <select id="employee-picker-jenis" class="block w-full rounded-lg border-gray-300 text-sm">
+                    <option value="">-- Pilih JKN / JAMSOSTEK --</option>
+                    <option value="jkn">JKN</option>
+                    <option value="jamsostek">JAMSOSTEK</option>
+                </select>
+                </div>
+                <div>
+                <label for="employee-picker-group" class="text-xs font-semibold text-gray-700"><span class="bpjs-step-number">2</span> Pilih Group BPJS</label>
+                <select id="employee-picker-group" disabled class="block w-full sm:w-80 rounded-lg border-gray-300 text-sm">
                     <option value="">-- Pilih Group BPJS --</option>
                 </select>
                 </div>
                 <div>
-                <label for="employee-picker-search" class="text-xs font-semibold text-gray-700">Cari karyawan</label>
+                <label for="employee-picker-search" class="text-xs font-semibold text-gray-700"><span class="bpjs-step-number">3</span> Cari dan centang karyawan</label>
                 <input id="employee-picker-search" type="search" placeholder="Cari nama / NIK dalam Group" aria-label="Cari karyawan dalam Group" class="block w-full sm:w-80 rounded-lg border-gray-300 text-sm">
                 </div>
                 </div>
+                <p class="bpjs-picker-hint">Karyawan yang dicentang baru masuk ke tabel setelah Anda menekan <strong>Tambahkan Karyawan Terpilih</strong>.</p>
                 <label class="flex items-center gap-2 text-xs"><input id="employee-picker-all" type="checkbox"> Pilih semua yang ditampilkan</label>
                 <div id="employee-picker-list" class="max-h-64 overflow-auto space-y-2" aria-label="Daftar karyawan dalam Group"></div>
                 <p id="employee-picker-status" role="status" aria-live="polite" class="text-xs text-gray-600"></p>
@@ -265,7 +277,7 @@
                             <span class="inline-flex items-center justify-center w-5 h-5 rounded bg-purple-100 text-purple-800">
                                 <i class="fas fa-building text-[10px]"></i>
                             </span>
-                            <span>Filter Cabang:</span>
+                            <span>Tipe BPJS:</span>
                         </label>
                         <select id="filter-cabang-bpjs" class="text-xs rounded-lg border-gray-300 focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 shadow-2xs py-1.5 px-3 bg-white font-medium cursor-pointer min-w-[180px]">
                             <option value="all">Semua Tipe BPJS</option>
@@ -1448,6 +1460,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     btnAdd.addEventListener('click', () => addRow(null));
 
     const picker = document.getElementById('bpjs-employee-picker');
+    const pickerJenis = document.getElementById('employee-picker-jenis');
     const pickerGroup = document.getElementById('employee-picker-group');
     const pickerSearch = document.getElementById('employee-picker-search');
     const pickerList = document.getElementById('employee-picker-list');
@@ -1456,18 +1469,23 @@ document.addEventListener('DOMContentLoaded', async function() {
     const pickerStatus = document.getElementById('employee-picker-status');
     const pickedEmployees = new Set();
 
+    function pickerMasterRecords() {
+        return rumusBpjs.filter(record => record.jenis === pickerJenis.value);
+    }
+
     function pickerCandidates() {
         const existing = new Set(Array.from(container.querySelectorAll('tr.detail-row')).map(row => row.dataset.uniqueId));
-        return pickerGroup.value ? karyawans.filter(employee =>
+        return pickerJenis.value && pickerGroup.value ? karyawans.filter(employee =>
             !existing.has(employee.unique_id)
-            && BpjsMasterFilters.matches(employee, rumusBpjs, pickerGroup.value)) : [];
+            && BpjsMasterFilters.matches(employee, pickerMasterRecords(), pickerGroup.value)) : [];
     }
 
     function renderEmployeePicker() {
         updateNewEmployeeBadges();
         const group = pickerGroup.value;
         pickerGroup.replaceChildren(new Option('-- Pilih Group BPJS --', ''));
-        BpjsMasterFilters.options(rumusBpjs, 'group_name').forEach(value => pickerGroup.add(new Option(value, value)));
+        pickerGroup.disabled = !pickerJenis.value;
+        BpjsMasterFilters.options(pickerMasterRecords(), 'group_name').forEach(value => pickerGroup.add(new Option(value, value)));
         pickerGroup.value = group;
         const candidates = pickerCandidates();
         const allowed = new Set(candidates.map(employee => employee.unique_id));
@@ -1502,11 +1520,41 @@ document.addEventListener('DOMContentLoaded', async function() {
             renderEmployeePicker();
         };
         pickerAdd.disabled = !pickedEmployees.size;
-        pickerStatus.textContent = !pickerGroup.value ? 'Pilih Group BPJS terlebih dahulu.'
+        pickerStatus.textContent = !pickerJenis.value ? 'Pilih JKN atau JAMSOSTEK terlebih dahulu.'
+            : !pickerGroup.value ? 'Pilih Group BPJS terlebih dahulu.'
             : `${visible.length} karyawan tersedia, ${pickedEmployees.size} dipilih. Karyawan yang sudah ada dalam rincian tidak ditampilkan.`;
     }
 
-    pickerGroup.addEventListener('change', () => { pickedEmployees.clear(); renderEmployeePicker(); });
+    pickerJenis.addEventListener('change', () => {
+        pickerGroup.value = '';
+        pickerSearch.value = '';
+        pickedEmployees.clear();
+        renderEmployeePicker();
+        syncPickerTableFilter();
+    });
+    function syncPickerTableFilter() {
+        filterGroupSelect.value = pickerGroup.value || 'all';
+        filterCabangSelect.value = 'all';
+        searchKaryawanInput.value = '';
+        applyFilter();
+    }
+    pickerGroup.addEventListener('change', () => {
+        pickedEmployees.clear();
+        renderEmployeePicker();
+        syncPickerTableFilter();
+    });
+    document.getElementById('employee-picker-reset').addEventListener('click', () => {
+        if (isGenerating || isRefreshing) return;
+        container.replaceChildren();
+        rowCount = 0;
+        pickerJenis.value = '';
+        pickerGroup.value = '';
+        pickerSearch.value = '';
+        pickedEmployees.clear();
+        renderEmployeePicker();
+        resetAllFilters();
+        pickerJenis.focus();
+    });
     document.getElementById('tanggal_pranota').addEventListener('change', renderEmployeePicker);
     function isNewEmployee(employee) {
         return BpjsNewEmployee.matches(employee, document.getElementById('periode_bulan').value, document.getElementById('periode_tahun').value);
@@ -1539,7 +1587,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         try {
             await processBpjsBatch(employees, employee => addRow(employee.unique_id, true));
             pickedEmployees.clear();
-            resetAllFilters();
+            syncPickerTableFilter();
         } finally {
             isGenerating = false;
             picker.inert = false;
