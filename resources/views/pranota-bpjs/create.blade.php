@@ -485,6 +485,7 @@
 <script src="{{ asset('js/pranota-bpjs-new-employee.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-new-employee.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-filters.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-filters.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-jamsostek.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-jamsostek.js')) }}"></script>
+<script src="{{ asset('js/pranota-bpjs-premium.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-premium.js')) }}"></script>
 <script src="{{ asset('js/pranota-bpjs-saved.js') }}?v={{ filemtime(public_path('js/pranota-bpjs-saved.js')) }}"></script>
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
@@ -1485,7 +1486,8 @@ document.addEventListener('DOMContentLoaded', async function() {
                 else pickedEmployees.delete(employee.unique_id);
                 renderEmployeePicker();
             });
-            label.append(checkbox, document.createTextNode(`${employee.nama_lengkap} — ${employee.nik || '-'} (${employee.tipe_label})`));
+            const premium = BpjsPremium.total(employee, rumusBpjs, document.getElementById('tanggal_pranota').value);
+            label.append(checkbox, document.createTextNode(`${employee.nama_lengkap} — ${employee.nik || '-'} — Premi: Rp ${formatNumber(premium)}`));
             if (isNewEmployee(employee)) label.append(BpjsNewEmployee.badge());
             pickerList.append(label);
         });
@@ -1505,6 +1507,7 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 
     pickerGroup.addEventListener('change', () => { pickedEmployees.clear(); renderEmployeePicker(); });
+    document.getElementById('tanggal_pranota').addEventListener('change', renderEmployeePicker);
     function isNewEmployee(employee) {
         return BpjsNewEmployee.matches(employee, document.getElementById('periode_bulan').value, document.getElementById('periode_tahun').value);
     }

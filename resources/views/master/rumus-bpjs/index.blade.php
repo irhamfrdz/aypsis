@@ -321,6 +321,7 @@
                         <th class="px-4 py-3 font-semibold text-center">Hutang (%)</th>
                         <th class="px-4 py-3 font-semibold text-center">Biaya (%)</th>
                         <th class="px-4 py-3 font-semibold">Keterangan</th>
+                        <th class="px-4 py-3 font-semibold">Masa Berlaku Variabel</th>
                         <th class="px-4 py-3 font-semibold text-center w-20">Aksi</th>
                     </tr>
                 </thead>
@@ -362,6 +363,9 @@
                                 @else <span class="text-gray-300">—</span> @endif
                             </td>
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
+                            <td class="px-4 py-3">
+                                @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
+                            </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
@@ -386,7 +390,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group JKN.
                             </td>
@@ -418,6 +422,7 @@
                         <th class="px-4 py-3 font-semibold text-center">Biaya (Rp)</th>
                         <th class="px-4 py-3 font-semibold text-center">Diskon</th>
                         <th class="px-4 py-3 font-semibold">Keterangan</th>
+                        <th class="px-4 py-3 font-semibold">Masa Berlaku Variabel</th>
                         <th class="px-4 py-3 font-semibold text-center w-20">Aksi</th>
                     </tr>
                 </thead>
@@ -508,6 +513,9 @@
                                 </div>
                             </td>
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
+                            <td class="px-4 py-3">
+                                @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
+                            </td>
                             <td class="px-4 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
@@ -532,7 +540,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="10" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="11" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek BPU-CREW.
                             </td>
@@ -565,6 +573,7 @@
                         <th class="px-3 py-3 font-semibold text-center">JKM Tunj. (Rp)</th>
                         <th class="px-3 py-3 font-semibold text-center">Diskon</th>
                         <th class="px-3 py-3 font-semibold">Keterangan</th>
+                        <th class="px-3 py-3 font-semibold">Masa Berlaku Variabel</th>
                         <th class="px-3 py-3 font-semibold text-center w-20">Aksi</th>
                     </tr>
                 </thead>
@@ -659,6 +668,9 @@
                                 </div>
                             </td>
                             <td class="px-3 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
+                            <td class="px-3 py-3">
+                                @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
+                            </td>
                             <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
@@ -683,7 +695,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="11" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="12" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek Non BPU-CREW.
                             </td>
@@ -718,6 +730,7 @@
                         <th class="px-3 py-3 font-semibold text-center">JP 1% Hutang</th>
                         <th class="px-3 py-3 font-semibold text-center">Maksimal DPP JP (Rp)</th>
                         <th class="px-3 py-3 font-semibold text-center">Batas Usia JP (Thn)</th>
+                        <th class="px-3 py-3 font-semibold">Masa Berlaku Variabel</th>
                         <th class="px-3 py-3 font-semibold text-center w-20">Aksi</th>
                     </tr>
                 </thead>
@@ -772,6 +785,9 @@
                                     <span class="text-gray-300">—</span>
                                 @endif
                             </td>
+                            <td class="px-3 py-3">
+                                @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
+                            </td>
                             <td class="px-3 py-3 text-center">
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
@@ -796,7 +812,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="13" class="px-4 py-8 text-center text-gray-400 text-sm">
+                            <td colspan="14" class="px-4 py-8 text-center text-gray-400 text-sm">
                                 <i class="fas fa-inbox text-2xl mb-2 block"></i>
                                 Belum ada data Group BP Jamsostek PPU.
                             </td>
