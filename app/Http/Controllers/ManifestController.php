@@ -668,10 +668,6 @@ class ManifestController extends Controller
 
         $manifests = Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
             ->where('no_voyage', $noVoyage)
-            ->where(function ($query) {
-                $query->whereNull('size_kontainer')
-                    ->orWhere('size_kontainer', '');
-            })
             ->where('nomor_kontainer', '!=', 'Cargo')
             ->get();
 
@@ -691,7 +687,7 @@ class ManifestController extends Controller
                     }
                 }
 
-                if ($foundUkuran) {
+                if ($foundUkuran && $manifest->size_kontainer != $foundUkuran) {
                     $manifest->size_kontainer = $foundUkuran;
                     $manifest->save();
                     $updatedCount++;

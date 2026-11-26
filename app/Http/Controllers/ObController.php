@@ -3750,6 +3750,20 @@ class ObController extends Controller
     }
 
     /**
+     * Keep manifest size aligned for the same container, ship, and voyage.
+     */
+    private function syncManifestSize(string $namaKapal, string $noVoyage, string $nomorKontainer, string $size): void
+    {
+        $normalizedKapal = strtoupper(trim(str_replace('.', '', $namaKapal)));
+        $normalizedKapal = str_replace('  ', ' ', $normalizedKapal);
+
+        Manifest::whereRaw("UPPER(REPLACE(REPLACE(nama_kapal, '.', ''), '  ', ' ')) = ?", [$normalizedKapal])
+            ->where('no_voyage', $noVoyage)
+            ->whereRaw("UPPER(REPLACE(REPLACE(REPLACE(nomor_kontainer, ' ', ''), '-', ''), '.', '')) = ?", [$nomorKontainer])
+            ->update(['size_kontainer' => $size]);
+    }
+
+    /**
      * Confirm dan execute update size kontainer
      */
     public function confirmUpdateSize(Request $request)
@@ -3817,6 +3831,10 @@ class ObController extends Controller
                     $bl->save();
                     $updatedBl++;
                 }
+
+                if ($sizeBaru) {
+                    $this->syncManifestSize($namaKapal, $noVoyage, $nomorKontainer, $sizeBaru);
+                }
             }
 
             // Update NaikKapal records
@@ -3862,6 +3880,10 @@ class ObController extends Controller
                     $naikKapal->size_kontainer = $sizeBaru;
                     $naikKapal->save();
                     $updatedNaikKapal++;
+                }
+
+                if ($sizeBaru) {
+                    $this->syncManifestSize($namaKapal, $noVoyage, $nomorKontainer, $sizeBaru);
                 }
             }
 
