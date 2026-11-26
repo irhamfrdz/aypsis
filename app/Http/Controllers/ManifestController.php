@@ -1369,6 +1369,7 @@ class ManifestController extends Controller
                     // Normalize voyage: trim and uppercase
                     return strtoupper(trim($voyage));
                 })
+                ->reject(fn ($voyage) => preg_replace('/\s+/', '', $voyage) === 'AYP0004632')
                 ->unique()
                 ->values()
                 ->toArray();
