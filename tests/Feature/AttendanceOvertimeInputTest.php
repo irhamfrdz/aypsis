@@ -91,6 +91,41 @@ class AttendanceOvertimeInputTest extends TestCase
         ];
     }
 
+    public static function originalAttendanceStatuses(): array
+    {
+        return [[null], ['Selesai'], ['Persetujuan'], ['Manual']];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('originalAttendanceStatuses')]
+    public function test_edit_preserves_original_status_and_notes_while_new_log_is_manual(?string $status): void
+    {
+        DB::table('karyawans')->insert(['id' => 1, 'nik' => '1593']);
+        $id = DB::table('absensis')->insertGetId([
+            'karyawan_id' => 1, 'nik' => '1593', 'waktu' => '2026-11-26 08:55:00',
+            'tipe' => 'Masuk', 'status' => $status, 'keterangan' => 'Keterangan asal',
+            'foto' => 'uploads/attendance/masuk/original.jpg',
+        ]);
+
+        $request = Request::create('/absensi/update', 'PUT', [
+            'nik' => '1593', 'tanggal' => '2026-11-26',
+            'waktu_masuk' => '08:50', 'waktu_pulang' => '17:00',
+        ]);
+        Absensi::withoutEvents(fn () => app(AbsensiController::class)->update($request));
+
+        $existing = Absensi::findOrFail($id);
+        $this->assertSame('08:50:00', $existing->waktu->format('H:i:s'));
+        $this->assertSame($status, $existing->status);
+        $this->assertSame('Keterangan asal', $existing->keterangan);
+        $this->assertSame('uploads/attendance/masuk/original.jpg', $existing->foto);
+        $added = Absensi::where('tipe', 'Pulang')->sole();
+        $this->assertSame('Manual', $added->status);
+        $this->assertSame('Ditambahkan dari edit manual', $added->keterangan);
+
+        Absensi::withoutEvents(fn () => app(AbsensiController::class)->update($request));
+        $this->assertSame('Ditambahkan dari edit manual', $added->fresh()->keterangan);
+        $this->assertSame(2, Absensi::count());
+    }
+
     #[\PHPUnit\Framework\Attributes\DataProvider('machineEmployeeIds')]
     public function test_manual_overnight_checkout_stays_on_the_same_row_as_machine_logs(?int $employeeId, bool $overlappingSession, bool $existingCheckout = true): void
     {

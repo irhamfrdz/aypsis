@@ -651,8 +651,6 @@ class AbsensiController extends Controller
                         $existingLog->update([
                             'waktu' => $waktu,
                             'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
-                            'status' => 'Manual',
-                            'keterangan' => 'Diperbarui dari edit manual',
                         ]);
                     } catch (\Illuminate\Database\QueryException $e) {
                         if ($e->errorInfo[1] == 1062) {
@@ -665,8 +663,6 @@ class AbsensiController extends Controller
                             if ($conflictLog) {
                                 $conflictLog->update([
                                     'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
-                                    'status' => 'Manual',
-                                    'keterangan' => 'Diperbarui dari edit manual',
                                 ]);
                                 $existingLog->delete();
                             }
@@ -702,8 +698,6 @@ class AbsensiController extends Controller
                             ->where('tipe', $tipe)
                             ->where('waktu', $waktu)
                             ->update([
-                                'status' => 'Manual',
-                                'keterangan' => 'Diperbarui dari edit manual',
                                 'tanggal_kerja_manual' => $tipe === 'Lembur_Pulang' ? $tanggal : null,
                             ]);
                     } else {
