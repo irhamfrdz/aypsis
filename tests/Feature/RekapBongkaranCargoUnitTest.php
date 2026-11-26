@@ -37,6 +37,29 @@ class RekapBongkaranCargoUnitTest extends TestCase
         });
     }
 
+    public function test_jb_and_jp_cargo_use_only_perincian_even_with_saved_units(): void
+    {
+        foreach (['SR21JB26', 'sr21jp26'] as $voyage) {
+            foreach ([
+                ['tonnage' => 20.43, 'volume_perincian' => 9.788, 'rekap_bongkaran_unit' => 'ton'],
+                ['tonnage' => 0.43],
+                ['volume' => 100, 'tonnage_perincian' => 2.105, 'rekap_bongkaran_unit' => 'm3'],
+            ] as $item) {
+                DB::table('manifests')->insert(array_merge($item, [
+                    'nama_kapal' => 'KM TEST', 'no_voyage' => $voyage, 'tipe_kontainer' => 'CARGO',
+                ]));
+            }
+
+            $result = app(BiayaKapalController::class)->getContainerCounts(Request::create('/', 'POST', [
+                'kapal' => 'KM TEST', 'voyage' => $voyage,
+            ]))->getData(true);
+
+            $this->assertTrue($result['success']);
+            $this->assertSame(12, $result['counts']['cargo_buruh_sum']);
+            $this->assertSame(12, $result['counts']['cargo_max_tv_sum']);
+        }
+    }
+
     public function test_saved_rekap_units_control_buruh_cargo_without_changing_default_maximum(): void
     {
         $cargo = [
@@ -46,21 +69,21 @@ class RekapBongkaranCargoUnitTest extends TestCase
         ];
         foreach ($cargo as $item) {
             DB::table('manifests')->insert(array_merge($item, [
-                'nama_kapal' => 'KM TEST', 'no_voyage' => 'JB01', 'tipe_kontainer' => 'CARGO',
+                'nama_kapal' => 'KM TEST', 'no_voyage' => 'BJ01', 'tipe_kontainer' => 'CARGO',
             ]));
         }
         DB::table('manifests')->insert([
-            'nama_kapal' => 'KM OTHER', 'no_voyage' => 'JB01', 'tipe_kontainer' => 'CARGO',
+            'nama_kapal' => 'KM OTHER', 'no_voyage' => 'BJ01', 'tipe_kontainer' => 'CARGO',
             'nama_barang' => 'Cargo 1', 'tonnage' => 100, 'volume' => 200,
         ]);
 
         $before = app(BiayaKapalController::class)->getContainerCounts(Request::create('/', 'POST', [
-            'kapal' => 'KM TEST', 'voyage' => 'JB01',
+            'kapal' => 'KM TEST', 'voyage' => 'BJ01',
         ]))->getData(true);
         $this->assertSame(355, $before['counts']['cargo_buruh_sum']);
 
         app(BlController::class)->saveRekapBongkaranUnits(Request::create('/', 'POST', [
-            'nama_kapal' => 'KM TEST', 'no_voyage' => 'JB01',
+            'nama_kapal' => 'KM TEST', 'no_voyage' => 'BJ01',
             'choices' => [
                 md5('cargo|nama|CARGO 1|colly') => 'ton',
                 md5('cargo|nama|CARGO 2|colly') => 'ton',
@@ -69,7 +92,7 @@ class RekapBongkaranCargoUnitTest extends TestCase
         ]));
 
         $after = app(BiayaKapalController::class)->getContainerCounts(Request::create('/', 'POST', [
-            'kapal' => 'KM TEST', 'voyage' => 'JB01',
+            'kapal' => 'KM TEST', 'voyage' => 'BJ01',
         ]))->getData(true);
         $this->assertTrue($after['success']);
         $this->assertSame(238, $after['counts']['cargo_buruh_sum']);
@@ -78,3 +101,4 @@ class RekapBongkaranCargoUnitTest extends TestCase
         $this->assertNull(DB::table('manifests')->where('nama_kapal', 'KM OTHER')->value('rekap_bongkaran_unit'));
     }
 }
+

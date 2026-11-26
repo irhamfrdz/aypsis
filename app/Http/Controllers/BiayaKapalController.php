@@ -7341,10 +7341,19 @@ class BiayaKapalController extends Controller
 
             $cargoMaxTvSum = 0;
             $cargoBuruhSum = 0;
+            $usePerincian = str_contains(strtoupper($voyage), 'JB') || str_contains(strtoupper($voyage), 'JP');
             foreach ($cargoItems as $item) {
                 // Compare volume and tonnage per manifest before summing cargo.
                 $volumePerincian = (float) $item->volume_perincian;
                 $tonnagePerincian = (float) $item->tonnage_perincian;
+                if ($usePerincian) {
+                    $maximum = max(0, $volumePerincian, $tonnagePerincian);
+                    $cargoMaxTvSum += $maximum;
+                    $cargoBuruhSum += $maximum;
+
+                    continue;
+                }
+
                 $volume = $volumePerincian > 0 ? $volumePerincian : (float) $item->volume;
                 $tonnage = $tonnagePerincian > 0 ? $tonnagePerincian : (float) $item->tonnage;
 
