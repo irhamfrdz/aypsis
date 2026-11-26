@@ -46,6 +46,17 @@ class ObManifestSizeTest extends TestCase
         $this->assertSame('40ft', DB::table('manifests')->where('no_voyage', 'OTHER')->value('size_kontainer'));
     }
 
+    public function test_display_uses_current_master_size_instead_of_stored_size(): void
+    {
+        $manifest = new \App\Models\Manifest([
+            'nomor_kontainer' => 'AYPU 210137-6', 'tipe_kontainer' => 'FCL Booking', 'size_kontainer' => '40ft',
+        ]);
+        $this->assertSame('20', $manifest->master_size);
+        DB::table('stock_kontainers')->update(['ukuran' => '40']);
+        $this->assertSame('40', $manifest->master_size);
+        $this->assertSame('40ft', $manifest->size_kontainer);
+    }
+
     public function test_ob_update_repairs_manifest_even_when_ob_is_already_correct(): void
     {
         $this->seedRecords();
@@ -57,6 +68,29 @@ class ObManifestSizeTest extends TestCase
         $this->assertTrue($response->getData()->success);
         $this->assertSame('20', DB::table('manifests')->where('no_voyage', 'SR21JB26')->value('size_kontainer'));
         $this->assertSame('40ft', DB::table('manifests')->where('no_voyage', 'OTHER')->value('size_kontainer'));
+    }
+
+    public function test_perincian_counts_follow_master_instead_of_old_manifest_sizes(): void
+    {
+        $manifests = collect();
+        for ($i = 0; $i < 90; $i++) {
+            $nomor = $i === 0 ? 'AYPU2101376' : 'TEST'.$i;
+            $size = $i < 84 ? '20' : '40';
+            if ($i > 0) {
+                DB::table('stock_kontainers')->insert(['nomor_seri_gabungan' => $nomor, 'ukuran' => $size.'ft']);
+            }
+            $manifests->push(new \App\Models\Manifest([
+                'nomor_kontainer' => $nomor, 'tipe_kontainer' => 'FCL Booking',
+                'size_kontainer' => $i === 0 ? '40ft' : $size,
+                'nama_barang' => 'Barang',
+            ]));
+        }
+        $method = new \ReflectionMethod(\App\Http\Controllers\BlController::class, 'buildRekapBongkaranPerincianItems');
+        $items = $method->invoke(app(\App\Http\Controllers\BlController::class), $manifests)->keyBy('nama_barang');
+
+        $this->assertSame(84, $items['Container Full 20 feet']['kuantitas']);
+        $this->assertSame(6, $items['Container Full 40 feet']['kuantitas']);
+        $this->assertSame('40ft', $manifests->first()->size_kontainer);
     }
 
     private function request(): Request

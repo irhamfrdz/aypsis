@@ -3084,6 +3084,15 @@ class BlController extends Controller
      */
     private function buildRekapBongkaranPerincianItems($bls): \Illuminate\Support\Collection
     {
+        // Resolve size from the container master for both screen and print reports.
+        // Work on copies so generating a report never changes shipment records.
+        $bls = $bls->map(function ($item) {
+            $resolved = clone $item;
+            $resolved->size_kontainer = $item->master_size;
+
+            return $resolved;
+        });
+
         // -----------------------------------------------------------------------
         // 1. Separate containers from cargo
         // -----------------------------------------------------------------------

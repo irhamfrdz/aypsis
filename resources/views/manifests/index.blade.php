@@ -332,7 +332,7 @@
                                 <div class="text-[10px] text-gray-500">Seal: {{ $manifest->no_seal }}</div>
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900">
-                                {{ $manifest->tipe_kontainer }}<br><span class="text-gray-500">{{ $manifest->size_kontainer }}'</span>
+                                {{ $manifest->tipe_kontainer }}<br><span class="text-gray-500">{{ preg_match('/^\s*(\d+)\s*(?:ft|feet|\x27)?\s*$/i', (string) $manifest->master_size, $sizeMatch) ? $sizeMatch[1].'ft' : $manifest->master_size }}</span>
                             </td>
                             <td class="px-2 py-3 text-[11px] text-gray-900 whitespace-normal leading-tight">
                                 <div class="font-semibold">{{ $manifest->nama_barang }}</div>

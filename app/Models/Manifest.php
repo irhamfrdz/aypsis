@@ -6,6 +6,31 @@ use Illuminate\Database\Eloquent\Model;
 
 class Manifest extends Model
 {
+    public function getMasterSizeAttribute()
+    {
+        $value = $this->size_kontainer;
+        $nomor = strtoupper(preg_replace('/[\s.\-]+/', '', (string) $this->nomor_kontainer));
+
+        // LCL/CARGO and records without a master retain their shipment size.
+        if ($nomor === '' || stripos((string) $this->tipe_kontainer, 'CARGO') !== false || stripos((string) $this->tipe_kontainer, 'LCL') !== false) {
+            return $value;
+        }
+
+        foreach (['kontainers', 'stock_kontainers'] as $table) {
+            $ukuran = \Illuminate\Support\Facades\DB::table($table)
+                ->whereRaw("UPPER(REPLACE(REPLACE(REPLACE(nomor_seri_gabungan, ' ', ''), '-', ''), '.', '')) = ?", [$nomor])
+                ->whereNotNull('ukuran')
+                ->where('ukuran', '!=', '')
+                ->value('ukuran');
+
+            if ($ukuran !== null) {
+                return $ukuran;
+            }
+        }
+
+        return $value;
+    }
+
     private bool $applyingShipperJb = false;
 
     protected static function booted(): void
