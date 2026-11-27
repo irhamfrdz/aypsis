@@ -127,7 +127,7 @@
                             <th scope="col" class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Saldo
                             </th>
-                            @if(Auth::user()->username == 'kiky')
+                            @if(Auth::user()->isSuperAdmin())
                             <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Aksi
                             </th>
@@ -139,7 +139,7 @@
                         <tr class="bg-gray-50">
                             <td class="px-4 py-3 text-sm font-medium text-gray-600" colspan="6">Saldo Sebelum Periode (Mulai)</td>
                             <td class="px-4 py-3 text-sm font-semibold text-gray-900 text-right">Rp {{ number_format($saldoAwal, 0, ',', '.') }}</td>
-                            @if(Auth::user()->username == 'kiky')
+                            @if(Auth::user()->isSuperAdmin())
                             <td class="px-4 py-3 text-center">
                                 @if(request('start_date'))
                                 <button type="button" onclick="openEditSaldoModal({{ $saldoAwal }})" class="text-indigo-600 hover:text-indigo-900 p-1 rounded-full hover:bg-indigo-50 transition-colors duration-200" title="Ubah Saldo Sebelum Periode">
@@ -215,7 +215,7 @@
                                 <td class="px-4 py-3 align-top text-sm text-right font-semibold text-gray-900">
                                     Rp {{ number_format($trx->running_balance, 0, ',', '.') }}
                                 </td>
-                                @if(Auth::user()->username == 'kiky')
+                                @if(Auth::user()->isSuperAdmin())
                                 <td class="px-4 py-3 align-top text-sm text-center">
                                     <form action="{{ route('report.kas-truck.swap', $trx->id) }}" method="POST" onsubmit="return confirm('Tukar posisi Pemasukan/Pengeluaran transaksi ini?')">
                                         @csrf
@@ -230,7 +230,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="{{ Auth::user()->username == 'kiky' ? 8 : 7 }}" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
+                                <td colspan="{{ Auth::user()->isSuperAdmin() ? 8 : 7 }}" class="px-4 py-8 whitespace-nowrap text-sm text-gray-500 text-center">
                                     Tidak ada transaksi kas pada periode yang dipilih.
                                 </td>
                             </tr>

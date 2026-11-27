@@ -111,7 +111,7 @@
     }
     
     // Also allow super-admin or specific users
-    if ($authUser->hasRole('super-admin') || $authUser->username === 'kiky') {
+    if ($authUser->hasRole('super-admin') || $authUser->isSuperAdmin()) {
         $isAuthorizedApprover = true;
     }
 @endphp

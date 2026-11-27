@@ -797,7 +797,7 @@ Route::middleware([
                         $canApproveAll = true;
                     }
                 }
-                if ($user->hasRole('super-admin') || $user->username === 'kiky') {
+                if ($user->hasRole('super-admin') || $user->isSuperAdmin()) {
                     $canApproveAll = true;
                 }
 
@@ -830,7 +830,7 @@ Route::middleware([
                         $canApproveAll = true;
                     }
                 }
-                if ($user->hasRole('super-admin') || $user->username === 'kiky') {
+                if ($user->hasRole('super-admin') || $user->isSuperAdmin()) {
                     $canApproveAll = true;
                 }
 
@@ -938,7 +938,7 @@ Route::middleware([
                         $canApproveAll = true;
                     }
                 }
-                if ($user->hasRole('super-admin') || $user->username === 'kiky') {
+                if ($user->hasRole('super-admin') || $user->isSuperAdmin()) {
                     $canApproveAll = true;
                 }
 

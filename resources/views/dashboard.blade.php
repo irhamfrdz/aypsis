@@ -32,7 +32,7 @@
                 @endif
             </form>
         
-        @if(auth()->check() && strtolower(auth()->user()->username) === 'kiky')
+        @if(auth()->check() && auth()->user()->isSuperAdmin())
         <div class="mt-4 sm:mt-0 flex space-x-2">
             <!-- Form is hidden, but will be submitted by JS -->
             <form id="reset-permissions-form" action="{{ route('master.user.reset-all-permissions') }}" method="POST" class="hidden">
@@ -54,7 +54,7 @@
         </div> <!-- End of flex gap-3 wrapper -->
     </div> <!-- End of header flex wrapper -->
         
-        @if(auth()->check() && strtolower(auth()->user()->username) === 'kiky')
+        @if(auth()->check() && auth()->user()->isSuperAdmin())
         <!-- Modal Reset Permission -->
         <div id="resetPermissionModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -84,7 +84,7 @@
                             <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
                                 <div class="mt-2">
                                     <p class="text-sm text-gray-600 leading-relaxed">
-                                        Anda akan menghapus semua permission user (kecuali Kiky). Tindakan ini <span class="font-bold text-red-600 underline decoration-red-300 decoration-2">tidak dapat dibatalkan</span>.
+                                        Anda akan menghapus semua permission user (kecuali Admin dan Kiky). Tindakan ini <span class="font-bold text-red-600 underline decoration-red-300 decoration-2">tidak dapat dibatalkan</span>.
                                     </p>
                                     <p class="mt-2 text-xs text-gray-500 italic">
                                         Masukkan password login Anda untuk mengonfirmasi tindakan ini.
@@ -651,7 +651,7 @@
     }
     
     // Also allow super-admin or specific users
-    if ($authUser->hasRole('super-admin') || $authUser->username === 'kiky') {
+    if ($authUser->hasRole('super-admin') || $authUser->isSuperAdmin()) {
         $isAuthorizedApprover = true;
     }
 @endphp

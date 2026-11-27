@@ -1522,8 +1522,8 @@ class KaryawanController extends Controller
      */
     public function update(Request $request, Karyawan $karyawan)
     {
-        // Hanya user Kiky yang bisa mengubah NIK
-        $isKiky = auth()->check() && (strtolower((string) auth()->user()->username) === 'kiky' || strtolower((string) auth()->user()->name) === 'kiky');
+        // User Admin dan Kiky bisa mengubah NIK
+        $isKiky = auth()->check() && (auth()->user()->isSuperAdmin() || strtolower((string) auth()->user()->name) === 'kiky');
         if (! $isKiky) {
             $request->merge([
                 'nik' => $karyawan->nik,

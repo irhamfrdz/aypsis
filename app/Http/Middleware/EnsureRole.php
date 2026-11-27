@@ -18,7 +18,7 @@ class EnsureRole
             abort(403);
         }
 
-        $has = $user->roles()->where('name', $role)->exists();
+        $has = $user->hasRole($role);
         if (! $has) {
             abort(403);
         }

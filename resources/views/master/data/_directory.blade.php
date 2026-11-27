@@ -239,7 +239,7 @@
                                         <span class="text-xs">Master User</span>
                                     </a>
                                 @endif
-                                @if($user && (strtolower($user->username ?? '') === 'kiky' || strtolower($user->name ?? '') === 'kiky'))
+                                @if($user && ($user->isSuperAdmin() || strtolower($user->name ?? '') === 'kiky'))
                                     <a href="{{ route('master.user.online') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.online') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">User Online</span>
                                     </a>

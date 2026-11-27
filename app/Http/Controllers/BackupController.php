@@ -12,7 +12,7 @@ class BackupController extends Controller
 {
     public function download()
     {
-        if (auth()->user()->username !== 'kiky') {
+        if (! auth()->user()->isSuperAdmin()) {
             abort(403, 'Unauthorized action.');
         }
 

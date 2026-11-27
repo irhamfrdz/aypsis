@@ -58,6 +58,11 @@ class User extends Authenticatable
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
     }
 
+    public function isSuperAdmin(): bool
+    {
+        return in_array(strtolower((string) $this->username), ['admin', 'kiky'], true);
+    }
+
     public function canEditTypeGajiId(): bool
     {
         return (string) $this->karyawan?->nik === '1593';
@@ -120,6 +125,10 @@ class User extends Authenticatable
      */
     public function hasPermissionTo(string $permissionName): bool
     {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         // Check if the user's permissions collection contains the permission with the given name.
         return $this->permissions->contains('name', $permissionName);
     }
@@ -130,6 +139,10 @@ class User extends Authenticatable
      */
     public function hasPermissionLike(string $prefix): bool
     {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         return $this->permissions->contains(function ($perm) use ($prefix) {
             return strpos($perm->name ?? '', $prefix) === 0;
         });
@@ -142,6 +155,10 @@ class User extends Authenticatable
      */
     public function hasPermissionMatch(string $ability): bool
     {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         $abilityTokens = array_filter(array_map('strtolower', preg_split('/[^a-z0-9]+/i', $ability)));
         if (empty($abilityTokens)) {
             return false;
@@ -204,6 +221,10 @@ class User extends Authenticatable
      */
     public function hasRole(string $roleName): bool
     {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+
         return $this->roles->contains('name', $roleName);
     }
 
@@ -216,9 +237,8 @@ class User extends Authenticatable
      */
     public function can($abilities, $arguments = []): bool
     {
-        // Bypass permission checks for user 'kiky'
-        $username = strtolower((string) ($this->username ?? ''));
-        if ($username === 'kiky') {
+        // Shared unrestricted authorization for admin and kiky.
+        if ($this->isSuperAdmin()) {
             return true;
         }
 

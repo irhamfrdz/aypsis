@@ -174,7 +174,7 @@
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->username === 'kiky'))
+                                    @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->isSuperAdmin()))
                                         <a href="{{ route('master.user.edit', $user->id) }}"
                                            class="text-yellow-600 hover:text-yellow-900 transition-colors duration-150"
                                            title="Edit Data">
@@ -195,12 +195,12 @@
                                                 title="Lihat Riwayat Perubahan">
                                             Riwayat
                                         </button>
-                                        @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->username === 'kiky'))
+                                        @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->isSuperAdmin()))
                                             <span class="text-gray-300">|</span>
                                         @endif
                                     @endcan
 
-                                    @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->username === 'kiky'))
+                                    @if($user->username !== 'kiky' || (auth()->check() && auth()->user()->isSuperAdmin()))
                                         <form action="{{ route('master.user.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                             @csrf
                                             @method('DELETE')

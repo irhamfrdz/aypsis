@@ -359,7 +359,7 @@
                                                 </svg>
                                                 Lepas Seal
                                             </button>
-                                            @if(auth()->user() && (strtolower(auth()->user()->username ?? '') === 'kiky' || strtolower(auth()->user()->name ?? '') === 'kiky'))
+                                            @if(auth()->user() && (auth()->user()->isSuperAdmin() || strtolower(auth()->user()->name ?? '') === 'kiky'))
                                             <button type="button" onclick="showManifestModal('{{ $container['nomor_kontainer'] }}', '{{ $firstPivot->nomor_seal }}', '{{ $prospek->nama_kapal ?? '' }}', '{{ $prospek->no_voyage ?? '' }}', event)" 
                                                     style="display: inline-flex; align-items: center; padding: 0.375rem 0.75rem; background-color: #4f46e5; color: #ffffff; border-radius: 0.375rem; font-size: 0.75rem; font-weight: 500; border: none; cursor: pointer; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); transition: all 0.2s;"
                                                     onmouseover="this.style.backgroundColor='#3730a3'" 

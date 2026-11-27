@@ -42,10 +42,9 @@ class AppServiceProvider extends ServiceProvider
         StockKontainer::observe(StockKontainerObserver::class);
         UangJalan::observe(UangJalanObserver::class);
 
-        // Bypass permission checks for user 'kiky'
+        // Grant all abilities to the built-in super administrators.
         Gate::before(function (User $user, string $ability) {
-            $username = strtolower((string) ($user->username ?? ''));
-            if ($username === 'kiky') {
+            if ($user->isSuperAdmin()) {
                 return true;
             }
         });

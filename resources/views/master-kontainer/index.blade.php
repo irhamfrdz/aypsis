@@ -5,7 +5,7 @@
 
 @section('content')
 @php
-    $isKikyUser = auth()->check() && in_array(strtolower((string) auth()->user()->username), ['kiky'], true);
+    $isKikyUser = auth()->check() && auth()->user()->isSuperAdmin();
 @endphp
 
 <h2 class="text-xl font-bold text-gray-800 mb-4">Daftar Kontainer Sewa</h2>

@@ -212,18 +212,17 @@ class UserController extends Controller
     }
 
     /**
-     * Menghapus semua permission user kecuali user kiky.
-     * Fitur ini hanya dapat diakses oleh user Kiky.
+     * Menghapus semua permission user kecuali user admin dan kiky.
+     * Fitur ini hanya dapat diakses oleh user Admin atau Kiky.
      *
      * @return \Illuminate\Http\RedirectResponse
      */
     public function resetAllPermissions(Request $request)
     {
         $user = auth()->user();
-        $username = strtolower((string) ($user->username ?? ''));
 
-        if ($username !== 'kiky') {
-            abort(403, 'Fitur ini hanya dapat diakses oleh user Kiky.');
+        if (! $user?->isSuperAdmin()) {
+            abort(403, 'Fitur ini hanya dapat diakses oleh user Admin atau Kiky.');
         }
 
         // Check password
@@ -234,22 +233,15 @@ class UserController extends Controller
         try {
             DB::beginTransaction();
 
-            // Get user kiky's ID - 'name' is an accessor, not a column
-            $kiky = User::where('username', 'kiky')->first();
-            $kikyId = $kiky ? $kiky->id : null;
-
-            if (! $kikyId) {
-                throw new \Exception("User 'kiky' tidak ditemukan.");
-            }
-
-            // Delete all user_permissions except for kiky
+            // Preserve permissions belonging to both built-in super administrators.
+            $superAdminIds = User::whereIn(DB::raw('LOWER(username)'), ['admin', 'kiky'])->pluck('id');
             DB::table('user_permissions')
-                ->where('user_id', '!=', $kikyId)
+                ->whereNotIn('user_id', $superAdminIds)
                 ->delete();
 
             DB::commit();
 
-            return redirect()->back()->with('success', 'Semua permission user (kecuali Kiky) berhasil dihapus!');
+            return redirect()->back()->with('success', 'Semua permission user (kecuali Admin dan Kiky) berhasil dihapus!');
         } catch (\Exception $e) {
             DB::rollback();
 

@@ -11,11 +11,10 @@ class EnsureKikyUser
     public function handle(Request $request, Closure $next): Response
     {
         $user = $request->user();
-        $username = strtolower((string) ($user->username ?? ''));
         $name = strtolower((string) ($user->name ?? ''));
 
-        if ($username !== 'kiky' && $name !== 'kiky') {
-            abort(403, 'Fitur ini hanya dapat diakses oleh user Kiky.');
+        if (! $user?->isSuperAdmin() && $name !== 'kiky') {
+            abort(403, 'Fitur ini hanya dapat diakses oleh user Admin atau Kiky.');
         }
 
         return $next($request);

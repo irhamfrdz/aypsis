@@ -343,7 +343,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID Tanda Terima</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                            @if(auth()->user()->username === 'kiky')
+                            @if(auth()->user()->isSuperAdmin())
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Prospek</th>
                             @endif
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -369,7 +369,7 @@
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Uang Jalan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            @if(auth()->user()->username === 'kiky')
+                            @if(auth()->user()->isSuperAdmin())
                             <th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Prospek</th>
                             @endif
                             <th class="resizable-th px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -512,7 +512,7 @@
                                     {{ Str::limit($item->kegiatan ?: '-', 12) }}
                                 </span>
                             </td>
-                            @if(auth()->user()->username === 'kiky')
+                            @if(auth()->user()->isSuperAdmin())
                             <td class="px-3 py-2 whitespace-nowrap text-center">
                                 @if($existsInProspek)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -711,7 +711,7 @@
                                     </span>
                                 @endif
                             </td>
-                            @if(auth()->user()->username === 'kiky')
+                            @if(auth()->user()->isSuperAdmin())
                             <td class="px-3 py-2 whitespace-nowrap text-center">
                                 @if($existsInProspek)
                                     <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">

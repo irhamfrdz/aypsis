@@ -57,7 +57,7 @@
 
             @php
                 // Definisikan kelas Tailwind yang sederhana dan konsisten
-                $isKiky = auth()->check() && (strtolower((string) auth()->user()->username) === 'kiky' || strtolower((string) auth()->user()->name) === 'kiky');
+                $isKiky = auth()->check() && (auth()->user()->isSuperAdmin() || strtolower((string) auth()->user()->name) === 'kiky');
                 $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
                 $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
                 $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
@@ -72,7 +72,7 @@
                     <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
                     <input type="text" name="nik" id="nik" class="{{ $isKiky ? $inputClasses : $readonlyInputClasses }}" @if($isKiky) pattern="[A-Za-z0-9]+" @else readonly @endif required placeholder="Masukkan NIK (huruf dan angka)" maxlength="25" value="{{ old('nik', $karyawan->nik) }}">
                     @if($isKiky)
-                        <p class="text-xs text-gray-500 mt-1">NIK dapat diubah (Login sebagai Kiky)</p>
+                        <p class="text-xs text-gray-500 mt-1">NIK dapat diubah (Login sebagai Admin atau Kiky)</p>
                     @else
                         <p class="text-xs text-gray-500 mt-1">NIK tidak dapat diubah setelah data dibuat</p>
                     @endif
