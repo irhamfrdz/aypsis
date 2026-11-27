@@ -44,39 +44,14 @@ class MeratusBillingService
         return max(1, count($containers));
     }
 
-    private function usageQuery(?int $excludingInvoiceId = null)
+    public function balanceCents($dp, ?int $excludingInvoiceId = null, bool $lock = false): int
     {
-        return DB::table('meratus_dp_references as refs')
-            ->join('biaya_kapal_meratus_stages as settlement', 'settlement.id', '=', 'refs.settlement_stage_id')
-            ->join('biaya_kapals as invoice', 'invoice.id', '=', 'settlement.biaya_kapal_id')
-            ->whereNull('invoice.deleted_at')->where('invoice.status_pembayaran', '!=', 'cancelled')
-            ->when($excludingInvoiceId, fn ($query) => $query->where('invoice.id', '!=', $excludingInvoiceId));
-    }
-
-    public function balanceCents(BiayaKapalMeratusStage $dp, ?int $excludingInvoiceId = null, bool $lock = false): int
-    {
-        $query = $this->usageQuery($excludingInvoiceId)->where('refs.dp_stage_id', $dp->id)->select('refs.nominal_digunakan');
-        if ($lock) {
-            $query->lockForUpdate();
-        }
-        // Read individual locked rows so MySQL sees the latest committed use, including under REPEATABLE READ.
-        $used = $query->get()->sum(fn ($reference) => $this->cents($reference->nominal_digunakan));
-
-        return max(0, $this->cents($dp->nominal_dibayar) - $used);
+        return app(SharedShippingDpService::class)->balanceCents($dp, $excludingInvoiceId, $lock);
     }
 
     public function candidates(?int $excludingInvoiceId = null)
     {
-        $used = $this->usageQuery($excludingInvoiceId)
-            ->whereColumn('refs.dp_stage_id', 'biaya_kapal_meratus_stages.id')
-            ->selectRaw('COALESCE(SUM(refs.nominal_digunakan), 0)');
-
-        return BiayaKapalMeratusStage::select('biaya_kapal_meratus_stages.*')->selectSub($used, 'dp_digunakan')
-            ->where('payment_mode', 'dp')
-            ->where('nominal_dibayar', '>', 0)
-            ->whereHas('biayaKapal', fn ($q) => $q->where('status_pembayaran', '!=', 'cancelled'))
-            ->where('nominal_dibayar', '>', $used)
-            ->when($excludingInvoiceId, fn ($query) => $query->where('biaya_kapal_id', '!=', $excludingInvoiceId));
+        return app(SharedShippingDpService::class)->candidates('meratus', $excludingInvoiceId);
     }
 
     public function assertCanReplace(BiayaKapal $invoice): void
@@ -84,7 +59,7 @@ class MeratusBillingService
         $stages = BiayaKapalMeratusStage::where('biaya_kapal_id', $invoice->id)->orderBy('id')->lockForUpdate()->get();
         foreach ($stages as $stage) {
             // Even soft-deleted settlements keep the reference for audit and FK integrity.
-            if ($stage->settlements()->lockForUpdate()->get()->isNotEmpty()) {
+            if ($stage->settlements()->lockForUpdate()->get()->isNotEmpty() || $stage->crossSettlements()->lockForUpdate()->get()->isNotEmpty()) {
                 throw ValidationException::withMessages(['meratus' => 'DP MERATUS sudah pernah digunakan untuk pelunasan. DP tidak dapat diubah atau dihapus.']);
             }
         }
@@ -108,12 +83,7 @@ class MeratusBillingService
             if (! $sections) {
                 throw ValidationException::withMessages(['meratus' => 'Tambahkan minimal satu bagian MERATUS.']);
             }
-            // Lock all old and new source DPs before returning balances during an edit.
-            $oldDpIds = DB::table('meratus_dp_references as refs')
-                ->join('biaya_kapal_meratus_stages as stages', 'stages.id', '=', 'refs.settlement_stage_id')
-                ->where('stages.biaya_kapal_id', $invoice->id)->pluck('refs.dp_stage_id');
-            $newDpIds = collect($sections)->flatMap(fn ($section) => $section['dp_stage_ids'] ?? (isset($section['dp_stage_id']) ? [$section['dp_stage_id']] : []));
-            BiayaKapalMeratusStage::whereIn('id', $oldDpIds->merge($newDpIds)->unique()->all())->orderBy('id')->lockForUpdate()->get();
+            app(SharedShippingDpService::class)->lockSources('meratus', $invoice->id, $sections);
             BiayaKapalMeratus::where('biaya_kapal_id', $invoice->id)->delete();
             BiayaKapalMeratusStage::where('biaya_kapal_id', $invoice->id)->delete();
             foreach ($sections as $index => $section) {
@@ -144,24 +114,17 @@ class MeratusBillingService
             'nama_bank' => 'nullable|required_if:payment_mode,dp|string|max:255',
             'keterangan_dp' => 'nullable|string|max:5000',
             'dp_stage_ids' => 'required_if:payment_mode,pelunasan_dp|nullable|array|min:1',
-            'dp_stage_ids.*' => 'required|integer|distinct',
+            'dp_stage_ids.*' => 'required|distinct',
         ])->validate();
         $dps = collect();
         $balances = [];
         if ($mode === 'pelunasan_dp') {
-            $dps = BiayaKapalMeratusStage::query()
-                ->join('biaya_kapals as dp_invoice', 'dp_invoice.id', '=', 'biaya_kapal_meratus_stages.biaya_kapal_id')
-                ->whereIn('biaya_kapal_meratus_stages.id', $section['dp_stage_ids'])
-                ->whereNull('dp_invoice.deleted_at')->where('dp_invoice.status_pembayaran', '!=', 'cancelled')
-                ->select('biaya_kapal_meratus_stages.*')->orderBy('biaya_kapal_meratus_stages.id')->lockForUpdate()->get();
-            if ($dps->count() !== count($section['dp_stage_ids'])) {
-                throw ValidationException::withMessages(["meratus.$index.dp_stage_ids" => 'Referensi DP tidak tersedia.']);
-            }
+            $dps = app(SharedShippingDpService::class)->resolve($section['dp_stage_ids'], 'meratus', $index);
             foreach ($dps as $dp) {
                 if ($dp->payment_mode !== 'dp' || $dp->nominal_dibayar <= 0 || $dp->biaya_kapal_id == $invoice->id) {
                     throw ValidationException::withMessages(["meratus.$index.dp_stage_ids" => 'Referensi harus berupa DP aktif dari invoice lain.']);
                 }
-                $balances[$dp->id] = $this->balanceCents($dp, null, true);
+                $balances[app(SharedShippingDpService::class)->key($dp)] = $this->balanceCents($dp, null, true);
                 $dpDate = $dp->tanggal_dp ?? $dp->biayaKapal->tanggal;
                 if ($invoice->tanggal && $dpDate && $invoice->tanggal->lt($dpDate)) {
                     throw ValidationException::withMessages(['tanggal' => 'Tanggal pelunasan tidak boleh mendahului tanggal DP.']);
@@ -170,7 +133,7 @@ class MeratusBillingService
             if (array_sum($balances) <= 0) {
                 throw ValidationException::withMessages(["meratus.$index.dp_stage_ids" => 'Saldo DP sudah habis. Pilih referensi DP lain atau pembayaran langsung.']);
             }
-            $dps = $dps->sortBy(fn ($dp) => ($dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d') ?? '9999-12-31').sprintf('%020d', $dp->id))->values();
+            $dps = $dps->sortBy(fn ($dp) => ($dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d') ?? '9999-12-31').app(SharedShippingDpService::class)->source($dp).sprintf('%020d', $dp->id))->values();
         }
         $advance = 0;
         $allocations = [];
@@ -291,9 +254,9 @@ class MeratusBillingService
                 throw ValidationException::withMessages(["meratus.$index.types" => 'Tagihan pelunasan harus lebih dari nol.']);
             }
             foreach ($dps as $dp) {
-                $used = min($balances[$dp->id], $total - $advance);
+                $used = min($balances[app(SharedShippingDpService::class)->key($dp)], $total - $advance);
                 if ($used > 0) {
-                    $allocations[$dp->id] = ['nominal_digunakan' => $used / 100];
+                    $allocations[app(SharedShippingDpService::class)->key($dp)] = ['nominal_digunakan' => $used / 100];
                     $advance += $used;
                 }
             }
@@ -311,14 +274,14 @@ class MeratusBillingService
         }
         $stage = BiayaKapalMeratusStage::create([
             'biaya_kapal_id' => $invoice->id, 'kapal' => $section['kapal'], 'voyage' => $section['voyage'],
-            'payment_mode' => $mode, 'dp_stage_id' => array_key_first($allocations),
+            'payment_mode' => $mode, 'dp_stage_id' => null,
             'tanggal_dp' => $mode === 'dp' ? ($section['tanggal_dp'] ?? null) : null,
             'nama_bank' => $mode === 'dp' ? ($section['nama_bank'] ?? null) : null,
             'keterangan_dp' => $mode === 'dp' ? ($section['keterangan_dp'] ?? null) : null,
             'nilai_tagihan' => $total / 100, 'nominal_dibayar' => $cash / 100,
             'dp_diperhitungkan' => $advance / 100,
         ]);
-        $stage->dpStages()->sync($allocations);
+        app(SharedShippingDpService::class)->sync($stage, $allocations);
         foreach ($rows as $row) {
             $stage->details()->create($row);
         }

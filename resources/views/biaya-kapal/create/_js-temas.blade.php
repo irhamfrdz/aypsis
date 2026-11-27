@@ -71,7 +71,7 @@
                     <label class="block text-sm">Referensi DP
                         <select name="temas[${sectionIndex}][dp_stage_ids][]" multiple size="5" class="temas-dp-reference ${temasInputClass} mt-1" disabled><option value="">Pilih DP yang akan dilunasi</option></select>
                     </label>
-                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih saldo DP dari kapal/voyage mana pun (tahan Ctrl untuk memilih beberapa). Saldo DP paling lama digunakan terlebih dahulu.</p>
+                    <p class="text-xs text-gray-600 mt-1">Pilih satu atau lebih saldo DP bersama TEMAS/MERATUS dari kapal/voyage mana pun (tahan Ctrl untuk memilih beberapa). Saldo DP paling lama digunakan terlebih dahulu.</p>
                     <button type="button" class="temas-reload-dp text-sm text-blue-700 mt-1">Muat ulang daftar DP</button>
                     <p class="temas-dp-status text-sm text-gray-600" role="status"></p>
                     <div class="temas-dp-summary hidden mt-3 rounded-lg border border-amber-200 bg-amber-50 p-3">

@@ -18,6 +18,8 @@ use Tests\TestCase;
 
 class TemasPaymentTest extends TestCase
 {
+    use \Tests\CreatesSharedShippingDpSchema;
+
     private TemasPaymentService $service;
 
     private $dispatcher;
@@ -100,6 +102,7 @@ class TemasPaymentTest extends TestCase
         });
         (require database_path('migrations/2026_09_22_120000_add_temas_payment_stages_to_pembayaran_biaya_kapal_items.php'))->up();
         $this->service = app(TemasPaymentService::class);
+        $this->createOtherShippingDpTables('meratus');
     }
 
     protected function tearDown(): void

@@ -277,7 +277,7 @@
                 $totalGrandTotal += $detail->grand_total;
             }
 
-            $meratusStages = \App\Models\BiayaKapalMeratusStage::with('dpStages.biayaKapal')
+            $meratusStages = \App\Models\BiayaKapalMeratusStage::with(['dpStages.biayaKapal', 'crossDpStages.biayaKapal'])
                 ->where('biaya_kapal_id', $biayaKapal->id)->get();
             $dpDiperhitungkan = $meratusStages->sum('dp_diperhitungkan');
             $totalTagihanSebelumDp = $meratusStages->isNotEmpty()
@@ -384,7 +384,7 @@
                             Tagihan akhir Rp {{ number_format($stage->nilai_tagihan, 0, ',', '.') }}
                             - DP digunakan Rp {{ number_format($stage->dp_diperhitungkan, 0, ',', '.') }}
                             = Pelunasan Rp {{ number_format($stage->nominal_dibayar, 0, ',', '.') }}.
-                            @foreach($stage->dpStages as $dp)
+                            @foreach($stage->sharedDpStages as $dp)
                                 <div style="margin-left: 12px; font-size: 10px;">
                                     Referensi DP {{ $dp->biayaKapal->nomor_invoice ?? '#' . $dp->id }}:
                                     {{ $dp->kapal }} / {{ $dp->voyage }};

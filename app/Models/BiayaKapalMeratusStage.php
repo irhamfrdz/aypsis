@@ -35,6 +35,21 @@ class BiayaKapalMeratusStage extends Model
         return $this->belongsToMany(self::class, 'meratus_dp_references', 'settlement_stage_id', 'dp_stage_id')->withPivot('nominal_digunakan');
     }
 
+    public function crossDpStages()
+    {
+        return $this->belongsToMany(BiayaKapalTemasStage::class, 'temas_dp_meratus_settlements', 'settlement_stage_id', 'dp_stage_id')->withPivot('nominal_digunakan');
+    }
+
+    public function crossSettlements()
+    {
+        return $this->belongsToMany(BiayaKapalTemasStage::class, 'meratus_dp_temas_settlements', 'dp_stage_id', 'settlement_stage_id')->withPivot('nominal_digunakan');
+    }
+
+    public function getSharedDpStagesAttribute()
+    {
+        return $this->dpStages->concat($this->crossDpStages);
+    }
+
     public function details()
     {
         return $this->hasMany(BiayaKapalMeratus::class, 'meratus_stage_id');

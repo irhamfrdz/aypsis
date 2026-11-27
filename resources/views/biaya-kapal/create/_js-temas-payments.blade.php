@@ -15,7 +15,7 @@
             if (section.querySelector('.temas-payment-mode')?.value !== 'pelunasan_dp') return;
             const select = section.querySelector('.temas-dp-reference');
             const selected = [...(select.selectedOptions || [])].filter(option => option.value)
-                .sort((a, b) => (a.dataset.date || '9999-12-31').localeCompare(b.dataset.date || '9999-12-31') || Number(a.value) - Number(b.value));
+                .sort((a, b) => (a.dataset.date || '9999-12-31').localeCompare(b.dataset.date || '9999-12-31') || a.value.localeCompare(b.value, undefined, {numeric: true}));
             const total = Math.round(Number(section.querySelector('.grand-total-value-temas').value || 0) * 100);
             let available = 0;
             let used = 0;
@@ -111,7 +111,7 @@
             });
             updateTemasDpSelection(section);
             updateTemasPaymentMode(section);
-            status.textContent = data.data?.length ? 'Saldo DP bisa digunakan lintas kapal dan voyage.' : 'Tidak ada DP dengan saldo tersisa.';
+            status.textContent = data.data?.length ? 'Saldo DP bersama bisa digunakan untuk TEMAS/MERATUS lintas kapal dan voyage.' : 'Tidak ada DP dengan saldo tersisa.';
         } catch (error) {
             if (section.isConnected && request === section.dpRequest) status.textContent = 'Daftar DP gagal dimuat. Klik Muat ulang daftar DP.';
         }

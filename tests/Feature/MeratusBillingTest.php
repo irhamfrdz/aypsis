@@ -15,6 +15,8 @@ use Tests\TestCase;
 
 class MeratusBillingTest extends TestCase
 {
+    use \Tests\CreatesSharedShippingDpSchema;
+
     private $dispatcher;
 
     protected function setUp(): void
@@ -76,6 +78,7 @@ class MeratusBillingTest extends TestCase
             $table->foreignId('biaya_kapal_id');
             $table->foreignId('pembayaran_biaya_kapal_id');
         });
+        $this->createOtherShippingDpTables('temas');
     }
 
     protected function tearDown(): void
@@ -96,6 +99,119 @@ class MeratusBillingTest extends TestCase
             'size_items' => ['20ft', '20ft'],
             'per_containers' => [1, 0],
         ];
+    }
+
+    private function sharedDp(string $source, float $amount)
+    {
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-20']);
+        $service = $source === 'temas' ? app(\App\Services\TemasBillingService::class) : app(MeratusBillingService::class);
+        $service->replace($invoice, [[
+            'kapal' => 'KM SOURCE', 'voyage' => 'SOURCE01', 'payment_mode' => 'dp',
+            'nominal_dibayar' => $amount, 'tanggal_dp' => '2026-10-20', 'nama_bank' => 'BCA',
+        ]]);
+        $model = $source === 'temas' ? \App\Models\BiayaKapalTemasStage::class : BiayaKapalMeratusStage::class;
+
+        return $model::where('biaya_kapal_id', $invoice->id)->firstOrFail();
+    }
+
+    private function sharedCosts(array $keys, float $amount): array
+    {
+        return array_replace($this->rows(), [
+            'payment_mode' => 'pelunasan_dp', 'dp_stage_ids' => $keys,
+            'types' => ['MANUAL'], 'manual_names' => ['Biaya Kontainer'],
+            'custom_prices' => [$amount], 'quantities' => [1],
+            'nomor_kontainers' => ['A123'], 'nomor_bls' => ['BL001'],
+            'size_items' => ['20ft'], 'per_containers' => [1],
+        ]);
+    }
+
+    public function test_temas_remaining_290000_is_shared_with_meratus_and_restored_on_edit_and_delete(): void
+    {
+        $pool = app(\App\Services\SharedShippingDpService::class);
+        $temas = app(\App\Services\TemasBillingService::class);
+        $meratus = app(MeratusBillingService::class);
+        $dp = $this->sharedDp('temas', 69000000);
+        $previous = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        $temas->replace($previous, [$this->sharedCosts([$dp->id], 68710000)]);
+        $this->assertSame(29000000, $pool->balanceCents($dp));
+
+        foreach (['Temas' => $temas, 'Meratus' => $meratus] as $name => $service) {
+            $response = app(\App\Http\Controllers\BiayaKapalController::class)->{'getOutstanding'.$name.'Dps'}(new \Illuminate\Http\Request, $service)->getData(true);
+            $this->assertSame('temas:'.$dp->id, $response['data'][0]['id']);
+            $this->assertEquals(290000, $response['data'][0]['saldo_dp']);
+        }
+
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        $meratus->replace($invoice, [$this->sharedCosts([$pool->key($dp)], 200000)]);
+        $this->assertSame(9000000, $temas->balanceCents($dp));
+        $this->assertSame(9000000, $meratus->balanceCents($dp));
+        $this->assertSame(29000000, $pool->balanceCents($dp, $invoice->id));
+        $stage = BiayaKapalMeratusStage::where('biaya_kapal_id', $invoice->id)->firstOrFail();
+        $this->assertNull($stage->dp_stage_id);
+        $this->assertCount(1, $stage->sharedDpStages);
+        $this->assertEquals(200000, $stage->sharedDpStages->first()->pivot->nominal_digunakan);
+
+        $meratus->replace($invoice, [$this->sharedCosts([$pool->key($dp)], 100000)]);
+        $this->assertSame(19000000, $pool->balanceCents($dp));
+        $invoice->update(['status_pembayaran' => 'cancelled']);
+        $this->assertSame(29000000, $pool->balanceCents($dp));
+        $invoice->update(['status_pembayaran' => 'paid']);
+        $invoice->delete();
+        $this->assertSame(29000000, $pool->balanceCents($dp));
+    }
+
+    public function test_shared_dp_supports_both_sources_with_colliding_ids_and_prevents_reuse(): void
+    {
+        $pool = app(\App\Services\SharedShippingDpService::class);
+        $temas = $this->sharedDp('temas', 290000);
+        $meratus = $this->sharedDp('meratus', 100000);
+        $this->assertSame($temas->id, $meratus->id);
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [
+            $this->sharedCosts([$pool->key($temas), $pool->key($meratus)], 400000),
+        ]);
+        $stage = \App\Models\BiayaKapalTemasStage::where('biaya_kapal_id', $invoice->id)->firstOrFail();
+        $this->assertCount(2, $stage->sharedDpStages);
+        $this->assertEquals(390000, $stage->dp_diperhitungkan);
+        $this->assertEquals(10000, $invoice->fresh()->nominal);
+        $this->assertSame(0, $pool->balanceCents($temas));
+        $this->assertSame(0, $pool->balanceCents($meratus));
+        $this->assertCount(0, $pool->available());
+
+        $next = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        try {
+            app(MeratusBillingService::class)->replace($next, [$this->sharedCosts([$pool->key($temas)], 100000)]);
+            $this->fail('An exhausted shared DP must be rejected.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('meratus.0.dp_stage_ids', $e->errors());
+        }
+        $this->expectException(ValidationException::class);
+        app(MeratusBillingService::class)->assertCanReplace($meratus->biayaKapal);
+    }
+
+    public function test_shared_source_cannot_be_changed_even_after_cross_settlement_is_deleted(): void
+    {
+        $dp = $this->sharedDp('temas', 290000);
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        app(MeratusBillingService::class)->replace($invoice, [$this->sharedCosts(['temas:'.$dp->id], 200000)]);
+        $invoice->delete();
+        $this->expectException(ValidationException::class);
+        app(\App\Services\TemasBillingService::class)->assertCanReplace($dp->biayaKapal);
+    }
+
+    public function test_duplicate_or_invalid_shared_source_rolls_back_without_spending_dp(): void
+    {
+        $dp = $this->sharedDp('meratus', 290000);
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        foreach ([[$dp->id, 'meratus:'.$dp->id], ['temas:9999'], ['other:1']] as $keys) {
+            try {
+                app(MeratusBillingService::class)->replace($invoice, [$this->sharedCosts($keys, 200000)]);
+                $this->fail('Invalid shared DP must be rejected.');
+            } catch (ValidationException $e) {
+                $this->assertSame(29000000, app(MeratusBillingService::class)->balanceCents($dp));
+                $this->assertFalse(BiayaKapalMeratusStage::where('biaya_kapal_id', $invoice->id)->exists());
+            }
+        }
     }
 
     public function test_direct_bill_uses_container_count_and_single_bl_charge(): void

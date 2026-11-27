@@ -6794,12 +6794,13 @@ class BiayaKapalController extends Controller
     {
         $request->validate(['biaya_kapal_id' => 'nullable|integer|exists:biaya_kapals,id']);
         $invoiceId = $request->filled('biaya_kapal_id') ? (int) $request->biaya_kapal_id : null;
-        $data = $service->candidates($invoiceId)->with('biayaKapal:id,nomor_invoice,tanggal')->latest('id')->get()->map(fn ($dp) => [
-            'id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
+        $pool = app(\App\Services\SharedShippingDpService::class);
+        $data = $pool->available($invoiceId)->map(fn ($dp) => [
+            'id' => $pool->key($dp), 'source' => $pool->source($dp), 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
             'nominal_dibayar' => $dp->nominal_dibayar,
             'saldo_dp' => ((int) round((float) $dp->nominal_dibayar * 100) - (int) round((float) $dp->dp_digunakan * 100)) / 100,
             'tanggal_dp' => $dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d'),
-            'label' => ($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | Saldo Rp '.number_format((float) $dp->nominal_dibayar - (float) $dp->dp_digunakan, 0, ',', '.'),
+            'label' => strtoupper($pool->source($dp)).' | '.($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | Saldo Rp '.number_format((float) $dp->nominal_dibayar - (float) $dp->dp_digunakan, 0, ',', '.'),
         ]);
 
         return response()->json(['data' => $data]);
@@ -6809,12 +6810,13 @@ class BiayaKapalController extends Controller
     {
         $request->validate(['biaya_kapal_id' => 'nullable|integer|exists:biaya_kapals,id']);
         $invoiceId = $request->filled('biaya_kapal_id') ? (int) $request->biaya_kapal_id : null;
-        $data = $service->candidates($invoiceId)->with('biayaKapal:id,nomor_invoice,tanggal')->latest('id')->get()->map(fn ($dp) => [
-            'id' => $dp->id, 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
+        $pool = app(\App\Services\SharedShippingDpService::class);
+        $data = $pool->available($invoiceId)->map(fn ($dp) => [
+            'id' => $pool->key($dp), 'source' => $pool->source($dp), 'kapal' => $dp->kapal, 'voyage' => $dp->voyage,
             'nominal_dibayar' => $dp->nominal_dibayar,
             'saldo_dp' => ((int) round((float) $dp->nominal_dibayar * 100) - (int) round((float) $dp->dp_digunakan * 100)) / 100,
             'tanggal_dp' => $dp->tanggal_dp?->format('Y-m-d') ?? $dp->biayaKapal->tanggal?->format('Y-m-d'),
-            'label' => ($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | Saldo Rp '.number_format((float) $dp->nominal_dibayar - (float) $dp->dp_digunakan, 0, ',', '.'),
+            'label' => strtoupper($pool->source($dp)).' | '.($dp->biayaKapal->nomor_invoice ?? '-').' | '.$dp->kapal.' / '.$dp->voyage.' | Saldo Rp '.number_format((float) $dp->nominal_dibayar - (float) $dp->dp_digunakan, 0, ',', '.'),
         ]);
 
         return response()->json(['data' => $data]);
