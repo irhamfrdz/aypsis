@@ -65,21 +65,31 @@ class RepairObSr20jp26 extends Command
                     $missing[] = $row;
                 }
             }
-            if ($bongkar->count() !== 286 || $native->count() !== 115 || $imports->count() !== 171 || count($used) !== 115 || count($missing) !== 11) {
-                throw new RuntimeException('Pola data berbeda dari audit (286 bongkar, 115 cocok, 171 impor, 11 belum ada). Koreksi dibatalkan.');
+            $this->table(['Muat', 'Bongkar', 'Cocok', 'Tanpa prospek (impor)', 'Muat belum ada'], [[
+                $muat->count(), $bongkar->count(), count($used), $imports->count(), count($missing),
+            ]]);
+            // Imported rows have no source prospect. Preserve all matched native rows,
+            // and refuse to guess if production has other unmatched native records.
+            $unmatched = $native->reject(fn ($bl) => isset($used[$bl->id]));
+            if ($unmatched->isNotEmpty()) {
+                $this->table(['ID BL', 'Kontainer', 'Prospek'], $unmatched->map(fn ($bl) => [
+                    $bl->id, $bl->nomor_kontainer, $bl->prospek_id,
+                ])->values()->all());
+                throw new RuntimeException('Ada BL dengan prospek yang tidak cocok atau melebihi jumlah muat. Perlu diperiksa sebelum dihapus.');
             }
             $ids = $imports->pluck('id')->all();
             foreach (['surat_jalan_bongkarans', 'tagihan_ob'] as $table) {
                 if (DB::table($table)->whereIn('bl_id', $ids)->exists()) {
-                    throw new RuntimeException("Data impor sudah direferensikan oleh {$table}. Koreksi dibatalkan.");
+                    $references = DB::table($table)->whereIn('bl_id', $ids)->distinct()->pluck('bl_id')->implode(', ');
+                    throw new RuntimeException("Data impor sudah direferensikan oleh {$table} (ID BL: {$references}). Koreksi dibatalkan.");
                 }
             }
             foreach ($imports as $row) {
                 if ($row->sudah_ob || $row->supir_id || $row->tanggal_ob || $row->status_bongkar !== 'Belum Bongkar') {
-                    throw new RuntimeException('Data impor memiliki aktivitas bongkar/OB. Koreksi dibatalkan.');
+                    throw new RuntimeException("Data impor ID BL {$row->id} memiliki aktivitas bongkar/OB. Koreksi dibatalkan.");
                 }
             }
-            $this->info('Muat: 126; bongkar: 286. Rencana: hapus 171 impor, tambah 11 dari muat.');
+            $this->info("Rencana: hapus {$imports->count()} baris tanpa prospek, tambah ".count($missing).' baris dari muat.');
             if (! $this->option('apply')) {
                 DB::rollBack();
                 $this->comment('Pemeriksaan saja. Jalankan dengan --apply untuk menerapkan.');
