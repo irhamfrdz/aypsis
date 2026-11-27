@@ -279,16 +279,18 @@
         </div>
     @endif
 
+    <p class="text-sm text-gray-500">Rumus yang sama ditampilkan satu kali. Edit, hapus dan pengaturan diskon tetap berlaku per tipe seperti sebelumnya.</p>
+
     @php
         $groupRows = function($collection) {
-            return $collection->groupBy(function($item) {
+            return \App\Services\BpjsFormulaGroups::display($collection->groupBy(function($item) {
                 if (!empty($item->employee_targets)) return 'personal_'.$item->id;
                 $cabang = trim(strtoupper($item->cabang_bpjs ?? ''));
                 if ($cabang !== '') {
                     return 'cabang_' . json_encode([$cabang, $item->tipe]);
                 }
                 return 'single_' . $item->id;
-            });
+            }));
         };
 
         $groupedJkn = $groupRows($rumusJkn);
@@ -326,8 +328,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($groupedJkn as $groupKey => $groupItems)
+                    @forelse($groupedJkn as $groupKey => $displayGroup)
                         @php
+                            $groupItems = $displayGroup->flatten(1);
                             $item = $groupItems->first();
                             $allIds = $groupItems->pluck('id')->implode(',');
                             $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
@@ -345,7 +348,7 @@
                                     @endforeach
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $groupItems->pluck('tipe')->map(fn ($tipe) => $tipe ?: '-')->unique()->implode(', ') }}</td>
                             <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
@@ -367,6 +370,21 @@
                                 @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
                             </td>
                             <td class="px-4 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
                                             onclick="handleEditClick(this)"
@@ -386,6 +404,16 @@
                                         </button>
                                     </form>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                         </tr>
                     @empty
@@ -427,8 +455,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($groupedBpuCrew as $groupKey => $groupItems)
+                    @forelse($groupedBpuCrew as $groupKey => $displayGroup)
                         @php
+                            $groupItems = $displayGroup->flatten(1);
                             $item = $groupItems->first();
                             $allIds = $groupItems->pluck('id')->implode(',');
                             $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
@@ -450,7 +479,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
+                            <td class="px-4 py-3 text-gray-500 font-medium">{{ $groupItems->pluck('tipe')->map(fn ($tipe) => $tipe ?: '-')->unique()->implode(', ') }}</td>
                             <td class="px-4 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-4 py-3 text-center">
                                 @if($item->tunjangan_persen)
@@ -481,6 +510,21 @@
                                 {{ $item->biaya_persen ? 'Rp ' . number_format((float)$item->biaya_persen, 0, ',', '.') : '—' }}
                             </td>
                             <td class="px-4 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="inline-flex flex-col items-center gap-1" id="diskon-cell-{{ $item->id }}">
                                     <select onchange="handleTableDiskonStatusChange(this, '{{ $allIds }}')"
                                             class="diskon-status-select text-xs border border-gray-300 rounded-lg shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold' : 'bg-white text-gray-600' }}">
@@ -505,18 +549,43 @@
                                                 data-ids="{{ $allIds }}"
                                                 data-load-url="{{ route('master-rumus-bpjs.discount-employees', $item->id) }}"
                                                 data-save-url="{{ route('master-rumus-bpjs.discount-exclusions', $item->id) }}">
-                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $groupItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
+                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $actionItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
                                         </button>
                                     </div>
                                     @endcan
                                     <span class="save-status-msg text-[10px] text-emerald-600 hidden font-semibold">✓ Tersimpan</span>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                             <td class="px-4 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-4 py-3">
                                 @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
                             </td>
                             <td class="px-4 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
                                             onclick="handleEditClick(this)"
@@ -536,6 +605,16 @@
                                         </button>
                                     </form>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                         </tr>
                     @empty
@@ -578,8 +657,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($groupedBpuNonCrew as $groupKey => $groupItems)
+                    @forelse($groupedBpuNonCrew as $groupKey => $displayGroup)
                         @php
+                            $groupItems = $displayGroup->flatten(1);
                             $item = $groupItems->first();
                             $allIds = $groupItems->pluck('id')->implode(',');
                             $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
@@ -601,7 +681,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $groupItems->pluck('tipe')->map(fn ($tipe) => $tipe ?: '-')->unique()->implode(', ') }}</td>
                             <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             <td class="px-3 py-3 text-center">
                                 @if($item->jht_biaya)
@@ -636,6 +716,21 @@
                                 @else <span class="text-gray-300">—</span> @endif
                             </td>
                             <td class="px-3 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="inline-flex flex-col items-center gap-1" id="diskon-cell-{{ $item->id }}">
                                     <select onchange="handleTableDiskonStatusChange(this, '{{ $allIds }}')"
                                             class="diskon-status-select text-xs border border-gray-300 rounded-lg shadow-sm py-1 px-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-150 {{ ($item->diskon_status ?? 'tidak_ada') === 'ada' ? 'bg-amber-50 text-amber-900 border-amber-300 font-semibold' : 'bg-white text-gray-600' }}">
@@ -660,18 +755,43 @@
                                                 data-ids="{{ $allIds }}"
                                                 data-load-url="{{ route('master-rumus-bpjs.discount-employees', $item->id) }}"
                                                 data-save-url="{{ route('master-rumus-bpjs.discount-exclusions', $item->id) }}">
-                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $groupItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
+                                            Pengecualian karyawan (<span class="bpjs-discount-exclusions-count">{{ $actionItems->flatMap(fn ($record) => $record->diskon_pengecualian ?? [])->unique()->count() }}</span>)
                                         </button>
                                     </div>
                                     @endcan
                                     <span class="save-status-msg text-[10px] text-emerald-600 hidden font-semibold">✓ Tersimpan</span>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                             <td class="px-3 py-3 text-gray-500 text-xs max-w-xs truncate">{{ $item->keterangan_custom ?: '—' }}</td>
                             <td class="px-3 py-3">
                                 @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
                             </td>
                             <td class="px-3 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
                                             onclick="handleEditClick(this)"
@@ -691,6 +811,16 @@
                                         </button>
                                     </form>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                         </tr>
                     @empty
@@ -735,8 +865,9 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    @forelse($groupedPpu as $groupKey => $groupItems)
+                    @forelse($groupedPpu as $groupKey => $displayGroup)
                         @php
+                            $groupItems = $displayGroup->flatten(1);
                             $item = $groupItems->first();
                             $allIds = $groupItems->pluck('id')->implode(',');
                             $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
@@ -758,7 +889,7 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->tipe ?? '—' }}</td>
+                            <td class="px-3 py-3 text-gray-500 font-medium">{{ $groupItems->pluck('tipe')->map(fn ($tipe) => $tipe ?: '-')->unique()->implode(', ') }}</td>
                             <td class="px-3 py-3 text-gray-500 font-medium">{{ $item->cabang_bpjs ?: '—' }}</td>
                             @foreach(['jht_biaya','jht_hutang','jkk_tunjangan','jkm_tunjangan','jp_biaya','jp_hutang'] as $field)
                             <td class="px-3 py-3 text-center">
@@ -789,6 +920,21 @@
                                 @include('master.rumus-bpjs.partials.effective-periods', ['groupItems' => $groupItems])
                             </td>
                             <td class="px-3 py-3 text-center">
+                                @if($displayGroup->count() > 1)
+                                    <details class="text-left">
+                                        <summary class="cursor-pointer text-xs font-medium text-indigo-600">Pengaturan per tipe</summary>
+                                @endif
+                                @foreach($displayGroup as $actionItems)
+                                    @php
+                                        $item = $actionItems->first();
+                                        $allIds = $actionItems->pluck('id')->implode(',');
+                                        $groupNames = $actionItems->pluck('group_name')->unique()->values()->toArray();
+                                    @endphp
+                                    <div class="py-1">
+                                        @if($displayGroup->count() > 1)
+                                            <div class="mb-1 text-xs font-medium text-gray-500">{{ $item->tipe ?: '-' }}</div>
+                                        @endif
+
                                 <div class="flex justify-center items-center gap-2">
                                     <button type="button"
                                             onclick="handleEditClick(this)"
@@ -808,6 +954,16 @@
                                         </button>
                                     </form>
                                 </div>
+                                    </div>
+                                @endforeach
+                                @if($displayGroup->count() > 1)
+                                    </details>
+                                @endif
+                                @php
+                                    $item = $groupItems->first();
+                                    $allIds = $groupItems->pluck('id')->implode(',');
+                                    $groupNames = $groupItems->pluck('group_name')->unique()->values()->toArray();
+                                @endphp
                             </td>
                         </tr>
                     @empty
