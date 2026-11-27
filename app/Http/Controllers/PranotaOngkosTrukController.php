@@ -338,6 +338,31 @@ class PranotaOngkosTrukController extends Controller
         return view('pranota-ongkos-truk.print', compact('pranota'));
     }
 
+    public function analysisPreview($id, \App\Services\PranotaOngkosTrukAnalysisService $service)
+    {
+        $pranota = PranotaOngkosTruk::findOrFail($id);
+        $analysis = $service->analyze($pranota);
+
+        return view('pranota-ongkos-truk.analysis-preview', [
+            'pranota' => $pranota,
+            'rows' => $analysis['rows'],
+            'summaries' => $analysis['summaries'],
+        ]);
+    }
+
+    public function analysis($id, \App\Services\PranotaOngkosTrukAnalysisService $service)
+    {
+        $pranota = PranotaOngkosTruk::findOrFail($id);
+        $analysis = $service->analyze($pranota);
+        $filename = 'Analisis-UJ-'.preg_replace('/[^A-Za-z0-9_-]/', '-', $pranota->no_pranota).'.pdf';
+
+        return \Barryvdh\DomPDF\Facade\Pdf::loadView('pranota-ongkos-truk.analysis-pdf', [
+            'pranota' => $pranota,
+            'rows' => $analysis['rows'],
+            'summaries' => $analysis['summaries'],
+        ])->setPaper('a3', 'landscape')->download($filename);
+    }
+
     public function destroy($id)
     {
         $pranota = PranotaOngkosTruk::findOrFail($id);
