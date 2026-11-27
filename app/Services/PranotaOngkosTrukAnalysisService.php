@@ -51,6 +51,7 @@ class PranotaOngkosTrukAnalysisService
                 'nominal' => (float) $item->nominal, 'components' => $values,
                 'uj_number' => $uj?->nomor_uang_jalan, 'has_uj' => $uj !== null,
                 'memo' => $uj?->memo, 'reason' => $uj?->alasan_penyesuaian,
+                'pengirim' => trim((string) ($sj?->pengirim ?? '')) ?: '-',
             ];
         });
         $groupKey = fn ($row) => json_encode([preg_replace('/\s+/', '', strtoupper($row['plat'])), mb_strtoupper(trim($row['tujuan']))]);
@@ -111,7 +112,7 @@ class PranotaOngkosTrukAnalysisService
                     $note .= ' '.$extra;
                 }
             }
-            $row['keterangan'] = $note;
+            $row['keterangan'] = 'Pengirim: '.$row['pengirim'].'. '.$note;
 
             return $row;
         });
