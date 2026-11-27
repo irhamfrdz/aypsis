@@ -79,7 +79,6 @@
                                     </a>
                                     <button type="button" class="js-analysis p-2 bg-purple-50 text-purple-600 rounded-lg hover:bg-purple-100 transition-colors" title="Lihat Analisis UJ" aria-haspopup="dialog" data-preview-url="{{ route('pranota-ongkos-truk.analysis-preview', $pranota->id) }}" data-pdf-url="{{ route('pranota-ongkos-truk.analysis', $pranota->id) }}" data-pranota="{{ $pranota->no_pranota }}">
                                         <i class="fas fa-magnifying-glass-chart"></i>
-                                        <span class="text-xs font-semibold">Analisis</span>
                                     </button>
                                     <a href="{{ route('pranota-ongkos-truk.export', $pranota->id) }}" class="p-2 bg-emerald-50 text-emerald-600 rounded-lg hover:bg-emerald-100 transition-colors" title="Download Excel">
                                         <i class="fas fa-file-excel"></i>
