@@ -40,19 +40,19 @@ Cakupan: {{ $rows->count() }} baris; {{ count($summaries) }} kelompok plat dan t
 <p><strong>Dasar pembacaan:</strong> ONGKOS mengikuti master tujuan dan size saat laporan dibuat. NOMINAL disalin dari item pranota yang tersimpan, tidak dihitung ulang. TGL TT dan NO BUKTI mengikuti tanda terima dan nomor Accurate pembayaran seperti tampilan cetak pranota. Tanda - berarti data tidak tersedia.</p>
 <p><strong>Batas kesimpulan:</strong> laporan menjelaskan sumber selisih angka berdasarkan komponen tersimpan. Alasan operasional biaya tambahan hanya dapat dipastikan dari memo, keterangan atau bukti pendukung. Perbedaan UJ sendiri belum membuktikan kesalahan input. SJ tanpa data UJ ditandai secara khusus.</p>
 <div class="details">
-<h2>Rincian Seluruh Baris Pranota</h2>
-<p>Seluruh nilai uang dalam rupiah. RIT S = rit supir; RIT K = rit kenek.</p>
+<h2>Rincian Seluruh Baris Pranota Berdasarkan Pengirim</h2>
+<p>Rincian diurutkan berdasarkan nama pengirim; nomor tetap mengacu pada baris asli pranota. Seluruh nilai uang dalam rupiah. PELANCAR adalah komponen biaya pelancar dari data Uang Jalan terkait.</p>
 <table>
 <thead><tr>
-@foreach(['NO','TGL SJ','TGL TT','NO SURAT JALAN','NO PLAT','SIZE','RIT S','RIT K','NO BUKTI','TUJUAN','ONGKOS','UJ','NOMINAL','KETERANGAN'] as $index => $heading)
-<th style="width: {{ [2.5,5,5,7,6,3,3,3,8,8,6,6,6,31.5][$index] }}%">{{ $heading }}</th>
+@foreach(['NO','NO SURAT JALAN','NO PLAT','NAMA PENGIRIM','SIZE','TUJUAN','ONGKOS','PELANCAR','UJ','NOMINAL','KETERANGAN'] as $index => $heading)
+<th style="width: {{ [3,9,8,14,4,10,7,7,7,7,24][$index] }}%">{{ $heading }}</th>
 @endforeach
 </tr></thead>
 <tbody>
-@foreach($rows as $row)
+@foreach($rows->sortBy(fn ($row) => mb_strtoupper(trim($row['pengirim'])))->values() as $row)
 <tr>
-@foreach(['no','tgl_sj','tgl_tt','sj','plat','size','rit_s','rit_k','bukti','tujuan'] as $key)<td>{{ $row[$key] }}</td>@endforeach
-@foreach(['ongkos','uj','nominal'] as $key)<td class="number">{{ number_format($row[$key], 0, ',', '.') }}</td>@endforeach
+@foreach(['no','sj','plat','pengirim','size','tujuan'] as $key)<td>{{ $row[$key] }}</td>@endforeach
+@foreach(['ongkos','pelancar','uj','nominal'] as $key)<td class="number">{{ number_format($row[$key], 0, ',', '.') }}</td>@endforeach
 <td>{{ $row['keterangan'] }}</td>
 </tr>
 @endforeach

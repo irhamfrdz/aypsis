@@ -49,6 +49,7 @@ class PranotaOngkosTrukAnalysisService
                 'bukti' => $bukti ?: '-', 'tujuan' => $destination?->ke ?? $sj?->tujuan_pengambilan ?? '-',
                 'ongkos' => (float) $ongkos, 'uj' => (float) ($uj?->jumlah_total ?? 0),
                 'nominal' => (float) $item->nominal, 'components' => $values,
+                'pelancar' => $values['jumlah_pelancar'],
                 'uj_number' => $uj?->nomor_uang_jalan, 'has_uj' => $uj !== null,
                 'memo' => $uj?->memo, 'reason' => $uj?->alasan_penyesuaian,
                 'pengirim' => trim((string) ($sj?->pengirim ?? '')) ?: '-',
@@ -81,10 +82,10 @@ class PranotaOngkosTrukAnalysisService
             $parts = [];
             foreach ($components as $field => $label) {
                 if ($row['components'][$field] != 0) {
-                    $parts[] = $label.' '.number_format($row['components'][$field], 0, ',', '.');
+                    $parts[] = $label.' Rp'.number_format($row['components'][$field], 0, ',', '.');
                 }
             }
-            $note = $row['has_uj'] ? ($row['uj_number'] ?? 'UJ tanpa nomor').': '.(implode(' + ', $parts) ?: '0').' = '.number_format($row['uj'], 0, ',', '.').'.' : 'Data uang jalan belum tersedia; tampilan UJ 0.';
+            $note = $row['has_uj'] ? (implode(' + ', $parts) ?: 'Rp0').' = UJ Rp'.number_format($row['uj'], 0, ',', '.').'.' : 'Data uang jalan belum tersedia; tampilan UJ 0.';
             if ($group->pluck('uj')->unique()->count() > 1) {
                 $base = $group->sortBy('uj')->first();
                 $changed = [];
@@ -101,8 +102,6 @@ class PranotaOngkosTrukAnalysisService
                 if ($group->pluck('size')->map(fn ($size) => preg_replace('/[^0-9]/', '', $size))->unique()->count() > 1) {
                     $note .= ' Ukuran kontainer juga berbeda.';
                 }
-            } else {
-                $note .= $group->count() > 1 ? ' UJ sama pada plat dan tujuan ini.' : ' Tidak ada pembanding plat dan tujuan yang sama.';
             }
             if ($row['has_uj'] && abs(array_sum($row['components']) - $row['uj']) > 0.01) {
                 $note .= ' PERIKSA: jumlah komponen tidak sama dengan total UJ tersimpan.';
@@ -112,7 +111,7 @@ class PranotaOngkosTrukAnalysisService
                     $note .= ' '.$extra;
                 }
             }
-            $row['keterangan'] = 'Pengirim: '.$row['pengirim'].'. '.$note;
+            $row['keterangan'] = $note;
 
             return $row;
         });
