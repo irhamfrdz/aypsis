@@ -7,7 +7,18 @@ use Illuminate\Support\Carbon;
 
 class PranotaOngkosTrukAnalysisService
 {
-    public function analyze(PranotaOngkosTruk $pranota): array
+    public function destinations(PranotaOngkosTruk $pranota): array
+    {
+        $pranota->load(['items.suratJalan.tujuanPengambilanRelation', 'items.suratJalanBongkaran.tujuanPengambilanRelation']);
+
+        return $pranota->items->map(function ($item) {
+            $sj = $item->type === 'SuratJalan' ? $item->suratJalan : $item->suratJalanBongkaran;
+
+            return trim($sj?->tujuanPengambilanRelation?->ke ?? $sj?->tujuan_pengambilan ?? '-');
+        })->unique(fn ($value) => mb_strtoupper($value))->sort()->values()->all();
+    }
+
+    public function analyze(PranotaOngkosTruk $pranota, ?string $destinationFilter = null): array
     {
         $relations = ['tujuanPengambilanRelation', 'tandaTerima', 'supirKaryawan', 'kenekKaryawan', 'uangJalan.pranotaUangJalan.pembayaranPranotaUangJalans'];
         $pranota->load(array_merge(
@@ -55,7 +66,12 @@ class PranotaOngkosTrukAnalysisService
                 'pengirim' => trim((string) ($sj?->pengirim ?? '')) ?: '-',
             ];
         });
-        $groupKey = fn ($row) => json_encode([preg_replace('/\s+/', '', strtoupper($row['plat'])), mb_strtoupper(trim($row['tujuan']))]);
+        if ($destinationFilter !== null) {
+            $rows = $rows->filter(fn ($row) => mb_strtoupper(trim($row['tujuan'])) === mb_strtoupper(trim($destinationFilter)))->values();
+        }
+        $groupKey = fn ($row) => $destinationFilter !== null
+            ? mb_strtoupper(trim($row['tujuan']))
+            : json_encode([preg_replace('/\s+/', '', strtoupper($row['plat'])), mb_strtoupper(trim($row['tujuan']))]);
         $groups = $rows->groupBy($groupKey);
         $summaries = [];
         foreach ($groups as $group) {
@@ -70,7 +86,7 @@ class PranotaOngkosTrukAnalysisService
                 }
             }
             $summaries[] = [
-                'plat' => $group->first()['plat'], 'tujuan' => $group->first()['tujuan'],
+                'plat' => $group->pluck('plat')->unique()->implode(', '), 'tujuan' => $group->first()['tujuan'],
                 'numbers' => $group->pluck('no')->implode(', '),
                 'totals' => $group->pluck('uj')->unique()->sort()->map(fn ($value) => number_format($value, 0, ',', '.'))->implode(' / '),
                 'changes' => implode('; ', $changes) ?: 'Total berbeda; perlu periksa kesesuaian komponen.',

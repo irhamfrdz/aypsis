@@ -49,7 +49,25 @@
 #analysis-dialog .analysis-plate[aria-expanded="true"] { background:#153c52; color:white; border-color:#153c52; }
 #analysis-dialog .analysis-difference { color:#a25b16; font-weight:700; background:#fff8ec; }
 #analysis-dialog .analysis-detail-panel { margin-top:24px; padding-top:22px; border-top:2px solid #dbe5ef; }
+#analysis-dialog .analysis-destination-card { background:white; border:1px solid #dbe4ed; border-radius:14px; padding:22px; margin-bottom:24px; }
+#analysis-dialog .analysis-destination-intro { display:flex; align-items:flex-start; gap:12px; margin-bottom:20px; }
+#analysis-dialog .analysis-destination-icon { display:grid; place-items:center; background:#edf3fa; color:#254a78; width:40px; height:40px; border-radius:10px; flex-shrink:0; }
+#analysis-dialog .analysis-destination-intro h3 { margin:0 0 5px; font-size:15px; font-weight:700; color:#18384d; }
+#analysis-dialog .analysis-destination-intro p { margin:0; font-size:12px; color:#64748b; line-height:1.6; }
+#analysis-dialog .analysis-destination-controls { display:flex; align-items:flex-start; gap:12px; }
+#analysis-dialog .analysis-destination-field { flex:1; min-width:0; max-width:600px; }
+#analysis-dialog .analysis-destination-field label { display:block; font-size:12px; font-weight:600; margin-bottom:8px; color:#334155; }
+#analysis-dialog .analysis-destination-field label span { color:#b45309; }
+#analysis-dialog .analysis-destination-field select { display:block; width:100%; min-height:46px; border:1px solid #cbd5e1; border-radius:9px; background-color:#fff; color:#1e293b; font-size:14px; padding:10px 36px 10px 13px; cursor:pointer; }
+#analysis-dialog .analysis-destination-field select:focus { outline:3px solid #dbeafe; outline-offset:1px; border-color:#4877a8; }
+#analysis-dialog .analysis-destination-field select:disabled { background-color:#f1f5f9; cursor:not-allowed; color:#94a3b8; }
+#analysis-dialog .analysis-destination-field p { font-size:11px; margin:7px 0 0; color:#64748b; }
+#analysis-dialog .analysis-destination-submit { margin-top:26px; min-height:46px; justify-content:center; padding:10px 24px; }
 @media(max-width:700px) {
+ #analysis-dialog .analysis-destination-card { padding:16px; }
+ #analysis-dialog .analysis-destination-controls { flex-direction:column; }
+ #analysis-dialog .analysis-destination-field { width:100%; max-width:none; }
+ #analysis-dialog .analysis-destination-submit { margin-top:0; width:100%; }
  #analysis-dialog .analysis-toolbar { align-items:flex-start; flex-direction:column; padding:16px; }
  #analysis-dialog #analysis-content { padding:16px; }
  #analysis-dialog .analysis-metrics { grid-template-columns:1fr; gap:8px; }
@@ -62,6 +80,7 @@
     const content = document.getElementById('analysis-content');
     const pdf = document.getElementById('analysis-pdf');
     const printButton = document.getElementById('analysis-print');
+    let emptyResults;
     let controller;
     let opener;
     let previousOverflow;
@@ -89,9 +108,10 @@
                 const markup = await response.text();
                 if (request.signal.aborted || !dialog.open) return;
                 content.innerHTML = markup;
+                emptyResults = content.querySelector('.analysis-results').cloneNode(true);
                 pdf.href = button.dataset.pdfUrl;
-                pdf.hidden = false;
-                printButton.disabled = false;
+                pdf.hidden = true;
+                printButton.disabled = true;
             } catch (error) {
                 if (error.name !== 'AbortError') {
                     content.textContent = 'Analisis gagal dimuat. Tutup popup lalu coba kembali. Jika sesi berakhir, muat ulang halaman dan masuk kembali.';
@@ -101,26 +121,53 @@
             }
         });
     });
-    content.addEventListener('click', event => {
-        const trigger = event.target.closest('.js-analysis-detail');
-        if (trigger) {
-            const panel = content.querySelector('#' + trigger.dataset.detailId);
-            if (!panel) return;
-            content.querySelectorAll('.analysis-detail-panel').forEach(item => { item.hidden = true; });
-            content.querySelectorAll('.js-analysis-detail').forEach(item => item.setAttribute('aria-expanded', 'false'));
-            panel.hidden = false;
-            trigger.setAttribute('aria-expanded', 'true');
-            panel.querySelector('h3').focus({ preventScroll: true });
-            panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    async function loadDestination(form) {
+        controller?.abort();
+        const request = new AbortController();
+        controller = request;
+        const destination = form.elements.tujuan.value;
+        printButton.disabled = true;
+        pdf.hidden = true;
+        pdf.removeAttribute('href');
+        const results = emptyResults.cloneNode(true);
+        content.querySelector('.analysis-results').replaceWith(results);
+        content.setAttribute('aria-busy', destination ? 'true' : 'false');
+        if (!destination) return;
+        const cell = results.querySelector('tbody td');
+        cell.textContent = 'Memuat analisis tujuan ' + destination + '...';
+        const url = new URL(form.action);
+        url.searchParams.set('tujuan', destination);
+        try {
+            const response = await fetch(url, { signal:request.signal, headers: { 'X-Requested-With':'XMLHttpRequest', 'Accept':'text/html' } });
+            if (!response.ok || response.redirected) throw new Error('load');
+            const markup = await response.text();
+            if (request.signal.aborted || !dialog.open) return;
+            const parsed = new DOMParser().parseFromString(markup, 'text/html');
+            const updated = parsed.querySelector('.analysis-results');
+            if (!updated) throw new Error('load');
+            results.replaceWith(updated);
+            const pdfUrl = new URL(opener.dataset.pdfUrl, window.location.href);
+            pdfUrl.searchParams.set('tujuan', destination);
+            pdf.href = pdfUrl.href;
+            pdf.hidden = false;
+            printButton.disabled = false;
+        } catch (error) {
+            if (error.name !== 'AbortError' && controller === request) {
+                cell.textContent = 'Analisis gagal dimuat. Pilih kembali tujuan untuk mencoba lagi atau muat ulang halaman jika sesi berakhir.';
+                cell.setAttribute('role', 'alert');
+            }
+        } finally {
+            if (controller === request) content.setAttribute('aria-busy', 'false');
         }
-        const close = event.target.closest('.js-analysis-detail-close');
-        if (close) {
-            const panel = close.closest('.analysis-detail-panel');
-            panel.hidden = true;
-            const active = content.querySelector('.js-analysis-detail[aria-expanded="true"]');
-            active?.setAttribute('aria-expanded', 'false');
-            active?.focus();
-        }
+    }
+    content.addEventListener('change', event => {
+        if (event.target.id === 'analysis-destination') loadDestination(event.target.form);
+    });
+    content.addEventListener('submit', event => {
+        const form = event.target.closest('.js-analysis-destination');
+        if (!form) return;
+        event.preventDefault();
+        if (form.reportValidity()) loadDestination(form);
     });
     printButton.addEventListener('click', () => {
         if (printButton.disabled) return;
@@ -159,7 +206,7 @@
         doc.head.appendChild(style);
         const report = doc.getElementById('analysis-dialog');
         clone.querySelectorAll('.analysis-table').forEach(table => {
-            if (table.closest('.analysis-detail-panel')) table.classList.add('analysis-print-detail');
+            if (table.closest('.analysis-results')) table.classList.add('analysis-print-detail');
             report.appendChild(doc.adoptNode(table));
         });
         frame.contentWindow.addEventListener('afterprint', () => frame.remove(), { once:true });

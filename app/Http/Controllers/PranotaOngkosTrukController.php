@@ -341,25 +341,32 @@ class PranotaOngkosTrukController extends Controller
     public function analysisPreview($id, \App\Services\PranotaOngkosTrukAnalysisService $service)
     {
         $pranota = PranotaOngkosTruk::findOrFail($id);
-        $analysis = $service->analyze($pranota);
+        $destinations = $service->destinations($pranota);
+        $validated = request()->validate(['tujuan' => ['nullable', 'string', \Illuminate\Validation\Rule::in($destinations)]]);
+        $selectedDestination = $validated['tujuan'] ?? null;
+        $analysis = $selectedDestination !== null ? $service->analyze($pranota, $selectedDestination) : null;
 
         return view('pranota-ongkos-truk.analysis-preview', [
             'pranota' => $pranota,
-            'rows' => $analysis['rows'],
-            'summaries' => $analysis['summaries'],
+            'destinations' => $destinations,
+            'selectedDestination' => $selectedDestination,
+            'rows' => $analysis['rows'] ?? collect(),
+            'summaries' => $analysis['summaries'] ?? [],
         ]);
     }
 
     public function analysis($id, \App\Services\PranotaOngkosTrukAnalysisService $service)
     {
         $pranota = PranotaOngkosTruk::findOrFail($id);
-        $analysis = $service->analyze($pranota);
+        $selectedDestination = request()->validate(['tujuan' => ['nullable', 'string', \Illuminate\Validation\Rule::in($service->destinations($pranota))]])['tujuan'] ?? null;
+        $analysis = $service->analyze($pranota, $selectedDestination);
         $filename = 'Analisis-UJ-'.preg_replace('/[^A-Za-z0-9_-]/', '-', $pranota->no_pranota).'.pdf';
 
         return \Barryvdh\DomPDF\Facade\Pdf::loadView('pranota-ongkos-truk.analysis-pdf', [
             'pranota' => $pranota,
             'rows' => $analysis['rows'],
             'summaries' => $analysis['summaries'],
+            'selectedDestination' => $selectedDestination,
         ])->setPaper('a3', 'landscape')->download($filename);
     }
 

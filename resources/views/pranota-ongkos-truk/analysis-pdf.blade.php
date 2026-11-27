@@ -25,15 +25,16 @@ footer { position: fixed; bottom: -22px; left: 0; right: 0; font-size: 7px; colo
 <footer>AYPSIS | Analisis UJ {{ $pranota->no_pranota }} | {{ now()->format('d/m/Y H:i') }}</footer>
 <h1>Analisis Perbedaan Uang Jalan</h1>
 <p><strong>{{ $pranota->no_pranota }}</strong> | Tanggal pranota: {{ $pranota->tanggal_pranota?->format('d/m/Y') }}<br>
+@if($selectedDestination ?? null)Tujuan terpilih: <strong>{{ $selectedDestination }}</strong><br>@endif
 Cakupan: {{ $rows->count() }} baris; {{ count($summaries) }} kelompok plat dan tujuan dengan UJ berbeda. Nomor mengikuti urutan data pranota.</p>
-<p>UJ adalah total uang jalan beserta biaya tambahan dan penyesuaian yang tersimpan pada SJ terkait. Perbandingan dilakukan untuk plat dan tujuan yang sama. Kolom keterangan merinci komponen dan selisih terhadap baris dengan UJ terendah dalam kelompok.</p>
+<p>UJ adalah total uang jalan beserta biaya tambahan dan penyesuaian yang tersimpan pada SJ terkait. {{ ($selectedDestination ?? null) ? 'Perbandingan dilakukan pada seluruh plat dengan tujuan terpilih.' : 'Perbandingan dilakukan untuk plat dan tujuan yang sama.' }} Kolom keterangan merinci komponen dan selisih terhadap baris dengan UJ terendah dalam kelompok.</p>
 <table>
 <thead><tr><th width="10%">NO PLAT</th><th width="13%">TUJUAN</th><th width="17%">NO BARIS ASLI</th><th width="22%">VARIASI UJ (Rp)</th><th width="28%">KOMPONEN YANG BERBEDA</th><th width="10%">SELISIH MIN-MAKS (Rp)</th></tr></thead>
 <tbody>
 @forelse($summaries as $summary)
 <tr><td>{{ $summary['plat'] }}</td><td>{{ $summary['tujuan'] }}</td><td>{{ $summary['numbers'] }}</td><td>{{ $summary['totals'] }}</td><td>{{ $summary['changes'] }}</td><td class="number">{{ number_format($summary['difference'], 0, ',', '.') }}</td></tr>
 @empty
-<tr><td colspan="6">Tidak ditemukan perbedaan total UJ pada plat dan tujuan yang sama.</td></tr>
+<tr><td colspan="6">Tidak ditemukan perbedaan total UJ pada kelompok yang dibandingkan.</td></tr>
 @endforelse
 </tbody>
 </table>
@@ -41,7 +42,7 @@ Cakupan: {{ $rows->count() }} baris; {{ count($summaries) }} kelompok plat dan t
 <p><strong>Batas kesimpulan:</strong> laporan menjelaskan sumber selisih angka berdasarkan komponen tersimpan. Alasan operasional biaya tambahan hanya dapat dipastikan dari memo, keterangan atau bukti pendukung. Perbedaan UJ sendiri belum membuktikan kesalahan input. SJ tanpa data UJ ditandai secara khusus.</p>
 <div class="details">
 <h2>Rincian Seluruh Baris Pranota Berdasarkan Pengirim</h2>
-<p>Rincian diurutkan berdasarkan nama pengirim; nomor tetap mengacu pada baris asli pranota. Seluruh nilai uang dalam rupiah. PELANCAR adalah komponen biaya pelancar dari data Uang Jalan terkait.</p>
+<p>Rincian diurutkan berdasarkan nama pengirim; nomor tetap mengacu pada baris asli pranota. Seluruh nilai uang dalam rupiah. PELANCAR adalah komponen biaya pelancar dari data Uang Jalan terkait. Nominal pelancar yang sama ditandai dengan warna yang sama.</p>
 <table>
 <thead><tr>
 @foreach(['NO','NO SURAT JALAN','NO PLAT','NAMA PENGIRIM','SIZE','TUJUAN','ONGKOS','PELANCAR','UJ','NOMINAL','KETERANGAN'] as $index => $heading)
@@ -52,13 +53,16 @@ Cakupan: {{ $rows->count() }} baris; {{ count($summaries) }} kelompok plat dan t
 @foreach($rows->sortBy(fn ($row) => mb_strtoupper(trim($row['pengirim'])))->values() as $row)
 <tr>
 @foreach(['no','sj','plat','pengirim','size','tujuan'] as $key)<td>{{ $row[$key] }}</td>@endforeach
-@foreach(['ongkos','pelancar','uj','nominal'] as $key)<td class="number">{{ number_format($row[$key], 0, ',', '.') }}</td>@endforeach
+@foreach(['ongkos','pelancar','uj','nominal'] as $key)
+<td class="number">@if($key === 'pelancar')@include('pranota-ongkos-truk.pelancar-badge', ['amount' => $row['pelancar'], 'amounts' => $rows->pluck('pelancar')->unique()->sort()->values()])@else{{ number_format($row[$key], 0, ',', '.') }}@endif</td>
+@endforeach
 <td>{{ $row['keterangan'] }}</td>
 </tr>
 @endforeach
 </tbody>
 </table>
 <p><strong>Subtotal:</strong> ONGKOS Rp{{ number_format($rows->sum('ongkos'), 0, ',', '.') }} | UJ Rp{{ number_format($rows->sum('uj'), 0, ',', '.') }} | NOMINAL item Rp{{ number_format($rows->sum('nominal'), 0, ',', '.') }}.</p>
+@unless($selectedDestination ?? null)
 @if(is_array($pranota->adjustments) && count($pranota->adjustments))
 <p><strong>Penyesuaian pranota:</strong><br>
 @foreach($pranota->adjustments as $adjustment)
@@ -69,6 +73,7 @@ Cakupan: {{ $rows->count() }} baris; {{ count($summaries) }} kelompok plat dan t
 <p>Penyesuaian: Rp{{ number_format($pranota->adjustment, 0, ',', '.') }}.</p>
 @endif
 <p><strong>Total pranota tersimpan: Rp{{ number_format($pranota->total_nominal, 0, ',', '.') }}.</strong></p>
+@endunless
 </div>
 </body>
 </html>
