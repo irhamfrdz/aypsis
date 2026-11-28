@@ -19,7 +19,7 @@
                 <i class="fas fa-money-bill-transfer mr-2 text-blue-600"></i> Auto Transfer
             </a>
             <a href="{{ route('pranota-puml.print', $puml->id) }}" target="_blank" class="inline-flex justify-center items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-all duration-200 hover:-translate-y-0.5">
-                <i class="fas fa-print mr-2"></i> Permohonan Transfer
+                <i class="fas fa-print mr-2"></i> Print PUML
             </a>
         </div>
     </div>
