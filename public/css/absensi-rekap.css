@@ -51,6 +51,12 @@
 .attendance-recap .ar-quick-filters svg { color: #2563eb; }
 .attendance-recap .ar-table-wrap { width: 100%; max-width: 100%; max-height: 72vh; overflow: auto; scrollbar-gutter: stable; overscroll-behavior-x: contain; padding-bottom: 4px; border-radius: 0 0 12px 12px; }
 .attendance-recap .ar-table-wrap:focus-visible { outline: 2px solid #93c5fd; outline-offset: -2px; }
+.attendance-recap .ar-table-footer { padding: 16px 18px; border-top: 1px solid #e2e8f0; border-radius: 0 0 13px 13px; background: #f8fafc; }
+.attendance-recap .ar-page-size { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; color: #475569; font-size: 12px; }
+.attendance-recap .ar-page-size label { font-weight: 500; }
+.attendance-recap .ar-page-size select { min-width: 150px; height: 40px; padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background-color: white; color: #334155; font-size: 12px; cursor: pointer; box-shadow: none; }
+.attendance-recap .ar-data-total { color: #64748b; }
+.attendance-recap .ar-table-footer > nav { margin-top: 16px; }
 .attendance-recap .ar-table { width: 100%; min-width: 1600px; table-layout: fixed; border-collapse: separate; border-spacing: 0; font-variant-numeric: tabular-nums; }
 .attendance-recap .ar-width-select { width: var(--ar-select-width); }
 .attendance-recap .ar-width-number { width: var(--ar-number-width); }

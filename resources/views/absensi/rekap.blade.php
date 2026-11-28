@@ -431,15 +431,15 @@
             </div>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div class="flex flex-wrap items-center gap-3 text-sm text-gray-600 mb-3">
+            <div class="ar-table-footer">
+                <div class="ar-page-size">
                     <label for="rekap-per-page">Tampilkan</label>
-                    <select id="rekap-per-page" class="rounded-lg border-gray-300 text-sm focus:border-blue-500 focus:ring-blue-500"
-                        onchange="const url = new URL(window.location.href); url.searchParams.set('per_page', this.value); url.searchParams.delete('page'); window.location.href = url.toString();">
+                    <select id="rekap-per-page" name="per_page" form="filterForm"
+                        onchange="this.form.requestSubmit()">
                         <option value="15" @selected(request('per_page') !== 'all')>15 data</option>
                         <option value="all" @selected(request('per_page') === 'all')>Semua data</option>
                     </select>
-                    <span>Total {{ $karyawans->total() }} data karyawan</span>
+                    <span class="ar-data-total">Menampilkan {{ $karyawans->count() }} dari {{ $karyawans->total() }} data karyawan</span>
                 </div>
                 @if ($karyawans->hasPages())
                     {{ $karyawans->links() }}
