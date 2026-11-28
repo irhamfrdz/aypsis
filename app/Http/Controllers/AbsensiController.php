@@ -989,7 +989,11 @@ class AbsensiController extends Controller
             $karyawansQuery->where('grup_bpjs', 'LIKE', '%:'.$subGrupBpjsReq.'"%');
         }
 
-        $karyawans = $karyawansQuery->orderBy('nama_lengkap')->paginate(15)->withQueryString();
+        $showAll = $request->query('per_page') === 'all';
+        $perPage = $showAll ? max(1, (clone $karyawansQuery)->count()) : 15;
+        $karyawans = $karyawansQuery->orderBy('nama_lengkap')
+            ->paginate($perPage, ['*'], 'page', $showAll ? 1 : null)
+            ->withQueryString();
         $allKaryawans = Karyawan::where('status', 'active')->orderBy('nama_lengkap')->get();
 
         $pekerjaans = Karyawan::whereNotNull('pekerjaan')->where('pekerjaan', '!=', '')->distinct()->pluck('pekerjaan');
