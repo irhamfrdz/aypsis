@@ -156,7 +156,6 @@ class StockBanController extends Controller
         }
         if ($usesMasterStock) {
             $request->merge([
-                'qty' => $namaStockBan->kuantitas ?? 0,
                 'type' => trim($namaStockBan->type ?? '') ?: 'pcs',
                 'ukuran' => null,
             ]);

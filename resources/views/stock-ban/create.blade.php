@@ -993,28 +993,19 @@
             qtyWrapper.innerHTML = `
                 <label class="block text-sm font-medium text-gray-700 mb-2">Stock (Qty) <span class="text-red-500">*</span></label>
                 <input type="number" name="qty" value="{{ old('qty', 0) }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" min="0" step="1">
-                <p id="master-stock-hint" class="hidden text-xs text-gray-500 mt-1">Stock dan Type mengikuti Master Nama Stock Ban.</p>
+                <p id="master-stock-hint" class="hidden text-xs text-gray-500 mt-1">Isi jumlah barang masuk. Type mengikuti Master Nama Stock Ban.</p>
             `;
             hargaBeliContainer.parentNode.insertBefore(qtyWrapper, hargaBeliContainer);
         }
 
         // Store original options
         const originalTypeOptions = Array.from(typeSelect.options).map(opt => ({ value: opt.value, text: opt.text }));
-        let previousMasterStock = false;
 
         function checkItemType() {
                 const selectedOption = namaBarangSelect.options[namaBarangSelect.selectedIndex];
                 const selectedText = selectedOption ? selectedOption.text.toLowerCase() : '';
                 const usesMasterStock = selectedOption?.dataset.masterStock === '1';
-                const qtyInput = qtyWrapper.querySelector('input[name="qty"]');
-                qtyInput.readOnly = usesMasterStock;
-                if (usesMasterStock) {
-                    qtyInput.value = selectedOption.dataset.kuantitas || '0';
-                } else if (previousMasterStock) {
-                    qtyInput.value = '0';
-                }
                 document.getElementById('master-stock-hint').classList.toggle('hidden', !usesMasterStock);
-                previousMasterStock = usesMasterStock;
                 
                 const isBanDalam = selectedText.includes('ban dalam');
                 const isBanPerut = selectedText.includes('ban perut');
