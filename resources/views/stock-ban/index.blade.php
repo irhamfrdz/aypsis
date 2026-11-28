@@ -1552,8 +1552,6 @@
                         return strtoupper(trim($item->type ?? '')) ?: 'PAIL';
                     })->map(function($items) {
                         return $items->sum('qty');
-                    })->filter(function($qty) {
-                        return $qty != 0;
                     });
                     if ($units->count() > 1) {
                         $parts = [];
@@ -1599,7 +1597,7 @@
                 });
             @endphp
  
-            @if($stockLainLains->isNotEmpty() || $paintStats->count() > 0 || $majunQty > 0 || $thinnerQty > 0 || $banDalamQty > 0 || $banPerutQty > 0 || $lockKontainerQty > 0 || $ringVelgStats->sum() > 0 || $velgStats->sum() > 0)
+            @if($stockLainLains->isNotEmpty() || $stockBanDalams->isNotEmpty() || $stockBanPeruts->isNotEmpty() || $stockLockKontainers->isNotEmpty() || $stockRingVelgs->isNotEmpty() || $stockVelgs->isNotEmpty())
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider">Quick Summary</h3>
                 <div class="flex items-center gap-2">
@@ -1650,7 +1648,7 @@
                 </div>
                 @endforeach
  
-                @if($banDalamQty > 0)
+                @if($stockBanDalams->isNotEmpty())
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-blue-500 hover:bg-blue-50/30"
                      onclick="filterBarangLainnya('BAN DALAM', this)">
                     <div class="flex items-center gap-3">
@@ -1668,7 +1666,7 @@
                 </div>
                 @endif
  
-                @if($banPerutQty > 0)
+                @if($stockBanPeruts->isNotEmpty())
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-purple-500 hover:bg-purple-50/30"
                      onclick="filterBarangLainnya('BAN PERUT', this)">
                     <div class="flex items-center gap-3">
@@ -1686,7 +1684,7 @@
                 </div>
                 @endif
 
-                @if($lockKontainerQty > 0)
+                @if($stockLockKontainers->isNotEmpty())
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-green-500 hover:bg-green-50/30"
                      onclick="filterBarangLainnya('LOCK KONTAINER', this)">
                     <div class="flex items-center gap-3">
@@ -1705,7 +1703,6 @@
                 @endif
 
                 @foreach($ringVelgStats as $ukuran => $qty)
-                    @if($qty > 0)
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-yellow-500 hover:bg-yellow-50/30"
                          onclick="filterBarangLainnya('RING VELG{{ $ukuran ? ' ' . $ukuran : '' }}', this)">
                         <div class="flex items-center gap-3">
@@ -1721,11 +1718,9 @@
                             </div>
                         </div>
                     </div>
-                    @endif
                 @endforeach
 
                 @foreach($velgStats as $ukuran => $qty)
-                    @if($qty > 0)
                     <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-indigo-500 hover:bg-indigo-50/30"
                          onclick="filterBarangLainnya('VELG{{ $ukuran ? ' ' . $ukuran : '' }}', this)">
                         <div class="flex items-center gap-3">
@@ -1741,10 +1736,9 @@
                             </div>
                         </div>
                     </div>
-                    @endif
                 @endforeach
 
-                @if($majunQty > 0)
+                @if($stockLainLains->contains(fn ($item) => stripos($item->namaStockBan->nama ?? '', 'majun') !== false))
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-orange-400 hover:bg-orange-50/30"
                      onclick="filterBarangLainnya('MAJUN', this)">
                     <div class="flex items-center gap-3">
@@ -1762,7 +1756,7 @@
                 </div>
                 @endif
 
-                @if($thinnerQty > 0)
+                @if($stockLainLains->contains(fn ($item) => stripos($item->namaStockBan->nama ?? '', 'thinner') !== false))
                 <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 transition-all hover:shadow-md cursor-pointer border-b-4 border-b-cyan-400 hover:bg-cyan-50/30"
                      onclick="filterBarangLainnya('THINNER', this)">
                     <div class="flex items-center gap-3">
