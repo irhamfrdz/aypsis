@@ -375,34 +375,34 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                 // ── Column widths ──────────────────────────────────────
                 $sheet->getColumnDimension('A')->setWidth(6);
-                $sheet->getColumnDimension('B')->setWidth(11);
-                $sheet->getColumnDimension('C')->setWidth(34);
-                $sheet->getColumnDimension('D')->setWidth(22);
-                $sheet->getColumnDimension('E')->setWidth(18);
+                $sheet->getColumnDimension('B')->setWidth(13);
+                $sheet->getColumnDimension('C')->setWidth(40);
+                $sheet->getColumnDimension('D')->setWidth(26);
+                $sheet->getColumnDimension('E')->setWidth(22);
                 $sheet->getColumnDimension('F')->setWidth(9);
-                $sheet->getColumnDimension('G')->setWidth(14);
+                $sheet->getColumnDimension('G')->setWidth(16);
                 $sheet->getColumnDimension('H')->setWidth(11);
-                $sheet->getColumnDimension('I')->setWidth(15);
-                $sheet->getColumnDimension('J')->setWidth(17);
-                $sheet->getColumnDimension('K')->setWidth(15);
-                $sheet->getColumnDimension('L')->setWidth(15);
-                $sheet->getColumnDimension('M')->setWidth(15);
-                $sheet->getColumnDimension('N')->setWidth(15);
-                $sheet->getColumnDimension('O')->setWidth(16);
+                $sheet->getColumnDimension('I')->setWidth(18);
+                $sheet->getColumnDimension('J')->setWidth(20);
+                $sheet->getColumnDimension('K')->setWidth(18);
+                $sheet->getColumnDimension('L')->setWidth(18);
+                $sheet->getColumnDimension('M')->setWidth(18);
+                $sheet->getColumnDimension('N')->setWidth(18);
+                $sheet->getColumnDimension('O')->setWidth(19);
 
                 // ── Title / Periode (rows 2 & 3) ──────────────────────
                 $sheet->mergeCells('A2:O2');
                 $sheet->mergeCells('A3:O3');
 
                 $sheet->getStyle('A2')->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
+                    'font' => ['bold' => true, 'size' => 14, 'name' => 'Calibri'],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
                 $sheet->getStyle('A3')->applyFromArray([
-                    'font' => ['bold' => true, 'size' => 11, 'name' => 'Calibri'],
+                    'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
@@ -410,11 +410,11 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                 ]);
 
                 // ── Column header (row 5) ─────────────────────────────
-                $sheet->getRowDimension(5)->setRowHeight(42);
+                $sheet->getRowDimension(5)->setRowHeight(64);
                 $sheet->getStyle('A5:O5')->applyFromArray([
                     'font' => [
                         'bold' => true,
-                        'size' => 10,
+                        'size' => 12,
                         'name' => 'Calibri',
                         'color' => ['argb' => 'FF000000'],
                     ],
@@ -441,7 +441,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                     // ── Data rows (6 .. dataLast) ─────────────────────
                     $sheet->getStyle("A6:O{$dataLast}")->applyFromArray([
-                        'font' => ['size' => 10, 'name' => 'Calibri'],
+                        'font' => ['size' => 12, 'name' => 'Calibri'],
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
@@ -451,7 +451,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                     ]);
 
                     for ($r = 6; $r <= $dataLast; $r++) {
-                        $sheet->getRowDimension($r)->setRowHeight(21);
+                        $sheet->getRowDimension($r)->setRowHeight(27);
                     }
 
                     // Currency: G, I, J, K, L, M, N, O (data rows)
@@ -493,11 +493,11 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                     }
 
                     // ── TOTAL row ─────────────────────────────────────
-                    $sheet->getRowDimension($totalRow)->setRowHeight(22);
+                    $sheet->getRowDimension($totalRow)->setRowHeight(28);
                     $sheet->getStyle("A{$totalRow}:O{$totalRow}")->applyFromArray([
                         'font' => [
                             'bold' => true,
-                            'size' => 10,
+                            'size' => 12,
                             'name' => 'Calibri',
                             'color' => ['argb' => 'FF000000'],
                         ],
@@ -539,13 +539,13 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                     foreach ([$footerKota, $footerNama] as $fr) {
                         $sheet->getStyle("I{$fr}")->applyFromArray([
-                            'font' => ['bold' => true, 'size' => 10, 'name' => 'Calibri'],
+                            'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
                             'alignment' => [
                                 'horizontal' => Alignment::HORIZONTAL_CENTER,
                                 'vertical' => Alignment::VERTICAL_CENTER,
                             ],
                         ]);
-                        $sheet->getRowDimension($fr)->setRowHeight(18);
+                        $sheet->getRowDimension($fr)->setRowHeight(23);
                     }
                 }
             },

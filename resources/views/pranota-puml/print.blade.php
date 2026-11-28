@@ -11,12 +11,17 @@
     ];
     $paperSize = isset($papers[$paperSize]) ? $paperSize : 'A4';
     [$pageSize, $pageWidth] = $papers[$paperSize];
-    $headers = $exportRows[4];
-    $dataRows = array_slice($exportRows, 5, count($exportRows) - 10);
-    $totalRow = $exportRows[count($exportRows) - 5];
+    // Hide overtime columns in print while preserving the export's totals and column keys.
+    $hiddenColumns = array_flip([7, 8]);
+    $headers = array_diff_key($exportRows[4], $hiddenColumns);
+    $dataRows = array_map(
+        fn ($row) => array_diff_key($row, $hiddenColumns),
+        array_slice($exportRows, 5, count($exportRows) - 10)
+    );
+    $totalRow = array_diff_key($exportRows[count($exportRows) - 5], $hiddenColumns);
     $tanggal = $exportRows[count($exportRows) - 2][8];
     $creator = $exportRows[count($exportRows) - 1][8];
-    $columnWidths = [6, 11, 34, 22, 18, 9, 14, 11, 15, 17, 15, 15, 15, 15, 16];
+    $columnWidths = [6, 11, 34, 22, 18, 9, 14, 17, 15, 15, 15, 15, 16];
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -79,7 +84,7 @@
                         @endforeach
                     </tr>
                 @empty
-                    <tr><td colspan="15" class="center">Tidak ada rincian penerima dalam pranota ini.</td></tr>
+                    <tr><td colspan="{{ count($headers) }}" class="center">Tidak ada rincian penerima dalam pranota ini.</td></tr>
                 @endforelse
                 <tr class="total">
                     <td colspan="2"></td>
