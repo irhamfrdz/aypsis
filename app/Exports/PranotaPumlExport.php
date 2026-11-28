@@ -42,6 +42,8 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
     protected float $sumPotBpjs = 0;
 
+    protected float $sumPotPph = 0;
+
     protected float $sumTerima = 0;
 
     public function __construct(PranotaPuml $puml)
@@ -82,6 +84,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             'L' => '#,##0',
             'M' => '#,##0',
             'N' => '#,##0',
+            'O' => '#,##0',
         ];
     }
 
@@ -229,13 +232,13 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
         $rows = [];
 
         // Row 1: Blank
-        $rows[] = array_fill(0, 14, '');
+        $rows[] = array_fill(0, 15, '');
         // Row 2: Title (merged in AfterSheet)
-        $rows[] = array_merge(['PERINCIAN UANG MAKAN'], array_fill(0, 13, ''));
+        $rows[] = array_merge(['PERINCIAN UANG MAKAN'], array_fill(0, 14, ''));
         // Row 3: Periode (merged in AfterSheet)
-        $rows[] = array_merge(['PERIODE '.$periodeStr], array_fill(0, 13, ''));
+        $rows[] = array_merge(['PERIODE '.$periodeStr], array_fill(0, 14, ''));
         // Row 4: Blank
-        $rows[] = array_fill(0, 14, '');
+        $rows[] = array_fill(0, 15, '');
 
         // Row 5: Column header
         $rows[] = [
@@ -252,12 +255,13 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             "POT\nTERLAMBAT",
             "POT\nUTANG",
             "POT\nBPJS",
+            "POT\nPPH",
             'TERIMA',
         ];
 
         // Rows 6+: Data
         $no = 1;
-        $sumHadir = $sumLemburCount = $sumTotalLembur = $sumTotalUm = $sumPotTerlambat = $sumPotUtang = $sumPotBpjs = $sumTerima = 0.0;
+        $sumHadir = $sumLemburCount = $sumTotalLembur = $sumTotalUm = $sumPotTerlambat = $sumPotUtang = $sumPotBpjs = $sumPotPph = $sumTerima = 0.0;
 
         foreach ($karyawanRekap as $data) {
             $kar = $data['karyawan'];
@@ -271,9 +275,11 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             $lemburFlag = $data['total_lembur'] > 0 ? 1 : null;
             $totalLembur = $data['total_lembur'] > 0 ? (float) $data['total_lembur'] : null;
             $totalUangMakan = $data['total_uang_makan'] > 0 ? (float) $data['total_uang_makan'] : null;
-            $potTerlambat = $data['pot_terlambat'] > 0 ? (float) $data['pot_terlambat'] : null;
-            $potUtang = $data['pot_utang'] > 0 ? (float) $data['pot_utang'] : null;
-            $potBpjs = $data['pot_bpjs'] > 0 ? (float) $data['pot_bpjs'] : null;
+            $potTerlambat = $data['pot_terlambat'] != 0 ? (float) $data['pot_terlambat'] : null;
+            $potUtang = $data['pot_utang'] != 0 ? (float) $data['pot_utang'] : null;
+            $potBpjs = $data['pot_bpjs'] != 0 ? (float) $data['pot_bpjs'] : null;
+
+            $potPph = $data['pot_pph'] != 0 ? (float) $data['pot_pph'] : null;
 
             $terima = max(0, (float) (
                 $data['total_uang_makan']
@@ -292,6 +298,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             $sumPotTerlambat += (float) ($potTerlambat ?? 0);
             $sumPotUtang += (float) ($potUtang ?? 0);
             $sumPotBpjs += (float) ($potBpjs ?? 0);
+            $sumPotPph += (float) ($potPph ?? 0);
             $sumTerima += $terima;
 
             $rows[] = [
@@ -308,6 +315,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                 $potTerlambat,
                 $potUtang,
                 $potBpjs,
+                $potPph,
                 $terima,
             ];
         }
@@ -324,19 +332,20 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
             $sumLemburCount > 0 ? (int) $sumLemburCount : null,
             $sumTotalLembur > 0 ? $sumTotalLembur : null,
             $sumTotalUm > 0 ? $sumTotalUm : null,
-            $sumPotTerlambat > 0 ? $sumPotTerlambat : null,
-            $sumPotUtang > 0 ? $sumPotUtang : null,
-            $sumPotBpjs > 0 ? $sumPotBpjs : null,
+            $sumPotTerlambat != 0 ? $sumPotTerlambat : null,
+            $sumPotUtang != 0 ? $sumPotUtang : null,
+            $sumPotBpjs != 0 ? $sumPotBpjs : null,
+            $sumPotPph != 0 ? $sumPotPph : null,
             $sumTerima,
         ];
 
         // 2 blank spacer rows
-        $rows[] = array_fill(0, 14, '');
-        $rows[] = array_fill(0, 14, '');
+        $rows[] = array_fill(0, 15, '');
+        $rows[] = array_fill(0, 15, '');
 
         // Footer: kota & tanggal, then nama pembuat
-        $rows[] = ['', '', '', '', '', '', '', '', $tanggalFormatted, '', '', '', '', ''];
-        $rows[] = ['', '', '', '', '', '', '', '', $creatorName, '', '', '', '', ''];
+        $rows[] = ['', '', '', '', '', '', '', '', $tanggalFormatted, '', '', '', '', '', ''];
+        $rows[] = ['', '', '', '', '', '', '', '', $creatorName, '', '', '', '', '', ''];
 
         // Store counters for AfterSheet
         $this->dataRowCount = count($karyawanRekap);
@@ -347,6 +356,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
         $this->sumPotTerlambat = $sumPotTerlambat;
         $this->sumPotUtang = $sumPotUtang;
         $this->sumPotBpjs = $sumPotBpjs;
+        $this->sumPotPph = $sumPotPph;
         $this->sumTerima = $sumTerima;
         $this->rows = $rows;
 
@@ -377,11 +387,12 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                 $sheet->getColumnDimension('K')->setWidth(15);
                 $sheet->getColumnDimension('L')->setWidth(15);
                 $sheet->getColumnDimension('M')->setWidth(15);
-                $sheet->getColumnDimension('N')->setWidth(16);
+                $sheet->getColumnDimension('N')->setWidth(15);
+                $sheet->getColumnDimension('O')->setWidth(16);
 
                 // ── Title / Periode (rows 2 & 3) ──────────────────────
-                $sheet->mergeCells('A2:N2');
-                $sheet->mergeCells('A3:N3');
+                $sheet->mergeCells('A2:O2');
+                $sheet->mergeCells('A3:O3');
 
                 $sheet->getStyle('A2')->applyFromArray([
                     'font' => ['bold' => true, 'size' => 12, 'name' => 'Calibri'],
@@ -400,7 +411,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                 // ── Column header (row 5) ─────────────────────────────
                 $sheet->getRowDimension(5)->setRowHeight(42);
-                $sheet->getStyle('A5:N5')->applyFromArray([
+                $sheet->getStyle('A5:O5')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 10,
@@ -426,10 +437,10 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                 if ($this->dataRowCount > 0) {
                     // AutoFilter hanya sampai data (exclude total row)
-                    $sheet->setAutoFilter("A5:N{$dataLast}");
+                    $sheet->setAutoFilter("A5:O{$dataLast}");
 
                     // ── Data rows (6 .. dataLast) ─────────────────────
-                    $sheet->getStyle("A6:N{$dataLast}")->applyFromArray([
+                    $sheet->getStyle("A6:O{$dataLast}")->applyFromArray([
                         'font' => ['size' => 10, 'name' => 'Calibri'],
                         'borders' => [
                             'allBorders' => [
@@ -443,8 +454,8 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                         $sheet->getRowDimension($r)->setRowHeight(21);
                     }
 
-                    // Currency: G, I, J, K, L, M, N (data rows)
-                    foreach (['G', 'I', 'J', 'K', 'L', 'M', 'N'] as $col) {
+                    // Currency: G, I, J, K, L, M, N, O (data rows)
+                    foreach (['G', 'I', 'J', 'K', 'L', 'M', 'N', 'O'] as $col) {
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
                             ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}6:{$col}{$dataLast}")
@@ -483,7 +494,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
 
                     // ── TOTAL row ─────────────────────────────────────
                     $sheet->getRowDimension($totalRow)->setRowHeight(22);
-                    $sheet->getStyle("A{$totalRow}:N{$totalRow}")->applyFromArray([
+                    $sheet->getStyle("A{$totalRow}:O{$totalRow}")->applyFromArray([
                         'font' => [
                             'bold' => true,
                             'size' => 10,
@@ -512,7 +523,7 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                         ->setHorizontal(Alignment::HORIZONTAL_CENTER);
 
                     // Currency format for TOTAL row numeric columns
-                    foreach (['F', 'H', 'I', 'J', 'K', 'L', 'M', 'N'] as $col) {
+                    foreach (['F', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O'] as $col) {
                         $sheet->getStyle("{$col}{$totalRow}")
                             ->getNumberFormat()->setFormatCode('#,##0');
                         $sheet->getStyle("{$col}{$totalRow}")
@@ -522,9 +533,9 @@ class PranotaPumlExport extends DefaultValueBinder implements FromArray, WithCol
                     }
 
                     // ── Footer rows ───────────────────────────────────
-                    // Merge I:N for kota/tanggal and nama
-                    $sheet->mergeCells("I{$footerKota}:N{$footerKota}");
-                    $sheet->mergeCells("I{$footerNama}:N{$footerNama}");
+                    // Merge I:O for kota/tanggal and nama
+                    $sheet->mergeCells("I{$footerKota}:O{$footerKota}");
+                    $sheet->mergeCells("I{$footerNama}:O{$footerNama}");
 
                     foreach ([$footerKota, $footerNama] as $fr) {
                         $sheet->getStyle("I{$fr}")->applyFromArray([
