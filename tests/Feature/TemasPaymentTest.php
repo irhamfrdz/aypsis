@@ -526,6 +526,15 @@ class TemasPaymentTest extends TestCase
         $this->assertStringContainsString('TEMU002', $html);
         $this->assertStringContainsString('HANDLING BL', $html);
         $this->assertStringNotContainsString('PPH (2%)', $html);
+        $this->assertStringNotContainsString('PPh Reimburse', $html);
+
+        $nominalBeforeReimburse = $invoice->fresh()->nominal;
+        $invoice->temasDetails()->update(['pph_reimburse' => true, 'ppn_active' => true, 'ppn' => 110000, 'biaya_materai' => 50000]);
+        $reimburseHtml = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();
+        $this->assertMatchesRegularExpression('/PPh Reimburse<\/td>.*?Rp 20\.000<\/td>\s*<\/tr>/s', $reimburseHtml);
+        $this->assertMatchesRegularExpression('/PPN \(11%\)<\/td>.*?Rp 110\.000<\/td>\s*<\/tr>/s', $reimburseHtml);
+        $this->assertMatchesRegularExpression('/BIAYA MATERAI<\/td>.*?Rp 50\.000<\/td>\s*<\/tr>/s', $reimburseHtml);
+        $this->assertSame($nominalBeforeReimburse, $invoice->fresh()->nominal);
 
         $invoice->temasDetails()->update(['pph_active' => true]);
         $activePphHtml = app(BiayaKapalController::class)->printTemas($invoice->fresh())->render();

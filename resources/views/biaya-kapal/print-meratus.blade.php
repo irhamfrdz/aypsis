@@ -473,7 +473,10 @@
                 @if($meratusDetails->contains('pph_reimburse', true))
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="7">PPh Reimburse</td>
+                    <td colspan="4">PPh Reimburse</td>
+                    <td></td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($meratusDetails->where('pph_reimburse', true)->sum('pph'), 0, ',', '.') }}</td>
                 </tr>
                 @endif
 

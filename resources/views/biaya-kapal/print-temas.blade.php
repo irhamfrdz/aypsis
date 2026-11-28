@@ -509,7 +509,9 @@
                 @if($temasDetails->contains('pph_reimburse', true))
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>
-                    <td colspan="5">PPh Reimburse</td>
+                    <td colspan="3">PPh Reimburse</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">Rp {{ number_format($temasDetails->where('pph_reimburse', true)->sum('pph'), 0, ',', '.') }}</td>
                 </tr>
                 @endif
 
