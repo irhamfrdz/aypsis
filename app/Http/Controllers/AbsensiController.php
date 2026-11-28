@@ -1235,8 +1235,6 @@ class AbsensiController extends Controller
                         $detail_izin[] = ['tanggal' => $tanggal, 'jenis' => $matchedPerm->jenis_izin, 'alasan' => $alasan];
                     }
                 } elseif (in_array($dateStr, $presentDates)) {
-                    $hadir++;
-                    $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
                     $dayLogs = $logsByDate->get($dateStr);
                     $jadwalKerja = $workingHours->scheduleFor($karyawan, $dateStr);
 
@@ -1253,6 +1251,13 @@ class AbsensiController extends Controller
 
                         return in_array($t, ['pulang', 'keluar', 'check out', 'out']);
                     });
+
+                    // Only regular check-in/check-out scans establish attendance.
+                    // Overtime and break scans alone must not count as present.
+                    if ($masukLog || $pulangLog) {
+                        $hadir++;
+                        $detail_hadir[] = \Carbon\Carbon::parse($dateStr)->translatedFormat('d M Y');
+                    }
 
                     // Fallback cerdas: Jika tidak ada log bertipe 'Pulang', tapi ada scan lain di sore hari (>= 12:00) yang berbeda dari scan masuk pagi
                     if (! $pulangLog && $masukLog && $dayLogs->count() > 1) {

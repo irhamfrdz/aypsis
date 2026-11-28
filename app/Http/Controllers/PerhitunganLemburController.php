@@ -267,15 +267,7 @@ class PerhitunganLemburController extends Controller
                                 $matchesTime = false;
 
                                 if ($tipeHari === 'Hari Libur' && ! $isPelabuhan1) {
-                                    if ($rule->is_sampai_selesai) {
-                                        if ($durasiJam > 10) {
-                                            $matchesTime = true;
-                                        }
-                                    } else {
-                                        if ($durasiJam <= 10) {
-                                            $matchesTime = true;
-                                        }
-                                    }
+                                    $matchesTime = self::matchesHolidayRule($rule, $lm, $lpEvaluation);
                                 } else {
                                     if ($rule->jam_mulai) {
                                         $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
@@ -696,15 +688,7 @@ class PerhitunganLemburController extends Controller
                             $matchesTime = false;
 
                             if ($tipeHari === 'Hari Libur' && ! $isPelabuhan1) {
-                                if ($rule->is_sampai_selesai) {
-                                    if ($durasiJam > 10) {
-                                        $matchesTime = true;
-                                    }
-                                } else {
-                                    if ($durasiJam <= 10) {
-                                        $matchesTime = true;
-                                    }
-                                }
+                                $matchesTime = self::matchesHolidayRule($rule, $lm, $lpEvaluation);
                             } else {
                                 if ($rule->jam_mulai) {
                                     $ruleMulai = \Carbon\Carbon::parse($lm->format('Y-m-d').' '.$rule->jam_mulai);
@@ -799,6 +783,21 @@ class PerhitunganLemburController extends Controller
         $subgroup = strtoupper(trim($subgroup));
 
         return $subgroup === 'JAKARTA PELABUHAN 1' ? 'PELABUHAN 1' : $subgroup;
+    }
+
+    private static function matchesHolidayRule(UangLemburRule $rule, Carbon $start, Carbon $end): bool
+    {
+        // Holiday packages depend on the checkout time, not a ten-hour duration.
+        // Older rules without clock boundaries use the standard 17:00 cutoff.
+        if ($rule->is_sampai_selesai) {
+            $cutoff = Carbon::parse($start->toDateString().' '.($rule->jam_mulai ?: '17:00:00'));
+
+            return $end->gte($cutoff);
+        }
+
+        $cutoff = Carbon::parse($start->toDateString().' '.($rule->jam_selesai ?: '17:00:00'));
+
+        return $end->lte($cutoff);
     }
 
     private static function usesPreviousNightRule(UangLemburRule $rule, Carbon $start): bool

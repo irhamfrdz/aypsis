@@ -88,6 +88,40 @@ class PerhitunganLemburMidnightTest extends TestCase
         ];
     }
 
+    public static function holidayCheckoutCases(): array
+    {
+        return [
+            'Tomi ten-hour session past cutoff' => ['10:00:00', '20:00:00', 100000],
+            'exactly at cutoff' => ['10:00:00', '17:00:00', 50000],
+            'exactly at evening tariff start' => ['10:00:00', '18:00:00', 100000],
+            'after evening tariff start' => ['10:00:00', '18:01:00', 100000],
+            'long session before cutoff' => ['06:00:00', '17:00:00', 50000],
+        ];
+    }
+
+    #[DataProvider('holidayCheckoutCases')]
+    public function test_holiday_package_uses_checkout_time_in_page_and_pranota(string $start, string $end, int $amount): void
+    {
+        DB::table('karyawans')->insert(['id' => 1, 'nik' => '0225', 'nama_lengkap' => 'TOMI SETIAWAN', 'grup' => json_encode(['LEMBUR:PELABUHAN'])]);
+        DB::table('absensis')->insert([
+            ['karyawan_id' => 1, 'nik' => '0225', 'tipe' => 'lembur masuk', 'waktu' => '2026-11-22 '.$start],
+            ['karyawan_id' => 1, 'nik' => '0225', 'tipe' => 'lembur pulang', 'waktu' => '2026-11-22 '.$end],
+        ]);
+        DB::table('master_uang_lemburs')->insert(['id' => 1, 'group' => 'LEMBUR', 'sub_group' => 'PELABUHAN']);
+        DB::table('uang_lembur_rules')->insert([
+            ['uang_lembur_id' => 1, 'tipe_hari' => 'Hari Libur', 'jam_mulai' => '08:00:00', 'jam_selesai' => '17:00:00', 'is_sampai_selesai' => false, 'satuan' => 'Hari', 'nominal' => 50000],
+            ['uang_lembur_id' => 1, 'tipe_hari' => 'Hari Libur', 'jam_mulai' => '18:00:00', 'jam_selesai' => null, 'is_sampai_selesai' => true, 'satuan' => 'Hari', 'nominal' => 100000],
+        ]);
+
+        $view = app(PerhitunganLemburController::class)->index(Request::create('/', 'GET', ['start_date' => '2026-11-22', 'end_date' => '2026-11-22']));
+        $page = collect($view->getData()['rekapData'])->first();
+        $this->assertEquals($amount, $page['detail'][0]['nominal']);
+
+        $pranota = PerhitunganLemburController::calculateAttendanceForKaryawans([1], '2026-11-22', '2026-11-22')[1];
+        $this->assertEquals($amount, $pranota['nominal_lembur']);
+        $this->assertEquals($page['detail'][0]['uang_makan_lembur'], $pranota['uang_makan_lembur']);
+    }
+
     #[DataProvider('midnightCases')]
     public function test_midnight_tariff_in_page_and_pranota_calculation(string $employeeGroup, string $masterGroup, string $end, string $dayType, int $hours, int $amount): void
     {
