@@ -122,6 +122,10 @@
                     </div>
                     <input type="text" class="pph-display-meratus w-full px-3 py-2 border border-blue-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors duration-200" value="Rp 0">
                     <input type="hidden" name="meratus[${sectionIndex}][pph]" class="pph-value-meratus" value="0">
+                    <label class="flex items-center gap-2 mt-2 text-sm text-gray-700">
+                        <input type="checkbox" name="meratus[${sectionIndex}][pph_reimburse]" value="1" class="pph-reimburse-meratus w-4 h-4 rounded text-blue-600 focus:ring-blue-500">
+                        PPh Reimburse (keterangan pada print, tidak mempengaruhi grand total)
+                    </label>
                 </div>
                 <div>
                     <div class="flex items-center justify-between mb-1">

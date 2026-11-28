@@ -506,6 +506,13 @@
                     @endforeach
                 @endforeach
                 
+                @if($temasDetails->contains('pph_reimburse', true))
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td colspan="5">PPh Reimburse</td>
+                </tr>
+                @endif
+
                 @if($totalPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>

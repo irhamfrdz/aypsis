@@ -47,6 +47,7 @@ class TemasPaymentTest extends TestCase
             $table->softDeletes();
         });
         (require database_path('migrations/2026_04_27_142615_create_biaya_kapal_temas_table.php'))->up();
+        (require database_path('migrations/2026_11_28_000001_add_pph_reimburse_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_06_12_100757_add_container_fields_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_09_23_000001_add_nomor_bl_to_biaya_kapal_temas_table.php'))->up();
         (require database_path('migrations/2026_09_23_000002_add_is_per_container_to_biaya_kapal_temas_table.php'))->up();
@@ -395,6 +396,15 @@ class TemasPaymentTest extends TestCase
         $this->assertSame('990000.00', $invoice->fresh()->nominal);
         $this->assertEquals(990000, $invoice->temasDetails()->sum('grand_total'));
         $this->assertSame(2, $invoice->temasDetails()->count());
+        $this->assertFalse($invoice->temasDetails()->first()->pph_reimburse);
+
+        app(\App\Services\TemasBillingService::class)->replace($invoice, [$this->finalCosts() + [
+            'payment_mode' => 'lunas', 'pph_active' => 'on', 'pph' => 20000, 'biaya_materai' => 10000,
+            'pph_reimburse' => '1',
+        ]]);
+        $this->assertTrue($invoice->temasDetails()->first()->pph_reimburse);
+        $this->assertSame('990000.00', $invoice->fresh()->nominal);
+        $this->assertEquals(990000, $invoice->temasDetails()->sum('grand_total'));
     }
 
     public function test_child_bl_suffixes_are_stored_as_one_parent_bl(): void

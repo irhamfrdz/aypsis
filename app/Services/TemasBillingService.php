@@ -135,6 +135,7 @@ class TemasBillingService
         ]));
         $common['tanggal_invoice_vendor'] = $common['tanggal_invoice_vendor'] ?? null;
         $common['biaya_kapal_id'] = $invoice->id;
+        $common['pph_reimburse'] = $mode === 'lunas' && filter_var($section['pph_reimburse'] ?? false, FILTER_VALIDATE_BOOLEAN);
         $rows = [];
         if ($mode === 'dp') {
             $cash = $this->cents($section['nominal_dibayar']);

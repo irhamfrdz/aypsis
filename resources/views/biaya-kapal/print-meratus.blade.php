@@ -470,6 +470,13 @@
                     @endforeach
                 @endforeach
                 
+                @if($meratusDetails->contains('pph_reimburse', true))
+                <tr>
+                    <td class="text-center">{{ $no++ }}</td>
+                    <td colspan="7">PPh Reimburse</td>
+                </tr>
+                @endif
+
                 @if($totalPPH > 0)
                 <tr>
                     <td class="text-center">{{ $no++ }}</td>

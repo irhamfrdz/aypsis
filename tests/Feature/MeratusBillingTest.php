@@ -68,6 +68,7 @@ class MeratusBillingTest extends TestCase
             $table->timestamps();
         });
         (require database_path('migrations/2026_10_24_090000_add_meratus_billing_stages.php'))->up();
+        (require database_path('migrations/2026_11_28_000002_add_pph_reimburse_to_biaya_kapal_meratus_table.php'))->up();
         Schema::create('pembayaran_biaya_kapals', function (Blueprint $table) {
             $table->id();
             $table->string('status_pembayaran');
@@ -223,6 +224,24 @@ class MeratusBillingTest extends TestCase
         $this->assertSame([2.0, 1.0], BiayaKapalMeratus::orderBy('id')->get()->pluck('kuantitas')->map(fn ($n) => (float) $n)->all());
         $this->assertSame(['BL001', 'BL001'], BiayaKapalMeratus::orderBy('id')->pluck('nomor_bl')->all());
         $this->assertEquals(225, (float) BiayaKapalMeratusStage::first()->nilai_tagihan);
+    }
+
+    public function test_pph_reimburse_is_saved_without_changing_totals_and_can_be_unchecked(): void
+    {
+        $invoice = BiayaKapal::create(['tanggal' => '2026-10-24']);
+        $billing = app(MeratusBillingService::class);
+        $section = $this->rows() + ['pph_active' => 'on', 'pph' => 4, 'pph_reimburse' => '1'];
+        $billing->replace($invoice, [$section]);
+
+        $this->assertTrue($invoice->meratusDetails()->first()->pph_reimburse);
+        $this->assertEquals(221, (float) $invoice->fresh()->nominal);
+        $this->assertEquals(221, $invoice->meratusDetails()->sum('grand_total'));
+
+        unset($section['pph_reimburse']);
+        $billing->replace($invoice, [$section]);
+        $this->assertFalse($invoice->meratusDetails()->first()->pph_reimburse);
+        $this->assertEquals(221, (float) $invoice->fresh()->nominal);
+        $this->assertEquals(221, $invoice->meratusDetails()->sum('grand_total'));
     }
 
     public function test_one_bl_can_have_different_charges_for_each_container(): void

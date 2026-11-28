@@ -21,7 +21,7 @@ trait CreatesSharedShippingDpSchema
             foreach (['kuantitas', 'harga', 'sub_total', 'pph', 'ppn', 'biaya_materai', 'adjustment', 'biaya_admin', 'grand_total'] as $field) {
                 $table->decimal($field, 15, 2)->default(0);
             }
-            foreach (['pph_active', 'ppn_active', 'is_muat', 'is_bongkar'] as $field) {
+            foreach (['pph_active', 'pph_reimburse', 'ppn_active', 'is_muat', 'is_bongkar'] as $field) {
                 $table->boolean($field)->default(false);
             }
             if ($source === 'temas') {

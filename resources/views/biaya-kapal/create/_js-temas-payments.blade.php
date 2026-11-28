@@ -118,6 +118,7 @@
     }
 
     function hydrateTemasSection(section, data) {
+        section.querySelector('.pph-reimburse-temas').checked = Boolean(data.pph_reimburse);
         const kapal = section.querySelector('.kapal-select-temas');
         if (![...kapal.options].some(o => o.value === data.kapal)) kapal.add(new Option(data.kapal, data.kapal));
         kapal.value = data.kapal;
