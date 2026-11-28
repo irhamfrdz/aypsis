@@ -77,6 +77,7 @@
                     </button>
                 </div>
             </header>
+            <p class="px-6 py-2 text-xs text-gray-500 no-print">Nominal positif mengurangi Total Terima. Gunakan tanda minus (contoh: -50.000) untuk menambah Total Terima.</p>
             <div class="overflow-x-auto">
                 <table class="w-full text-sm text-left">
                     <thead class="text-xs text-gray-500 uppercase bg-gray-50 border-b border-gray-200">
@@ -151,7 +152,8 @@
         inputs.forEach(input => {
             input.addEventListener('input', function(e) {
                 // Format rupiah
-                let value = this.value.replace(/[^,\d]/g, '').toString();
+                const negative = this.value.trimStart().startsWith('-');
+                let value = this.value.replace(/[^\d]/g, '');
                 let split = value.split(',');
                 let sisa = split[0].length % 3;
                 let rupiah = split[0].substr(0, sisa);
@@ -163,7 +165,7 @@
                 }
 
                 rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-                this.value = rupiah;
+                this.value = (negative ? '-' : '') + rupiah;
                 
                 // Kalkulasi ulang total akhir baris ini
                 const row = this.closest('.karyawan-row');
